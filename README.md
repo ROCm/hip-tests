@@ -22,3 +22,38 @@ hip-tests releases are typically naming convention for each ROCM release to help
 
 * rocm x.yy: These are the stable releases based on the ROCM release.
   This type of release is typically made once a month.*
+
+
+### Build HIP catch tests
+
+For building HIP from sources, please check instructions on [HIP page] (https://github.com/ROCm-Developer-Tools/HIP/blob/rocm-5.4.x/docs/markdown/hip_build.md#build-hip-on-amd-platform)
+
+HIP catch tests can be built via the following instructions,
+
+Clone the hip-tests from rocm-5.4.x branch
+```
+git clone -b rocm-5.4.x https://github.com/ROCm-Developer-Tools/hip-tests.git
+export HIP_TESTS_DIR="$(readlink -f hip-tests)"
+```
+
+Build the catch tests
+```
+cd "$HIP_TESTS_DIR"
+mkdir -p build; cd build
+export HIP_PATH=/opt/rocm-5.4/ (or any custom path where HIP is installed)
+cmake ../catch/  -DHIP_PLATFORM=amd
+make -j$(nproc) build_tests
+ctest # run tests
+```
+
+HIP catch tests are built under the folder $HIP_TESTS_DIR/build.
+
+### Build HIP Catch2 standalone test
+
+HIP Catch2 supports build a standalone test, for example,
+
+```
+hipcc $HIP_TESTS_DIR/catch/unit/memory/hipPointerGetAttributes.cc -I ./catch/include ./catch/hipTestMain/standalone_main.cc -I ./catch/external/Catch2 -o hipPointerGetAttributes
+./hipPointerGetAttributes
+```
+

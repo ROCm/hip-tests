@@ -55,56 +55,58 @@ TEST_CASE("Unit_hipGraphMemcpyNodeSetParams1D_Negative") {
                                     Nbytes, hipMemcpyHostToDevice));
 
   SECTION("Pass pGraphNode as nullptr") {
-    ret = hipGraphMemcpyNodeSetParams1D(nullptr, A_d, A_h, Nbytes,
-                                        hipMemcpyHostToDevice);
-    REQUIRE(hipErrorInvalidValue == ret);
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(nullptr, A_d, A_h, Nbytes,
+                                                  hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
   }
+
   SECTION("Pass destination ptr is nullptr") {
-    ret = hipGraphMemcpyNodeSetParams1D(memcpyNode, nullptr, A_h, Nbytes,
-                                        hipMemcpyHostToDevice);
-    REQUIRE(hipErrorInvalidValue == ret);
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(memcpyNode, nullptr, A_h,
+                                                  Nbytes,
+                                                  hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
   }
+
   SECTION("Pass source ptr is nullptr") {
-    ret = hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d, nullptr, Nbytes,
-                                        hipMemcpyHostToDevice);
-    REQUIRE(hipErrorInvalidValue == ret);
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d, nullptr,
+                                                  Nbytes,
+                                                  hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
   }
+
   SECTION("Pass count as zero") {
-    ret = hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d, A_h, 0,
-                                        hipMemcpyHostToDevice);
-    REQUIRE(hipErrorInvalidValue == ret);
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d, A_h, 0,
+                                                  hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
   }
+
 #if HT_AMD
   SECTION("Pass same pointer as source ptr and destination ptr") {
-    ret = hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d, A_d, Nbytes,
-                                        hipMemcpyHostToDevice);
-    REQUIRE(hipErrorInvalidValue == ret);
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d, A_d, Nbytes,
+                                                  hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
   }
+
   SECTION("Pass overlap memory where destination ptr is ahead of source ptr") {
-    ret = hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d, A_d-5, Nbytes,
-                                        hipMemcpyHostToDevice);
-    REQUIRE(hipSuccess == ret);
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d, A_d - 5,
+                                                  Nbytes,
+                                                  hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
   }
 #endif
+
   SECTION("Pass overlap memory where source ptr is ahead of destination ptr") {
-    ret = hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d+5, A_d, Nbytes-5,
-                                        hipMemcpyHostToDevice);
-    REQUIRE(hipErrorInvalidValue == ret);
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d + 5, A_d,
+                                                  Nbytes - 5,
+                                                  hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
   }
+
   SECTION("Copy more than allocated memory") {
-    ret = hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d, A_h, Nbytes+8,
-                                        hipMemcpyHostToDevice);
-    REQUIRE(hipErrorInvalidValue == ret);
-  }
-  SECTION("Copy less than allocated memory") {
-    ret = hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d, A_h, Nbytes-8,
-                                        hipMemcpyHostToDevice);
-    REQUIRE(hipSuccess == ret);
-  }
-  SECTION("Change the kind from H2D to D2H") {
-    ret = hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d, A_h, Nbytes,
-                                        hipMemcpyDeviceToHost);
-    REQUIRE(hipSuccess == ret);
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d, A_h,
+                                                  Nbytes + 8,
+                                                  hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
   }
 
   HIP_CHECK(hipFree(A_d));

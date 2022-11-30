@@ -132,8 +132,6 @@ TEST_CASE("Unit_hipGraphAddMemcpyNode1D_Functional") {
   }
 }
 
-
-
 /**
  * Negative Test for API hipGraphAddMemcpyNode1D
  */
@@ -150,50 +148,52 @@ TEST_CASE("Unit_hipGraphAddMemcpyNode1D_Negative") {
   HIP_CHECK(hipGraphCreate(&graph, 0));
 
   SECTION("Pass pGraphNode as nullptr") {
-    ret = hipGraphAddMemcpyNode1D(nullptr, graph,
-            nullptr, 0, A_d, A_h, Nbytes, hipMemcpyHostToDevice);
-    REQUIRE(hipErrorInvalidValue == ret);
+    HIP_CHECK_ERROR(hipGraphAddMemcpyNode1D(nullptr, graph, nullptr, 0, A_d,
+                                            A_h, Nbytes, hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
   }
+
   SECTION("Pass graph as nullptr") {
-    ret = hipGraphAddMemcpyNode1D(&memcpyNode, nullptr,
-            nullptr, 0, A_d, A_h, Nbytes, hipMemcpyHostToDevice);
-    REQUIRE(hipErrorInvalidValue == ret);
+    HIP_CHECK_ERROR(hipGraphAddMemcpyNode1D(&memcpyNode, nullptr, nullptr, 0,
+                                            A_d, A_h, Nbytes,
+                                            hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
   }
-  SECTION("Pass pDependencies as nullptr") {
-    ret = hipGraphAddMemcpyNode1D(&memcpyNode, graph,
-            nullptr, 0, A_d, A_h, Nbytes, hipMemcpyHostToDevice);
-    REQUIRE(hipSuccess == ret);
-  }
+
   SECTION("Pass numDependencies is max and pDependencies is not valid ptr") {
-    ret = hipGraphAddMemcpyNode1D(&memcpyNode, graph,
-            nullptr, INT_MAX, A_d, A_h, Nbytes, hipMemcpyHostToDevice);
-    REQUIRE(hipErrorInvalidValue == ret);
+    HIP_CHECK_ERROR(hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr,
+                                            INT_MAX, A_d, A_h, Nbytes,
+                                            hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
   }
+
   SECTION("Pass pDependencies as nullptr, but numDependencies is non-zero") {
-    ret = hipGraphAddMemcpyNode1D(&memcpyNode, graph,
-            nullptr, 9, A_d, A_h, Nbytes, hipMemcpyHostToDevice);
-    REQUIRE(hipErrorInvalidValue == ret);
+    HIP_CHECK_ERROR(hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr, 9, A_d,
+                                            A_h, Nbytes, hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
   }
+
   SECTION("Pass destination ptr as nullptr") {
-    ret = hipGraphAddMemcpyNode1D(&memcpyNode, graph,
-            nullptr, 0, nullptr, A_h, Nbytes, hipMemcpyHostToDevice);
-    REQUIRE(hipErrorInvalidValue == ret);
+    HIP_CHECK_ERROR(hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr, 0,
+                                            nullptr, A_h, Nbytes,
+                                            hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
   }
+
   SECTION("Pass source ptr as nullptr") {
-    ret = hipGraphAddMemcpyNode1D(&memcpyNode, graph,
-            nullptr, 0, A_d, nullptr, Nbytes, hipMemcpyHostToDevice);
-    REQUIRE(hipErrorInvalidValue == ret);
+    HIP_CHECK_ERROR(hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr, 0, A_d,
+                                            nullptr, Nbytes,
+                                            hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
   }
+
   SECTION("Pass count as more than allocated size for source ptr") {
-    ret = hipGraphAddMemcpyNode1D(&memcpyNode, graph,
-            nullptr, 0, A_d, A_h, Nbytes+10, hipMemcpyHostToDevice);
-    REQUIRE(hipErrorInvalidValue == ret);
+    HIP_CHECK_ERROR(hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr, 0, A_d,
+                                            A_h, Nbytes + 10,
+                                            hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
   }
-  SECTION("Pass count as less than allocated size for destination ptr") {
-    ret = hipGraphAddMemcpyNode1D(&memcpyNode, graph,
-            nullptr, 0, A_d, A_h, Nbytes-10, hipMemcpyHostToDevice);
-    REQUIRE(hipSuccess == ret);
-  }
+
   HIP_CHECK(hipFree(A_d));
   HIP_CHECK(hipFree(A_h));
   HIP_CHECK(hipGraphDestroy(graph));

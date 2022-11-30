@@ -82,6 +82,9 @@ set(TEST_SRC
   hipGraphHostNodeGetParams.cc
   hipGraphExecChildGraphNodeSetParams.cc
   hipStreamGetCaptureInfo_v2.cc
+  hipStreamUpdateCaptureDependencies.cc
+  hipThreadExchangeStreamCaptureMode.cc
+  hipLaunchHostFunc.cc
 )
 
 hip_add_exe_to_target(NAME GraphsTest

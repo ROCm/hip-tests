@@ -59,10 +59,12 @@ set(TEST_SRC
   hipGraphEventWaitNodeGetEvent.cc
   hipGraphExecMemcpyNodeSetParams.cc
   hipStreamBeginCapture.cc
+  hipStreamBeginCapture_old.cc
   hipGraphAddMemcpyNode1D.cc
   hipStreamIsCapturing.cc
   hipStreamGetCaptureInfo.cc
   hipStreamEndCapture.cc
+  hipStreamEndCapture_old.cc
   hipGraphMemcpyNodeSetParamsFromSymbol.cc
   hipGraphExecEventWaitNodeSetEvent.cc
   hipGraphAddMemsetNode.cc

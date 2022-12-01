@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
+#include <resource_guards.hh>
 
 /**
  * @addtogroup CallbackTest Callback Activity APIs
@@ -53,10 +53,8 @@ TEST_CASE("Unit_hipGetStreamDeviceId_Positive_Threaded_Basic") {
     int id = GENERATE(range(0, HipTest::getDeviceCount()));
     HIP_CHECK(hipSetDevice(id));
 
-    hipStream_t stream{nullptr};
-    HIP_CHECK(hipStreamCreate(&stream));
-    REQUIRE(hipGetStreamDeviceId(stream) == id);
-    HIP_CHECK(hipStreamDestroy(stream));
+    StreamGuard streamGuard{Streams::created};
+    REQUIRE(hipGetStreamDeviceId(streamGuard.stream()) == id);
 }
 
 /**
@@ -81,10 +79,8 @@ TEST_CASE("Unit_hipGetStreamDeviceId_Positive_Multithreaded_Basic") {
         for(unsigned int id = 0; id < deviceCount; ++id) {
             HIP_CHECK_THREAD(hipSetDevice(id));
 
-            hipStream_t stream{nullptr};
-            HIP_CHECK_THREAD(hipStreamCreate(&stream));
-            REQUIRE_THREAD(hipGetStreamDeviceId(stream) == id);
-            HIP_CHECK_THREAD(hipStreamDestroy(stream));
+            StreamGuard streamGuard{Streams::perThread};
+            REQUIRE_THREAD(hipGetStreamDeviceId(streamGuard.stream()) == id);
         }
     };
 
@@ -117,6 +113,6 @@ TEST_CASE("Unit_hipGetStreamDeviceId_Negative_Parameters") {
     int id = GENERATE(range(0, HipTest::getDeviceCount()));
     HIP_CHECK(hipSetDevice(id));
 
-    hipStream_t stream{nullptr};
-    REQUIRE(hipGetStreamDeviceId(stream) == id);
+    StreamGuard streamGuard{Streams::nullstream};
+    REQUIRE(hipGetStreamDeviceId(streamGuard.stream()) == id);
 }

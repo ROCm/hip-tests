@@ -23,12 +23,6 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 
 /**
- * @addtogroup CallbackTest Callback Activity APIs
- * @{
- * This section describes tests for the callback/Activity of HIP runtime API.
- */
-
-/**
  * @addtogroup hipGetStreamDeviceId hipGetStreamDeviceId
  * @{
  * @ingroup CallbackTest

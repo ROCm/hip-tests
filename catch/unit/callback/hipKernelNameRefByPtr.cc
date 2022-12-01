@@ -23,12 +23,6 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 
 /**
- * @addtogroup CallbackTest Callback Activity APIs
- * @{
- * This section describes tests for the callback/Activity of HIP runtime API.
- */
-
-/**
  * @addtogroup hipKernelNameRefByPtr hipKernelNameRefByPtr
  * @{
  * @ingroup CallbackTest

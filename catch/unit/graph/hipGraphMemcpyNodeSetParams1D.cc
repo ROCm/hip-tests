@@ -36,83 +36,7 @@ Negative-
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 #include <hip_test_kernels.hh>
-
-/* Test verifies hipGraphMemcpyNodeSetParams1D API Negative scenarios.
- */
-TEST_CASE("Unit_hipGraphMemcpyNodeSetParams1D_Negative") {
-  constexpr size_t N = 1024;
-  constexpr size_t Nbytes = N * sizeof(int);
-  int *A_d, *A_h;
-  hipGraphNode_t memcpyNode{};
-  hipError_t ret;
-
-  HIP_CHECK(hipMalloc(&A_d, Nbytes));
-  HIP_CHECK(hipMalloc(&A_h, Nbytes));
-
-  hipGraph_t graph;
-  HIP_CHECK(hipGraphCreate(&graph, 0));
-  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr, 0, A_d, A_h,
-                                    Nbytes, hipMemcpyHostToDevice));
-
-  SECTION("Pass pGraphNode as nullptr") {
-    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(nullptr, A_d, A_h, Nbytes,
-                                                  hipMemcpyHostToDevice),
-                    hipErrorInvalidValue);
-  }
-
-  SECTION("Pass destination ptr is nullptr") {
-    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(memcpyNode, nullptr, A_h,
-                                                  Nbytes,
-                                                  hipMemcpyHostToDevice),
-                    hipErrorInvalidValue);
-  }
-
-  SECTION("Pass source ptr is nullptr") {
-    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d, nullptr,
-                                                  Nbytes,
-                                                  hipMemcpyHostToDevice),
-                    hipErrorInvalidValue);
-  }
-
-  SECTION("Pass count as zero") {
-    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d, A_h, 0,
-                                                  hipMemcpyHostToDevice),
-                    hipErrorInvalidValue);
-  }
-
-#if HT_AMD
-  SECTION("Pass same pointer as source ptr and destination ptr") {
-    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d, A_d, Nbytes,
-                                                  hipMemcpyHostToDevice),
-                    hipErrorInvalidValue);
-  }
-
-  SECTION("Pass overlap memory where destination ptr is ahead of source ptr") {
-    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d, A_d - 5,
-                                                  Nbytes,
-                                                  hipMemcpyHostToDevice),
-                    hipErrorInvalidValue);
-  }
-#endif
-
-  SECTION("Pass overlap memory where source ptr is ahead of destination ptr") {
-    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d + 5, A_d,
-                                                  Nbytes - 5,
-                                                  hipMemcpyHostToDevice),
-                    hipErrorInvalidValue);
-  }
-
-  SECTION("Copy more than allocated memory") {
-    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d, A_h,
-                                                  Nbytes + 8,
-                                                  hipMemcpyHostToDevice),
-                    hipErrorInvalidValue);
-  }
-
-  HIP_CHECK(hipFree(A_d));
-  HIP_CHECK(hipFree(A_h));
-  HIP_CHECK(hipGraphDestroy(graph));
-}
+#include <memcpy1d_tests_common.hh>
 
 /* Test verifies hipGraphMemcpyNodeSetParams1D API Functional scenarios.
  */
@@ -185,3 +109,109 @@ TEST_CASE("Unit_hipGraphMemcpyNodeSetParams1D_Functional") {
   free(hData);
 }
 
+static inline hipMemcpyKind ReverseMemcpyDirection(const hipMemcpyKind direction) {
+  switch (direction) {
+  case hipMemcpyHostToDevice:
+    return hipMemcpyDeviceToHost;
+  case hipMemcpyDeviceToHost:
+    return hipMemcpyHostToDevice;
+  default:
+    return direction;
+  }
+};
+
+TEST_CASE("Unit_hipGraphMemcpyNodeSetParams1D_Positive_Basic") {
+  constexpr auto f = [](void *dst, void *src, size_t count,
+                        hipMemcpyKind direction) {
+    hipGraph_t graph = nullptr;
+    HIP_CHECK(hipGraphCreate(&graph, 0));
+    hipGraphNode_t node = nullptr;
+    HIP_CHECK(hipGraphAddMemcpyNode1D(&node, graph, nullptr, 0, src, dst, count / 2,
+                                      ReverseMemcpyDirection(direction)));
+    HIP_CHECK(hipGraphMemcpyNodeSetParams1D(node, dst, src, count, direction));
+    hipGraphExec_t graph_exec = nullptr;
+    HIP_CHECK(hipGraphInstantiate(&graph_exec, graph, nullptr, nullptr, 0));
+    HIP_CHECK(hipGraphLaunch(graph_exec, hipStreamPerThread));
+    HIP_CHECK(hipStreamSynchronize(hipStreamPerThread));
+
+    HIP_CHECK(hipGraphExecDestroy(graph_exec));
+    HIP_CHECK(hipGraphDestroy(graph));
+
+    return hipSuccess;
+  };
+
+  MemcpyWithDirectionCommonTests<false>(f);
+}
+
+/* Test verifies hipGraphMemcpyNodeSetParams1D API Negative scenarios.
+ */
+TEST_CASE("Unit_hipGraphMemcpyNodeSetParams1D_Negative") {
+  constexpr size_t N = 1024;
+  constexpr size_t Nbytes = N * sizeof(int);
+  LinearAllocGuard<int> A_d(LinearAllocs::hipMalloc, Nbytes),
+      A_h(LinearAllocs::hipMalloc, Nbytes);
+
+  hipGraph_t graph;
+  HIP_CHECK(hipGraphCreate(&graph, 0));
+
+  hipGraphNode_t memcpyNode{};
+  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr, 0, A_d.ptr(), A_h.ptr(),
+                                    Nbytes, hipMemcpyHostToDevice));
+
+  SECTION("Pass pGraphNode as nullptr") {
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(nullptr, A_d.ptr(), A_h.ptr(), Nbytes,
+                                                  hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
+  }
+
+  SECTION("Pass destination ptr is nullptr") {
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(memcpyNode, nullptr, A_h.ptr(),
+                                                  Nbytes,
+                                                  hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
+  }
+
+  SECTION("Pass source ptr is nullptr") {
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d.ptr(), nullptr,
+                                                  Nbytes,
+                                                  hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
+  }
+
+  SECTION("Pass count as zero") {
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d.ptr(), A_h.ptr(), 0,
+                                                  hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
+  }
+
+#if HT_AMD
+  SECTION("Pass same pointer as source ptr and destination ptr") {
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d.ptr(), A_d.ptr(), Nbytes,
+                                                  hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
+  }
+
+  SECTION("Pass overlap memory where destination ptr is ahead of source ptr") {
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d.ptr(), A_d.ptr() - 5,
+                                                  Nbytes,
+                                                  hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
+  }
+#endif
+
+  SECTION("Pass overlap memory where source ptr is ahead of destination ptr") {
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d.ptr() + 5, A_d.ptr(),
+                                                  Nbytes - 5,
+                                                  hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
+  }
+
+  SECTION("Copy more than allocated memory") {
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParams1D(memcpyNode, A_d.ptr(), A_h.ptr(),
+                                                  Nbytes + 8,
+                                                  hipMemcpyHostToDevice),
+                    hipErrorInvalidValue);
+  }
+
+  HIP_CHECK(hipGraphDestroy(graph));
+}

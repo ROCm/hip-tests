@@ -27,8 +27,8 @@ THE SOFTWARE.
 /**
  * @addtogroup hipStreamGetCaptureInfo hipStreamGetCaptureInfo
  * @{
- * @ingroup GraphsTest
- * `hipStreamGetCaptureInfo (hipStream_t stream, hipStreamCaptureStatus
+ * @ingroup GraphTest
+ * `hipStreamGetCaptureInfo(hipStream_t stream, hipStreamCaptureStatus
  * *pCaptureStatus, unsigned long long *pId)` - get capture status of a stream
  */
 
@@ -84,7 +84,7 @@ void checkStreamCaptureInfo(hipStreamCaptureMode mode, hipStream_t stream) {
  * Test Description
  * ------------------------
  *    - Test to verify that hipStreamCaptureStatusActive is returned during
- * stream capture When capture is ended, status is changed to
+ * stream capture. When capture is ended, status is changed to
  * hipStreamCaptureStatusNone and error is not reported when some arguments are
  * not passed
  * Test source

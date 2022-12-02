@@ -122,7 +122,7 @@ class StreamGuard {
     }
   }
 
-  hipStream_t stream() { return stream_; }
+  hipStream_t stream() const { return stream_; }
 
  private:
   const Streams stream_type_;

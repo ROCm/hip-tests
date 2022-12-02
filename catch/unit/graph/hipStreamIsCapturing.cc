@@ -22,21 +22,11 @@ THE SOFTWARE.
 #include <hip_test_kernels.hh>
 
 #include "stream_capture_common.hh"
-/**
-Testcase Scenarios :
- Unit_hipStreamIsCapturing_Positive_Functional - Initiate stream capture with
-different modes on custom stream/hipStreamPerThread. Check that capture status
-is correct in different capturing phases
- Unit_hipStreamIsCapturing_Positive_Basic - Initiate simple API call for stream
-capture status with different modes on custom stream/hipStreamPerThread
- Unit_hipStreamBeginCapture_Negative_Parameters - Initiate stream capture with
-invalid arguments and when capture status is checked on null stream
-*/
 
 /**
  * @addtogroup hipStreamIsCapturing hipStreamIsCapturing
  * @{
- * @ingroup TestExecName
+ * @ingroup GraphTest
  * `hipStreamIsCapturing(hipStream_t stream, hipStreamCaptureStatus
  * *pCaptureStatus)` - get stream's capture state
  */

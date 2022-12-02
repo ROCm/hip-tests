@@ -27,7 +27,7 @@ THE SOFTWARE.
 /**
  * @addtogroup hipStreamGetCaptureInfo_v2 hipStreamGetCaptureInfo_v2
  * @{
- * @ingroup GraphsTest
+ * @ingroup GraphTest
  * `hipStreamGetCaptureInfo_v2(hipStream_t stream, hipStreamCaptureStatus
  * *captureStatus_out, unsigned long long *id_out __dparm(0), hipGraph_t
  * *graph_out __dparm(0), const hipGraphNode_t **dependencies_out __dparm(0),

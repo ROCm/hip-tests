@@ -46,9 +46,11 @@ Negative :
 9) Pass unintialized graph
 */
 
+#include <limits>
+#include <vector>
+
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
-#include <limits>
 #define SIZE 256
 
 __device__ int globalIn[SIZE];
@@ -434,4 +436,63 @@ TEST_CASE("Unit_hipGraphAddMemcpyNodeFromSymbol_GlobalMemoryWithKernel") {
                            A_h, B_h, nullptr, false);
   HIP_CHECK(hipGraphExecDestroy(graphExec));
   HIP_CHECK(hipGraphDestroy(graph));
+}
+
+namespace {
+  constexpr size_t kArraySize = 5;
+}
+
+#define HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_GLOBALS(type)                 \
+  __device__ type type##_device_var = 5;                                       \
+  __constant__ __device__ type type##_const_device_var = 5;                    \
+  __device__ type type##_device_arr[kArraySize] = {1, 2, 3, 4, 5};             \
+  __constant__ __device__ type type##_const_device_arr[kArraySize] = {1, 2, 3, \
+                                                                      4, 5};
+
+HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_GLOBALS(int)
+
+template<typename T>
+static inline void GraphMemcpyFromSymbolShell(const void *symbol, size_t offset, const std::vector<T> expected) {
+  hipGraph_t graph = nullptr;
+  HIP_CHECK(hipGraphCreate(&graph, 0));
+
+  hipGraphNode_t node = nullptr;
+  std::vector<T> symbol_values(expected.size());
+  HIP_CHECK(hipGraphAddMemcpyNodeFromSymbol(&node, graph, nullptr, 0, symbol_values.data(),
+                                            symbol, symbol_values.size() * sizeof(symbol_values[0]),
+                                            offset * sizeof(symbol_values[0]), hipMemcpyDefault));
+
+  hipGraphExec_t graph_exec = nullptr;
+  HIP_CHECK(hipGraphInstantiate(&graph_exec, graph, nullptr, nullptr, 0));
+  HIP_CHECK(hipGraphLaunch(graph_exec, hipStreamPerThread));
+  HIP_CHECK(hipStreamSynchronize(hipStreamPerThread));
+
+  REQUIRE_THAT(expected, Catch::Equals(symbol_values));
+
+  HIP_CHECK(hipGraphExecDestroy(graph_exec));
+  HIP_CHECK(hipGraphDestroy(graph));
+}
+
+TEST_CASE("Blahem") {
+  SECTION("Scalar variable") {
+    GraphMemcpyFromSymbolShell(HIP_SYMBOL(int_device_var), 0, std::vector<int>{5});
+  }
+
+  SECTION("Constant scalar variable") {
+    GraphMemcpyFromSymbolShell(HIP_SYMBOL(int_const_device_var), 0, std::vector<int>{5});
+  }
+
+  SECTION("Array") {
+    const auto offset = GENERATE(0, kArraySize / 2);
+    INFO("Array offset: " << offset);
+    std::vector<int> expected(kArraySize - offset); 
+    std::iota(expected.begin(), expected.end(), offset + 1);
+    GraphMemcpyFromSymbolShell(HIP_SYMBOL(int_device_arr), offset, std::move(expected));
+  }
+
+  SECTION("Constant array") {
+    std::vector<int> expected(kArraySize); 
+    std::iota(expected.begin(), expected.end(), 1);
+    GraphMemcpyFromSymbolShell(HIP_SYMBOL(int_const_device_arr), 0, std::move(expected));
+  }
 }

@@ -1,260 +1,169 @@
 /*
 Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANNTY OF ANY KIND, EXPRESS OR
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER INN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
-Testcase Scenarios of hipGraphMemcpyNodeSetParamsFromSymbol API:
-
-Functional :
-1) Allocate global symbol memory, add node to the graph.
- Set/Update the new values to the node. Make sure they are taking effect.
-2) Allocate const symbol memory, add node to the graph.
- Set/Update the new values to the node. Make sure they are taking effect.
-
-Negative :
-1) Pass GraphNode as nullptr and check if api returns error.
-2) Pass destination ptr as nullptr, api expected to return error code.
-3) Pass source/symbol ptr as nullptr, api expected to return error code.
-4) Pass count as zero, api expected to return error code.
-5) Pass count more than allocated size for source and destination ptr, api should return error code.
-6) Pass offset+count greater than allocated size, api expected to return error code.
-7) Pass same symbol pointer as destination ptr and source ptr, api expected to return error code.
-8) Pass both destination ptr and source ptr as 2 different symbol ptr, api expected to return error code.
-*/
+#include <functional>
+#include <vector>
 
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
-#include <limits>
-#define SIZE 256
 
-__device__ int globalIn[SIZE];
-__device__ int globalOut[SIZE];
-__device__ __constant__ int globalConst[SIZE];
+#include "graph_memcpy_to_from_symbol_common.hh"
 
+HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_GLOBALS(char)
+HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_GLOBALS(int)
+HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_GLOBALS(float)
+HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_GLOBALS(double)
 
-/* Test verifies hipGraphMemcpyNodeSetParamsFromSymbol API Negative scenarios.
- */
-TEST_CASE("Unit_hipGraphMemcpyNodeSetParamsFromSymbol_Negative") {
-  constexpr size_t Nbytes = SIZE * sizeof(int);
-  int *A_d{nullptr}, *B_d{nullptr};
-  int *A_h{nullptr}, *B_h{nullptr};
-  HipTest::initArrays<int>(&A_d, &B_d, nullptr,
-                           &A_h, &B_h, nullptr, SIZE, false);
+HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_ALTERNATE_GLOBALS(char)
+HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_ALTERNATE_GLOBALS(int)
+HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_ALTERNATE_GLOBALS(float)
+HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_ALTERNATE_GLOBALS(double)
 
-  hipError_t ret;
-  hipGraph_t graph;
-  hipGraphNode_t memcpyToSymbolNode, memcpyFromSymbolNode, memcpyH2D_A;
-  std::vector<hipGraphNode_t> dependencies;
+template <typename T>
+void GraphMemcpyFromSymbolSetParamsShell(const void* symbol, const void* alt_symbol, size_t offset,
+                                         const std::vector<T> expected) {
+  hipGraph_t graph = nullptr;
   HIP_CHECK(hipGraphCreate(&graph, 0));
 
-  // Adding MemcpyNode
-  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_A, graph, nullptr, 0, A_d, A_h,
-                                    Nbytes, hipMemcpyHostToDevice));
-  dependencies.push_back(memcpyH2D_A);
+  hipGraphNode_t node = nullptr;
+  std::vector<T> symbol_values(expected.size());
+  const bool is_arr = symbol_values.size() > 1;
 
-  // Adding MemcpyNodeToSymbol
-  HIP_CHECK(hipGraphAddMemcpyNodeToSymbol(&memcpyToSymbolNode, graph,
-                                          dependencies.data(),
-                                          dependencies.size(),
-                                          HIP_SYMBOL(globalIn),
-                                          A_d, Nbytes, 0,
-                                          hipMemcpyDeviceToDevice));
-  dependencies.clear();
-  dependencies.push_back(memcpyToSymbolNode);
+  HIP_CHECK(hipGraphAddMemcpyNodeFromSymbol(
+      &node, graph, nullptr, 0, symbol_values.data() + is_arr, alt_symbol,
+      (symbol_values.size() - is_arr) * sizeof(symbol_values[0]),
+      (offset + is_arr) * sizeof(symbol_values[0]), hipMemcpyDefault));
 
-  HIP_CHECK(hipGraphAddMemcpyNodeFromSymbol(&memcpyFromSymbolNode, graph,
-                                            dependencies.data(),
-                                            dependencies.size(),
-                                            B_h,
-                                            HIP_SYMBOL(globalConst),
-                                            Nbytes, 0,
-                                            hipMemcpyDeviceToHost));
-  SECTION("Pass GraphNode as nullptr") {
-    ret = hipGraphMemcpyNodeSetParamsFromSymbol(nullptr, B_h,
-                                                HIP_SYMBOL(globalConst),
-                                                Nbytes, 0,
-                                                hipMemcpyDeviceToHost);
-    REQUIRE(hipErrorInvalidValue == ret);
-  }
-  SECTION("Pass destination ptr as nullptr") {
-    ret = hipGraphMemcpyNodeSetParamsFromSymbol(memcpyFromSymbolNode, nullptr,
-                                                HIP_SYMBOL(globalConst),
-                                                Nbytes, 0,
-                                                hipMemcpyDeviceToHost);
-    REQUIRE(hipErrorInvalidValue == ret);
-  }
-  SECTION("Pass source/symbol ptr as nullptr") {
-    ret = hipGraphMemcpyNodeSetParamsFromSymbol(memcpyFromSymbolNode, B_h,
-                                                nullptr,
-                                                Nbytes, 0,
-                                                hipMemcpyDeviceToHost);
-    REQUIRE(hipErrorInvalidSymbol == ret);
-  }
-  SECTION("Pass count as zero") {
-    ret = hipGraphMemcpyNodeSetParamsFromSymbol(memcpyFromSymbolNode, B_h,
-                                                HIP_SYMBOL(globalConst),
-                                                0, 0,
-                                                hipMemcpyDeviceToHost);
-    REQUIRE(hipErrorInvalidValue == ret);
-  }
-  SECTION("Pass count more than allocated size for source and dstn ptr") {
-    ret = hipGraphMemcpyNodeSetParamsFromSymbol(memcpyFromSymbolNode, B_h,
-                                                HIP_SYMBOL(globalConst),
-                                                Nbytes+10, 0,
-                                                hipMemcpyDeviceToHost);
-    REQUIRE(hipErrorInvalidValue == ret);
-  }
-  SECTION("Pass offset non zero so that offset+count > allocated size") {
-    ret = hipGraphMemcpyNodeSetParamsFromSymbol(memcpyFromSymbolNode, B_h,
-                                                HIP_SYMBOL(globalConst),
-                                                Nbytes, 10,
-                                                hipMemcpyDeviceToHost);
-    REQUIRE(hipErrorInvalidValue == ret);
-  }
-  SECTION("Pass same symbol pointer as dstn ptr and source ptr") {
-    ret = hipGraphMemcpyNodeSetParamsFromSymbol(memcpyFromSymbolNode,
-                                                HIP_SYMBOL(globalConst),
-                                                HIP_SYMBOL(globalConst),
-                                                Nbytes, 0,
-                                                hipMemcpyDeviceToDevice);
-    REQUIRE(hipErrorInvalidValue == ret);
-  }
-  SECTION("Pass both dstn ptr and source ptr as 2 different symbol ptr") {
-    ret = hipGraphMemcpyNodeSetParamsFromSymbol(memcpyFromSymbolNode,
-                                                HIP_SYMBOL(globalOut),
-                                                HIP_SYMBOL(globalIn),
-                                                Nbytes, 0,
-                                                hipMemcpyDeviceToDevice);
-    REQUIRE(hipErrorInvalidValue == ret);
-  }
-  HipTest::freeArrays<int>(A_d, B_d, nullptr,
-                           A_h, B_h, nullptr, false);
+  HIP_CHECK(hipGraphMemcpyNodeSetParamsFromSymbol(
+      node, symbol_values.data(), symbol, symbol_values.size() * sizeof(symbol_values[0]),
+      offset * sizeof(symbol_values[0]), hipMemcpyDefault));
+
+  hipGraphExec_t graph_exec = nullptr;
+  HIP_CHECK(hipGraphInstantiate(&graph_exec, graph, nullptr, nullptr, 0));
+  HIP_CHECK(hipGraphLaunch(graph_exec, hipStreamPerThread));
+  HIP_CHECK(hipStreamSynchronize(hipStreamPerThread));
+
+  REQUIRE_THAT(expected, Catch::Equals(symbol_values));
+
+  HIP_CHECK(hipGraphExecDestroy(graph_exec));
   HIP_CHECK(hipGraphDestroy(graph));
 }
 
-static
-void hipGraphMemcpyNodeSetParamsFromSymbol_GlobalMem(bool useConstDeviceVar) {
-  constexpr size_t Nbytes = SIZE * sizeof(int);
-  hipGraphNode_t memcpyD2H_B;
-  int *A_d{nullptr}, *B_d{nullptr}, *C_d{nullptr};
-  int *A_h{nullptr}, *B_h{nullptr};
-  HipTest::initArrays<int>(&A_d, &B_d, &C_d,
-                           &A_h, &B_h, nullptr, SIZE, false);
-
-  hipGraph_t graph;
-  hipGraphExec_t graphExec;
-  hipGraphNode_t memcpyToSymbolNode, memcpyFromSymbolNode, memcpyH2D_A;
-  std::vector<hipGraphNode_t> dependencies;
-  HIP_CHECK(hipGraphCreate(&graph, 0));
-
-  // Adding MemcpyNode
-  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_A, graph, nullptr, 0, A_d, A_h,
-                                    Nbytes, hipMemcpyHostToDevice));
-  dependencies.push_back(memcpyH2D_A);
-
-  if (useConstDeviceVar) {
-    HIP_CHECK(hipGraphAddMemcpyNodeToSymbol(&memcpyToSymbolNode, graph,
-          dependencies.data(),
-          dependencies.size(),
-          HIP_SYMBOL(globalConst),
-          A_d, Nbytes, 0,
-          hipMemcpyDeviceToDevice));
-  } else {
-    HIP_CHECK(hipGraphAddMemcpyNodeToSymbol(&memcpyToSymbolNode, graph,
-          dependencies.data(),
-          dependencies.size(),
-          HIP_SYMBOL(globalIn),
-          A_d, Nbytes, 0,
-          hipMemcpyDeviceToDevice));
-  }
-  dependencies.clear();
-  dependencies.push_back(memcpyToSymbolNode);
-
-  if (useConstDeviceVar) {
-    HIP_CHECK(hipGraphAddMemcpyNodeFromSymbol(&memcpyFromSymbolNode, graph,
-                                            dependencies.data(),
-                                            dependencies.size(),
-                                            C_d,
-                                            HIP_SYMBOL(globalConst),
-                                            Nbytes, 0,
-                                            hipMemcpyDeviceToDevice));
-  } else {
-    HIP_CHECK(hipGraphAddMemcpyNodeFromSymbol(&memcpyFromSymbolNode, graph,
-                                            dependencies.data(),
-                                            dependencies.size(),
-                                            C_d,
-                                            HIP_SYMBOL(globalIn),
-                                            Nbytes, 0,
-                                            hipMemcpyDeviceToDevice));
-  }
-  dependencies.clear();
-  dependencies.push_back(memcpyFromSymbolNode);
-
-  // Update the node with B_d destination pointer from C_d
-  if (useConstDeviceVar) {
-    HIP_CHECK(hipGraphMemcpyNodeSetParamsFromSymbol(memcpyFromSymbolNode,
-                                            B_d,
-                                            HIP_SYMBOL(globalConst),
-                                            Nbytes, 0,
-                                            hipMemcpyDeviceToDevice));
-  } else {
-    HIP_CHECK(hipGraphMemcpyNodeSetParamsFromSymbol(memcpyFromSymbolNode,
-                                            B_d,
-                                            HIP_SYMBOL(globalIn),
-                                            Nbytes, 0,
-                                            hipMemcpyDeviceToDevice));
+#define HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_FROM_SYMBOL_TEST(type)                                    \
+  SECTION("Scalar variable") {                                                                     \
+    GraphMemcpyFromSymbolSetParamsShell(HIP_SYMBOL(type##_device_var),                             \
+                                        HIP_SYMBOL(type##_alt_device_var), 0,                      \
+                                        std::vector<type>{5});                                     \
+  }                                                                                                \
+                                                                                                   \
+  SECTION("Constant scalar variable") {                                                            \
+    GraphMemcpyFromSymbolSetParamsShell(HIP_SYMBOL(type##_const_device_var),                       \
+                                        HIP_SYMBOL(type##_alt_const_device_var), 0,                \
+                                        std::vector<type>{5});                                     \
+  }                                                                                                \
+                                                                                                   \
+  SECTION("Array") {                                                                               \
+    const auto offset = GENERATE(0, kArraySize / 2);                                               \
+    INFO("Array offset: " << offset);                                                              \
+    std::vector<type> expected(kArraySize - offset);                                               \
+    std::iota(expected.begin(), expected.end(), offset + 1);                                       \
+    GraphMemcpyFromSymbolSetParamsShell(HIP_SYMBOL(type##_device_arr),                             \
+                                        HIP_SYMBOL(type##_alt_device_arr), offset,                 \
+                                        std::move(expected));                                      \
+  }                                                                                                \
+                                                                                                   \
+  SECTION("Constant array") {                                                                      \
+    const auto offset = GENERATE(0, kArraySize / 2);                                               \
+    INFO("Array offset: " << offset);                                                              \
+    std::vector<type> expected(kArraySize - offset);                                               \
+    std::iota(expected.begin(), expected.end(), offset + 1);                                       \
+    GraphMemcpyFromSymbolSetParamsShell(HIP_SYMBOL(type##_const_device_arr),                       \
+                                        HIP_SYMBOL(type##_alt_const_device_arr), offset,           \
+                                        std::move(expected));                                      \
   }
 
-  // Adding MemcpyNode
-  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyD2H_B, graph, dependencies.data(),
-                                    dependencies.size(), B_h, B_d,
-                                    Nbytes, hipMemcpyDeviceToHost));
+TEST_CASE("Unit_hipGraphMemcpyNodeSetParamsFromSymbol_Positive_Basic") {
+  SECTION("char") { HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_FROM_SYMBOL_TEST(char); }
 
-  // Instantiate and launch the graph
-  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
-  HIP_CHECK(hipGraphLaunch(graphExec, 0));
-  HIP_CHECK(hipStreamSynchronize(0));
+  SECTION("int") { HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_FROM_SYMBOL_TEST(int); }
 
-  // Validating the result
-  for (int i = 0; i < SIZE; i++) {
-    if (B_h[i] != A_h[i]) {
-      WARN("Validation failed B_h[i] " << B_h[i] << "A_h[i] " << A_h[i]);
-      REQUIRE(false);
-    }
-  }
+  SECTION("float") { HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_FROM_SYMBOL_TEST(float); }
 
-  HipTest::freeArrays<int>(A_d, B_d, C_d,
-                           A_h, B_h, nullptr, false);
-  HIP_CHECK(hipGraphExecDestroy(graphExec));
-  HIP_CHECK(hipGraphDestroy(graph));
+  SECTION("double") { HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_FROM_SYMBOL_TEST(double); }
 }
 
-/* Test verifies hipGraphMemcpyNodeSetParamsFromSymbol API Functional scenario.
-   1) Allocate global symbol memory, add node to the graph.
-      Set/Update the new values to the node. Make sure they are taking effect.
-   2) Allocate const symbol memory, add node to the graph.
-      Set/Update the new values to the node. Make sure they are taking effect.
- */
-TEST_CASE("Unit_hipGraphMemcpyNodeSetParamsFromSymbol_Functional") {
-  SECTION("Check and update with Global Device Symbol Memory") {
-    hipGraphMemcpyNodeSetParamsFromSymbol_GlobalMem(false);
+TEST_CASE("Unit_hipGraphMemcpyNodeSetParamsFromSymbol_Negative_Parameters") {
+  using namespace std::placeholders;
+  hipGraph_t graph = nullptr;
+  HIP_CHECK(hipGraphCreate(&graph, 0));
+
+  int var = 0;
+  hipGraphNode_t node = nullptr;
+  HIP_CHECK(hipGraphAddMemcpyNodeFromSymbol(&node, graph, nullptr, 0, &var,
+                                            HIP_SYMBOL(int_device_var), sizeof(var), 0,
+                                            hipMemcpyDefault));
+
+  SECTION("dst == nullptr") {
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParamsFromSymbol(node, nullptr, HIP_SYMBOL(int_device_var),
+                                                          sizeof(var), 0, hipMemcpyDefault),
+                    hipErrorInvalidValue);
   }
-  SECTION("Check and update with Constant Global Device Symbol Memory") {
-    hipGraphMemcpyNodeSetParamsFromSymbol_GlobalMem(true);
+
+  SECTION("symbol == nullptr") {
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParamsFromSymbol(node, &var, nullptr, sizeof(var), 0,
+                                                          hipMemcpyDefault),
+                    hipErrorInvalidSymbol);
   }
+
+  SECTION("count == 0") {
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParamsFromSymbol(node, &var, HIP_SYMBOL(int_device_var), 0,
+                                                          0, hipMemcpyDefault),
+                    hipErrorInvalidValue);
+  }
+
+  SECTION("count > symbol size") {
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParamsFromSymbol(node, &var, HIP_SYMBOL(int_device_var),
+                                                          sizeof(var) + 1, 0, hipMemcpyDefault),
+                    hipErrorInvalidValue);
+  }
+
+  SECTION("count + offset > symbol size") {
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParamsFromSymbol(node, &var, HIP_SYMBOL(int_device_var),
+                                                          sizeof(var), 1, hipMemcpyDefault),
+                    hipErrorInvalidValue);
+  }
+
+  SECTION("Disallowed memcpy direction") {
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParamsFromSymbol(node, &var, HIP_SYMBOL(int_device_var),
+                                                          sizeof(var), 0, hipMemcpyHostToDevice),
+                    hipErrorInvalidMemcpyDirection);
+  }
+
+  SECTION("Invalid memcpy direction") {
+    HIP_CHECK_ERROR(
+        hipGraphMemcpyNodeSetParamsFromSymbol(node, &var, HIP_SYMBOL(int_device_var), sizeof(var),
+                                              0, static_cast<hipMemcpyKind>(-1)),
+        hipErrorInvalidMemcpyDirection);
+  }
+
+  HIP_CHECK(hipGraphDestroy(graph));
 }

@@ -1,5 +1,4 @@
 /*
-
 Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -91,36 +90,6 @@ TEST_CASE("Unit_hipGraphAddMemcpyNodeFromSymbol_Positive_Basic") {
   SECTION("double") { HIP_GRAPH_ADD_MEMCPY_NODE_FROM_SYMBOL_TEST(double); }
 }
 
-// TODO move to catch/include
-template <typename F> void GraphAddNodeCommonNegativeTests(F f, hipGraph_t graph) {
-  hipGraphNode_t node = nullptr;
-  SECTION("graph == nullptr") {
-    HIP_CHECK_ERROR(f(&node, nullptr, nullptr, 0), hipErrorInvalidValue);
-  }
-
-  SECTION("Invalid numNodes") {
-    hipGraphNode_t node = nullptr;
-    HIP_CHECK(hipGraphAddEmptyNode(&node, graph, nullptr, 0));
-    HIP_CHECK_ERROR(f(&node, graph, &node, 2), hipErrorInvalidValue);
-  }
-
-  // Segfaults on nvidia
-  // SECTION("Invalid graph") {
-  //   hipGraph_t invalid_graph = nullptr;
-  //   HIP_CHECK(hipGraphCreate(&invalid_graph, 0));
-  //   HIP_CHECK(hipGraphDestroy(invalid_graph));
-  //   HIP_CHECK_ERROR(f(&node, invalid_graph, nullptr, 0), hipErrorInvalidValue);
-  // }
-
-  SECTION("node == nullptr") {
-    HIP_CHECK_ERROR(f(nullptr, graph, nullptr, 0), hipErrorInvalidValue);
-  }
-
-  SECTION("dependencies == nullptr with size != 0") {
-    HIP_CHECK_ERROR(f(&node, graph, nullptr, 1), hipErrorInvalidValue);
-  }
-}
-
 TEST_CASE("Unit_hipGraphAddMemcpyNodeFromSymbol_Negative_Parameters") {
   using namespace std::placeholders;
   hipGraph_t graph = nullptr;
@@ -147,6 +116,13 @@ TEST_CASE("Unit_hipGraphAddMemcpyNodeFromSymbol_Negative_Parameters") {
                     hipErrorInvalidSymbol);
   }
 
+  SECTION("count == 0") {
+    HIP_CHECK_ERROR(
+        hipGraphAddMemcpyNodeFromSymbol(&node, graph, nullptr, 0, nullptr,
+                                        HIP_SYMBOL(int_device_var), 0, 0, hipMemcpyDefault),
+        hipErrorInvalidValue);
+  }
+
   SECTION("count > symbol size") {
     HIP_CHECK_ERROR(hipGraphAddMemcpyNodeFromSymbol(&node, graph, nullptr, 0, nullptr,
                                                     HIP_SYMBOL(int_device_var), sizeof(var) + 1, 0,
@@ -159,6 +135,20 @@ TEST_CASE("Unit_hipGraphAddMemcpyNodeFromSymbol_Negative_Parameters") {
                                                     HIP_SYMBOL(int_device_var), sizeof(var), 1,
                                                     hipMemcpyDefault),
                     hipErrorInvalidValue);
+  }
+
+  SECTION("Disallowed memcpy direction") {
+    HIP_CHECK_ERROR(hipGraphAddMemcpyNodeFromSymbol(&node, graph, nullptr, 0, nullptr,
+                                                    HIP_SYMBOL(int_device_var), sizeof(var), 0,
+                                                    hipMemcpyHostToDevice),
+                    hipErrorInvalidMemcpyDirection);
+  }
+
+  SECTION("Invalid memcpy direction") {
+    HIP_CHECK_ERROR(hipGraphAddMemcpyNodeFromSymbol(&node, graph, nullptr, 0, nullptr,
+                                                    HIP_SYMBOL(int_device_var), sizeof(var), 0,
+                                                    static_cast<hipMemcpyKind>(-1)),
+                    hipErrorInvalidMemcpyDirection);
   }
 
   HIP_CHECK(hipGraphDestroy(graph));

@@ -40,35 +40,36 @@ HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_ALTERNATE_GLOBALS(float)
 HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_ALTERNATE_GLOBALS(double)
 
 template <typename T>
-void GraphExecMemcpyFromSymbolSetParamsShell(const void* symbol, const void* alt_symbol,
-                                             size_t offset, const std::vector<T> expected) {
-  hipGraph_t graph = nullptr;
-  HIP_CHECK(hipGraphCreate(&graph, 0));
+void GraphExecMemcpyFromSymbolSetParamsShell(void* symbol, void* alt_symbol, size_t offset,
+                                             const std::vector<T> expected) {
+  const auto f = [alt_symbol, is_arr = expected.size() > 1](void* dst, void* symbol, size_t count,
+                                                            size_t offset,
+                                                            hipMemcpyKind direction) {
+    hipGraph_t graph = nullptr;
+    HIP_CHECK(hipGraphCreate(&graph, 0));
 
-  hipGraphNode_t node = nullptr;
-  std::vector<T> symbol_values(expected.size());
-  const bool is_arr = symbol_values.size() > 1;
+    hipGraphNode_t node = nullptr;
 
-  HIP_CHECK(hipGraphAddMemcpyNodeFromSymbol(
-      &node, graph, nullptr, 0, symbol_values.data() + is_arr, alt_symbol,
-      (symbol_values.size() - is_arr) * sizeof(symbol_values[0]),
-      (offset + is_arr) * sizeof(symbol_values[0]), hipMemcpyDefault));
+    HIP_CHECK(hipGraphAddMemcpyNodeFromSymbol(
+        &node, graph, nullptr, 0, reinterpret_cast<T*>(dst) + is_arr, alt_symbol,
+        count - is_arr * sizeof(T), offset + is_arr * sizeof(T), direction));
 
-  hipGraphExec_t graph_exec = nullptr;
-  HIP_CHECK(hipGraphInstantiate(&graph_exec, graph, nullptr, nullptr, 0));
+    hipGraphExec_t graph_exec = nullptr;
+    HIP_CHECK(hipGraphInstantiate(&graph_exec, graph, nullptr, nullptr, 0));
 
-  HIP_CHECK(hipGraphExecMemcpyNodeSetParamsFromSymbol(
-      graph_exec, node, symbol_values.data(), symbol,
-      symbol_values.size() * sizeof(symbol_values[0]), offset * sizeof(symbol_values[0]),
-      hipMemcpyDefault));
+    HIP_CHECK(hipGraphExecMemcpyNodeSetParamsFromSymbol(graph_exec, node, dst, symbol, count,
+                                                        offset, direction));
 
-  HIP_CHECK(hipGraphLaunch(graph_exec, hipStreamPerThread));
-  HIP_CHECK(hipStreamSynchronize(hipStreamPerThread));
+    HIP_CHECK(hipGraphLaunch(graph_exec, hipStreamPerThread));
+    HIP_CHECK(hipStreamSynchronize(hipStreamPerThread));
 
-  REQUIRE_THAT(expected, Catch::Equals(symbol_values));
+    HIP_CHECK(hipGraphExecDestroy(graph_exec));
+    HIP_CHECK(hipGraphDestroy(graph));
 
-  HIP_CHECK(hipGraphExecDestroy(graph_exec));
-  HIP_CHECK(hipGraphDestroy(graph));
+    return hipSuccess;
+  };
+
+  MemcpyFromSymbolShell(f, symbol, offset, std::move(expected));
 }
 
 #define HIP_GRAPH_EXEC_MEMCPY_NODE_SET_PARAMS_FROM_SYMBOL_TEST(type)                               \
@@ -115,6 +116,7 @@ TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParamsFromSymbol_Positive_Basic") {
 }
 
 TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParamsFromSymbol_Negative_Parameters") {
+  using namespace std::placeholders;
   hipGraph_t graph = nullptr;
   HIP_CHECK(hipGraphCreate(&graph, 0));
 
@@ -127,60 +129,15 @@ TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParamsFromSymbol_Negative_Parameters") 
   hipGraphExec_t graph_exec = nullptr;
   HIP_CHECK(hipGraphInstantiate(&graph_exec, graph, nullptr, nullptr, 0));
 
-  SECTION("dst == nullptr") {
-    HIP_CHECK_ERROR(hipGraphExecMemcpyNodeSetParamsFromSymbol(
-                        graph_exec, node, nullptr, HIP_SYMBOL(int_device_var), sizeof(*var.ptr()),
-                        0, hipMemcpyDefault),
-                    hipErrorInvalidValue);
-  }
-
-  SECTION("symbol == nullptr") {
-    HIP_CHECK_ERROR(
-        hipGraphExecMemcpyNodeSetParamsFromSymbol(graph_exec, node, var.ptr(), nullptr,
-                                                  sizeof(*var.ptr()), 0, hipMemcpyDefault),
-        hipErrorInvalidSymbol);
-  }
-
-  SECTION("count == 0") {
-    HIP_CHECK_ERROR(
-        hipGraphExecMemcpyNodeSetParamsFromSymbol(
-            graph_exec, node, var.ptr(), HIP_SYMBOL(int_device_var), 0, 0, hipMemcpyDefault),
-        hipErrorInvalidValue);
-  }
-
-  SECTION("count > symbol size") {
-    HIP_CHECK_ERROR(hipGraphExecMemcpyNodeSetParamsFromSymbol(
-                        graph_exec, node, var.ptr(), HIP_SYMBOL(int_device_var),
-                        sizeof(*var.ptr()) + 1, 0, hipMemcpyDefault),
-                    hipErrorInvalidValue);
-  }
-
-  SECTION("count + offset > symbol size") {
-    HIP_CHECK_ERROR(hipGraphExecMemcpyNodeSetParamsFromSymbol(
-                        graph_exec, node, var.ptr(), HIP_SYMBOL(int_device_var), sizeof(*var.ptr()),
-                        1, hipMemcpyDefault),
-                    hipErrorInvalidValue);
-  }
+  MemcpyFromSymbolCommonNegative(
+      std::bind(hipGraphExecMemcpyNodeSetParamsFromSymbol, graph_exec, node, _1, _2, _3, _4, _5),
+      var.ptr(), HIP_SYMBOL(int_device_var), sizeof(*var.ptr()));
 
   SECTION("Changing memcpy direction") {
     HIP_CHECK_ERROR(hipGraphExecMemcpyNodeSetParamsFromSymbol(
                         graph_exec, node, var.ptr(), HIP_SYMBOL(int_device_var), sizeof(*var.ptr()),
                         0, hipMemcpyDeviceToHost),
                     hipErrorInvalidValue);
-  }
-
-  SECTION("Disallowed memcpy direction") {
-    HIP_CHECK_ERROR(hipGraphExecMemcpyNodeSetParamsFromSymbol(
-                        graph_exec, node, var.ptr(), HIP_SYMBOL(int_device_var), sizeof(*var.ptr()),
-                        0, hipMemcpyHostToDevice),
-                    hipErrorInvalidMemcpyDirection);
-  }
-
-  SECTION("Invalid memcpy direction") {
-    HIP_CHECK_ERROR(hipGraphExecMemcpyNodeSetParamsFromSymbol(
-                        graph_exec, node, var.ptr(), HIP_SYMBOL(int_device_var), sizeof(*var.ptr()),
-                        0, static_cast<hipMemcpyKind>(-1)),
-                    hipErrorInvalidMemcpyDirection);
   }
 
   SECTION("Changing dst allocation device") {

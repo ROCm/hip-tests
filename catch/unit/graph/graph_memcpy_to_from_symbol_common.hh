@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include <stddef.h>
 
 #include <hip/hip_runtime_api.h>
+#include <resource_guards.hh>
 
 namespace {
 constexpr size_t kArraySize = 5;
@@ -41,6 +42,58 @@ constexpr size_t kArraySize = 5;
   __constant__ __device__ type type##_alt_const_device_var = 0;                                    \
   __device__ type type##_alt_device_arr[kArraySize] = {0, 0, 0, 0, 0};                             \
   __constant__ __device__ type type##_alt_const_device_arr[kArraySize] = {0, 0, 0, 0, 0};
+
+template <typename T, typename F>
+void MemcpyFromSymbolShell(F f, void* symbol, size_t offset, const std::vector<T> expected) {
+  const auto alloc_type = GENERATE(LinearAllocs::hipMalloc, LinearAllocs::hipHostMalloc);
+  const auto size = expected.size() * sizeof(T);
+  LinearAllocGuard<T> dst_alloc(alloc_type, size);
+
+  hipMemcpyKind direction;
+  if (alloc_type == LinearAllocs::hipMalloc) {
+    direction = GENERATE(hipMemcpyDeviceToDevice, hipMemcpyDefault);
+  } else {
+    direction = GENERATE(hipMemcpyDeviceToHost, hipMemcpyDefault);
+  }
+  HIP_CHECK(f(dst_alloc.ptr(), symbol, size, offset * sizeof(T), direction));
+
+  std::vector<T> symbol_values(expected.size());
+  HIP_CHECK(hipMemcpy(symbol_values.data(), dst_alloc.ptr(), size, hipMemcpyDefault));
+  REQUIRE_THAT(expected, Catch::Equals(symbol_values));
+}
+
+template <typename T, typename F>
+void MemcpyFromSymbolCommonNegative(F f, T* dst, void* symbol, size_t count) {
+  SECTION("dst == nullptr") {
+    HIP_CHECK_ERROR(f(nullptr, symbol, count, 0, hipMemcpyDefault), hipErrorInvalidValue);
+  }
+
+  SECTION("symbol == nullptr") {
+    HIP_CHECK_ERROR(f(dst, nullptr, count, 0, hipMemcpyDefault), hipErrorInvalidSymbol);
+  }
+
+  SECTION("count == 0") {
+    HIP_CHECK_ERROR(f(dst, symbol, 0, 0, hipMemcpyDefault), hipErrorInvalidValue);
+  }
+
+  SECTION("count > symbol size") {
+    HIP_CHECK_ERROR(f(dst, symbol, count + 1, 0, hipMemcpyDefault), hipErrorInvalidValue);
+  }
+
+  SECTION("count + offset > symbol size") {
+    HIP_CHECK_ERROR(f(dst, symbol, count, 1, hipMemcpyDefault), hipErrorInvalidValue);
+  }
+
+  SECTION("Disallowed memcpy direction") {
+    HIP_CHECK_ERROR(f(dst, symbol, count, 0, hipMemcpyHostToDevice),
+                    hipErrorInvalidMemcpyDirection);
+  }
+
+  SECTION("Invalid memcpy direction") {
+    HIP_CHECK_ERROR(f(dst, symbol, count, 0, static_cast<hipMemcpyKind>(-1)),
+                    hipErrorInvalidMemcpyDirection);
+  }
+}
 
 // TODO move to catch/include
 template <typename F> void GraphAddNodeCommonNegativeTests(F f, hipGraph_t graph) {

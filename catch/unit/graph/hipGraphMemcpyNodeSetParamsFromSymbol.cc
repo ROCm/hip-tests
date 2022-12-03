@@ -112,7 +112,6 @@ TEST_CASE("Unit_hipGraphMemcpyNodeSetParamsFromSymbol_Positive_Basic") {
 }
 
 TEST_CASE("Unit_hipGraphMemcpyNodeSetParamsFromSymbol_Negative_Parameters") {
-  using namespace std::placeholders;
   hipGraph_t graph = nullptr;
   HIP_CHECK(hipGraphCreate(&graph, 0));
 

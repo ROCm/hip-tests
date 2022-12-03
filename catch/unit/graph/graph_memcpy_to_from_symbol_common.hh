@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 #include <stddef.h>
 
+#include <hip/hip_runtime_api.h>
+
 namespace {
 constexpr size_t kArraySize = 5;
 }
@@ -75,7 +77,7 @@ template <typename F> void GraphAddNodeCommonNegativeTests(F f, hipGraph_t graph
     hipGraphNode_t other_node = nullptr;
     HIP_CHECK(hipGraphAddEmptyNode(&other_node, other_graph, nullptr, 0));
     hipGraphNode_t node = nullptr;
-    HIP_CHECK_ERROR(hipGraphAddEmptyNode(&node, graph, &other_node, 1), hipErrorInvalidValue);
+    HIP_CHECK_ERROR(f(&node, graph, &other_node, 1), hipErrorInvalidValue);
     HIP_CHECK(hipGraphDestroy(other_graph));
   }
 }

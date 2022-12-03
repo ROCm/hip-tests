@@ -71,21 +71,22 @@ void GraphMemcpyToSymbolSetParamsShell(void* symbol, void* alt_symbol, size_t of
 
 TEST_CASE("Unit_hipGraphMemcpyNodeSetParamsToSymbol_Positive_Basic") {
   SECTION("char") {
-    HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_TO_FROM_SYMBOL_TEST(GraphMemcpyToSymbolSetParamsShell, 1,
+    HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_TO_FROM_SYMBOL_TEST(GraphMemcpyToSymbolSetParamsShell, 10,
                                                          char);
   }
 
   SECTION("int") {
-    HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_TO_FROM_SYMBOL_TEST(GraphMemcpyToSymbolSetParamsShell, 1, int);
+    HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_TO_FROM_SYMBOL_TEST(GraphMemcpyToSymbolSetParamsShell, 10,
+                                                         int);
   }
 
   SECTION("float") {
-    HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_TO_FROM_SYMBOL_TEST(GraphMemcpyToSymbolSetParamsShell, 1,
+    HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_TO_FROM_SYMBOL_TEST(GraphMemcpyToSymbolSetParamsShell, 10,
                                                          float);
   }
 
   SECTION("double") {
-    HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_TO_FROM_SYMBOL_TEST(GraphMemcpyToSymbolSetParamsShell, 1,
+    HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_TO_FROM_SYMBOL_TEST(GraphMemcpyToSymbolSetParamsShell, 10,
                                                          double);
   }
 }

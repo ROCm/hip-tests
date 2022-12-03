@@ -38,6 +38,7 @@ set(TEST_SRC
   hipGraphAddMemcpyNodeToSymbol_old.cc
   hipGraphAddMemcpyNodeToSymbol.cc
   hipGraphExecMemsetNodeSetParams.cc
+  hipGraphMemcpyNodeSetParamsToSymbol_old.cc
   hipGraphMemcpyNodeSetParamsToSymbol.cc
   hipGraphDestroyNode.cc
   hipGraphGetNodes.cc
@@ -78,6 +79,7 @@ set(TEST_SRC
   hipGraphExecKernelNodeSetParams.cc
   hipGraphLaunch.cc
   hipGraphMemcpyNodeSetParams1D.cc
+  hipGraphExecMemcpyNodeSetParamsToSymbol_old.cc
   hipGraphExecMemcpyNodeSetParamsToSymbol.cc
   hipGraphNodeGetDependentNodes.cc
   hipGraphNodeGetDependencies.cc

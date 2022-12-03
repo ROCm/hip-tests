@@ -72,47 +72,26 @@ void GraphExecMemcpyFromSymbolSetParamsShell(void* symbol, void* alt_symbol, siz
   MemcpyFromSymbolShell(f, symbol, offset, std::move(expected));
 }
 
-#define HIP_GRAPH_EXEC_MEMCPY_NODE_SET_PARAMS_FROM_SYMBOL_TEST(type)                               \
-  SECTION("Scalar variable") {                                                                     \
-    GraphExecMemcpyFromSymbolSetParamsShell(HIP_SYMBOL(type##_device_var),                         \
-                                            HIP_SYMBOL(type##_alt_device_var), 0,                  \
-                                            std::vector<type>{5});                                 \
-  }                                                                                                \
-                                                                                                   \
-  SECTION("Constant scalar variable") {                                                            \
-    GraphExecMemcpyFromSymbolSetParamsShell(HIP_SYMBOL(type##_const_device_var),                   \
-                                            HIP_SYMBOL(type##_alt_const_device_var), 0,            \
-                                            std::vector<type>{5});                                 \
-  }                                                                                                \
-                                                                                                   \
-  SECTION("Array") {                                                                               \
-    const auto offset = GENERATE(0, kArraySize / 2);                                               \
-    INFO("Array offset: " << offset);                                                              \
-    std::vector<type> expected(kArraySize - offset);                                               \
-    std::iota(expected.begin(), expected.end(), offset + 1);                                       \
-    GraphExecMemcpyFromSymbolSetParamsShell(HIP_SYMBOL(type##_device_arr),                         \
-                                            HIP_SYMBOL(type##_alt_device_arr), offset,             \
-                                            std::move(expected));                                  \
-  }                                                                                                \
-                                                                                                   \
-  SECTION("Constant array") {                                                                      \
-    const auto offset = GENERATE(0, kArraySize / 2);                                               \
-    INFO("Array offset: " << offset);                                                              \
-    std::vector<type> expected(kArraySize - offset);                                               \
-    std::iota(expected.begin(), expected.end(), offset + 1);                                       \
-    GraphExecMemcpyFromSymbolSetParamsShell(HIP_SYMBOL(type##_const_device_arr),                   \
-                                            HIP_SYMBOL(type##_alt_const_device_arr), offset,       \
-                                            std::move(expected));                                  \
+TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParamsFromSymbol_Positive_Basic") {
+  SECTION("char") {
+    HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_TO_FROM_SYMBOL_TEST(GraphExecMemcpyFromSymbolSetParamsShell, 1,
+                                                         char);
   }
 
-TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParamsFromSymbol_Positive_Basic") {
-  SECTION("char") { HIP_GRAPH_EXEC_MEMCPY_NODE_SET_PARAMS_FROM_SYMBOL_TEST(char); }
+  SECTION("int") {
+    HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_TO_FROM_SYMBOL_TEST(GraphExecMemcpyFromSymbolSetParamsShell, 1,
+                                                         int);
+  }
 
-  SECTION("int") { HIP_GRAPH_EXEC_MEMCPY_NODE_SET_PARAMS_FROM_SYMBOL_TEST(int); }
+  SECTION("float") {
+    HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_TO_FROM_SYMBOL_TEST(GraphExecMemcpyFromSymbolSetParamsShell, 1,
+                                                         float);
+  }
 
-  SECTION("float") { HIP_GRAPH_EXEC_MEMCPY_NODE_SET_PARAMS_FROM_SYMBOL_TEST(float); }
-
-  SECTION("double") { HIP_GRAPH_EXEC_MEMCPY_NODE_SET_PARAMS_FROM_SYMBOL_TEST(double); }
+  SECTION("double") {
+    HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_TO_FROM_SYMBOL_TEST(GraphExecMemcpyFromSymbolSetParamsShell, 1,
+                                                         double);
+  }
 }
 
 TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParamsFromSymbol_Negative_Parameters") {

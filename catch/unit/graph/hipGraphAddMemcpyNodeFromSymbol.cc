@@ -58,39 +58,22 @@ void GraphMemcpyFromSymbolShell(void* symbol, size_t offset, const std::vector<T
   MemcpyFromSymbolShell(f, symbol, offset, std::move(expected));
 }
 
-#define HIP_GRAPH_ADD_MEMCPY_NODE_FROM_SYMBOL_TEST(type)                                           \
-  SECTION("Scalar variable") {                                                                     \
-    GraphMemcpyFromSymbolShell(HIP_SYMBOL(type##_device_var), 0, std::vector<type>{5});            \
-  }                                                                                                \
-                                                                                                   \
-  SECTION("Constant scalar variable") {                                                            \
-    GraphMemcpyFromSymbolShell(HIP_SYMBOL(type##_const_device_var), 0, std::vector<type>{5});      \
-  }                                                                                                \
-                                                                                                   \
-  SECTION("Array") {                                                                               \
-    const auto offset = GENERATE(0, kArraySize / 2);                                               \
-    INFO("Array offset: " << offset);                                                              \
-    std::vector<type> expected(kArraySize - offset);                                               \
-    std::iota(expected.begin(), expected.end(), offset + 1);                                       \
-    GraphMemcpyFromSymbolShell(HIP_SYMBOL(type##_device_arr), offset, std::move(expected));        \
-  }                                                                                                \
-                                                                                                   \
-  SECTION("Constant array") {                                                                      \
-    const auto offset = GENERATE(0, kArraySize / 2);                                               \
-    INFO("Array offset: " << offset);                                                              \
-    std::vector<type> expected(kArraySize - offset);                                               \
-    std::iota(expected.begin(), expected.end(), offset + 1);                                       \
-    GraphMemcpyFromSymbolShell(HIP_SYMBOL(type##_const_device_arr), offset, std::move(expected));  \
+TEST_CASE("Unit_hipGraphAddMemcpyNodeFromSymbol_Positive_Basic") {
+  SECTION("char") {
+    HIP_GRAPH_ADD_MEMCPY_NODE_TO_FROM_SYMBOL_TEST(GraphMemcpyFromSymbolShell, 1, char);
   }
 
-TEST_CASE("Unit_hipGraphAddMemcpyNodeFromSymbol_Positive_Basic") {
-  SECTION("char") { HIP_GRAPH_ADD_MEMCPY_NODE_FROM_SYMBOL_TEST(char); }
+  SECTION("int") {
+    HIP_GRAPH_ADD_MEMCPY_NODE_TO_FROM_SYMBOL_TEST(GraphMemcpyFromSymbolShell, 1, int);
+  }
 
-  SECTION("int") { HIP_GRAPH_ADD_MEMCPY_NODE_FROM_SYMBOL_TEST(int); }
+  SECTION("float") {
+    HIP_GRAPH_ADD_MEMCPY_NODE_TO_FROM_SYMBOL_TEST(GraphMemcpyFromSymbolShell, 1, float);
+  }
 
-  SECTION("float") { HIP_GRAPH_ADD_MEMCPY_NODE_FROM_SYMBOL_TEST(float); }
-
-  SECTION("double") { HIP_GRAPH_ADD_MEMCPY_NODE_FROM_SYMBOL_TEST(double); }
+  SECTION("double") {
+    HIP_GRAPH_ADD_MEMCPY_NODE_TO_FROM_SYMBOL_TEST(GraphMemcpyFromSymbolShell, 1, double);
+  }
 }
 
 TEST_CASE("Unit_hipGraphAddMemcpyNodeFromSymbol_Negative_Parameters") {

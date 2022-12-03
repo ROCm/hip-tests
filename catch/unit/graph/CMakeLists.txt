@@ -35,6 +35,7 @@ set(TEST_SRC
   hipGraphChildGraphNodeGetGraph.cc
   hipGraphNodeFindInClone.cc
   hipGraphExecHostNodeSetParams.cc
+  hipGraphAddMemcpyNodeToSymbol_old.cc
   hipGraphAddMemcpyNodeToSymbol.cc
   hipGraphExecMemsetNodeSetParams.cc
   hipGraphMemcpyNodeSetParamsToSymbol.cc

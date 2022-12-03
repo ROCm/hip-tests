@@ -74,13 +74,13 @@ void GraphMemcpyFromSymbolSetParamsShell(void* symbol, void* alt_symbol, size_t 
   SECTION("Scalar variable") {                                                                     \
     GraphMemcpyFromSymbolSetParamsShell(HIP_SYMBOL(type##_device_var),                             \
                                         HIP_SYMBOL(type##_alt_device_var), 0,                      \
-                                        std::vector<type>{5});                                     \
+                                        std::vector<type>{1});                                     \
   }                                                                                                \
                                                                                                    \
   SECTION("Constant scalar variable") {                                                            \
     GraphMemcpyFromSymbolSetParamsShell(HIP_SYMBOL(type##_const_device_var),                       \
                                         HIP_SYMBOL(type##_alt_const_device_var), 0,                \
-                                        std::vector<type>{5});                                     \
+                                        std::vector<type>{1});                                     \
   }                                                                                                \
                                                                                                    \
   SECTION("Array") {                                                                               \
@@ -104,13 +104,25 @@ void GraphMemcpyFromSymbolSetParamsShell(void* symbol, void* alt_symbol, size_t 
   }
 
 TEST_CASE("Unit_hipGraphMemcpyNodeSetParamsFromSymbol_Positive_Basic") {
-  SECTION("char") { HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_FROM_SYMBOL_TEST(char); }
+  SECTION("char") {
+    HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_TO_FROM_SYMBOL_TEST(GraphMemcpyFromSymbolSetParamsShell, 1,
+                                                         char);
+  }
 
-  SECTION("int") { HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_FROM_SYMBOL_TEST(int); }
+  SECTION("int") {
+    HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_TO_FROM_SYMBOL_TEST(GraphMemcpyFromSymbolSetParamsShell, 1,
+                                                         int);
+  }
 
-  SECTION("float") { HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_FROM_SYMBOL_TEST(float); }
+  SECTION("float") {
+    HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_TO_FROM_SYMBOL_TEST(GraphMemcpyFromSymbolSetParamsShell, 1,
+                                                         float);
+  }
 
-  SECTION("double") { HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_FROM_SYMBOL_TEST(double); }
+  SECTION("double") {
+    HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_TO_FROM_SYMBOL_TEST(GraphMemcpyFromSymbolSetParamsShell, 1,
+                                                         double);
+  }
 }
 
 TEST_CASE("Unit_hipGraphMemcpyNodeSetParamsFromSymbol_Negative_Parameters") {

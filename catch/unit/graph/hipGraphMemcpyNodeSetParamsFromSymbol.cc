@@ -70,39 +70,6 @@ void GraphMemcpyFromSymbolSetParamsShell(void* symbol, void* alt_symbol, size_t 
   MemcpyFromSymbolShell(f, symbol, offset, std::move(expected));
 }
 
-#define HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_FROM_SYMBOL_TEST(type)                                    \
-  SECTION("Scalar variable") {                                                                     \
-    GraphMemcpyFromSymbolSetParamsShell(HIP_SYMBOL(type##_device_var),                             \
-                                        HIP_SYMBOL(type##_alt_device_var), 0,                      \
-                                        std::vector<type>{1});                                     \
-  }                                                                                                \
-                                                                                                   \
-  SECTION("Constant scalar variable") {                                                            \
-    GraphMemcpyFromSymbolSetParamsShell(HIP_SYMBOL(type##_const_device_var),                       \
-                                        HIP_SYMBOL(type##_alt_const_device_var), 0,                \
-                                        std::vector<type>{1});                                     \
-  }                                                                                                \
-                                                                                                   \
-  SECTION("Array") {                                                                               \
-    const auto offset = GENERATE(0, kArraySize / 2);                                               \
-    INFO("Array offset: " << offset);                                                              \
-    std::vector<type> expected(kArraySize - offset);                                               \
-    std::iota(expected.begin(), expected.end(), offset + 1);                                       \
-    GraphMemcpyFromSymbolSetParamsShell(HIP_SYMBOL(type##_device_arr),                             \
-                                        HIP_SYMBOL(type##_alt_device_arr), offset,                 \
-                                        std::move(expected));                                      \
-  }                                                                                                \
-                                                                                                   \
-  SECTION("Constant array") {                                                                      \
-    const auto offset = GENERATE(0, kArraySize / 2);                                               \
-    INFO("Array offset: " << offset);                                                              \
-    std::vector<type> expected(kArraySize - offset);                                               \
-    std::iota(expected.begin(), expected.end(), offset + 1);                                       \
-    GraphMemcpyFromSymbolSetParamsShell(HIP_SYMBOL(type##_const_device_arr),                       \
-                                        HIP_SYMBOL(type##_alt_const_device_arr), offset,           \
-                                        std::move(expected));                                      \
-  }
-
 TEST_CASE("Unit_hipGraphMemcpyNodeSetParamsFromSymbol_Positive_Basic") {
   SECTION("char") {
     HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_TO_FROM_SYMBOL_TEST(GraphMemcpyFromSymbolSetParamsShell, 1,

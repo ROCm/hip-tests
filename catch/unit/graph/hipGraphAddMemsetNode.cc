@@ -17,107 +17,109 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
-Negative Testcase Scenarios for api hipGraphAddMemsetNode :
-1) Pass pGraphNode as nullptr and check if api returns error.
-2) Pass pGraphNode as un-initialize object and check.
-3) Pass Graph as nullptr and check if api returns error.
-4) Pass Graph as empty object(skipping graph creation), api should return error code.
-5) Pass pDependencies as nullptr, api should return success.
-6) Pass numDependencies is max(size_t) and pDependencies is not valid ptr, api expected to return error code.
-7) Pass pDependencies is nullptr, but numDependencies is non-zero, api expected to return error.
-8) Pass pMemsetParams as nullptr and check if api returns error code.
-9) Pass pMemsetParams as un-initialize object and check if api returns error code.
-10) Pass hipMemsetParams::dst as nullptr should return error code.
-11) Pass hipMemsetParams::element size other than 1, 2, or 4 and check api should return error code.
-12) Pass hipMemsetParams::height as zero and check api should return error code.
-*/
+#include <functional>
+#include <vector>
 
 #include <hip_test_common.hh>
+#include <resource_guards.hh>
+#include <utils.hh>
 
-/**
- * Negative Test for API hipGraphAddMemsetNode
- */
+#include "graph_tests_common.hh"
 
-TEST_CASE("Unit_hipGraphAddMemsetNode_Negative") {
-  hipError_t ret;
-  hipGraph_t graph;
-  hipGraphNode_t memsetNode;
-  char *devData;
+TEMPLATE_TEST_CASE("Unit_hipGraphAddMemsetNode_Positive_Basic", "", uint8_t, uint16_t, uint32_t) {
+  const size_t width = GENERATE(1, 64, kPageSize / sizeof(TestType) + 1);
+  const size_t height = GENERATE(1, 2, 1024);
 
-  HIP_CHECK(hipMalloc(&devData, 1024));
+  LinearAllocGuard2D<TestType> alloc(width, height);
+
+  hipGraph_t graph = nullptr;
   HIP_CHECK(hipGraphCreate(&graph, 0));
 
-  hipMemsetParams memsetParams{};
-  memset(&memsetParams, 0, sizeof(memsetParams));
-  memsetParams.dst = reinterpret_cast<void*>(devData);
-  memsetParams.value = 0;
-  memsetParams.pitch = 0;
-  memsetParams.elementSize = sizeof(char);
-  memsetParams.width = 1024;
-  memsetParams.height = 1;
+  hipGraphNode_t node = nullptr;
+  constexpr TestType set_value = 42;
+  hipMemsetParams params = {};
+  params.dst = alloc.ptr();
+  params.elementSize = sizeof(TestType);
+  params.width = width;
+  params.height = height;
+  params.pitch = alloc.pitch();
+  params.value = set_value;
+  HIP_CHECK(hipGraphAddMemsetNode(&node, graph, nullptr, 0, &params));
 
-  SECTION("Pass pGraphNode as nullptr") {
-    ret = hipGraphAddMemsetNode(nullptr, graph, nullptr, 0, &memsetParams);
-    REQUIRE(hipErrorInvalidValue == ret);
+  hipGraphExec_t graph_exec = nullptr;
+  HIP_CHECK(hipGraphInstantiate(&graph_exec, graph, nullptr, nullptr, 0));
+
+  HIP_CHECK(hipGraphLaunch(graph_exec, hipStreamPerThread));
+  HIP_CHECK(hipStreamSynchronize(hipStreamPerThread));
+
+  HIP_CHECK(hipGraphExecDestroy(graph_exec));
+  HIP_CHECK(hipGraphDestroy(graph));
+
+  LinearAllocGuard<TestType> buffer(LinearAllocs::hipHostMalloc, width * sizeof(TestType) * height);
+  HIP_CHECK(hipMemcpy2D(buffer.ptr(), width * sizeof(TestType), alloc.ptr(), alloc.pitch(),
+                        width * sizeof(TestType), height, hipMemcpyDeviceToHost));
+  ArrayFindIfNot(buffer.ptr(), set_value, width * height);
+}
+
+TEST_CASE("Unit_hipGraphAddMemsetNode_Negative_Parameters") {
+  using namespace std::placeholders;
+  hipGraph_t graph = nullptr;
+  HIP_CHECK(hipGraphCreate(&graph, 0));
+
+  LinearAllocGuard<int> alloc(LinearAllocs::hipMalloc, 4 * sizeof(int));
+  hipMemsetParams params = {};
+  params.dst = alloc.ptr();
+  params.elementSize = sizeof(*alloc.ptr());
+  params.width = 1;
+  params.height = 1;
+  params.value = 42;
+
+  GraphAddNodeCommonNegativeTests(std::bind(hipGraphAddMemsetNode, _1, _2, _3, _4, &params), graph);
+
+  hipGraphNode_t node = nullptr;
+
+  SECTION("pMemsetParams == nullptr") {
+    HIP_CHECK_ERROR(hipGraphAddMemsetNode(&node, graph, nullptr, 0, nullptr), hipErrorInvalidValue);
   }
-  SECTION("Pass pGraphNode as un-initialize object") {
-    hipGraphNode_t memsetNode_1;
-    ret = hipGraphAddMemsetNode(&memsetNode_1, graph,
-                                nullptr, 0, &memsetParams);
-    REQUIRE(hipSuccess == ret);
+
+  SECTION("pMemsetParams.dst == nullptr") {
+    params.dst = nullptr;
+    HIP_CHECK_ERROR(hipGraphAddMemsetNode(&node, graph, nullptr, 0, &params), hipErrorInvalidValue);
   }
-  SECTION("Pass graph as nullptr") {
-    ret = hipGraphAddMemsetNode(&memsetNode, nullptr,
-                                nullptr, 0, &memsetParams);
-    REQUIRE(hipErrorInvalidValue == ret);
+
+  SECTION("pMemsetParams.elementSize != 1, 2, 4") {
+    params.elementSize = GENERATE(0, 3, 5);
+    HIP_CHECK_ERROR(hipGraphAddMemsetNode(&node, graph, nullptr, 0, &params), hipErrorInvalidValue);
   }
-  SECTION("Pass Graph as empty object") {
-    hipGraph_t graph_1{};
-    ret = hipGraphAddMemsetNode(&memsetNode, graph_1,
-                                nullptr, 0, &memsetParams);
-    REQUIRE(hipErrorInvalidValue == ret);
+
+  SECTION("pMemsetParams.width == 0") {
+    params.width = 0;
+    HIP_CHECK_ERROR(hipGraphAddMemsetNode(&node, graph, nullptr, 0, &params), hipErrorInvalidValue);
   }
-  SECTION("Pass pDependencies as nullptr") {
-    ret = hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0, &memsetParams);
-    REQUIRE(hipSuccess == ret);
+
+  SECTION("pMemsetParams.width > allocation size") {
+    params.width = 5;
+    HIP_CHECK_ERROR(hipGraphAddMemsetNode(&node, graph, nullptr, 0, &params), hipErrorInvalidValue);
   }
-  SECTION("Pass numDependencies is max and pDependencies is not valid ptr") {
-    ret = hipGraphAddMemsetNode(&memsetNode, graph,
-                                nullptr, INT_MAX, &memsetParams);
-    REQUIRE(hipErrorInvalidValue == ret);
+
+  SECTION("pMemsetParams.height == 0") {
+    params.height = 0;
+    HIP_CHECK_ERROR(hipGraphAddMemsetNode(&node, graph, nullptr, 0, &params), hipErrorInvalidValue);
   }
-  SECTION("Pass pDependencies as nullptr, but numDependencies is non-zero") {
-    ret = hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 9, &memsetParams);
-    REQUIRE(hipErrorInvalidValue == ret);
+
+  SECTION("pMemsetParams.pitch < width when height > 1") {
+    params.width = 2;
+    params.height = 2;
+    params.pitch = 1 * params.elementSize;
+    HIP_CHECK_ERROR(hipGraphAddMemsetNode(&node, graph, nullptr, 0, &params), hipErrorInvalidValue);
   }
-  SECTION("Pass pMemsetParams as nullptr") {
-    ret = hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0, nullptr);
-    REQUIRE(hipErrorInvalidValue == ret);
+
+  SECTION("pMemsetParams.pitch * height > allocation size") {
+    params.width = 2;
+    params.height = 2;
+    params.pitch = 3 * params.elementSize;
+    HIP_CHECK_ERROR(hipGraphAddMemsetNode(&node, graph, nullptr, 0, &params), hipErrorInvalidValue);
   }
-  SECTION("Pass pMemsetParams as un-initialize object") {
-    hipMemsetParams memsetParams1;
-    ret = hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0,
-                                &memsetParams1);
-    REQUIRE(hipErrorInvalidValue == ret);
-  }
-  SECTION("Pass hipMemsetParams::dst as nullptr") {
-    memsetParams.dst = nullptr;
-    ret = hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0, &memsetParams);
-    REQUIRE(hipErrorInvalidValue == ret);
-  }
-  SECTION("Pass hipMemsetParams::element size other than 1, 2, or 4") {
-    memsetParams.dst = reinterpret_cast<void*>(devData);
-    memsetParams.elementSize = 9;
-    ret = hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0, &memsetParams);
-    REQUIRE(hipErrorInvalidValue == ret);
-  }
-  SECTION("Pass hipMemsetParams::height as zero") {
-    memsetParams.elementSize = sizeof(char);
-    memsetParams.height = 0;
-    ret = hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0, &memsetParams);
-    REQUIRE(hipErrorInvalidValue == ret);
-  }
-  HIP_CHECK(hipFree(devData));
+
   HIP_CHECK(hipGraphDestroy(graph));
 }

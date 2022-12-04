@@ -209,12 +209,6 @@ template <typename F> void GraphAddNodeCommonNegativeTests(F f, hipGraph_t graph
     HIP_CHECK_ERROR(f(&node, nullptr, nullptr, 0), hipErrorInvalidValue);
   }
 
-  SECTION("Invalid numNodes") {
-    hipGraphNode_t node = nullptr;
-    HIP_CHECK(hipGraphAddEmptyNode(&node, graph, nullptr, 0));
-    HIP_CHECK_ERROR(f(&node, graph, &node, 2), hipErrorInvalidValue);
-  }
-
   // Segfaults on nvidia
   // SECTION("Invalid graph") {
   //   hipGraph_t invalid_graph = nullptr;
@@ -239,5 +233,21 @@ template <typename F> void GraphAddNodeCommonNegativeTests(F f, hipGraph_t graph
     hipGraphNode_t node = nullptr;
     HIP_CHECK_ERROR(f(&node, graph, &other_node, 1), hipErrorInvalidValue);
     HIP_CHECK(hipGraphDestroy(other_graph));
+  }
+
+  SECTION("Invalid numNodes") {
+    hipGraphNode_t dep_node = nullptr;
+    HIP_CHECK(hipGraphAddEmptyNode(&dep_node, graph, nullptr, 0));
+    HIP_CHECK_ERROR(f(&node, graph, &dep_node, 2), hipErrorInvalidValue);
+  }
+
+  SECTION("Duplicate node in dependencies") {
+    hipGraphNode_t dep_node = nullptr;
+    // Need to create create two nodes to avoid overlap with Invalid numNodes case
+    // First one is left dangling as the graph will be destroyed after the section anyway
+    HIP_CHECK(hipGraphAddEmptyNode(&dep_node, graph, nullptr, 0));
+    HIP_CHECK(hipGraphAddEmptyNode(&dep_node, graph, nullptr, 0));
+    hipGraphNode_t deps[] = {dep_node, dep_node};
+    HIP_CHECK_ERROR(f(&node, graph, deps, 2), hipErrorInvalidValue);
   }
 }

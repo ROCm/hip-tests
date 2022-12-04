@@ -68,7 +68,7 @@ template <typename F> void MemsetCommonNegative(F f, hipMemsetParams params) {
   }
 
   SECTION("pMemsetParams.width > allocation size") {
-    params.width = 5;
+    params.width = params.width + 1000;
     HIP_CHECK_ERROR(f(&params), hipErrorInvalidValue);
   }
 
@@ -80,7 +80,7 @@ template <typename F> void MemsetCommonNegative(F f, hipMemsetParams params) {
   SECTION("pMemsetParams.pitch < width when height > 1") {
     params.width = 2;
     params.height = 2;
-    params.pitch = 1 * params.elementSize;
+    params.pitch = params.elementSize;
     HIP_CHECK_ERROR(f(&params), hipErrorInvalidValue);
   }
 

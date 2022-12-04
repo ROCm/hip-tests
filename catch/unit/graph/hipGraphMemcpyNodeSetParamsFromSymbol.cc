@@ -103,6 +103,12 @@ TEST_CASE("Unit_hipGraphMemcpyNodeSetParamsFromSymbol_Negative_Parameters") {
                                             HIP_SYMBOL(int_device_var), sizeof(var), 0,
                                             hipMemcpyDefault));
 
+  SECTION("node == nullptr") {
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParamsFromSymbol(nullptr, &var, HIP_SYMBOL(int_device_var),
+                                                          sizeof(var), 0, hipMemcpyDefault),
+                    hipErrorInvalidValue);
+  }
+
   MemcpyFromSymbolCommonNegative(
       std::bind(hipGraphMemcpyNodeSetParamsFromSymbol, node, _1, _2, _3, _4, _5), &var,
       HIP_SYMBOL(int_device_var), sizeof(var));

@@ -91,22 +91,28 @@ TEST_CASE("Unit_hipGraphExecKernelNodeSetParams_Negative") {
   }
 #endif
 
+#if HT_NVIDIA // on AMD this returns hipErrorInvalidValue
   SECTION("Pass NodeParams func data member as nullptr") {
     kNodeParams.func = nullptr;
     HIP_CHECK_ERROR(hipGraphExecKernelNodeSetParams(graphExec, kNode, &kNodeParams),
                     hipErrorInvalidDeviceFunction);
   }
+#endif
 
+#if HT_NVIDIA // segfaults on AMD
   SECTION("Pass kernelParams data member as nullptr") {
     kNodeParams.kernelParams = nullptr;
     HIP_CHECK_ERROR(hipGraphExecKernelNodeSetParams(graphExec, kNode, &kNodeParams),
                     hipErrorInvalidValue);
   }
+#endif
 
+#if HT_NVIDIA // segfaults on AMD
   SECTION("node is not a kernel node") {
     HIP_CHECK_ERROR(hipGraphExecKernelNodeSetParams(graphExec, empty_node, &kNodeParams),
                     hipErrorInvalidValue);
   }
+#endif
 
   SECTION("node is not instantiated") {
     HIP_CHECK(hipGraphAddKernelNode(&kNode, graph, nullptr, 0, &kNodeParams));

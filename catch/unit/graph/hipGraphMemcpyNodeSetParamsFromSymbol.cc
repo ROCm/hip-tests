@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include <functional>
 #include <vector>
 
+#include <hip_test_defgroups.hh>
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 
@@ -70,6 +71,32 @@ void GraphMemcpyFromSymbolSetParamsShell(const void* symbol, const void* alt_sym
   MemcpyFromSymbolShell(f, symbol, offset, std::move(expected));
 }
 
+/**
+ * @addtogroup hipGraphMemcpyNodeSetParamsFromSymbol hipGraphMemcpyNodeSetParamsFromSymbol
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphMemcpyNodeSetParamsFromSymbol(hipGraphNode_t node, void *dst, const void *symbol, size_t
+ * count, size_t offset, hipMemcpyKind kind)` -
+ * Sets a memcpy node's parameters to copy from a symbol on the device
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify that data is correctly copied from a symbol after node parameters are set following
+ * node addition. A graph is constructed to which a MemcpyFromSymbol node is added with valid but
+ * incorrect parameters. The parameters are then updated to correct values and the graph executed.
+ * Values in destination memory are compared against values known to be in symbol memory.  
+ * The test is run for scalar, const scalar, array, and const array symbols of types char, int,
+ * float and double. For array symbols, the test is repeated for zero and non-zero offset values.
+ * Verification is performed for destination memory allocated on host and device.
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphMemcpyNodeSetParamsFromSymbol.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphMemcpyNodeSetParamsFromSymbol_Positive_Basic") {
   SECTION("char") {
     HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_TO_FROM_SYMBOL_TEST(GraphMemcpyFromSymbolSetParamsShell, 1,
@@ -92,6 +119,25 @@ TEST_CASE("Unit_hipGraphMemcpyNodeSetParamsFromSymbol_Positive_Basic") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify API behavior with invalid arguments:
+ *      -# node is nullptr
+ *      -# dst is nullptr
+ *      -# symbol is nullptr
+ *      -# count is zero
+ *      -# count is larger than symbol size
+ *      -# count + offset is larger than symbol size
+ *      -# kind is illogical (hipMemcpyHostToDevice)
+ *      -# kind is an invalid enum value
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphMemcpyNodeSetParamsFromSymbol.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphMemcpyNodeSetParamsFromSymbol_Negative_Parameters") {
   using namespace std::placeholders;
   hipGraph_t graph = nullptr;

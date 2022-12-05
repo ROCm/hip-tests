@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include <functional>
 #include <vector>
 
+#include <hip_test_defgroups.hh>
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 
@@ -69,6 +70,34 @@ void GraphMemcpyToSymbolSetParamsShell(const void* symbol, const void* alt_symbo
   MemcpyToSymbolShell(f, symbol, offset, std::move(set_values));
 }
 
+/**
+ * @addtogroup hipGraphMemcpyNodeSetParamsToSymbol hipGraphMemcpyNodeSetParamsToSymbol
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphMemcpyNodeSetParamsToSymbol(hipGraphNode_t node, const void *symbol, const void *src,
+ * size_t count, size_t offset, hipMemcpyKind kind)` -
+ * Sets a memcpy node's parameters to copy to a symbol on the device
+ */
+
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify that data is correctly copied to a symbol after node parameters are set following
+ * node addition. A graph is constructed to which a MemcpyToSymbol node is added with valid but
+ * incorrect parameters. The parameters are then updated to correct values and the graph executed.
+ * After graph execution, a MemcpyFromSymbol is performed and the copied values are compared against
+ * values known to have been copied to symbol memory previously.  
+ * The test is run for scalar, const scalar, array, and const array symbols of types char, int,
+ * float and double. For array symbols, the test is repeated for zero and non-zero offset values.
+ * Verification is performed for destination memory allocated on host and device.
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphMemcpyNodeSetParamsToSymbol.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphMemcpyNodeSetParamsToSymbol_Positive_Basic") {
   SECTION("char") {
     HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_TO_FROM_SYMBOL_TEST(GraphMemcpyToSymbolSetParamsShell, 10,
@@ -91,6 +120,25 @@ TEST_CASE("Unit_hipGraphMemcpyNodeSetParamsToSymbol_Positive_Basic") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify API behavior with invalid arguments:
+ *      -# node is nullptr
+ *      -# src is nullptr
+ *      -# symbol is nullptr
+ *      -# count is zero
+ *      -# count is larger than symbol size
+ *      -# count + offset is larger than symbol size
+ *      -# kind is illogical (hipMemcpyDeviceToHost)
+ *      -# kind is an invalid enum value
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphMemcpyNodeSetParamsToSymbol.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphMemcpyNodeSetParamsToSymbol_Negative_Parameters") {
   using namespace std::placeholders;
   hipGraph_t graph = nullptr;

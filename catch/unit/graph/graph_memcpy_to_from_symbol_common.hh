@@ -55,6 +55,7 @@ void MemcpyFromSymbolShell(F f, const void* symbol, size_t offset, const std::ve
   } else {
     direction = GENERATE(hipMemcpyDeviceToHost, hipMemcpyDefault);
   }
+  INFO("Memcpy direction: " << direction);
   HIP_CHECK(f(dst_alloc.ptr(), symbol, size, offset * sizeof(T), direction));
 
   std::vector<T> symbol_values(expected.size());
@@ -75,6 +76,7 @@ void MemcpyToSymbolShell(F f, const void* symbol, size_t offset, const std::vect
   } else {
     direction = GENERATE(hipMemcpyHostToDevice, hipMemcpyDefault);
   }
+  INFO("Memcpy direction: " << direction);
   HIP_CHECK(f(symbol, src_alloc.ptr(), size, offset * sizeof(T), direction));
 
   std::vector<T> symbol_values(set_values.size());
@@ -104,7 +106,7 @@ void MemcpyFromSymbolCommonNegative(F f, void* dst, const void* symbol, size_t c
     HIP_CHECK_ERROR(f(dst, symbol, count, 1, hipMemcpyDefault), hipErrorInvalidValue);
   }
 
-  SECTION("Disallowed memcpy direction") {
+  SECTION("Illogical memcpy direction") {
     HIP_CHECK_ERROR(f(dst, symbol, count, 0, hipMemcpyHostToDevice),
                     hipErrorInvalidMemcpyDirection);
   }
@@ -137,7 +139,7 @@ void MemcpyToSymbolCommonNegative(F f, const void* symbol, void* src, size_t cou
     HIP_CHECK_ERROR(f(symbol, src, count, 1, hipMemcpyDefault), hipErrorInvalidValue);
   }
 
-  SECTION("Disallowed memcpy direction") {
+  SECTION("Illogical memcpy direction") {
     HIP_CHECK_ERROR(f(symbol, src, count, 0, hipMemcpyDeviceToHost),
                     hipErrorInvalidMemcpyDirection);
   }
@@ -211,14 +213,6 @@ template <typename F> void GraphAddNodeCommonNegativeTests(F f, hipGraph_t graph
   SECTION("graph == nullptr") {
     HIP_CHECK_ERROR(f(&node, nullptr, nullptr, 0), hipErrorInvalidValue);
   }
-
-  // Segfaults on nvidia
-  // SECTION("Invalid graph") {
-  //   hipGraph_t invalid_graph = nullptr;
-  //   HIP_CHECK(hipGraphCreate(&invalid_graph, 0));
-  //   HIP_CHECK(hipGraphDestroy(invalid_graph));
-  //   HIP_CHECK_ERROR(f(&node, invalid_graph, nullptr, 0), hipErrorInvalidValue);
-  // }
 
   SECTION("node == nullptr") {
     HIP_CHECK_ERROR(f(nullptr, graph, nullptr, 0), hipErrorInvalidValue);

@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include <functional>
 #include <vector>
 
+#include <hip_test_defgroups.hh>
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 
@@ -59,6 +60,34 @@ void GraphMemcpyToSymbolShell(const void* symbol, size_t offset, const std::vect
   MemcpyToSymbolShell(f, symbol, offset, std::move(set_values));
 }
 
+/**
+ * @addtogroup hipGraphAddMemcpyNodeToSymbol hipGraphAddMemcpyNodeToSymbol
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphAddMemcpyNodeToSymbol(hipGraphNode_t *pGraphNode, hipGraph_t graph, const hipGraphNode_t
+ * *pDependencies, size_t numDependencies, const void *symbol, const void *src, size_t count, size_t
+ * offset, hipMemcpyKind kind)` -
+ * Creates a memcpy node to copy to a symbol on the device and adds it to a graph
+ */
+
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify that data is correctly copied to a symbol. A graph is constructed to which a
+ * MemcpyToSymbol node is added. After graph execution, a MemcpyFromSymbol is performed  and
+ * the copied values are compared against values known to have been copied to symbol memory
+ * previously.  
+ * The test is run for scalar, const scalar, array, and const array symbols of types char, int,
+ * float and double. For array symbols, the test is repeated for zero and non-zero offset values.
+ * Verification is performed for source memory allocated on host and device.
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphAddMemcpyNodeToSymbol.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphAddMemcpyNodeToSymbol_Positive_Basic") {
   SECTION("char") {
     HIP_GRAPH_ADD_MEMCPY_NODE_TO_FROM_SYMBOL_TEST(GraphMemcpyToSymbolShell, 10, char);
@@ -77,6 +106,30 @@ TEST_CASE("Unit_hipGraphAddMemcpyNodeToSymbol_Positive_Basic") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify API behavior with invalid arguments:
+ *      -# pGraphNodes is nullptr
+ *      -# graph is nullptr
+ *      -# pDependencies is nullptr when numDependencies is non-zero
+ *      -# A node in pDependencies belongs to a different graph
+ *      -# numDependencies in invalid
+ *      -# A node appears twice in pDependencies
+ *      -# src is nullptr
+ *      -# symbol is nullptr
+ *      -# count is zero
+ *      -# count is larger than symbol size
+ *      -# count + offset is larger than symbol size
+ *      -# kind is illogical (hipMemcpyDeviceToHost)
+ *      -# kind is an invalid enum value
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphAddMemcpyNodeToSymbol.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphAddMemcpyNodeToSymbol_Negative_Parameters") {
   using namespace std::placeholders;
   hipGraph_t graph = nullptr;

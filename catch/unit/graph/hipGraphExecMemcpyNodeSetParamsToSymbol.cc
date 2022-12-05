@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include <functional>
 #include <vector>
 
+#include <hip_test_defgroups.hh>
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 
@@ -70,6 +71,33 @@ void GraphExecMemcpyToSymbolSetParamsShell(const void* symbol, const void* alt_s
   MemcpyToSymbolShell(f, symbol, offset, std::move(set_values));
 }
 
+/**
+ * @addtogroup hipGraphExecMemcpyNodeSetParamsToSymbol hipGraphExecMemcpyNodeSetParamsToSymbol
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphExecMemcpyNodeSetParamsToSymbol(hipGraphExec_t hGraphExec, hipGraphNode_t node,
+ * const void *symbol, void *src, size_t count, size_t offset, hipMemcpyKind kind)` -
+ * Sets the parameters for a memcpy node in the given graphExec to copy to a symbol on the device
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify that data is correctly copied to a symbol after node parameters are set following
+ * node addition. A graph is constructed to which a MemcpyToSymbol node is added with valid but
+ * incorrect parameters. After the graph is instantiated the parameters are updated to correct
+ * values and the graph executed. After graph execution, a MemcpyFromSymbol is performed and the
+ * copied values are compared against values known to have been copied to symbol memory previously.  
+ * The test is run for scalar, const scalar, array, and const array symbols of types char, int,
+ * float and double. For array symbols, the test is repeated for zero and non-zero offset values.
+ * Verification is performed for destination memory allocated on host and device.
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphExecMemcpyNodeSetParamsToSymbol.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParamsToSymbol_Positive_Basic") {
   SECTION("char") {
     HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_TO_FROM_SYMBOL_TEST(GraphExecMemcpyToSymbolSetParamsShell, 10,
@@ -92,6 +120,28 @@ TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParamsToSymbol_Positive_Basic") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify API behavior with invalid arguments:
+ *      -# gGraphExec is nullptr
+ *      -# node is nullptr
+ *      -# src is nullptr
+ *      -# symbol is nullptr
+ *      -# count is zero
+ *      -# count is larger than symbol size
+ *      -# count + offset is larger than symbol size
+ *      -# kind is illogical (hipMemcpyDeviceToHost)
+ *      -# kind is an invalid enum value
+ *      -# Changing memcpy direction
+ *      -# Changing src to memory allocated on a different device than the original src
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphExecMemcpyNodeSetParamsToSymbol.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParamsToSymbol_Negative_Parameters") {
   using namespace std::placeholders;
   hipGraph_t graph = nullptr;
@@ -140,7 +190,7 @@ TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParamsToSymbol_Negative_Parameters") {
     HIP_CHECK_ERROR(hipGraphExecMemcpyNodeSetParamsFromSymbol(
                         graph_exec, node, SYMBOL(int_device_var), new_var.ptr(),
                         sizeof(*new_var.ptr()), 0, static_cast<hipMemcpyKind>(-1)),
-                    hipErrorInvalidMemcpyDirection);
+                    hipErrorInvalidValue);
   }
 
   HIP_CHECK(hipGraphExecDestroy(graph_exec));

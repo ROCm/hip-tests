@@ -39,10 +39,10 @@ HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_ALTERNATE_GLOBALS(float)
 HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_ALTERNATE_GLOBALS(double)
 
 template <typename T>
-void GraphMemcpyToSymbolSetParamsShell(void* symbol, void* alt_symbol, size_t offset,
+void GraphMemcpyToSymbolSetParamsShell(const void* symbol, const void* alt_symbol, size_t offset,
                                        const std::vector<T> set_values) {
-  const auto f = [alt_symbol, is_arr = set_values.size() > 1](void* symbol, void* src, size_t count,
-                                                              size_t offset,
+  const auto f = [alt_symbol, is_arr = set_values.size() > 1](const void* symbol, void* src,
+                                                              size_t count, size_t offset,
                                                               hipMemcpyKind direction) {
     hipGraph_t graph = nullptr;
     HIP_CHECK(hipGraphCreate(&graph, 0));
@@ -98,18 +98,18 @@ TEST_CASE("Unit_hipGraphMemcpyNodeSetParamsToSymbol_Negative_Parameters") {
 
   int var = 0;
   hipGraphNode_t node = nullptr;
-  HIP_CHECK(hipGraphAddMemcpyNodeToSymbol(&node, graph, nullptr, 0, HIP_SYMBOL(int_device_var),
-                                          &var, sizeof(var), 0, hipMemcpyDefault));
+  HIP_CHECK(hipGraphAddMemcpyNodeToSymbol(&node, graph, nullptr, 0, SYMBOL(int_device_var), &var,
+                                          sizeof(var), 0, hipMemcpyDefault));
 
   SECTION("node == nullptr") {
-    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParamsToSymbol(nullptr, HIP_SYMBOL(int_device_var), &var,
+    HIP_CHECK_ERROR(hipGraphMemcpyNodeSetParamsToSymbol(nullptr, SYMBOL(int_device_var), &var,
                                                         sizeof(var), 0, hipMemcpyDefault),
                     hipErrorInvalidValue);
   }
 
   MemcpyToSymbolCommonNegative(
       std::bind(hipGraphMemcpyNodeSetParamsToSymbol, node, _1, _2, _3, _4, _5),
-      HIP_SYMBOL(int_device_var), &var, sizeof(var));
+      SYMBOL(int_device_var), &var, sizeof(var));
 
   HIP_CHECK(hipGraphDestroy(graph));
 }

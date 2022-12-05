@@ -44,7 +44,7 @@ constexpr size_t kArraySize = 5;
   __constant__ __device__ type type##_alt_const_device_arr[kArraySize] = {0, 0, 0, 0, 0};
 
 template <typename T, typename F>
-void MemcpyFromSymbolShell(F f, void* symbol, size_t offset, const std::vector<T> expected) {
+void MemcpyFromSymbolShell(F f, const void* symbol, size_t offset, const std::vector<T> expected) {
   const auto alloc_type = GENERATE(LinearAllocs::hipMalloc, LinearAllocs::hipHostMalloc);
   const auto size = expected.size() * sizeof(T);
   LinearAllocGuard<T> dst_alloc(alloc_type, size);
@@ -63,7 +63,7 @@ void MemcpyFromSymbolShell(F f, void* symbol, size_t offset, const std::vector<T
 }
 
 template <typename T, typename F>
-void MemcpyToSymbolShell(F f, void* symbol, size_t offset, const std::vector<T> set_values) {
+void MemcpyToSymbolShell(F f, const void* symbol, size_t offset, const std::vector<T> set_values) {
   const auto alloc_type = GENERATE(LinearAllocs::hipMalloc, LinearAllocs::hipHostMalloc);
   const auto size = set_values.size() * sizeof(T);
   LinearAllocGuard<T> src_alloc(alloc_type, size);
@@ -78,13 +78,12 @@ void MemcpyToSymbolShell(F f, void* symbol, size_t offset, const std::vector<T> 
   HIP_CHECK(f(symbol, src_alloc.ptr(), size, offset * sizeof(T), direction));
 
   std::vector<T> symbol_values(set_values.size());
-  HIP_CHECK(hipMemcpyFromSymbol(symbol_values.data(), symbol, size, offset * sizeof(T),
-                                hipMemcpyDefault));
+  HIP_CHECK(hipMemcpyFromSymbol(symbol_values.data(), symbol, size, offset * sizeof(T)));
   REQUIRE_THAT(set_values, Catch::Equals(symbol_values));
 }
 
 template <typename F>
-void MemcpyFromSymbolCommonNegative(F f, void* dst, void* symbol, size_t count) {
+void MemcpyFromSymbolCommonNegative(F f, void* dst, const void* symbol, size_t count) {
   SECTION("dst == nullptr") {
     HIP_CHECK_ERROR(f(nullptr, symbol, count, 0, hipMemcpyDefault), hipErrorInvalidValue);
   }
@@ -117,7 +116,7 @@ void MemcpyFromSymbolCommonNegative(F f, void* dst, void* symbol, size_t count) 
 }
 
 template <typename F>
-void MemcpyToSymbolCommonNegative(F f, void* symbol, void* src, size_t count) {
+void MemcpyToSymbolCommonNegative(F f, const void* symbol, void* src, size_t count) {
   SECTION("src == nullptr") {
     HIP_CHECK_ERROR(f(symbol, nullptr, count, 0, hipMemcpyDefault), hipErrorInvalidValue);
   }
@@ -149,11 +148,17 @@ void MemcpyToSymbolCommonNegative(F f, void* symbol, void* src, size_t count) {
   }
 }
 
+#if HT_AMD
+#define SYMBOL(expr) &HIP_SYMBOL(expr)
+#else
+#define SYMBOL(expr) HIP_SYMBOL(expr)
+#endif
+
 #define HIP_GRAPH_ADD_MEMCPY_NODE_TO_FROM_SYMBOL_TEST(f, init_val, type)                           \
-  SECTION("Scalar variable") { f(HIP_SYMBOL(type##_device_var), 0, std::vector<type>{init_val}); } \
+  SECTION("Scalar variable") { f(SYMBOL(type##_device_var), 0, std::vector<type>{init_val}); }     \
                                                                                                    \
   SECTION("Constant scalar variable") {                                                            \
-    f(HIP_SYMBOL(type##_const_device_var), 0, std::vector<type>{init_val});                        \
+    f(SYMBOL(type##_const_device_var), 0, std::vector<type>{init_val});                            \
   }                                                                                                \
                                                                                                    \
   SECTION("Array") {                                                                               \
@@ -161,7 +166,7 @@ void MemcpyToSymbolCommonNegative(F f, void* symbol, void* src, size_t count) {
     INFO("Array offset: " << offset);                                                              \
     std::vector<type> expected(kArraySize - offset);                                               \
     std::iota(expected.begin(), expected.end(), offset + init_val);                                \
-    f(HIP_SYMBOL(type##_device_arr), offset, std::move(expected));                                 \
+    f(SYMBOL(type##_device_arr), offset, std::move(expected));                                     \
   }                                                                                                \
                                                                                                    \
   SECTION("Constant array") {                                                                      \
@@ -169,17 +174,16 @@ void MemcpyToSymbolCommonNegative(F f, void* symbol, void* src, size_t count) {
     INFO("Array offset: " << offset);                                                              \
     std::vector<type> expected(kArraySize - offset);                                               \
     std::iota(expected.begin(), expected.end(), offset + init_val);                                \
-    f(HIP_SYMBOL(type##_const_device_arr), offset, std::move(expected));                           \
+    f(SYMBOL(type##_const_device_arr), offset, std::move(expected));                               \
   }
 
 #define HIP_GRAPH_MEMCPY_NODE_SET_PARAMS_TO_FROM_SYMBOL_TEST(f, init_val, type)                    \
   SECTION("Scalar variable") {                                                                     \
-    f(HIP_SYMBOL(type##_device_var), HIP_SYMBOL(type##_alt_device_var), 0,                         \
-      std::vector<type>{init_val});                                                                \
+    f(SYMBOL(type##_device_var), SYMBOL(type##_alt_device_var), 0, std::vector<type>{init_val});   \
   }                                                                                                \
                                                                                                    \
   SECTION("Constant scalar variable") {                                                            \
-    f(HIP_SYMBOL(type##_const_device_var), HIP_SYMBOL(type##_alt_const_device_var), 0,             \
+    f(SYMBOL(type##_const_device_var), SYMBOL(type##_alt_const_device_var), 0,                     \
       std::vector<type>{init_val});                                                                \
   }                                                                                                \
                                                                                                    \
@@ -188,8 +192,7 @@ void MemcpyToSymbolCommonNegative(F f, void* symbol, void* src, size_t count) {
     INFO("Array offset: " << offset);                                                              \
     std::vector<type> expected(kArraySize - offset);                                               \
     std::iota(expected.begin(), expected.end(), offset + init_val);                                \
-    f(HIP_SYMBOL(type##_device_arr), HIP_SYMBOL(type##_alt_device_arr), offset,                    \
-      std::move(expected));                                                                        \
+    f(SYMBOL(type##_device_arr), SYMBOL(type##_alt_device_arr), offset, std::move(expected));      \
   }                                                                                                \
                                                                                                    \
   SECTION("Constant array") {                                                                      \
@@ -197,7 +200,7 @@ void MemcpyToSymbolCommonNegative(F f, void* symbol, void* src, size_t count) {
     INFO("Array offset: " << offset);                                                              \
     std::vector<type> expected(kArraySize - offset);                                               \
     std::iota(expected.begin(), expected.end(), offset + init_val);                                \
-    f(HIP_SYMBOL(type##_const_device_arr), HIP_SYMBOL(type##_alt_const_device_arr), offset,        \
+    f(SYMBOL(type##_const_device_arr), SYMBOL(type##_alt_const_device_arr), offset,                \
       std::move(expected));                                                                        \
   }
 

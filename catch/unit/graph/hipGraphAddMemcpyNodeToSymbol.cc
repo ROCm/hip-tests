@@ -34,8 +34,9 @@ HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_GLOBALS(float)
 HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_GLOBALS(double)
 
 template <typename T>
-void GraphMemcpyToSymbolShell(void* symbol, size_t offset, const std::vector<T> set_values) {
-  const auto f = [](void* symbol, void* src, size_t count, size_t offset, hipMemcpyKind direction) {
+void GraphMemcpyToSymbolShell(const void* symbol, size_t offset, const std::vector<T> set_values) {
+  const auto f = [](const void* symbol, void* src, size_t count, size_t offset,
+                    hipMemcpyKind direction) {
     hipGraph_t graph = nullptr;
     HIP_CHECK(hipGraphCreate(&graph, 0));
 
@@ -85,13 +86,13 @@ TEST_CASE("Unit_hipGraphAddMemcpyNodeToSymbol_Negative_Parameters") {
   hipGraphNode_t node = nullptr;
 
   GraphAddNodeCommonNegativeTests(
-      std::bind(hipGraphAddMemcpyNodeToSymbol, _1, _2, _3, _4, HIP_SYMBOL(int_device_var), &var,
+      std::bind(hipGraphAddMemcpyNodeToSymbol, _1, _2, _3, _4, SYMBOL(int_device_var), &var,
                 sizeof(var), 0, hipMemcpyDefault),
       graph);
 
   MemcpyToSymbolCommonNegative(
       std::bind(hipGraphAddMemcpyNodeToSymbol, &node, graph, nullptr, 0, _1, _2, _3, _4, _5),
-      HIP_SYMBOL(int_device_var), &var, sizeof(var));
+      SYMBOL(int_device_var), &var, sizeof(var));
 
   HIP_CHECK(hipGraphDestroy(graph));
 }

@@ -18,7 +18,6 @@ THE SOFTWARE.
 */
 
 #include <hip_test_checkers.hh>
-#include <hip_test_common.hh>
 #include <hip_test_defgroups.hh>
 #include <hip_test_kernels.hh>
 
@@ -120,14 +119,15 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_Positive_Functional") {
  */
 TEST_CASE("Unit_hipStreamGetCaptureInfo_Positive_UniqueID") {
   constexpr int numStreams = 100;
-  hipStream_t streams[numStreams]{};
   hipStreamCaptureStatus captureStatus{hipStreamCaptureStatusNone};
   std::vector<int> idlist;
   unsigned long long capSequenceID{}; // NOLINT
-  hipGraph_t graph{nullptr};
+
+  StreamsGuard streams(numStreams);
+  GraphGuard graph_guard;
+  hipGraph_t &graph = graph_guard.graph();
 
   for (int i = 0; i < numStreams; i++) {
-    HIP_CHECK(hipStreamCreate(&streams[i]));
     HIP_CHECK(hipStreamBeginCapture(streams[i], hipStreamCaptureModeGlobal));
     HIP_CHECK(
         hipStreamGetCaptureInfo(streams[i], &captureStatus, &capSequenceID));
@@ -148,8 +148,6 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_Positive_UniqueID") {
 
   for (int i = 0; i < numStreams; i++) {
     HIP_CHECK(hipStreamEndCapture(streams[i], &graph));
-    HIP_CHECK(hipGraphDestroy(graph));
-    HIP_CHECK(hipStreamDestroy(streams[i]));
   }
 }
 

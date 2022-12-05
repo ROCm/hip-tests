@@ -18,7 +18,6 @@ THE SOFTWARE.
 */
 
 #include <hip_test_checkers.hh>
-#include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
 #include <hip_test_defgroups.hh>
 
@@ -98,12 +97,7 @@ void checkStreamCaptureInfo_v2(hipStreamCaptureMode mode, hipStream_t stream) {
   REQUIRE(capInfoGraph != nullptr);
   REQUIRE(numDependencies == numDepsCreated);
 
-  hipLaunchKernelGGL(HipTest::vector_square, dim3(StreamCapture_sizes::blocks),
-                     dim3(StreamCapture_sizes::threadsPerBlock), 0, stream,
-                     A_d.ptr(), B_d.ptr(), N);
-
-  HIP_CHECK(hipMemcpyAsync(B_h.host_ptr(), B_d.ptr(), Nbytes,
-                           hipMemcpyDeviceToHost, stream));
+  graphSequenceCompute(A_d.ptr(), B_h.host_ptr(), B_d.ptr(), N, stream);
 
   // End capture and verify graph is returned
   HIP_CHECK(hipStreamEndCapture(stream, &graph));
@@ -186,14 +180,15 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_v2_Positive_Functional") {
  */
 TEST_CASE("Unit_hipStreamGetCaptureInfo_v2_Positive_UniqueID") {
   constexpr int numStreams = 100;
-  hipStream_t streams[numStreams]{};
   hipStreamCaptureStatus captureStatus{hipStreamCaptureStatusNone};
   std::vector<int> idlist;
   unsigned long long capSequenceID{}; // NOLINT
-  hipGraph_t graph{nullptr};
+
+  StreamsGuard streams(numStreams);
+  GraphGuard graph_guard;
+  hipGraph_t &graph = graph_guard.graph();
 
   for (int i = 0; i < numStreams; i++) {
-    HIP_CHECK(hipStreamCreate(&streams[i]));
     HIP_CHECK(hipStreamBeginCapture(streams[i], hipStreamCaptureModeGlobal));
     HIP_CHECK(hipStreamGetCaptureInfo_v2(
         streams[i], &captureStatus, &capSequenceID, nullptr, nullptr, nullptr));
@@ -214,8 +209,6 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_v2_Positive_UniqueID") {
 
   for (int i = 0; i < numStreams; i++) {
     HIP_CHECK(hipStreamEndCapture(streams[i], &graph));
-    HIP_CHECK(hipGraphDestroy(graph));
-    HIP_CHECK(hipStreamDestroy(streams[i]));
   }
 }
 

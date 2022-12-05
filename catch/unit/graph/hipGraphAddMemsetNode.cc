@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include <functional>
 #include <vector>
 
+#include <hip_test_defgroups.hh>
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
 #include <utils.hh>
@@ -30,6 +31,28 @@ THE SOFTWARE.
 #include "graph_memset_node_test_common.hh"
 #include "graph_tests_common.hh"
 
+/**
+ * @addtogroup hipGraphAddMemsetNode hipGraphAddMemsetNode
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphAddMemsetNode(hipGraphNode_t *pGraphNode, hipGraph_t graph, const hipGraphNode_t
+ * *pDependencies, size_t numDependencies, const hipMemsetParams *pMemsetParams)` -
+ * Creates a memset node and adds it to a graph
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify that all elements of destination memory are set to the correct value.
+ * The test is repeated for all valid element sizes(1, 2, 4), and several allocations of different
+ * height and width, both on host and device. 
+ *  Test source
+ * ------------------------
+ *    - unit/graph/hipGraphAddMemsetNode.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_hipGraphAddMemsetNode_Positive_Basic", "", uint8_t, uint16_t, uint32_t) {
   const auto f = [](hipMemsetParams* params) {
     hipGraph_t graph = nullptr;
@@ -53,6 +76,31 @@ TEMPLATE_TEST_CASE("Unit_hipGraphAddMemsetNode_Positive_Basic", "", uint8_t, uin
   GraphMemsetNodeCommonPositive<TestType>(f);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify API behaviour with invalid arguments:
+ *        -# pGraphNode is nullptr
+ *        -# graph is nullptr
+ *        -# pDependencies is nullptr when numDependencies is not zero
+ *        -# A node in pDependencies originates from a different graph
+ *        -# numDependencies is invalid
+ *        -# A node is duplicated in pDependencies
+ *        -# pMemsetParams is nullptr
+ *        -# pMemsetParams::dst is nullptr
+ *        -# pMemsetParams::elementSize is different from 1, 2, and 4
+ *        -# pMemsetParams::width is zero
+ *        -# pMemsetParams::width is larger than the allocated memory region
+ *        -# pMemsetParams::height is zero
+ *        -# pMemsetParams::pitch is less than width when height is more than 1
+ *        -# pMemsetParams::pitch * pMemsetParams::height is larger than the allocated memory region
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphAddMemsetNode.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphAddMemsetNode_Negative_Parameters") {
   using namespace std::placeholders;
   hipGraph_t graph = nullptr;

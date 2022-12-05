@@ -22,11 +22,39 @@ THE SOFTWARE.
 
 #include <functional>
 
+#include <hip_test_defgroups.hh>
 #include <hip_test_common.hh>
 
 #include "graph_memset_node_test_common.hh"
 #include "graph_tests_common.hh"
 
+/**
+ * @addtogroup hipGraphExecMemsetNodeSetParams hipGraphExecMemsetNodeSetParams
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphExecMemsetNodeSetParams(hipGraphExec_t hGraphExec, hipGraphNode_t node, const
+ * hipMemsetParams *pNodeParams)` -
+ * Sets the parameters for a memset node in the given graphExec
+ * ------------------------
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify that node parameters get updated correctly by creating a node with valid but
+ * incorrect parameters, and then setting them to the correct values in the executable graph.
+ * The executable graph is run and the results of the memset is verified.
+ * hipGraphMemsetNodeGetParams is used to verify that node parameters in the graph were not updated
+ * The test is repeated for all valid element sizes(1, 2, 4), and
+ * several allocations of different width(height is always 1 because only 1D memset nodes can be
+ * updated), both on host and device
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphExecMemsetNodeSetParams.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_hipGraphExecMemsetNodeSetParams_Positive_Basic", "", uint8_t, uint16_t,
                    uint32_t) {
   const size_t width = GENERATE(1, 64, kPageSize / sizeof(TestType) + 1);
@@ -78,6 +106,29 @@ TEMPLATE_TEST_CASE("Unit_hipGraphExecMemsetNodeSetParams_Positive_Basic", "", ui
   ArrayFindIfNot(buffer.ptr(), set_value, width);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify API behaviour with invalid arguments:
+ *        -# pGraphExec is nullptr
+ *        -# node is nullptr
+ *        -# pNodeParams is nullptr
+ *        -# pNodeParams::dst is nullptr
+ *        -# pNodeParams::elementSize is different from 1, 2, and 4
+ *        -# pNodeParams::width is zero
+ *        -# pNodeParams::width is larger than the allocated memory region
+ *        -# pNodeParams::height is zero
+ *        -# pNodeParams::pitch is less than width when height is more than 1
+ *        -# pNodeParams::pitch * pMemsetParams::height is larger than the allocated memory region
+ *        -# pNodeParams::dst holds a pointer to memory allocated on a device different from the one
+ * the original dst was allocated on 
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphExecMemsetNodeSetParams.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphExecMemsetNodeSetParams_Negative_Parameters") {
   using namespace std::placeholders;
 
@@ -125,6 +176,17 @@ TEST_CASE("Unit_hipGraphExecMemsetNodeSetParams_Negative_Parameters") {
   HIP_CHECK(hipGraphDestroy(graph));
 }
 
+/**
+ * Test Description
+ * ------------------------ 
+ *    - Verify that a 2D node cannot be updated
+ * Test source
+ * ------------------------ 
+ *    - unit/graph/hipGraphExecMemsetNodeSetParams.cc
+ * Test requirements
+ * ------------------------ 
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphExecMemsetNodeSetParams_Negative_Updating_Non1D_Node") {
   hipGraph_t graph = nullptr;
   HIP_CHECK(hipGraphCreate(&graph, 0));

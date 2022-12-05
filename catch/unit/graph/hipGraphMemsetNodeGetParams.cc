@@ -20,9 +20,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#include <hip_test_defgroups.hh>
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
 
+/**
+ * @addtogroup hipGraphMemsetNodeGetParams hipGraphMemsetNodeGetParams
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphMemsetNodeGetParams(hipGraphNode_t node, hipMemsetParams *pNodeParams)` -
+ * 	Gets a memset node's parameters
+ */
+
+/**
+ * Test Description
+ * ------------------------ 
+ *    - Verify API behaviour with invalid arguments:
+ *      -# node is nullptr
+ *      -# pNodeParams is nullptr
+ *      -# node is destroyed
+ * Test source
+ * ------------------------ 
+ *    - unit/graph/hipGraphMemsetNodeGetParams.cc
+ * Test requirements
+ * ------------------------ 
+ *    - HIP_VERSION >= 5.2
+ */ 
 TEST_CASE("Unit_hipGraphMemsetNodeGetParams_Negative_Parameters") {
   LinearAllocGuard2D<int> alloc(1, 1);
   hipMemsetParams params = {};

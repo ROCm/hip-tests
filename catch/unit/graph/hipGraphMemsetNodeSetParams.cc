@@ -22,11 +22,36 @@ THE SOFTWARE.
 
 #include <functional>
 
+#include <hip_test_defgroups.hh>
 #include <hip_test_common.hh>
 
 #include "graph_memset_node_test_common.hh"
 #include "graph_tests_common.hh"
 
+/**
+ * @addtogroup hipGraphMemsetNodeSetParams hipGraphMemsetNodeSetParams
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphMemsetNodeSetParams(hipGraphNode_t node, const hipMemsetParams *pNodeParams)` -
+ * Sets a memset node's parameters
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify that node parameters get updated correctly by creating a node with valid but
+ * incorrect parameters, and then setting them to the correct values after which the graph is
+ * executed and the results verified. The parameters are also verified via
+ * hipGraphMemsetNodeGetParams.
+ * The test is repeated for all valid element sizes(1, 2, 4), and
+ * several allocations of different height and width both on host and device
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphMemsetNodeSetParams.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_hipGraphMemsetNodeSetParams_Positive_Basic", "", uint8_t, uint16_t,
                    uint32_t) {
   const auto f = [](hipMemsetParams* params) {
@@ -76,6 +101,26 @@ TEMPLATE_TEST_CASE("Unit_hipGraphMemsetNodeSetParams_Positive_Basic", "", uint8_
   GraphMemsetNodeCommonPositive<TestType>(f);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify API behaviour with invalid arguments:
+ *        -# node is nullptr
+ *        -# pNodeParams is nullptr
+ *        -# pNodeParams::dst is nullptr
+ *        -# pNodeParams::elementSize is different from 1, 2, and 4
+ *        -# pNodeParams::width is zero
+ *        -# pNodeParams::width is larger than the allocated memory region
+ *        -# pNodeParams::height is zero
+ *        -# pNodeParams::pitch is less than width when height is more than 1
+ *        -# pNodeParams::pitch * pMemsetParams::height is larger than the allocated memory region
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphMemsetNodeSetParams.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphMemsetNodeSetParams_Negative_Parameters") {
   using namespace std::placeholders;
 

@@ -19,19 +19,14 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
+#include <hip_test_defgroups.hh>
 
 #include "stream_capture_common.hh"
 
 /**
- * @addtogroup GraphsTest Graph Management APIs
- * @{
- * This section describes tests for the Graph Management HIP runtime APIs.
- */
-
-/**
  * @addtogroup hipStreamBeginCapture hipStreamBeginCapture
  * @{
- * @ingroup GraphsTest
+ * @ingroup GraphTest
  * `hipStreamBeginCapture(hipStream_t stream, hipStreamCaptureMode mode)` -
  * begins graph capture on a stream
  */

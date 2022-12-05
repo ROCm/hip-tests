@@ -122,7 +122,7 @@ class StreamGuard {
     }
   }
 
-  hipStream_t stream() { return stream_; }
+  hipStream_t stream() const { return stream_; }
 
  private:
   const Streams stream_type_;
@@ -133,16 +133,16 @@ class StreamGuard {
 
 class EventsGuard {
 public:
-	EventsGuard(size_t N) : events_(N) {
-		for (auto &e : events_) HIP_CHECK(hipEventCreate(&e));
-	}
+  EventsGuard(size_t N) : events_(N) {
+    for (auto &e : events_) HIP_CHECK(hipEventCreate(&e));
+  }
 
   EventsGuard(const EventsGuard&) = delete;
   EventsGuard(EventsGuard&&) = delete;
 
-	~EventsGuard() {
-		for (auto &e : events_) static_cast<void>(hipEventDestroy(e));
-	}
+  ~EventsGuard() {
+    for (auto &e : events_) static_cast<void>(hipEventDestroy(e));
+  }
 
   hipEvent_t& operator[](int index) { return events_.at(index); }
 
@@ -151,21 +151,21 @@ public:
   std::vector<hipEvent_t>& event_list() { return events_; }
 
 private:
-	std::vector<hipEvent_t> events_;
+  std::vector<hipEvent_t> events_;
 };
 
 class StreamsGuard {
 public:
-	StreamsGuard(size_t N) : streams_(N) {
-		for (auto &s : streams_) HIP_CHECK(hipStreamCreate(&s));
-	}
+  StreamsGuard(size_t N) : streams_(N) {
+    for (auto &s : streams_) HIP_CHECK(hipStreamCreate(&s));
+  }
 
   StreamsGuard(const StreamsGuard&) = delete;
   StreamsGuard(StreamsGuard&&) = delete;
 
-	~StreamsGuard() {
-		for (auto &s : streams_) static_cast<void>(hipStreamDestroy(s));
-	}
+  ~StreamsGuard() {
+    for (auto &s : streams_) static_cast<void>(hipStreamDestroy(s));
+  }
 
   hipStream_t& operator[](int index) { return streams_.at(index); }
 
@@ -174,7 +174,7 @@ public:
   std::vector<hipStream_t>& stream_list() { return streams_; }
 
 private:
-	std::vector<hipStream_t> streams_;
+  std::vector<hipStream_t> streams_;
 };
 
 class GraphExecGuard {

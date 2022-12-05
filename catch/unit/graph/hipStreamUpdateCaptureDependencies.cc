@@ -20,20 +20,15 @@ THE SOFTWARE.
 #include <hip_test_checkers.hh>
 #include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
+#include <hip_test_defgroups.hh>
 
 #include "stream_capture_common.hh"
-
-/**
- * @addtogroup GraphsTest Graph Management APIs
- * @{
- * This section describes tests for the Graph Management HIP runtime APIs.
- */
 
 /**
  * @addtogroup hipStreamUpdateCaptureDependencies
  * hipStreamUpdateCaptureDependencies
  * @{
- * @ingroup GraphsTest
+ * @ingroup GraphTest
  * `hipStreamUpdateCaptureDependencies(hipStream_t stream, hipGraphNode_t
  * *dependencies, size_t numDependencies, unsigned int flags __dparm(0)))` -
  * update the set of dependencies in a capturing stream

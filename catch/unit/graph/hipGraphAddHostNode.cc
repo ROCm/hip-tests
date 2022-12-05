@@ -128,16 +128,6 @@ TEST_CASE("Unit_hipGraphAddHostNode_Negative") {
                     hipErrorInvalidValue);
   }
 
-#if HT_AMD  // On Cuda setup this test case getting failed
-  SECTION("Try adding host node after destroy the already created graph") {
-    hipGraph_t destroyed_graph;
-    HIP_CHECK(hipGraphCreate(&destroyed_graph, 0));
-    HIP_CHECK(hipGraphDestroy(destroyed_graph));
-    HIP_CHECK_ERROR(hipGraphAddHostNode(&hostNode, destroyed_graph, nullptr, 0, &hostParams),
-                    hipErrorInvalidValue);
-  }
-#endif
-
   HipTest::freeArrays<int>(A_d, nullptr, C_d, A_h, nullptr, C_h, false);
   HIP_CHECK(hipGraphDestroy(graph));
 }

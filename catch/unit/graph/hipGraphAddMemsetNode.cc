@@ -45,8 +45,8 @@ THE SOFTWARE.
  * ------------------------
  *    - Verify that all elements of destination memory are set to the correct value.
  * The test is repeated for all valid element sizes(1, 2, 4), and several allocations of different
- * height and width, both on host and device. 
- *  Test source
+ * height and width, both on host and device.
+ * Test source
  * ------------------------
  *    - unit/graph/hipGraphAddMemsetNode.cc
  * Test requirements

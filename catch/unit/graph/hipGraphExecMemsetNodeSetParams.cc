@@ -35,7 +35,6 @@ THE SOFTWARE.
  * `hipGraphExecMemsetNodeSetParams(hipGraphExec_t hGraphExec, hipGraphNode_t node, const
  * hipMemsetParams *pNodeParams)` -
  * Sets the parameters for a memset node in the given graphExec
- * ------------------------
  */
 
 /**
@@ -44,10 +43,11 @@ THE SOFTWARE.
  *    - Verify that node parameters get updated correctly by creating a node with valid but
  * incorrect parameters, and then setting them to the correct values in the executable graph.
  * The executable graph is run and the results of the memset is verified.
- * hipGraphMemsetNodeGetParams is used to verify that node parameters in the graph were not updated
- * The test is repeated for all valid element sizes(1, 2, 4), and
- * several allocations of different width(height is always 1 because only 1D memset nodes can be
- * updated), both on host and device
+ * hipGraphMemsetNodeGetParams is used to verify that node parameters in the graph were not updated,
+ * which also constitutes a test for said API.
+ * The test is repeated for all valid element sizes(1,
+ * 2, 4), and several allocations of different width(height is always 1 because only 1D memset nodes
+ * can be updated), both on host and device 
  * Test source
  * ------------------------
  *    - unit/graph/hipGraphExecMemsetNodeSetParams.cc
@@ -121,7 +121,7 @@ TEMPLATE_TEST_CASE("Unit_hipGraphExecMemsetNodeSetParams_Positive_Basic", "", ui
  *        -# pNodeParams::pitch is less than width when height is more than 1
  *        -# pNodeParams::pitch * pMemsetParams::height is larger than the allocated memory region
  *        -# pNodeParams::dst holds a pointer to memory allocated on a device different from the one
- * the original dst was allocated on 
+ * the original dst was allocated on
  * Test source
  * ------------------------
  *    - unit/graph/hipGraphExecMemsetNodeSetParams.cc
@@ -178,13 +178,13 @@ TEST_CASE("Unit_hipGraphExecMemsetNodeSetParams_Negative_Parameters") {
 
 /**
  * Test Description
- * ------------------------ 
+ * ------------------------
  *    - Verify that a 2D node cannot be updated
  * Test source
- * ------------------------ 
+ * ------------------------
  *    - unit/graph/hipGraphExecMemsetNodeSetParams.cc
  * Test requirements
- * ------------------------ 
+ * ------------------------
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecMemsetNodeSetParams_Negative_Updating_Non1D_Node") {

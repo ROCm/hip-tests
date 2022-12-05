@@ -30,22 +30,26 @@ THE SOFTWARE.
  * @ingroup GraphTest
  * `hipGraphMemsetNodeGetParams(hipGraphNode_t node, hipMemsetParams *pNodeParams)` -
  * 	Gets a memset node's parameters
+ * ________________________
+ * Test cases from other APIs:
+ *  - @ref Unit_hipGraphMemsetNodeSetParams_Positive_Basic
+ *  - @ref Unit_hipGraphExecMemsetNodeSetParams_Positive_Basic
  */
 
 /**
  * Test Description
- * ------------------------ 
+ * ------------------------
  *    - Verify API behaviour with invalid arguments:
  *      -# node is nullptr
  *      -# pNodeParams is nullptr
  *      -# node is destroyed
  * Test source
- * ------------------------ 
+ * ------------------------
  *    - unit/graph/hipGraphMemsetNodeGetParams.cc
  * Test requirements
- * ------------------------ 
+ * ------------------------
  *    - HIP_VERSION >= 5.2
- */ 
+ */
 TEST_CASE("Unit_hipGraphMemsetNodeGetParams_Negative_Parameters") {
   LinearAllocGuard2D<int> alloc(1, 1);
   hipMemsetParams params = {};

@@ -41,10 +41,11 @@ THE SOFTWARE.
  * ------------------------
  *    - Verify that node parameters get updated correctly by creating a node with valid but
  * incorrect parameters, and then setting them to the correct values after which the graph is
- * executed and the results verified. The parameters are also verified via
- * hipGraphMemsetNodeGetParams.
- * The test is repeated for all valid element sizes(1, 2, 4), and
- * several allocations of different height and width both on host and device
+ * executed and the results verified.
+ * The parameters are also verified via hipGraphMemsetNodeGetParams, which also constitutes a test
+ * for said API.
+ * The test is repeated for all valid element sizes(1, 2, 4), and several allocations of different
+ * height and width both on host and device 
  * Test source
  * ------------------------
  *    - unit/graph/hipGraphMemsetNodeSetParams.cc

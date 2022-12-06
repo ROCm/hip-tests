@@ -99,4 +99,6 @@ TEST_CASE("Unit_hipGraphMemcpyNodeSetParams1D_Negative_Parameters") {
         hipGraphMemcpyNodeSetParams1D(node, dst, dev_src.ptr(), sizeof(dst), hipMemcpyDefault),
         hipErrorInvalidValue);
   }
+
+  HIP_CHECK(hipGraphDestroy(graph));
 }

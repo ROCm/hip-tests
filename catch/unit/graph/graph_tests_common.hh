@@ -27,20 +27,11 @@ THE SOFTWARE.
 #include <hip/hip_runtime_api.h>
 #include <resource_guards.hh>
 
-// TODO move to catch/include
 template <typename F> void GraphAddNodeCommonNegativeTests(F f, hipGraph_t graph) {
   hipGraphNode_t node = nullptr;
   SECTION("graph == nullptr") {
     HIP_CHECK_ERROR(f(&node, nullptr, nullptr, 0), hipErrorInvalidValue);
   }
-
-  // Segfaults on nvidia
-  // SECTION("Invalid graph") {
-  //   hipGraph_t invalid_graph = nullptr;
-  //   HIP_CHECK(hipGraphCreate(&invalid_graph, 0));
-  //   HIP_CHECK(hipGraphDestroy(invalid_graph));
-  //   HIP_CHECK_ERROR(f(&node, invalid_graph, nullptr, 0), hipErrorInvalidValue);
-  // }
 
   SECTION("node == nullptr") {
     HIP_CHECK_ERROR(f(nullptr, graph, nullptr, 0), hipErrorInvalidValue);

@@ -63,10 +63,13 @@ template <typename F> void MemsetCommonNegative(F f, hipMemsetParams params) {
     HIP_CHECK_ERROR(f(&params), hipErrorInvalidValue);
   }
 
+// Disabled on AMD due to defect - EXSWHTEC-204
+#if HT_NVIDIA
   SECTION("pMemsetParams.width == 0") {
     params.width = 0;
     HIP_CHECK_ERROR(f(&params), hipErrorInvalidValue);
   }
+#endif
 
   SECTION("pMemsetParams.width > allocation size") {
     params.width = params.width + 1000;
@@ -78,17 +81,23 @@ template <typename F> void MemsetCommonNegative(F f, hipMemsetParams params) {
     HIP_CHECK_ERROR(f(&params), hipErrorInvalidValue);
   }
 
+// Disabled on AMD due to defect - EXSWHTEC-205
+#if HT_NVIDIA
   SECTION("pMemsetParams.pitch < width when height > 1") {
     params.width = 2;
     params.height = 2;
     params.pitch = params.elementSize;
     HIP_CHECK_ERROR(f(&params), hipErrorInvalidValue);
   }
+#endif
 
+// Disabled on AMD due to defect - EXSWHTEC-206
+#if HT_NVIDIA
   SECTION("pMemsetParams.pitch * height > allocation size") {
     params.width = 2;
     params.height = 2;
     params.pitch = 3 * params.elementSize;
     HIP_CHECK_ERROR(f(&params), hipErrorInvalidValue);
   }
+#endif
 }

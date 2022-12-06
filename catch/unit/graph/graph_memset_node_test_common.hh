@@ -29,24 +29,25 @@ THE SOFTWARE.
 template <typename T, typename F> void GraphMemsetNodeCommonPositive(F f) {
   const size_t width = GENERATE(1, 64, kPageSize / sizeof(T) + 1);
   const size_t height = GENERATE(1, 2, 1024);
+  DYNAMIC_SECTION("Width: " << width << " Height: " << height) {
+    LinearAllocGuard2D<T> alloc(width, height);
 
-  LinearAllocGuard2D<T> alloc(width, height);
+    constexpr T set_value = 42;
+    hipMemsetParams params = {};
+    params.dst = alloc.ptr();
+    params.elementSize = sizeof(T);
+    params.width = width;
+    params.height = height;
+    params.pitch = alloc.pitch();
+    params.value = set_value;
 
-  constexpr T set_value = 42;
-  hipMemsetParams params = {};
-  params.dst = alloc.ptr();
-  params.elementSize = sizeof(T);
-  params.width = width;
-  params.height = height;
-  params.pitch = alloc.pitch();
-  params.value = set_value;
+    HIP_CHECK(f(&params));
 
-  HIP_CHECK(f(&params));
-
-  LinearAllocGuard<T> buffer(LinearAllocs::hipHostMalloc, width * sizeof(T) * height);
-  HIP_CHECK(hipMemcpy2D(buffer.ptr(), width * sizeof(T), alloc.ptr(), alloc.pitch(),
-                        width * sizeof(T), height, hipMemcpyDeviceToHost));
-  ArrayFindIfNot(buffer.ptr(), set_value, width * height);
+    LinearAllocGuard<T> buffer(LinearAllocs::hipHostMalloc, width * sizeof(T) * height);
+    HIP_CHECK(hipMemcpy2D(buffer.ptr(), width * sizeof(T), alloc.ptr(), alloc.pitch(),
+                          width * sizeof(T), height, hipMemcpyDeviceToHost));
+    ArrayFindIfNot(buffer.ptr(), set_value, width * height);
+  }
 }
 
 template <typename F> void MemsetCommonNegative(F f, hipMemsetParams params) {

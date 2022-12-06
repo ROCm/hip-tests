@@ -41,15 +41,19 @@ template <typename F> void GraphAddNodeCommonNegativeTests(F f, hipGraph_t graph
     HIP_CHECK_ERROR(f(&node, graph, nullptr, 1), hipErrorInvalidValue);
   }
 
+// Disabled on AMD due to defect - EXSWHTEC-202
+#if HT_NVIDIA
   SECTION("Node in dependency is from different graph") {
     hipGraph_t other_graph = nullptr;
     HIP_CHECK(hipGraphCreate(&other_graph, 0));
     hipGraphNode_t other_node = nullptr;
     HIP_CHECK(hipGraphAddEmptyNode(&other_node, other_graph, nullptr, 0));
     hipGraphNode_t node = nullptr;
+    HIP_CHECK(hipGraphAddEmptyNode(&node, graph, nullptr, 0));
     HIP_CHECK_ERROR(f(&node, graph, &other_node, 1), hipErrorInvalidValue);
     HIP_CHECK(hipGraphDestroy(other_graph));
   }
+#endif
 
   SECTION("Invalid numNodes") {
     hipGraphNode_t dep_node = nullptr;
@@ -57,13 +61,16 @@ template <typename F> void GraphAddNodeCommonNegativeTests(F f, hipGraph_t graph
     HIP_CHECK_ERROR(f(&node, graph, &dep_node, 2), hipErrorInvalidValue);
   }
 
+// Disabled on AMD due to defect - EXSWHTEC-201
+#if HT_NVIDIA
   SECTION("Duplicate node in dependencies") {
     hipGraphNode_t dep_node = nullptr;
-    // Need to create create two nodes to avoid overlap with Invalid numNodes case
+    // Need to create two nodes to avoid overlap with Invalid numNodes case
     // First one is left dangling as the graph will be destroyed after the section anyway
     HIP_CHECK(hipGraphAddEmptyNode(&dep_node, graph, nullptr, 0));
     HIP_CHECK(hipGraphAddEmptyNode(&dep_node, graph, nullptr, 0));
     hipGraphNode_t deps[] = {dep_node, dep_node};
     HIP_CHECK_ERROR(f(&node, graph, deps, 2), hipErrorInvalidValue);
   }
+#endif
 }

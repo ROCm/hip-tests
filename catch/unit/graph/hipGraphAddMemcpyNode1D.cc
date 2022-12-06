@@ -59,7 +59,7 @@ TEST_CASE("Unit_hipGraphAddMemcpyNode1D_Negative_Parameters") {
       graph);
 
   MemcpyWithDirectionCommonNegativeTests(
-      std::bind(hipGraphAddMemcpyNode1D, &node, graph, nullptr, 0, _1, _2, _3, _4), &dst, &src,
+      std::bind(hipGraphAddMemcpyNode1D, &node, graph, nullptr, 0, _1, _2, _3, _4), dst, src,
       sizeof(dst), hipMemcpyDefault);
 
   SECTION("count == 0") {

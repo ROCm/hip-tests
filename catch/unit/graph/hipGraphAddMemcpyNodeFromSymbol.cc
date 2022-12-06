@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <hip_test_checkers.hh>
 
 #include "graph_memcpy_to_from_symbol_common.hh"
+#include "graph_tests_common.hh"
 
 HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_GLOBALS(char)
 HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_GLOBALS(int)

@@ -23,10 +23,34 @@ THE SOFTWARE.
 #include <functional>
 
 #include <hip_test_common.hh>
+#include <hip_test_defgroups.hh>
 #include <memcpy1d_tests_common.hh>
 
 #include "graph_tests_common.hh"
 
+/**
+ * @addtogroup hipGraphExecMemcpyNodeSetParams1D hipGraphExecMemcpyNodeSetParams1D
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphExecMemcpyNodeSetParams1D(hipGraphExec_t hGraphExec, hipGraphNode_t node, void *dst,
+ * const void *src, size_t count, hipMemcpyKind kind)` - Sets the parameters for a memcpy node in
+ * the given graphExec to perform a 1-dimensional copy
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify that node parameters get updated correctly by creating a node with valid but
+ * incorrect parameters, and the setting them to the correct values in the executable graph. The
+ * executable graph is run and the results of the memcpy verified. The test is run for all possible
+ * memcpy directions, with both the corresponding memcpy kind and hipMemcpyDefault, as well as half
+ * page and full page allocation sizes. Test source
+ * ------------------------
+ *    - unit/graph/hipGraphExecMemcpyNodeSetParams1D.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParams1D_Positive_Basic") {
   constexpr auto f = [](void* dst, void* src, size_t count, hipMemcpyKind direction) {
     hipGraph_t graph = nullptr;
@@ -51,6 +75,30 @@ TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParams1D_Positive_Basic") {
   MemcpyWithDirectionCommonTests<false>(f);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify API behaviour with invalid arguments:
+ *        -# pGraphExec is nullptr
+ *        -# node is nullptr
+ *        -# graph is nullptr
+ *        -# pDependencies is nullptr when numDependencies is not zero
+ *        -# A node in pDependencies originates from a different graph
+ *        -# numDependencies is invalid
+ *        -# A node is duplicated in pDependencies
+ *        -# dst is nullptr
+ *        -# src is nullptr
+ *        -# kind is an invalid enum value
+ *        -# count is zero
+ *        -# count is larger than dst allocation size
+ *        -# count is larger than src allocation size
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphAddMemcpyNode1D.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParams1D_Negative_Parameters") {
   using namespace std::placeholders;
   hipGraph_t graph = nullptr;
@@ -105,6 +153,18 @@ TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParams1D_Negative_Parameters") {
   HIP_CHECK(hipGraphDestroy(graph));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify that memcpy direction cannot be altered in an executable graph. The test is run for
+ * all memcpy directions with appropriate memory allocations.
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphExecMemcpyNodeSetParams1D.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParams1D_Negative_Changing_Memcpy_Direction") {
   int host;
   LinearAllocGuard<int> dev(LinearAllocs::hipMalloc, sizeof(int));

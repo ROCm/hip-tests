@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include <functional>
 
 #include <hip_test_common.hh>
+#include <hip_test_defgroups.hh>
 #include <memcpy1d_tests_common.hh>
 
 #include "graph_tests_common.hh"
@@ -38,6 +39,29 @@ static inline hipMemcpyKind ReverseMemcpyDirection(const hipMemcpyKind direction
   }
 };
 
+/**
+ * @addtogroup hipGraphMemcpyNodeSetParams1D hipGraphMemcpyNodeSetParams1D
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphMemcpyNodeSetParams1D(hipGraphNode_t node, void *dst, const void *src, size_t count,
+ * hipMemcpyKind kind)` - 	Sets a memcpy node's parameters to perform a 1-dimensional copy
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify that node parameters get updated correctly by creating a node with valid but
+ * incorrect parameters, and the setting them to the correct values after which the graph is
+ * executed and the results of the memcpy verified.   
+ * The test is run for all possible memcpy directions, with both the corresponding memcpy
+ * kind and hipMemcpyDefault, as well as half page and full page allocation sizes.
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphMemcpyNodeSetParams1D.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphMemcpyNodeSetParams1D_Positive_Basic") {
   constexpr auto f = [](void* dst, void* src, size_t count, hipMemcpyKind direction) {
     hipGraph_t graph = nullptr;
@@ -60,6 +84,24 @@ TEST_CASE("Unit_hipGraphMemcpyNodeSetParams1D_Positive_Basic") {
   MemcpyWithDirectionCommonTests<false>(f);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify API behaviour with invalid arguments:
+ *        -# node is nullptr
+ *        -# dst is nullptr
+ *        -# src is nullptr
+ *        -# kind is an invalid enum value
+ *        -# count is zero
+ *        -# count is larger than dst allocation size
+ *        -# count is larger than src allocation size
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphMemcpyNodeSetParams1D.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphMemcpyNodeSetParams1D_Negative_Parameters") {
   using namespace std::placeholders;
   hipGraph_t graph = nullptr;

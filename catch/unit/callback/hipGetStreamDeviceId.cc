@@ -44,11 +44,11 @@ THE SOFTWARE.
  *    - Platform specific (AMD)
  */
 TEST_CASE("Unit_hipGetStreamDeviceId_Positive_Threaded_Basic") {
-    int id = GENERATE(range(0, HipTest::getDeviceCount()));
-    HIP_CHECK(hipSetDevice(id));
+  int id = GENERATE(range(0, HipTest::getDeviceCount()));
+  HIP_CHECK(hipSetDevice(id));
 
-    StreamGuard streamGuard{Streams::created};
-    REQUIRE(hipGetStreamDeviceId(streamGuard.stream()) == id);
+  StreamGuard streamGuard{Streams::created};
+  REQUIRE(hipGetStreamDeviceId(streamGuard.stream()) == id);
 }
 
 /**
@@ -66,29 +66,29 @@ TEST_CASE("Unit_hipGetStreamDeviceId_Positive_Threaded_Basic") {
  *    - Multithreaded GPU
  */
 TEST_CASE("Unit_hipGetStreamDeviceId_Positive_Multithreaded_Basic") {
-    const unsigned int maxThreads = std::thread::hardware_concurrency();
-    const int deviceCount = HipTest::getDeviceCount();
+  const unsigned int maxThreads = std::thread::hardware_concurrency();
+  const int deviceCount = HipTest::getDeviceCount();
 
-    auto threadFunction = [&]() {
-        for(unsigned int id = 0; id < deviceCount; ++id) {
-            HIP_CHECK_THREAD(hipSetDevice(id));
+  auto threadFunction = [&]() {
+    for(unsigned int id = 0; id < deviceCount; ++id) {
+      HIP_CHECK_THREAD(hipSetDevice(id));
 
-            StreamGuard streamGuard{Streams::perThread};
-            REQUIRE_THREAD(hipGetStreamDeviceId(streamGuard.stream()) == id);
-        }
-    };
-
-    std::vector<std::thread> threadPool;
-    for(unsigned int i = 0; i < maxThreads; ++i) {
-        threadPool.emplace_back(threadFunction);
+      StreamGuard streamGuard{Streams::perThread};
+      REQUIRE_THREAD(hipGetStreamDeviceId(streamGuard.stream()) == id);
     }
+  };
 
-    for(auto& thread: threadPool)
-    {
-        thread.join();
-    }
+  std::vector<std::thread> threadPool;
+  for(unsigned int i = 0; i < maxThreads; ++i) {
+    threadPool.emplace_back(threadFunction);
+  }
 
-    HIP_CHECK_THREAD_FINALIZE();
+  for(auto& thread: threadPool)
+  {
+    thread.join();
+  }
+
+  HIP_CHECK_THREAD_FINALIZE();
 }
 
 /**
@@ -104,9 +104,9 @@ TEST_CASE("Unit_hipGetStreamDeviceId_Positive_Multithreaded_Basic") {
  *    - Platform specific (AMD)
  */
 TEST_CASE("Unit_hipGetStreamDeviceId_Negative_Parameters") {
-    int id = GENERATE(range(0, HipTest::getDeviceCount()));
-    HIP_CHECK(hipSetDevice(id));
+  int id = GENERATE(range(0, HipTest::getDeviceCount()));
+  HIP_CHECK(hipSetDevice(id));
 
-    StreamGuard streamGuard{Streams::nullstream};
-    REQUIRE(hipGetStreamDeviceId(streamGuard.stream()) == id);
+  StreamGuard streamGuard{Streams::nullstream};
+  REQUIRE(hipGetStreamDeviceId(streamGuard.stream()) == id);
 }

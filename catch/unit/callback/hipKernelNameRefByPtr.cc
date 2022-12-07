@@ -31,7 +31,7 @@ THE SOFTWARE.
  */
 
 __global__ void testKernel() {
-    return;
+  return;
 }
 
 /**
@@ -48,10 +48,10 @@ __global__ void testKernel() {
  *    - Platform specific (AMD) 
  */
 TEST_CASE("Unit_hipKernelNameRefByPtr_Positive_Basic") {
-    const void* kernelPtr{reinterpret_cast<const void*>(&testKernel)};
+  const void* kernelPtr{reinterpret_cast<const void*>(&testKernel)};
 
-    StreamGuard streamGuard{Streams::created};
-    REQUIRE(hipKernelNameRefByPtr(kernelPtr, streamGuard.stream()) != nullptr);
+  StreamGuard streamGuard{Streams::created};
+  REQUIRE(hipKernelNameRefByPtr(kernelPtr, streamGuard.stream()) != nullptr);
 }
 
 /**
@@ -68,10 +68,10 @@ TEST_CASE("Unit_hipKernelNameRefByPtr_Positive_Basic") {
  *    - Platform specific (AMD)
  */
 TEST_CASE("Unit_hipKernelNameRefByPtr_Negative_StreamNullptr") {
-    const void* kernelPtr{reinterpret_cast<const void*>(&testKernel)};
-    StreamGuard streamGuard{Streams::nullstream};
+  const void* kernelPtr{reinterpret_cast<const void*>(&testKernel)};
+  StreamGuard streamGuard{Streams::nullstream};
 
-    REQUIRE(hipKernelNameRefByPtr(kernelPtr, streamGuard.stream()) != nullptr);
+  REQUIRE(hipKernelNameRefByPtr(kernelPtr, streamGuard.stream()) != nullptr);
 }
 
 /**
@@ -91,15 +91,15 @@ TEST_CASE("Unit_hipKernelNameRefByPtr_Negative_StreamNullptr") {
  *    - Platform specific (AMD)
  */
 TEST_CASE("Unit_hipKernelNameRefByPtr_Negative_KernelNullptr") {
-    const void* kernelPtr{nullptr};
+  const void* kernelPtr{nullptr};
 
-    SECTION("stream is nullptr") {
-        StreamGuard streamGuard{Streams::nullstream};
-        REQUIRE(hipKernelNameRefByPtr(kernelPtr, streamGuard.stream()) == nullptr);
-    }
+  SECTION("stream is nullptr") {
+    StreamGuard streamGuard{Streams::nullstream};
+    REQUIRE(hipKernelNameRefByPtr(kernelPtr, streamGuard.stream()) == nullptr);
+  }
 
-    SECTION("stream is created") {
-        StreamGuard streamGuard{Streams::created};
-        REQUIRE(hipKernelNameRefByPtr(kernelPtr, streamGuard.stream()) == nullptr);
-    }
+  SECTION("stream is created") {
+    StreamGuard streamGuard{Streams::created};
+    REQUIRE(hipKernelNameRefByPtr(kernelPtr, streamGuard.stream()) == nullptr);
+  }
 }

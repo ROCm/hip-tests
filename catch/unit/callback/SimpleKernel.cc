@@ -23,5 +23,5 @@ THE SOFTWARE.
 #include "hip/hip_runtime.h"
 
 extern "C" __global__ void simpleKernel() {
-    printf("Hello World!");
+  printf("Hello World!");
 }

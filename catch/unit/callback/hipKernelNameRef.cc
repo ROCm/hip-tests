@@ -44,13 +44,13 @@ THE SOFTWARE.
  *    - Platform specific (AMD)
  */
 TEST_CASE("Unit_hipKernelNameRef_Positive_Basic") {
-    hipModule_t kernelModule{nullptr};
-    hipFunction_t kernelFunction{nullptr};
+  hipModule_t kernelModule{nullptr};
+  hipFunction_t kernelFunction{nullptr};
 
-    HIP_CHECK(hipModuleLoad(&kernelModule, "SimpleKernel.code"));
-    HIP_CHECK(hipModuleGetFunction(&kernelFunction, kernelModule, "simpleKernel"));
-    REQUIRE(hipKernelNameRef(kernelFunction) != nullptr);
-    HIP_CHECK(hipModuleUnload(kernelModule));
+  HIP_CHECK(hipModuleLoad(&kernelModule, "SimpleKernel.code"));
+  HIP_CHECK(hipModuleGetFunction(&kernelFunction, kernelModule, "simpleKernel"));
+  REQUIRE(hipKernelNameRef(kernelFunction) != nullptr);
+  HIP_CHECK(hipModuleUnload(kernelModule));
 }
 
 /**
@@ -66,6 +66,6 @@ TEST_CASE("Unit_hipKernelNameRef_Positive_Basic") {
  *    - Platform specific (AMD)
  */
 TEST_CASE("Unit_hipKernelNameRef_Negative_Parameters") {
-    hipFunction_t kernelFunction{nullptr};
-    REQUIRE(hipKernelNameRef(kernelFunction) == nullptr);
+  hipFunction_t kernelFunction{nullptr};
+  REQUIRE(hipKernelNameRef(kernelFunction) == nullptr);
 }

@@ -30,8 +30,8 @@ THE SOFTWARE.
  * returns the name of API with passed ID
  */
 
-const char* UNKNOWN_API{"unknown"};
-const uint32_t API_NUMBER{1024};
+const char* kUnknownApi{"unknown"};
+const uint32_t kApiNumber{1024};
 
 /**
  * Test Description
@@ -46,15 +46,15 @@ const uint32_t API_NUMBER{1024};
  *    - Platform specific (AMD)
  */
 TEST_CASE("Unit_hipApiName_Positive_Basic") {
-  std::vector<std::string> hipApiNames;
+  std::vector<std::string> hip_api_names;
 
-  for(uint32_t i = 0; i < API_NUMBER; ++i) {
-    if(strcmp(hipApiName(i), UNKNOWN_API)) {
-      hipApiNames.emplace_back(hipApiName(i));
+  for(uint32_t i = 0; i < kApiNumber; ++i) {
+    if(strcmp(hipApiName(i), kUnknownApi)) {
+      hip_api_names.emplace_back(hipApiName(i));
     }
   }
 
-  REQUIRE(!hipApiNames.empty());
+  REQUIRE(!hip_api_names.empty());
 }
 
 /**
@@ -72,6 +72,6 @@ TEST_CASE("Unit_hipApiName_Positive_Basic") {
  *    - Platform specific (AMD)
  */
 TEST_CASE("Unit_hipApiName_Negative_ReservedIds") {
-  REQUIRE_THAT(hipApiName(std::numeric_limits<uint32_t>::min()), Catch::Equals(UNKNOWN_API));
-  REQUIRE_THAT(hipApiName(std::numeric_limits<uint32_t>::max()), Catch::Equals(UNKNOWN_API));
+  REQUIRE_THAT(hipApiName(std::numeric_limits<uint32_t>::min()), Catch::Equals(kUnknownApi));
+  REQUIRE_THAT(hipApiName(std::numeric_limits<uint32_t>::max()), Catch::Equals(kUnknownApi));
 }

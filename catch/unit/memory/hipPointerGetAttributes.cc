@@ -28,7 +28,6 @@ Following scenarios are verified for hipPointerGetAttributes API
 4. Multi-threaded test with many simul allocs.
 
 */
-#if 0
 #include <hip_test_common.hh>
 #include <vector>
 #include <iostream>
@@ -390,4 +389,3 @@ TEST_CASE("Unit_hipPointerGetAttributes_GpuIter") {
     }
   }
 }
-#endif

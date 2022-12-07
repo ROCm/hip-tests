@@ -17,14 +17,31 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <resource_guards.hh>
+#include "virtual_memory_common.hh"
 
+/**
+ * @addtogroup hipMemAddressFree hipMemAddressFree
+ * @{
+ * @ingroup VirtualTest
+ * `hipMemAddressFree(void* devPtr, size_t size)` -
+ * Frees an address range reservation made via hipMemAddressReserve
+ */
+
+/**
+ * Test Description
+ * ------------------------ 
+ *    - Maps physical address to the reserved virutal memory range
+ *        -# Writes data to the virtual memory range
+ *        -# Checks that the data can be acquired and is valid
+ * Test source
+ * ------------------------ 
+ *    - unit/virtualMemory/hipMemVmm.cc
+ * Test requirements
+ * ------------------------ 
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemVmm_OneToOne_Basic") {
-  int vmm = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&vmm, hipDeviceAttributeVirtualMemoryManagementSupported, 0));
-  INFO("hipDeviceAttributeVirtualMemoryManagementSupported: " << vmm);
-
-  if (vmm == 0) {
+  if (!is_virtual_memory_management_supported(0)) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeVirtualMemoryManagement "
            "attribute. Hence skipping the testing with Pass result.\n");
     return;
@@ -43,12 +60,23 @@ TEST_CASE("Unit_hipMemVmm_OneToOne_Basic") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------ 
+ *    - Maps one physical address to two different reserved virutal memory ranges
+ *        -# Writes data to the first virtual memory range
+ *        -# Checks that the data can be acquired from the second virtual memory range
+ *        -# Expects that the first virtual memory range and the
+ *           second virtual memory range contain the same data
+ * Test source
+ * ------------------------ 
+ *    - unit/virtualMemory/hipMemVmm.cc
+ * Test requirements
+ * ------------------------ 
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemVmm_OneToN_Basic") {
-  int vmm = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&vmm, hipDeviceAttributeVirtualMemoryManagementSupported, 0));
-  INFO("hipDeviceAttributeVirtualMemoryManagementSupported: " << vmm);
-
-  if (vmm == 0) {
+  if (!is_virtual_memory_management_supported(0)) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeVirtualMemoryManagement "
            "attribute. Hence skipping the testing with Pass result.\n");
     return;

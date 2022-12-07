@@ -41,7 +41,7 @@ THE SOFTWARE.
  * Test Description
  * ------------------------
  *    - Verify basic API behavior. A Memcpy1D node is created with parameters set according to the
- * test run, after which the graph is run and the memcpy results are verified. 
+ * test run, after which the graph is run and the memcpy results are verified.
  * The test is run for all possible memcpy directions, with both the corresponding memcpy
  * kind and hipMemcpyDefault, as well as half page and full page allocation sizes.
  * Test source
@@ -68,7 +68,56 @@ TEST_CASE("Unit_hipGraphAddMemcpyNode1D_Positive_Basic") {
     return hipSuccess;
   };
 
+#if HT_NVIDIA
   MemcpyWithDirectionCommonTests<false>(f);
+#else
+  using namespace std::placeholders;
+
+  SECTION("Device to host") {
+    MemcpyDeviceToHostShell<false>(std::bind(f, _1, _2, _3, hipMemcpyDeviceToHost));
+  }
+
+  SECTION("Device to host with default kind") {
+    MemcpyDeviceToHostShell<false>(std::bind(f, _1, _2, _3, hipMemcpyDefault));
+  }
+
+  SECTION("Host to device") {
+    MemcpyHostToDeviceShell<false>(std::bind(f, _1, _2, _3, hipMemcpyHostToDevice));
+  }
+
+  SECTION("Host to device with default kind") {
+    MemcpyHostToDeviceShell<false>(std::bind(f, _1, _2, _3, hipMemcpyDefault));
+  }
+
+// Disabled on AMD due to defect - EXSWHTEC-209
+#if 0
+  SECTION("Host to host") {
+    MemcpyHostToHostShell<false>(std::bind(f, _1, _2, _3, hipMemcpyHostToHost));
+  }
+
+  SECTION("Host to host with default kind") {
+    MemcpyHostToHostShell<false>(std::bind(f, _1, _2, _3, hipMemcpyDefault));
+  }
+#endif
+
+  SECTION("Device to device") {
+    SECTION("Peer access enabled") {
+      MemcpyDeviceToDeviceShell<false, true>(std::bind(f, _1, _2, _3, hipMemcpyDeviceToDevice));
+    }
+    SECTION("Peer access disabled") {
+      MemcpyDeviceToDeviceShell<false, false>(std::bind(f, _1, _2, _3, hipMemcpyDeviceToDevice));
+    }
+  }
+
+  SECTION("Device to device with default kind") {
+    SECTION("Peer access enabled") {
+      MemcpyDeviceToDeviceShell<false, true>(std::bind(f, _1, _2, _3, hipMemcpyDefault));
+    }
+    SECTION("Peer access disabled") {
+      MemcpyDeviceToDeviceShell<false, false>(std::bind(f, _1, _2, _3, hipMemcpyDefault));
+    }
+  }
+#endif
 }
 
 /**
@@ -109,11 +158,14 @@ TEST_CASE("Unit_hipGraphAddMemcpyNode1D_Negative_Parameters") {
       std::bind(hipGraphAddMemcpyNode1D, &node, graph, nullptr, 0, _1, _2, _3, _4), dst, src,
       sizeof(dst), hipMemcpyDefault);
 
+// Disabled on AMD due to defect - EXSWHTEC-211
+#if HT_NVIDIA
   SECTION("count == 0") {
     HIP_CHECK_ERROR(
         hipGraphAddMemcpyNode1D(&node, graph, nullptr, 0, dst, src, 0, hipMemcpyDefault),
         hipErrorInvalidValue);
   }
+#endif
 
   SECTION("count larger than dst allocation size") {
     LinearAllocGuard<int> dev_dst(LinearAllocs::hipMalloc, sizeof(int));

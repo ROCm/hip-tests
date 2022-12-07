@@ -28,32 +28,29 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 #include <utils.hh>
 
-static inline unsigned int
-GenerateLinearAllocationFlagCombinations(const LinearAllocs allocation_type) {
+static inline unsigned int GenerateLinearAllocationFlagCombinations(
+    const LinearAllocs allocation_type) {
   switch (allocation_type) {
-  case LinearAllocs::hipHostMalloc:
-    return GENERATE(hipHostMallocDefault, hipHostMallocPortable,
-                    hipHostMallocMapped, hipHostMallocWriteCombined);
-  case LinearAllocs::mallocAndRegister:
-  case LinearAllocs::hipMallocManaged:
-  case LinearAllocs::malloc:
-  case LinearAllocs::hipMalloc:
-    return 0u;
-  default:
-    assert("Invalid LinearAllocs enumerator");
-    throw std::invalid_argument("Invalid LinearAllocs enumerator");
+    case LinearAllocs::hipHostMalloc:
+      return GENERATE(hipHostMallocDefault, hipHostMallocPortable, hipHostMallocMapped,
+                      hipHostMallocWriteCombined);
+    case LinearAllocs::mallocAndRegister:
+    case LinearAllocs::hipMallocManaged:
+    case LinearAllocs::malloc:
+    case LinearAllocs::hipMalloc:
+      return 0u;
+    default:
+      assert("Invalid LinearAllocs enumerator");
+      throw std::invalid_argument("Invalid LinearAllocs enumerator");
   }
 }
 
 template <bool should_synchronize, typename F>
-void MemcpyDeviceToHostShell(F memcpy_func,
-                             const hipStream_t kernel_stream = nullptr) {
+void MemcpyDeviceToHostShell(F memcpy_func, const hipStream_t kernel_stream = nullptr) {
   using LA = LinearAllocs;
-  const auto allocation_size =
-      GENERATE(kPageSize / 2, kPageSize, kPageSize * 2);
+  const auto allocation_size = GENERATE(kPageSize / 2, kPageSize, kPageSize * 2);
   const auto host_allocation_type = GENERATE(LA::malloc, LA::hipHostMalloc);
-  const auto host_allocation_flags =
-      GenerateLinearAllocationFlagCombinations(host_allocation_type);
+  const auto host_allocation_flags = GenerateLinearAllocationFlagCombinations(host_allocation_type);
 
   LinearAllocGuard<int> host_allocation(host_allocation_type, allocation_size,
                                         host_allocation_flags);
@@ -63,12 +60,11 @@ void MemcpyDeviceToHostShell(F memcpy_func,
   constexpr auto thread_count = 1024;
   const auto block_count = element_count / thread_count + 1;
   constexpr int expected_value = 42;
-  VectorSet<<<block_count, thread_count, 0, kernel_stream>>>(
-      device_allocation.ptr(), expected_value, element_count);
+  VectorSet<<<block_count, thread_count, 0, kernel_stream>>>(device_allocation.ptr(),
+                                                             expected_value, element_count);
   HIP_CHECK(hipGetLastError());
 
-  HIP_CHECK(memcpy_func(host_allocation.host_ptr(), device_allocation.ptr(),
-                        allocation_size));
+  HIP_CHECK(memcpy_func(host_allocation.host_ptr(), device_allocation.ptr(), allocation_size));
   if constexpr (should_synchronize) {
     HIP_CHECK(hipStreamSynchronize(kernel_stream));
   }
@@ -77,17 +73,14 @@ void MemcpyDeviceToHostShell(F memcpy_func,
 }
 
 template <bool should_synchronize, typename F>
-void MemcpyHostToDeviceShell(F memcpy_func,
-                             const hipStream_t kernel_stream = nullptr) {
+void MemcpyHostToDeviceShell(F memcpy_func, const hipStream_t kernel_stream = nullptr) {
   using LA = LinearAllocs;
-  const auto allocation_size =
-      GENERATE(kPageSize / 2, kPageSize, kPageSize * 2);
+  const auto allocation_size = GENERATE(kPageSize / 2, kPageSize, kPageSize * 2);
   const auto host_allocation_type = GENERATE(LA::malloc, LA::hipHostMalloc);
-  const auto host_allocation_flags =
-      GenerateLinearAllocationFlagCombinations(host_allocation_type);
+  const auto host_allocation_flags = GenerateLinearAllocationFlagCombinations(host_allocation_type);
 
-  LinearAllocGuard<int> src_host_allocation(
-      host_allocation_type, allocation_size, host_allocation_flags);
+  LinearAllocGuard<int> src_host_allocation(host_allocation_type, allocation_size,
+                                            host_allocation_flags);
   LinearAllocGuard<int> dst_host_allocation(LA::hipHostMalloc, allocation_size);
   LinearAllocGuard<int> device_allocation(LA::hipMalloc, allocation_size);
 
@@ -96,43 +89,34 @@ void MemcpyHostToDeviceShell(F memcpy_func,
   std::fill_n(src_host_allocation.host_ptr(), element_count, fill_value);
   std::fill_n(dst_host_allocation.host_ptr(), element_count, 0);
 
-  HIP_CHECK(memcpy_func(device_allocation.ptr(), src_host_allocation.host_ptr(),
-                        allocation_size));
+  HIP_CHECK(memcpy_func(device_allocation.ptr(), src_host_allocation.host_ptr(), allocation_size));
   if constexpr (should_synchronize) {
     HIP_CHECK(hipStreamSynchronize(kernel_stream));
   }
 
-  HIP_CHECK(hipMemcpy(dst_host_allocation.host_ptr(), device_allocation.ptr(),
-                      allocation_size, hipMemcpyDeviceToHost));
+  HIP_CHECK(hipMemcpy(dst_host_allocation.host_ptr(), device_allocation.ptr(), allocation_size,
+                      hipMemcpyDeviceToHost));
 
   ArrayFindIfNot(dst_host_allocation.host_ptr(), fill_value, element_count);
 }
 
 template <bool should_synchronize, typename F>
-void MemcpyHostToHostShell(F memcpy_func,
-                           const hipStream_t kernel_stream = nullptr) {
+void MemcpyHostToHostShell(F memcpy_func, const hipStream_t kernel_stream = nullptr) {
   using LA = LinearAllocs;
-  const auto allocation_size =
-      GENERATE(kPageSize / 2, kPageSize, kPageSize * 2);
+  const auto allocation_size = GENERATE(kPageSize / 2, kPageSize, kPageSize * 2);
   const auto src_allocation_type = GENERATE(LA::malloc, LA::hipHostMalloc);
   const auto dst_allocation_type = GENERATE(LA::malloc, LA::hipHostMalloc);
-  const auto src_allocation_flags =
-      GenerateLinearAllocationFlagCombinations(src_allocation_type);
-  const auto dst_allocation_flags =
-      GenerateLinearAllocationFlagCombinations(dst_allocation_type);
+  const auto src_allocation_flags = GenerateLinearAllocationFlagCombinations(src_allocation_type);
+  const auto dst_allocation_flags = GenerateLinearAllocationFlagCombinations(dst_allocation_type);
 
-  LinearAllocGuard<int> src_allocation(src_allocation_type, allocation_size,
-                                       src_allocation_flags);
-  LinearAllocGuard<int> dst_allocation(dst_allocation_type, allocation_size,
-                                       dst_allocation_flags);
+  LinearAllocGuard<int> src_allocation(src_allocation_type, allocation_size, src_allocation_flags);
+  LinearAllocGuard<int> dst_allocation(dst_allocation_type, allocation_size, dst_allocation_flags);
 
-  const auto element_count =
-      allocation_size / sizeof(*src_allocation.host_ptr());
+  const auto element_count = allocation_size / sizeof(*src_allocation.host_ptr());
   constexpr auto expected_value = 42;
   std::fill_n(src_allocation.host_ptr(), element_count, expected_value);
 
-  HIP_CHECK(memcpy_func(dst_allocation.host_ptr(), src_allocation.host_ptr(),
-                        allocation_size));
+  HIP_CHECK(memcpy_func(dst_allocation.host_ptr(), src_allocation.host_ptr(), allocation_size));
   if constexpr (should_synchronize) {
     HIP_CHECK(hipStreamSynchronize(kernel_stream));
   }
@@ -141,10 +125,8 @@ void MemcpyHostToHostShell(F memcpy_func,
 }
 
 template <bool should_synchronize, bool enable_peer_access, typename F>
-void MemcpyDeviceToDeviceShell(F memcpy_func,
-                               const hipStream_t kernel_stream = nullptr) {
-  const auto allocation_size =
-      GENERATE(kPageSize / 2, kPageSize, kPageSize * 2);
+void MemcpyDeviceToDeviceShell(F memcpy_func, const hipStream_t kernel_stream = nullptr) {
+  const auto allocation_size = GENERATE(kPageSize / 2, kPageSize, kPageSize * 2);
   const auto device_count = HipTest::getDeviceCount();
   const auto src_device = GENERATE_COPY(range(0, device_count));
   const auto dst_device = GENERATE_COPY(range(0, device_count));
@@ -158,38 +140,33 @@ void MemcpyDeviceToDeviceShell(F memcpy_func,
     int can_access_peer = 0;
     HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, src_device, dst_device));
     if (!can_access_peer) {
-      INFO("Peer access cannot be enabled between devices " << src_device << " "
-                                                            << dst_device);
+      INFO("Peer access cannot be enabled between devices " << src_device << " " << dst_device);
       REQUIRE(can_access_peer);
     }
     HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));
   }
 
-  LinearAllocGuard<int> src_allocation(LinearAllocs::hipMalloc,
-                                       allocation_size);
-  LinearAllocGuard<int> result(LinearAllocs::hipHostMalloc, allocation_size,
-                               hipHostMallocPortable);
+  LinearAllocGuard<int> src_allocation(LinearAllocs::hipMalloc, allocation_size);
+  LinearAllocGuard<int> result(LinearAllocs::hipHostMalloc, allocation_size, hipHostMallocPortable);
   HIP_CHECK(hipSetDevice(dst_device));
-  LinearAllocGuard<int> dst_allocation(LinearAllocs::hipMalloc,
-                                       allocation_size);
+  LinearAllocGuard<int> dst_allocation(LinearAllocs::hipMalloc, allocation_size);
 
   const auto element_count = allocation_size / sizeof(*src_allocation.ptr());
   constexpr auto thread_count = 1024;
   const auto block_count = element_count / thread_count + 1;
   constexpr int expected_value = 42;
   HIP_CHECK(hipSetDevice(src_device));
-  VectorSet<<<block_count, thread_count, 0, kernel_stream>>>(
-      src_allocation.ptr(), expected_value, element_count);
+  VectorSet<<<block_count, thread_count, 0, kernel_stream>>>(src_allocation.ptr(), expected_value,
+                                                             element_count);
   HIP_CHECK(hipGetLastError());
 
-  HIP_CHECK(
-      memcpy_func(dst_allocation.ptr(), src_allocation.ptr(), allocation_size));
+  HIP_CHECK(memcpy_func(dst_allocation.ptr(), src_allocation.ptr(), allocation_size));
   if constexpr (should_synchronize) {
     HIP_CHECK(hipStreamSynchronize(kernel_stream));
   }
 
-  HIP_CHECK(hipMemcpy(result.host_ptr(), dst_allocation.ptr(), allocation_size,
-                      hipMemcpyDeviceToHost));
+  HIP_CHECK(
+      hipMemcpy(result.host_ptr(), dst_allocation.ptr(), allocation_size, hipMemcpyDeviceToHost));
   if constexpr (enable_peer_access) {
     // If we've gotten this far, EnablePeerAccess must have succeeded, so we
     // only need to check this condition
@@ -199,8 +176,7 @@ void MemcpyDeviceToDeviceShell(F memcpy_func,
   ArrayFindIfNot(result.host_ptr(), expected_value, element_count);
 }
 
-template <bool should_synchronize, typename F>
-void MemcpyWithDirectionCommonTests(F memcpy_func) {
+template <bool should_synchronize, typename F> void MemcpyWithDirectionCommonTests(F memcpy_func) {
   using namespace std::placeholders;
   SECTION("Device to host") {
     MemcpyDeviceToHostShell<should_synchronize>(
@@ -228,8 +204,7 @@ void MemcpyWithDirectionCommonTests(F memcpy_func) {
   }
 
   SECTION("Host to host with default kind") {
-    MemcpyHostToHostShell<should_synchronize>(
-        std::bind(memcpy_func, _1, _2, _3, hipMemcpyDefault));
+    MemcpyHostToHostShell<should_synchronize>(std::bind(memcpy_func, _1, _2, _3, hipMemcpyDefault));
   }
 
   SECTION("Device to device") {
@@ -275,9 +250,8 @@ void MemcpyHtoDSyncBehavior(F memcpy_func, const bool should_sync,
   const auto host_alloc_type = GENERATE(LA::malloc, LA::hipHostMalloc);
   LinearAllocGuard<int> host_alloc(host_alloc_type, kPageSize);
   LinearAllocGuard<int> device_alloc(LA::hipMalloc, kPageSize);
-  MemcpySyncBehaviorCheck(
-      std::bind(memcpy_func, device_alloc.ptr(), host_alloc.ptr(), kPageSize),
-      should_sync, kernel_stream);
+  MemcpySyncBehaviorCheck(std::bind(memcpy_func, device_alloc.ptr(), host_alloc.ptr(), kPageSize),
+                          should_sync, kernel_stream);
 }
 
 template <typename F>
@@ -285,9 +259,8 @@ void MemcpyDtoHPageableSyncBehavior(F memcpy_func, const bool should_sync,
                                     const hipStream_t kernel_stream = nullptr) {
   LinearAllocGuard<int> host_alloc(LinearAllocs::malloc, kPageSize);
   LinearAllocGuard<int> device_alloc(LinearAllocs::hipMalloc, kPageSize);
-  MemcpySyncBehaviorCheck(
-      std::bind(memcpy_func, host_alloc.ptr(), device_alloc.ptr(), kPageSize),
-      should_sync, kernel_stream);
+  MemcpySyncBehaviorCheck(std::bind(memcpy_func, host_alloc.ptr(), device_alloc.ptr(), kPageSize),
+                          should_sync, kernel_stream);
 }
 
 template <typename F>
@@ -295,9 +268,8 @@ void MemcpyDtoHPinnedSyncBehavior(F memcpy_func, const bool should_sync,
                                   const hipStream_t kernel_stream = nullptr) {
   LinearAllocGuard<int> host_alloc(LinearAllocs::hipHostMalloc, kPageSize);
   LinearAllocGuard<int> device_alloc(LinearAllocs::hipMalloc, kPageSize);
-  MemcpySyncBehaviorCheck(
-      std::bind(memcpy_func, host_alloc.ptr(), device_alloc.ptr(), kPageSize),
-      should_sync, kernel_stream);
+  MemcpySyncBehaviorCheck(std::bind(memcpy_func, host_alloc.ptr(), device_alloc.ptr(), kPageSize),
+                          should_sync, kernel_stream);
 }
 
 template <typename F>
@@ -305,9 +277,8 @@ void MemcpyDtoDSyncBehavior(F memcpy_func, const bool should_sync,
                             const hipStream_t kernel_stream = nullptr) {
   LinearAllocGuard<int> src_alloc(LinearAllocs::hipMalloc, kPageSize);
   LinearAllocGuard<int> dst_alloc(LinearAllocs::hipMalloc, kPageSize);
-  MemcpySyncBehaviorCheck(
-      std::bind(memcpy_func, dst_alloc.ptr(), src_alloc.ptr(), kPageSize),
-      should_sync, kernel_stream);
+  MemcpySyncBehaviorCheck(std::bind(memcpy_func, dst_alloc.ptr(), src_alloc.ptr(), kPageSize),
+                          should_sync, kernel_stream);
 }
 
 template <typename F>
@@ -319,25 +290,19 @@ void MemcpyHtoHSyncBehavior(F memcpy_func, const bool should_sync,
 
   LinearAllocGuard<int> src_alloc(src_alloc_type, kPageSize);
   LinearAllocGuard<int> dst_alloc(dst_alloc_type, kPageSize);
-  MemcpySyncBehaviorCheck(
-      std::bind(memcpy_func, dst_alloc.ptr(), src_alloc.ptr(), kPageSize),
-      should_sync, kernel_stream);
+  MemcpySyncBehaviorCheck(std::bind(memcpy_func, dst_alloc.ptr(), src_alloc.ptr(), kPageSize),
+                          should_sync, kernel_stream);
 }
 
 // Common negative tests
-template <typename F>
-void MemcpyCommonNegativeTests(F f, void *dst, void *src, size_t count) {
-  SECTION("dst == nullptr") {
-    HIP_CHECK_ERROR(f(nullptr, src, count), hipErrorInvalidValue);
-  }
-  SECTION("src == nullptr") {
-    HIP_CHECK_ERROR(f(dst, nullptr, count), hipErrorInvalidValue);
-  }
+template <typename F> void MemcpyCommonNegativeTests(F f, void* dst, void* src, size_t count) {
+  SECTION("dst == nullptr") { HIP_CHECK_ERROR(f(nullptr, src, count), hipErrorInvalidValue); }
+  SECTION("src == nullptr") { HIP_CHECK_ERROR(f(dst, nullptr, count), hipErrorInvalidValue); }
 }
 
 template <typename F>
-void MemcpyWithDirectionCommonNegativeTests(F f, void *dst, void *src,
-                                            size_t count, hipMemcpyKind kind) {
+void MemcpyWithDirectionCommonNegativeTests(F f, void* dst, void* src, size_t count,
+                                            hipMemcpyKind kind) {
   using namespace std::placeholders;
   MemcpyCommonNegativeTests(std::bind(f, _1, _2, _3, kind), dst, src, count);
 

@@ -72,7 +72,60 @@ TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParams1D_Positive_Basic") {
     return hipSuccess;
   };
 
+#if HT_NVIDIA
   MemcpyWithDirectionCommonTests<false>(f);
+#else
+  using namespace std::placeholders;
+
+  SECTION("Device to host") {
+    MemcpyDeviceToHostShell<false>(std::bind(f, _1, _2, _3, hipMemcpyDeviceToHost));
+  }
+
+  SECTION("Host to device") {
+    MemcpyHostToDeviceShell<false>(std::bind(f, _1, _2, _3, hipMemcpyHostToDevice));
+  }
+
+  SECTION("Device to device") {
+    SECTION("Peer access enabled") {
+      MemcpyDeviceToDeviceShell<false, true>(std::bind(f, _1, _2, _3, hipMemcpyDeviceToDevice));
+    }
+    SECTION("Peer access disabled") {
+      MemcpyDeviceToDeviceShell<false, false>(std::bind(f, _1, _2, _3, hipMemcpyDeviceToDevice));
+    }
+  }
+
+  SECTION("Device to device with default kind") {
+    SECTION("Peer access enabled") {
+      MemcpyDeviceToDeviceShell<false, true>(std::bind(f, _1, _2, _3, hipMemcpyDefault));
+    }
+    SECTION("Peer access disabled") {
+      MemcpyDeviceToDeviceShell<false, false>(std::bind(f, _1, _2, _3, hipMemcpyDefault));
+    }
+  }
+
+// Disabled on AMD due to defect - EXSWHTEC-209
+#if 0
+  SECTION("Host to host") {
+    MemcpyHostToHostShell<false>(std::bind(f, _1, _2, _3, hipMemcpyHostToHost));
+  }
+
+  SECTION("Host to host with default kind") {
+    MemcpyHostToHostShell<false>(std::bind(f, _1, _2, _3, hipMemcpyDefault));
+  }
+#endif
+
+// Disabled on AMD due to defect - EXSWHTEC-210
+#if 0
+  SECTION("Device to host with default kind") {
+    MemcpyDeviceToHostShell<false>(std::bind(f, _1, _2, _3, hipMemcpyDefault));
+  }
+
+  SECTION("Host to device with default kind") {
+    MemcpyHostToDeviceShell<false>(std::bind(f, _1, _2, _3, hipMemcpyDefault));
+  }
+#endif
+
+#endif
 }
 
 /**

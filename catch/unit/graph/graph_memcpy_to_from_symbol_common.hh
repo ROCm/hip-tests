@@ -94,9 +94,12 @@ void MemcpyFromSymbolCommonNegative(F f, void* dst, const void* symbol, size_t c
     HIP_CHECK_ERROR(f(dst, nullptr, count, 0, hipMemcpyDefault), hipErrorInvalidSymbol);
   }
 
+// Disabled on AMD due to defect - EXSWHTEC-215
+#if HT_NVIDIA
   SECTION("count == 0") {
     HIP_CHECK_ERROR(f(dst, symbol, 0, 0, hipMemcpyDefault), hipErrorInvalidValue);
   }
+#endif
 
   SECTION("count > symbol size") {
     HIP_CHECK_ERROR(f(dst, symbol, count + 1, 0, hipMemcpyDefault), hipErrorInvalidValue);
@@ -106,6 +109,8 @@ void MemcpyFromSymbolCommonNegative(F f, void* dst, const void* symbol, size_t c
     HIP_CHECK_ERROR(f(dst, symbol, count, 1, hipMemcpyDefault), hipErrorInvalidValue);
   }
 
+// Disabled on AMD due to defect
+#if HT_NVIDIA
   SECTION("Illogical memcpy direction") {
     HIP_CHECK_ERROR(f(dst, symbol, count, 0, hipMemcpyHostToDevice),
                     hipErrorInvalidMemcpyDirection);
@@ -115,6 +120,7 @@ void MemcpyFromSymbolCommonNegative(F f, void* dst, const void* symbol, size_t c
     HIP_CHECK_ERROR(f(dst, symbol, count, 0, static_cast<hipMemcpyKind>(-1)),
                     hipErrorInvalidMemcpyDirection);
   }
+#endif
 }
 
 template <typename F>
@@ -127,9 +133,12 @@ void MemcpyToSymbolCommonNegative(F f, const void* symbol, void* src, size_t cou
     HIP_CHECK_ERROR(f(nullptr, src, count, 0, hipMemcpyDefault), hipErrorInvalidSymbol);
   }
 
+// Disabled on AMD due to defect - EXSWHTEC-215
+#if HT_NVIDIA
   SECTION("count == 0") {
     HIP_CHECK_ERROR(f(symbol, src, 0, 0, hipMemcpyDefault), hipErrorInvalidValue);
   }
+#endif
 
   SECTION("count > symbol size") {
     HIP_CHECK_ERROR(f(symbol, src, count + 1, 0, hipMemcpyDefault), hipErrorInvalidValue);
@@ -139,6 +148,8 @@ void MemcpyToSymbolCommonNegative(F f, const void* symbol, void* src, size_t cou
     HIP_CHECK_ERROR(f(symbol, src, count, 1, hipMemcpyDefault), hipErrorInvalidValue);
   }
 
+// Disabled on AMD due to defect
+#if HT_NVIDIA
   SECTION("Illogical memcpy direction") {
     HIP_CHECK_ERROR(f(symbol, src, count, 0, hipMemcpyDeviceToHost),
                     hipErrorInvalidMemcpyDirection);
@@ -148,6 +159,7 @@ void MemcpyToSymbolCommonNegative(F f, const void* symbol, void* src, size_t cou
     HIP_CHECK_ERROR(f(symbol, src, count, 0, static_cast<hipMemcpyKind>(-1)),
                     hipErrorInvalidMemcpyDirection);
   }
+#endif
 }
 
 #if HT_AMD

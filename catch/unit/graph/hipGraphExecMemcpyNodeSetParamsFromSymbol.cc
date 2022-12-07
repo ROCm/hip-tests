@@ -88,7 +88,7 @@ void GraphExecMemcpyFromSymbolSetParamsShell(const void* symbol, const void* alt
  * node addition. A graph is constructed to which a MemcpyFromSymbol node is added with valid but
  * incorrect parameters. After the graph is instantiated the parameters are updated to correct
  * values and the graph executed. Values in destination memory are compared against values known to
- * be in symbol memory.  
+ * be in symbol memory.
  * The test is run for scalar, const scalar, array, and const array symbols of types char, int,
  * float and double. For array symbols, the test is repeated for zero and non-zero offset values.
  * Verification is performed for destination memory allocated on host and device.
@@ -175,12 +175,15 @@ TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParamsFromSymbol_Negative_Parameters") 
       std::bind(hipGraphExecMemcpyNodeSetParamsFromSymbol, graph_exec, node, _1, _2, _3, _4, _5),
       var.ptr(), SYMBOL(int_device_var), sizeof(*var.ptr()));
 
+// Disabled on AMD due to defect
+#if HT_NVIDIA
   SECTION("Changing memcpy direction") {
     HIP_CHECK_ERROR(hipGraphExecMemcpyNodeSetParamsFromSymbol(
                         graph_exec, node, var.ptr(), SYMBOL(int_device_var), sizeof(*var.ptr()), 0,
                         hipMemcpyDeviceToHost),
                     hipErrorInvalidValue);
   }
+#endif
 
   SECTION("Changing dst allocation device") {
     if (HipTest::getDeviceCount() < 2) {

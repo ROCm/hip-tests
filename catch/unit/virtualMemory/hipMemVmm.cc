@@ -17,69 +17,53 @@
    THE SOFTWARE.
  */
 
-/* Test Case Description:
-   1) This testcase verifies the  basic scenario - supported on
-     all devices
-*/
+#include <resource_guards.hh>
 
-#include <hip_test_common.hh>
-#include <hip_test_kernels.hh>
-#include <hip_test_checkers.hh>
-#include <cstdio>
-#include <cstdint>
-#include <algorithm>
-#include <thread>
-#include <chrono>
-#include <vector>
-
-/*
-    This testcase verifies HIP Mem VMM API basic scenario - supported on all devices
- */
-
-TEST_CASE("Unit_hipMemVmm_Basic") {
+TEST_CASE("Unit_hipMemVmm_OneToOne_Basic") {
   int vmm = 0;
   HIP_CHECK(hipDeviceGetAttribute(&vmm, hipDeviceAttributeVirtualMemoryManagementSupported, 0));
   INFO("hipDeviceAttributeVirtualMemoryManagementSupported: " << vmm);
 
   if (vmm == 0) {
-    SUCCEED("GPU 0 doesn't support hipDeviceAttributeVirtualMemoryManagement "
+    HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeVirtualMemoryManagement "
            "attribute. Hence skipping the testing with Pass result.\n");
     return;
   }
 
-  size_t granularity = 0;
-
-  hipMemAllocationProp memAllocationProp;
-  memAllocationProp.type = hipMemAllocationTypePinned;
-  memAllocationProp.location.id = 0;
-  memAllocationProp.location.type = hipMemLocationTypeDevice;
-
-  HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &memAllocationProp, hipMemAllocationGranularityRecommended));
-
   size_t size = 4 * 1024;
-  void* reservedAddress{nullptr};
-  HIP_CHECK(hipMemAddressReserve(&reservedAddress, size, granularity, nullptr, 0));
+  VirtualMemoryGuard virtual_memory{size};
 
-  hipMemGenericAllocationHandle_t gaHandle{nullptr};
-  HIP_CHECK(hipMemCreate(&gaHandle, size, &memAllocationProp, 0));
+  hipDeviceptr_t device_memory_ptr = reinterpret_cast<hipDeviceptr_t>(virtual_memory.virtual_memory_ptr);
+  HIP_CHECK(hipMemsetD32(device_memory_ptr, 0xDEADBEAF, size/4));
+  std::vector<unsigned int> values(size/4);
+  HIP_CHECK(hipMemcpy(&values[0], virtual_memory.virtual_memory_ptr, size, hipMemcpyDeviceToHost));
 
-  HIP_CHECK(hipMemMap(reservedAddress, size, 0, gaHandle, 0));
-
-  hipMemAccessDesc desc;
-  std::vector<char> values(size);
-  const char value = 1;
-
-  HIP_CHECK(hipMemSetAccess(reservedAddress, size, &desc, 1));
-  HIP_CHECK(hipMemset(reservedAddress, value, size));
-  HIP_CHECK(hipMemcpy(&values[0], reservedAddress, size, hipMemcpyDeviceToHost));
-
-  for (size_t i=0; i < size; ++i) {
-    REQUIRE(values[i] == value);
+  for (const auto& value: values) {
+    REQUIRE(value == 0xDEADBEAF);
   }
-
-  HIP_CHECK(hipMemUnmap(reservedAddress, size));
-
-  HIP_CHECK(hipMemRelease(gaHandle));
-  HIP_CHECK(hipMemAddressFree(reservedAddress, size));
 }
 
+TEST_CASE("Unit_hipMemVmm_OneToN_Basic") {
+  int vmm = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&vmm, hipDeviceAttributeVirtualMemoryManagementSupported, 0));
+  INFO("hipDeviceAttributeVirtualMemoryManagementSupported: " << vmm);
+
+  if (vmm == 0) {
+    HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeVirtualMemoryManagement "
+           "attribute. Hence skipping the testing with Pass result.\n");
+    return;
+  }
+
+  size_t size = 4 * 1024;
+  VirtualMemoryGuard virtual_memory_A{size};
+  VirtualMemoryGuard virtual_memory_B{size, 0, &virtual_memory_A.handle};
+
+  hipDeviceptr_t device_memory_ptr = reinterpret_cast<hipDeviceptr_t>(virtual_memory_A.virtual_memory_ptr);
+  HIP_CHECK(hipMemsetD32(device_memory_ptr, 0xDEADBEAF, size/4));
+  std::vector<unsigned int> values(size/4);
+  HIP_CHECK(hipMemcpy(&values[0], virtual_memory_B.virtual_memory_ptr, size, hipMemcpyDeviceToHost));
+
+  for (const auto& value: values) {
+    REQUIRE(value == 0xDEADBEAF);
+  }
+}

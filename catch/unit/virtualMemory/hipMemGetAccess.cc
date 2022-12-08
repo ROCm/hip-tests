@@ -88,9 +88,7 @@ TEST_CASE("Unit_hipMemGetAccess_Negative_Parameters") {
   location.type = hipMemLocationTypeDevice;
 
   SECTION("invalid device") {
-    int numDevices{0};
-    HIP_CHECK(hipGetDeviceCount(&numDevices));
-    location.id = numDevices;
+    location.id = HipTest::getDeviceCount();
     HIP_CHECK_ERROR(hipMemGetAccess(&flags, &location, virtual_memory.virtual_memory_ptr), hipErrorInvalidDevice);
   }
 

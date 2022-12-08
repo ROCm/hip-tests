@@ -40,7 +40,7 @@ THE SOFTWARE.
  * ------------------------ 
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipMemVmm_OneToOne_Basic") {
+TEST_CASE("Unit_hipMemVmm_Positive_OneToOne_Mapping") {
   if (!is_virtual_memory_management_supported(0)) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeVirtualMemoryManagement "
            "attribute. Hence skipping the testing with Pass result.\n");
@@ -74,19 +74,19 @@ TEST_CASE("Unit_hipMemVmm_OneToOne_Basic") {
  * ------------------------ 
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipMemVmm_OneToN_Basic") {
+TEST_CASE("Unit_hipMemVmm_Positive_OneToN_Mapping") {
   if (!is_virtual_memory_management_supported(0)) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeVirtualMemoryManagement "
            "attribute. Hence skipping the testing with Pass result.\n");
     return;
   }
-  size_t size = 4 * 1024;
+  size_t size = sizeof(unsigned int) * 1024;
   VirtualMemoryGuard virtual_memory_A{size};
   VirtualMemoryGuard virtual_memory_B{size, 0, &virtual_memory_A.handle};
 
   hipDeviceptr_t device_memory_ptr = reinterpret_cast<hipDeviceptr_t>(virtual_memory_A.virtual_memory_ptr);
-  HIP_CHECK(hipMemsetD32(device_memory_ptr, 0xDEADBEAF, size/4));
-  std::vector<unsigned int> values(size/4);
+  HIP_CHECK(hipMemsetD32(device_memory_ptr, 0xDEADBEAF, size/sizeof(unsigned int)));
+  std::vector<unsigned int> values(size/sizeof(unsigned int));
   HIP_CHECK(hipMemcpy(&values[0], virtual_memory_B.virtual_memory_ptr, size, hipMemcpyDeviceToHost));
 
   for (const auto& value: values) {

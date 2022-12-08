@@ -25,6 +25,7 @@ set(TEST_SRC
     hipMemGetAllocationPropertiesFromHandle.cc
     hipMemAddressFree.cc
     hipMemAddressReserve.cc
+    hipMemCreate.cc
 )
 
 hip_add_exe_to_target(NAME VirtualMemoryTest

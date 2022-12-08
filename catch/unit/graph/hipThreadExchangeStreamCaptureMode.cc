@@ -55,9 +55,9 @@ static void hipGraphLaunchWithMode(hipStream_t stream,
 
   HIP_CHECK(hipStreamBeginCapture(stream, mode));
 
-  graphSequenceLinear(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), B_d.ptr(), N,
+  captureSequenceLinear(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), B_d.ptr(), N,
                       stream);
-  graphSequenceCompute(A_d.ptr(), B_h.host_ptr(), B_d.ptr(), N, stream);
+  captureSequenceCompute(A_d.ptr(), B_h.host_ptr(), B_d.ptr(), N, stream);
 
   if (mode == hipStreamCaptureModeRelaxed) {
     HIP_CHECK(hipMalloc(&C_d, Nbytes));

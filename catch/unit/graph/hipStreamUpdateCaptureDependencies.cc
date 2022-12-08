@@ -59,6 +59,8 @@ static void
 UpdateStreamCaptureDependenciesSet(hipStream_t stream,
                                    hipStreamCaptureMode captureMode) {
   constexpr size_t N = 1000000;
+  constexpr unsigned blocks = 512;
+  constexpr unsigned threadsPerBlock = 256;
   size_t Nbytes = N * sizeof(float);
 
   hipStreamCaptureStatus captureStatus{hipStreamCaptureStatusNone};
@@ -79,7 +81,7 @@ UpdateStreamCaptureDependenciesSet(hipStream_t stream,
   StreamsGuard streams_guard(2);
 
   HIP_CHECK(hipStreamBeginCapture(stream, captureMode));
-  graphSequenceBranched(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), B_d.ptr(), N,
+  captureSequenceBranched(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), B_d.ptr(), N,
                         stream, streams_guard.stream_list(),
                         events_guard.event_list());
 
@@ -121,9 +123,8 @@ UpdateStreamCaptureDependenciesSet(hipStream_t stream,
     REQUIRE(numDependencies == 1);
     REQUIRE(nodelist[0] == memcpyNodeC);
 
-    hipLaunchKernelGGL(HipTest::vector_square,
-                       dim3(StreamCapture_sizes::blocks),
-                       dim3(StreamCapture_sizes::threadsPerBlock), 0, stream,
+    hipLaunchKernelGGL(HipTest::vector_square, dim3(blocks),
+                       dim3(threadsPerBlock), 0, stream,
                        C_d.ptr(), C_d.ptr(), N);
   }
 
@@ -138,8 +139,8 @@ UpdateStreamCaptureDependenciesSet(hipStream_t stream,
     void *kernelArgs[] = {&A_ptr, &C_ptr, reinterpret_cast<void *>(&NElem)};
     kernelNodeParams.func =
         reinterpret_cast<void *>(HipTest::vector_square<float>);
-    kernelNodeParams.gridDim = dim3(StreamCapture_sizes::blocks);
-    kernelNodeParams.blockDim = dim3(StreamCapture_sizes::threadsPerBlock);
+    kernelNodeParams.gridDim = dim3(blocks);
+    kernelNodeParams.blockDim = dim3(threadsPerBlock);
     kernelNodeParams.sharedMemBytes = 0;
     kernelNodeParams.kernelParams = reinterpret_cast<void **>(kernelArgs);
     kernelNodeParams.extra = nullptr;
@@ -170,7 +171,7 @@ UpdateStreamCaptureDependenciesSet(hipStream_t stream,
   hipGraphExec_t graphExec = graphExec_guard.graphExec();
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < StreamCapture_sizes::LAUNCH_ITERS; i++) {
+  for (int i = 0; i < kLaunchIters; i++) {
     std::fill_n(A_h.host_ptr(), N, static_cast<float>(i));
     std::fill_n(C_h.host_ptr(), N, static_cast<float>(i));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
@@ -186,6 +187,8 @@ static void
 UpdateStreamCaptureDependenciesAdd(hipStream_t stream,
                                    hipStreamCaptureMode captureMode) {
   constexpr size_t N = 1000000;
+  constexpr unsigned blocks = 512;
+  constexpr unsigned threadsPerBlock = 256;
   size_t Nbytes = N * sizeof(float);
 
   hipStreamCaptureStatus captureStatus{hipStreamCaptureStatusNone};
@@ -206,7 +209,7 @@ UpdateStreamCaptureDependenciesAdd(hipStream_t stream,
   StreamsGuard streams_guard(2);
 
   HIP_CHECK(hipStreamBeginCapture(stream, captureMode));
-  graphSequenceBranched(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), B_d.ptr(), N,
+  captureSequenceBranched(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), B_d.ptr(), N,
                         stream, streams_guard.stream_list(),
                         events_guard.event_list());
 
@@ -245,8 +248,8 @@ UpdateStreamCaptureDependenciesAdd(hipStream_t stream,
 
     REQUIRE(numDependencies == numDepsCreated + 1);
 
-    hipLaunchKernelGGL(vectorSum, dim3(StreamCapture_sizes::blocks),
-                       dim3(StreamCapture_sizes::threadsPerBlock), 0, stream,
+    hipLaunchKernelGGL(vectorSum, dim3(blocks),
+                       dim3(threadsPerBlock), 0, stream,
                        A_d.ptr(), C_d.ptr(), B_d.ptr(), N);
   }
 
@@ -260,8 +263,8 @@ UpdateStreamCaptureDependenciesAdd(hipStream_t stream,
     size_t NElem{N};
     void *kernelArgs[] = {&A_ptr, &C_ptr, reinterpret_cast<void *>(&NElem)};
     kernelNodeParams.func = reinterpret_cast<void *>(vectorSet);
-    kernelNodeParams.gridDim = dim3(StreamCapture_sizes::blocks);
-    kernelNodeParams.blockDim = dim3(StreamCapture_sizes::threadsPerBlock);
+    kernelNodeParams.gridDim = dim3(blocks);
+    kernelNodeParams.blockDim = dim3(threadsPerBlock);
     kernelNodeParams.sharedMemBytes = 0;
     kernelNodeParams.kernelParams = reinterpret_cast<void **>(kernelArgs);
     kernelNodeParams.extra = nullptr;
@@ -278,8 +281,8 @@ UpdateStreamCaptureDependenciesAdd(hipStream_t stream,
 
     REQUIRE(numDependencies == numDepsCreated + 1);
 
-    hipLaunchKernelGGL(vectorSum, dim3(StreamCapture_sizes::blocks),
-                       dim3(StreamCapture_sizes::threadsPerBlock), 0, stream,
+    hipLaunchKernelGGL(vectorSum, dim3(blocks),
+                       dim3(threadsPerBlock), 0, stream,
                        A_d.ptr(), C_d.ptr(), B_d.ptr(), N);
   }
 
@@ -293,7 +296,7 @@ UpdateStreamCaptureDependenciesAdd(hipStream_t stream,
   hipGraphExec_t graphExec = graphExec_guard.graphExec();
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < StreamCapture_sizes::LAUNCH_ITERS; i++) {
+  for (int i = 0; i < kLaunchIters; i++) {
     std::fill_n(A_h.host_ptr(), N, static_cast<float>(i));
     std::fill_n(C_h.host_ptr(), N, static_cast<float>(i));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
@@ -438,7 +441,7 @@ TEST_CASE("Unit_hipStreamUpdateCaptureDependencies_Negative_Parameters") {
   memsetParams.value = 1;
   memsetParams.pitch = 0;
   memsetParams.elementSize = sizeof(char);
-  memsetParams.width = Nbytes * sizeof(char);
+  memsetParams.width = Nbytes;
   memsetParams.height = 1;
   HIP_CHECK(hipGraphAddMemsetNode(&memsetNode, capInfoGraph, nodelist,
                                   numDependencies, &memsetParams));

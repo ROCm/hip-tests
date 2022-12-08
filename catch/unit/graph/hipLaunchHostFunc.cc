@@ -106,7 +106,7 @@ TEST_CASE("Unit_hipLaunchHostFunc_Positive_Functional") {
   const hipStreamCaptureMode captureMode = hipStreamCaptureModeGlobal;
 
   HIP_CHECK(hipStreamBeginCapture(stream, captureMode));
-  graphSequenceSimple(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), 1, stream);
+  captureSequenceSimple(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), 1, stream);
 
   hipHostFn_t fn = hostNodeCallback;
   float *data[2] = {A_h.host_ptr(), B_h.host_ptr()};
@@ -120,7 +120,7 @@ TEST_CASE("Unit_hipLaunchHostFunc_Positive_Functional") {
   hipGraphExec_t graphExec = graphExec_guard.graphExec();
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < StreamCapture_sizes::LAUNCH_ITERS; i++) {
+  for (int i = 0; i < kLaunchIters; i++) {
     std::fill_n(A_h.host_ptr(), 1, static_cast<float>(i));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
     HIP_CHECK(hipStreamSynchronize(stream));
@@ -157,7 +157,7 @@ TEST_CASE("Unit_hipLaunchHostFunc_Positive_Thread") {
   const hipStreamCaptureMode captureMode = hipStreamCaptureModeGlobal;
 
   HIP_CHECK(hipStreamBeginCapture(stream, captureMode));
-  graphSequenceSimple(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), 1, stream);
+  captureSequenceSimple(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), 1, stream);
 
   hipHostFn_t fn = hostNodeCallback;
   float *data[2] = {A_h.host_ptr(), B_h.host_ptr()};
@@ -172,7 +172,7 @@ TEST_CASE("Unit_hipLaunchHostFunc_Positive_Thread") {
   hipGraphExec_t graphExec = graphExec_guard.graphExec();
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < StreamCapture_sizes::LAUNCH_ITERS; i++) {
+  for (int i = 0; i < kLaunchIters; i++) {
     std::fill_n(A_h.host_ptr(), 1, static_cast<float>(i));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
     HIP_CHECK(hipStreamSynchronize(stream));

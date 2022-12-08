@@ -72,7 +72,6 @@ TEST_CASE("Unit_hipStreamEndCapture_Negative_Parameters") {
     HIP_CHECK_ERROR(hipStreamEndCapture(destroyed_stream, &graph),
                     hipErrorContextIsDestroyed);
   }
-  HIP_CHECK(hipGraphDestroy(graph));
 }
 
 /**
@@ -103,7 +102,7 @@ TEST_CASE("Unit_hipStreamEndCapture_Positive_GraphDestroy") {
   HIP_CHECK(hipGraphCreate(&graph, 0));
 
   HIP_CHECK(hipStreamBeginCapture(stream, captureMode));
-  graphSequenceSimple(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), N, stream);
+  captureSequenceSimple(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), N, stream);
 
   HIP_CHECK(hipGraphDestroy(graph));
   HIP_CHECK(hipStreamEndCapture(stream, &graph));
@@ -144,7 +143,7 @@ TEST_CASE("Unit_hipStreamEndCapture_Negative_Thread") {
   HIP_CHECK(hipGraphCreate(&graph, 0));
 
   HIP_CHECK(hipStreamBeginCapture(stream, captureMode));
-  graphSequenceSimple(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), N, stream);
+  captureSequenceSimple(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), N, stream);
 
   std::thread t(thread_func_neg, stream, graph);
   t.join();
@@ -189,7 +188,7 @@ TEST_CASE("Unit_hipStreamEndCapture_Positive_Thread") {
   const hipStreamCaptureMode captureMode = hipStreamCaptureModeRelaxed;
 
   HIP_CHECK(hipStreamBeginCapture(stream, captureMode));
-  graphSequenceSimple(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), N, stream);
+  captureSequenceSimple(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), N, stream);
 
   std::thread t(thread_func_pos, stream, &graph);
   t.join();
@@ -200,7 +199,7 @@ TEST_CASE("Unit_hipStreamEndCapture_Positive_Thread") {
   hipGraphExec_t graphExec = graphExec_guard.graphExec();
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < StreamCapture_sizes::LAUNCH_ITERS; i++) {
+  for (int i = 0; i < kLaunchIters; i++) {
     std::fill_n(A_h.host_ptr(), N, static_cast<float>(i));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
     HIP_CHECK(hipStreamSynchronize(stream));

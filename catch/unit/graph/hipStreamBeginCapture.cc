@@ -74,7 +74,7 @@ void captureStreamAndLaunchGraph(F graphFunc, hipStreamCaptureMode mode,
   HIP_CHECK(hipStreamBeginCapture(stream, mode));
   graphFunc(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), B_d.ptr(), N, stream);
 
-  graphSequenceCompute(A_d.ptr(), B_h.ptr(), B_d.ptr(), N, stream);
+  captureSequenceCompute(A_d.ptr(), B_h.ptr(), B_d.ptr(), N, stream);
 
   HIP_CHECK(hipStreamEndCapture(stream, &graph));
 
@@ -85,7 +85,7 @@ void captureStreamAndLaunchGraph(F graphFunc, hipStreamCaptureMode mode,
   hipGraphExec_t graphExec = graphExec_guard.graphExec();
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < StreamCapture_sizes::LAUNCH_ITERS; i++) {
+  for (int i = 0; i < kLaunchIters; i++) {
     std::fill_n(A_h.host_ptr(), N, static_cast<float>(i));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
     HIP_CHECK(hipStreamSynchronize(stream));
@@ -125,7 +125,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_Functional") {
     captureStreamAndLaunchGraph<float>(
         [](float *A_h, float *A_d, float *B_h, float *B_d, size_t N,
            hipStream_t stream) {
-          return graphSequenceLinear(A_h, A_d, B_h, B_d, N, stream);
+          return captureSequenceLinear(A_h, A_d, B_h, B_d, N, stream);
         },
         captureMode, stream);
   }
@@ -135,7 +135,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_Functional") {
         [&streams_guard, &events_guard](float *A_h, float *A_d, float *B_h,
                                         float *B_d, size_t N,
                                         hipStream_t stream) {
-          graphSequenceBranched(A_h, A_d, B_h, B_d, N, stream,
+          captureSequenceBranched(A_h, A_d, B_h, B_d, N, stream,
                                 streams_guard.stream_list(),
                                 events_guard.event_list());
         },
@@ -250,7 +250,7 @@ static void interStrmEventSyncCapture(const hipStream_t &stream1,
   hipGraphExec_t graphExec2 = graphExec_guard2.graphExec();
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < StreamCapture_sizes::LAUNCH_ITERS; i++) {
+  for (int i = 0; i < kLaunchIters; i++) {
     // Execute the Graphs
     HIP_CHECK(hipGraphLaunch(graphExec1, stream1));
     HIP_CHECK(hipGraphLaunch(graphExec2, stream2));
@@ -290,7 +290,7 @@ static void colligatedStrmCapture(const hipStream_t &stream1,
   hipGraphExec_t graphExec2 = graphExec_guard2.graphExec();
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < StreamCapture_sizes::LAUNCH_ITERS; i++) {
+  for (int i = 0; i < kLaunchIters; i++) {
     // Execute the Graphs
     HIP_CHECK(hipGraphLaunch(graphExec1, stream1));
     HIP_CHECK(hipGraphLaunch(graphExec2, stream2));
@@ -324,12 +324,12 @@ static void colligatedStrmCaptureFunc(const hipStream_t &stream1,
   // Capture 2 streams
   HIP_CHECK(hipStreamBeginCapture(stream1, hipStreamCaptureModeGlobal));
   HIP_CHECK(hipStreamBeginCapture(stream2, hipStreamCaptureModeGlobal));
-  graphSequenceLinear(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), B_d.ptr(), N,
+  captureSequenceLinear(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), B_d.ptr(), N,
                       stream1);
-  graphSequenceLinear(C_h.host_ptr(), C_d.ptr(), D_h.host_ptr(), D_d.ptr(), N,
+  captureSequenceLinear(C_h.host_ptr(), C_d.ptr(), D_h.host_ptr(), D_d.ptr(), N,
                       stream2);
-  graphSequenceCompute(A_d.ptr(), B_h.host_ptr(), B_d.ptr(), N, stream1);
-  graphSequenceCompute(C_d.ptr(), D_h.host_ptr(), D_d.ptr(), N, stream2);
+  captureSequenceCompute(A_d.ptr(), B_h.host_ptr(), B_d.ptr(), N, stream1);
+  captureSequenceCompute(C_d.ptr(), D_h.host_ptr(), D_d.ptr(), N, stream2);
   HIP_CHECK(hipStreamEndCapture(stream1, &graph1));
   HIP_CHECK(hipStreamEndCapture(stream2, &graph2));
   // Validate end capture is successful
@@ -343,7 +343,7 @@ static void colligatedStrmCaptureFunc(const hipStream_t &stream1,
   hipGraphExec_t graphExec2 = graphExec_guard2.graphExec();
 
   // Execute the Graphs
-  for (int iter = 0; iter < StreamCapture_sizes::LAUNCH_ITERS; iter++) {
+  for (int iter = 0; iter < kLaunchIters; iter++) {
     std::fill_n(A_h.host_ptr(), N, iter);
     std::fill_n(C_h.host_ptr(), N, iter);
     HIP_CHECK(hipGraphLaunch(graphExec1, stream1));
@@ -362,8 +362,8 @@ static void threadStrmCaptureFunc(hipStream_t stream, int *A_h, int *A_d,
                                   size_t N, hipStreamCaptureMode mode) {
   // Capture stream
   HIP_CHECK(hipStreamBeginCapture(stream, mode));
-  graphSequenceLinear(A_h, A_d, B_h, B_d, N, stream);
-  graphSequenceCompute(A_d, B_h, B_d, N, stream);
+  captureSequenceLinear(A_h, A_d, B_h, B_d, N, stream);
+  captureSequenceCompute(A_d, B_h, B_d, N, stream);
   HIP_CHECK(hipStreamEndCapture(stream, graph));
 }
 
@@ -407,7 +407,7 @@ static void multithreadedTest(hipStreamCaptureMode mode) {
   hipGraphExec_t graphExec2 = graphExec_guard2.graphExec();
 
   // Execute the Graphs
-  for (int iter = 0; iter < StreamCapture_sizes::LAUNCH_ITERS; iter++) {
+  for (int iter = 0; iter < kLaunchIters; iter++) {
     std::fill_n(A_h.host_ptr(), N, iter);
     std::fill_n(C_h.host_ptr(), N, iter);
     HIP_CHECK(hipGraphLaunch(graphExec1, stream1));
@@ -1232,7 +1232,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_captureComplexGraph") {
   GraphExecGuard graphExec_g(graph);
   hipGraphExec_t graphExec = graphExec_g.graphExec();
   // Verify graph
-  for (int iter = 0; iter < StreamCapture_sizes::LAUNCH_ITERS; iter++) {
+  for (int iter = 0; iter < kLaunchIters; iter++) {
     std::fill_n(Ah.host_ptr(), N, iter);
     std::fill_n(Bh.host_ptr(), N, iter);
     HIP_CHECK(hipGraphLaunch(graphExec, streams[0]));
@@ -1248,7 +1248,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_captureComplexGraph") {
       }
     }
   }
-  REQUIRE(gCbackIter == (2 * StreamCapture_sizes::LAUNCH_ITERS));
+  REQUIRE(gCbackIter == (2 * kLaunchIters));
 }
 
 /**

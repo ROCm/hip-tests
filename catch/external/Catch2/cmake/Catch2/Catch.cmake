@@ -118,8 +118,10 @@ same as the Catch name; see also ``TEST_PREFIX`` and ``TEST_SUFFIX``.
 
 #]=======================================================================]
 
+
 #------------------------------------------------------------------------------
-function(catch_discover_tests TARGET)
+# TARGET_LIST TEST_SET
+function(catch_discover_tests_compile_time_detection TARGET TEST_SET)
   cmake_parse_arguments(
     ""
     ""
@@ -127,6 +129,9 @@ function(catch_discover_tests TARGET)
     "TEST_SPEC;EXTRA_ARGS;PROPERTIES"
     ${ARGN}
   )
+  message("--------------------------------1. Inside discover ${TARGET}")
+  message("--------------------------------2. Inside discover ${TEST_SET}")
+
 
   if(NOT _WORKING_DIRECTORY)
     set(_WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
@@ -140,28 +145,46 @@ function(catch_discover_tests TARGET)
   string(SUBSTRING ${args_hash} 0 7 args_hash)
 
   # Define rule to generate test list for aforementioned test executable
-  set(ctest_include_file "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_include-${args_hash}.cmake")
-  set(ctest_tests_file "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_tests-${args_hash}.cmake")
+  set(ctest_include_file "${CMAKE_CURRENT_BINARY_DIR}/${TEST_SET}_include-${args_hash}.cmake")
+  set(ctest_tests_file "${CMAKE_CURRENT_BINARY_DIR}/${TEST_SET}_tests-${args_hash}.cmake")
+
+  foreach(EXE_NAME ${TARGET})
+
+    add_custom_command(
+      TARGET ${EXE_NAME} POST_BUILD
+      COMMAND "${CMAKE_COMMAND}"
+              -D "TEST_TARGET=${EXE_NAME}"
+              -D "TEST_EXECUTABLE=$<TARGET_FILE:${EXE_NAME}>"
+              -D "TEST_EXECUTOR=${crosscompiling_emulator}"
+              -D "TEST_WORKING_DIR=${_WORKING_DIRECTORY}"
+              -D "TEST_SPEC=${_TEST_SPEC}"
+              -D "TEST_EXTRA_ARGS=${_EXTRA_ARGS}"
+              -D "TEST_PROPERTIES=${_PROPERTIES}"
+              -D "TEST_PREFIX=${_TEST_PREFIX}"
+              -D "TEST_SUFFIX=${_TEST_SUFFIX}"
+              -D "TEST_LIST=${_TEST_LIST}"
+              -D "TEST_REPORTER=${_REPORTER}"
+              -D "TEST_OUTPUT_DIR=${_OUTPUT_DIR}"
+              -D "TEST_OUTPUT_PREFIX=${_OUTPUT_PREFIX}"
+              -D "TEST_OUTPUT_SUFFIX=${_OUTPUT_SUFFIX}"
+              -D "CTEST_FILE=${ctest_tests_file}"
+              -P "${_CATCH_DISCOVER_TESTS_SCRIPT}"
+      VERBATIM
+    )
+  endforeach()
+
   file(RELATIVE_PATH ctestincludepath ${CMAKE_CURRENT_BINARY_DIR} ${ctest_include_file})
   file(RELATIVE_PATH ctestfilepath ${CMAKE_CURRENT_BINARY_DIR} ${ctest_tests_file})
-  file(RELATIVE_PATH _workdir ${CMAKE_CURRENT_BINARY_DIR} ${_WORKING_DIRECTORY})
-  file(RELATIVE_PATH _CATCH_ADD_TEST_SCRIPT ${CMAKE_CURRENT_BINARY_DIR} ${ADD_SCRIPT_PATH})
 
-  get_property(crosscompiling_emulator
-    TARGET ${TARGET}
-    PROPERTY CROSSCOMPILING_EMULATOR
+  file(WRITE "${ctest_include_file}"
+    "if(EXISTS \"${ctestfilepath}\")\n"
+    "  include(\"${ctestfilepath}\")\n"
+    "else()\n"
+    "  message(WARNING \"Test ${TARGET} not built yet.\")\n"
+    "endif()\n"
   )
 
-  set(EXEC_NAME ${TARGET})
-  if(WIN32)
-    set(EXEC_NAME ${EXEC_NAME}.exe)
-  endif()
-
-  # uses catch_include.cmake.in file to generate the *_include.cmake file
-  # *_include.cmake is used to generate the *_test.cmake during execution of ctest cmd
-  configure_file(${CATCH2_INCLUDE} ${TARGET}_include-${args_hash}.cmake @ONLY)
-
-  if(NOT ${CMAKE_VERSION} VERSION_LESS "3.10.0") 
+  if(NOT ${CMAKE_VERSION} VERSION_LESS "3.10.0")
     # Add discovered tests to directory TEST_INCLUDE_FILES
     set_property(DIRECTORY
       APPEND PROPERTY TEST_INCLUDE_FILES "${ctestincludepath}"
@@ -184,17 +207,61 @@ endfunction()
 
 ###############################################################################
 
+
+
+
+#------------------------------------------------------------------------------
+# current staging
+function(catch_discover_tests TARGET_LIST TEST_SET)
+  cmake_parse_arguments(
+    ""
+    ""
+    "TEST_PREFIX;TEST_SUFFIX;WORKING_DIRECTORY;TEST_LIST;REPORTER;OUTPUT_DIR;OUTPUT_PREFIX;OUTPUT_SUFFIX"
+    "TEST_SPEC;EXTRA_ARGS;PROPERTIES"
+    ${ARGN}
+  )
+  ## Generate a unique name based on the extra arguments
+  string(SHA1 args_hash "${_TEST_SPEC} ${_EXTRA_ARGS} ${_REPORTER} ${_OUTPUT_DIR} ${_OUTPUT_PREFIX} ${_OUTPUT_SUFFIX}")
+  string(SUBSTRING ${args_hash} 0 7 args_hash)
+  # Define rule to generate test list for aforementioned test executable
+  set(ctest_include_file "${CMAKE_CURRENT_BINARY_DIR}/${TEST_SET}_include-${args_hash}.cmake")
+  set(ctest_tests_file "${CMAKE_CURRENT_BINARY_DIR}/${TEST_SET}_tests-${args_hash}.cmake")
+  file(RELATIVE_PATH ctestincludepath ${CMAKE_CURRENT_BINARY_DIR} ${ctest_include_file})
+  file(RELATIVE_PATH ctestfilepath ${CMAKE_CURRENT_BINARY_DIR} ${ctest_tests_file})
+  file(RELATIVE_PATH _CATCH_ADD_TEST_SCRIPT ${CMAKE_CURRENT_BINARY_DIR} ${ADD_SCRIPT_PATH})
+  file(RELATIVE_PATH CATCH_INCLUDE_PATH ${CMAKE_CURRENT_BINARY_DIR} ${CATCH_INCLUDE_PATH})
+  if(NOT ${CMAKE_VERSION} VERSION_LESS "3.10.0")
+      file(WRITE ${ctest_include_file} "set(exc_names ${TARGET_LIST})\n")
+      file(APPEND ${ctest_include_file} "set(TARGET ${TEST_SET})\n")
+      file(APPEND ${ctest_include_file} "set(_TEST_LIST ${TEST_SET}_TESTS)\n")
+      file(APPEND ${ctest_include_file} "set(ctestfilepath ${ctestfilepath})\n")
+      file(APPEND ${ctest_include_file} "set(_CATCH_ADD_TEST_SCRIPT ${_CATCH_ADD_TEST_SCRIPT})\n")
+      file(APPEND ${ctest_include_file} "set(crosscompiling_emulator ${crosscompiling_emulator})\n")
+      file(APPEND ${ctest_include_file} "set(_PROPERTIES ${_PROPERTIES})\n")
+      file(APPEND ${ctest_include_file} "include(${CATCH_INCLUDE_PATH})\n")
+      # Add discovered tests to directory TEST_INCLUDE_FILES      
+      set_property(DIRECTORY
+        APPEND PROPERTY TEST_INCLUDE_FILES "${ctestincludepath}"
+      )
+  endif()
+
+endfunction()
+
+###############################################################################
+
 set(_CATCH_DISCOVER_TESTS_SCRIPT
   ${CMAKE_CURRENT_LIST_DIR}/CatchAddTests.cmake
   CACHE INTERNAL "Catch2 full path to CatchAddTests.cmake helper file"
 )
 
+
 ###############################################################################
 # function to be called by all tests
-function(hip_add_exe_to_target)
+function(hip_add_exe_to_target_compile_time_detection)
   set(options)
+  # NAME EventTest, TEST_SRC src, TEST_TARGET_NAME build_tests
   set(args NAME TEST_TARGET_NAME PLATFORM COMPILE_OPTIONS)
-  set(list_args TEST_SRC LINKER_LIBS PROPERTY)
+  set(list_args TEST_SRC LINKER_LIBS COMMON_SHARED_SRC PROPERTY)
   cmake_parse_arguments(
     PARSE_ARGV 0
     "" # variable prefix
@@ -202,48 +269,164 @@ function(hip_add_exe_to_target)
     "${args}"
     "${list_args}"
   )
-  # Create shared lib of all tests
-  if(NOT RTC_TESTING)
-    add_executable(${_NAME} EXCLUDE_FROM_ALL ${_TEST_SRC} $<TARGET_OBJECTS:Main_Object> $<TARGET_OBJECTS:KERNELS>)
-  else ()
-    add_executable(${_NAME} EXCLUDE_FROM_ALL ${_TEST_SRC} $<TARGET_OBJECTS:Main_Object>)
-    if(HIP_PLATFORM STREQUAL "amd")
-      target_link_libraries(${_NAME} hiprtc)
+
+  foreach(SRC_NAME ${TEST_SRC})
+    if(NOT STANDALONE_TESTS EQUAL "1")
+      set(_EXE_NAME ${_NAME})
+      # take the entire source set for building the executable
+      set(SRC_NAME ${TEST_SRC})
     else()
-      target_link_libraries(${_NAME} nvrtc)
+      # strip extension of src and use exe name as src name
+      get_filename_component(_EXE_NAME ${SRC_NAME} NAME_WLE)
     endif()
-  endif()
-  catch_discover_tests(${_NAME} PROPERTIES  SKIP_REGULAR_EXPRESSION "HIP_SKIP_THIS_TEST")
-  if(UNIX)
-    set(_LINKER_LIBS ${_LINKER_LIBS} stdc++fs)
-    set(_LINKER_LIBS ${_LINKER_LIBS} -ldl)
-  else()
-    # res files are built resource files using rc files.
-    # use llvm-rc exe to build the res files
-    # Thes are used to populate the properties of the built executables
-    if(EXISTS "${PROP_RC}/catchProp.res")
-      set(_LINKER_LIBS ${_LINKER_LIBS} "${PROP_RC}/catchProp.res")
+
+    if(NOT RTC_TESTING)
+      add_executable(${_EXE_NAME} EXCLUDE_FROM_ALL ${SRC_NAME} ${COMMON_SHARED_SRC} $<TARGET_OBJECTS:Main_Object> $<TARGET_OBJECTS:KERNELS>)
+    else ()
+      add_executable(${_EXE_NAME} EXCLUDE_FROM_ALL ${SRC_NAME} ${COMMON_SHARED_SRC} $<TARGET_OBJECTS:Main_Object>)
+      if(HIP_PLATFORM STREQUAL "amd")
+          target_link_libraries(${_EXE_NAME} hiprtc)
+      else()
+          target_link_libraries(${_EXE_NAME} nvrtc)
+      endif()
     endif()
-  endif()
 
-  if(DEFINED _LINKER_LIBS)
-    target_link_libraries(${_NAME} ${_LINKER_LIBS})
-  endif()
 
-  # Add dependency on build_tests to build it on this custom target
-  add_dependencies(${_TEST_TARGET_NAME} ${_NAME})
 
-  if (DEFINED _PROPERTY)
-    set_property(TARGET ${_NAME} PROPERTY ${_PROPERTY})
-  endif()
+    if(UNIX)
+      set(_LINKER_LIBS ${_LINKER_LIBS} stdc++fs)
+      set(_LINKER_LIBS ${_LINKER_LIBS} -ldl)
+    else()
+      # res files are built resource files using rc files.
+      # use llvm-rc exe to build the res files
+      # Thes are used to populate the properties of the built executables
+      if(EXISTS "${PROP_RC}/catchProp.res")
+        set(_LINKER_LIBS ${_LINKER_LIBS} "${PROP_RC}/catchProp.res")
+      endif()
+      #set(_LINKER_LIBS ${_LINKER_LIBS} -noAutoResponse)
+    endif()
 
-  if (DEFINED _COMPILE_OPTIONS)
-    target_compile_options(${_NAME} PUBLIC ${_COMPILE_OPTIONS})
-  endif()
+    if(DEFINED _LINKER_LIBS)
+      target_link_libraries(${_EXE_NAME} ${_LINKER_LIBS})
+    endif()
 
-  foreach(arg IN LISTS _UNPARSED_ARGUMENTS)
-      message(WARNING "Unparsed arguments: ${arg}")
+    # Add dependency on build_tests to build it on this custom target
+    add_dependencies(${_TEST_TARGET_NAME} ${_EXE_NAME})
+    # add_dependencies(${_TEST_TARGET_NAME} ${_EXE_NAME})
+
+    if (DEFINED _PROPERTY)
+      set_property(TARGET ${_EXE_NAME} PROPERTY ${_PROPERTY})
+    endif()
+
+    if (DEFINED _COMPILE_OPTIONS)
+      target_compile_options(${_EXE_NAME} PUBLIC ${_COMPILE_OPTIONS})
+    endif()
+    foreach(arg IN LISTS _UNPARSED_ARGUMENTS)
+        message(WARNING "Unparsed arguments: ${arg}")
+    endforeach()
+    get_property(crosscompiling_emulator
+      TARGET ${_EXE_NAME}
+      PROPERTY CROSSCOMPILING_EMULATOR
+    )
+    set(_EXE_NAME_LIST ${_EXE_NAME_LIST} ${_EXE_NAME})
+    if(NOT STANDALONE_TESTS EQUAL "1")
+      break()
+    endif()
   endforeach()
+  message("------------------------------------------------AJAY calling discovering tests - ${_EXE_NAME_LIST} ${_NAME}")
+  catch_discover_tests("${_EXE_NAME_LIST}" "${_NAME}" PROPERTIES  SKIP_REGULAR_EXPRESSION "HIP_SKIP_THIS_TEST")
 endfunction()
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###############################################################################
+# current staging
+# function to be called by all tests
+function(hip_add_exe_to_target)
+  set(options)
+  set(args NAME TEST_TARGET_NAME PLATFORM COMPILE_OPTIONS)
+  set(list_args TEST_SRC LINKER_LIBS COMMON_SHARED_SRC PROPERTY)
+  cmake_parse_arguments(
+    PARSE_ARGV 0
+    "" # variable prefix
+    "${options}"
+    "${args}"
+    "${list_args}"
+  )
+  foreach(SRC_NAME ${TEST_SRC})
+
+    if(NOT STANDALONE_TESTS EQUAL "1")
+      set(_EXE_NAME ${_NAME})
+      set(SRC_NAME ${TEST_SRC})
+    else()
+      # strip extension of src and use exe name as src name
+      get_filename_component(_EXE_NAME ${SRC_NAME} NAME_WLE)
+    endif()
+
+    # Create shared lib of all tests
+    if(NOT RTC_TESTING)
+      add_executable(${_EXE_NAME} EXCLUDE_FROM_ALL ${SRC_NAME} ${COMMON_SHARED_SRC} $<TARGET_OBJECTS:Main_Object> $<TARGET_OBJECTS:KERNELS>)
+    else ()
+      add_executable(${_EXE_NAME} EXCLUDE_FROM_ALL ${SRC_NAME} ${COMMON_SHARED_SRC} $<TARGET_OBJECTS:Main_Object>)
+      if(HIP_PLATFORM STREQUAL "amd")
+        target_link_libraries(${_EXE_NAME} hiprtc)
+      else()
+        target_link_libraries(${_EXE_NAME} nvrtc)
+      endif()
+    endif()
+    if (DEFINED _PROPERTY)
+      set_property(TARGET ${_EXE_NAME} PROPERTY ${_PROPERTY})
+    endif()
+    if(UNIX)
+      set(_LINKER_LIBS ${_LINKER_LIBS} stdc++fs)
+      set(_LINKER_LIBS ${_LINKER_LIBS} -ldl)
+    else()
+      # res files are built resource files using rc files.
+      # use llvm-rc exe to build the res files
+      # Thes are used to populate the properties of the built executables
+      if(EXISTS "${PROP_RC}/catchProp.res")
+        set(_LINKER_LIBS ${_LINKER_LIBS} "${PROP_RC}/catchProp.res")
+      endif()
+    endif()
+
+    if(DEFINED _LINKER_LIBS)
+      target_link_libraries(${_EXE_NAME} ${_LINKER_LIBS})
+    endif()
+
+    # Add dependency on build_tests to build it on this custom target
+    add_dependencies(${_TEST_TARGET_NAME} ${_EXE_NAME})
+
+    if (DEFINED _COMPILE_OPTIONS)
+      target_compile_options(${_EXE_NAME} PUBLIC ${_COMPILE_OPTIONS})
+    endif()
+
+    foreach(arg IN LISTS _UNPARSED_ARGUMENTS)
+        message(WARNING "Unparsed arguments: ${arg}")
+    endforeach()
+    get_property(crosscompiling_emulator
+    TARGET ${_EXE_NAME}
+    PROPERTY CROSSCOMPILING_EMULATOR
+    )
+    set(_EXE_NAME_LIST ${_EXE_NAME_LIST} ${_EXE_NAME})
+    if(NOT STANDALONE_TESTS EQUAL "1")
+      break()
+    endif()
+
+  endforeach()
+
+  catch_discover_tests("${_EXE_NAME_LIST}" "${_NAME}" PROPERTIES  SKIP_REGULAR_EXPRESSION "HIP_SKIP_THIS_TEST")
+endfunction()
 

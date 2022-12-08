@@ -454,21 +454,20 @@ TEST_CASE("Unit_hipStreamUpdateCaptureDependencies_Negative_Parameters") {
         hipErrorInvalidValue);
   }
 
-  SECTION("numDeps exceeding actual number of nodes") {
-    HIP_CHECK_ERROR(hipStreamUpdateCaptureDependencies(
-                        stream, dependencies.data(), dependencies.size() + 1,
-                        hipStreamAddCaptureDependencies),
-                    hipErrorInvalidValue);
-  }
-
-#if HT_NVIDIA
-  // Tests not supported for amd
   SECTION("Invalid flag") {
     constexpr int invalidFlag = 20;
     HIP_CHECK_ERROR(
         hipStreamUpdateCaptureDependencies(stream, dependencies.data(),
                                            dependencies.size(), invalidFlag),
         hipErrorInvalidValue);
+  }
+
+#if HT_NVIDIA // EXSWHTEC-216
+  SECTION("numDeps exceeding actual number of nodes") {
+    HIP_CHECK_ERROR(hipStreamUpdateCaptureDependencies(
+                        stream, dependencies.data(), dependencies.size() + 1,
+                        hipStreamAddCaptureDependencies),
+                    hipErrorInvalidValue);
   }
 
   SECTION("depnode as un-initialized/invalid parameter") {
@@ -478,6 +477,11 @@ TEST_CASE("Unit_hipStreamUpdateCaptureDependencies_Negative_Parameters") {
                                            hipStreamAddCaptureDependencies),
         hipErrorInvalidValue);
   }
+#endif
+
+#if HT_AMD // EXSWHTEC-216
+    HIP_CHECK(hipStreamUpdateCaptureDependencies(stream, dependencies.data(), dependencies.size(),
+                                           hipStreamAddCaptureDependencies));
 #endif
 
   HIP_CHECK(hipStreamEndCapture(stream, &graph));

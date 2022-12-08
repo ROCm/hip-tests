@@ -176,6 +176,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_Negative_Parameters") {
     HIP_CHECK_ERROR(hipStreamBeginCapture(stream, hipStreamCaptureMode(-1)),
                     hipErrorInvalidValue);
   }
+#if HT_NVIDIA // EXSWHTEC-216
   SECTION("Stream capture on uninitialized stream returns error code.") {
     constexpr auto InvalidStream = [] {
       StreamGuard sg(Streams::created);
@@ -185,6 +186,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_Negative_Parameters") {
         hipStreamBeginCapture(InvalidStream(), hipStreamCaptureModeGlobal),
         hipErrorContextIsDestroyed);
   }
+#endif
 }
 
 /**

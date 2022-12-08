@@ -93,7 +93,7 @@ TEST_CASE("Unit_hipMemGetAccess_Negative_Parameters") {
     int numDevices{0};
     HIP_CHECK(hipGetDeviceCount(&numDevices));
     location.id = numDevices;
-    HIP_CHECK_ERROR(hipMemGetAccess(&flags, &location, virtual_memory.virtual_memory_ptr), hipErrorInvalidValue);
+    HIP_CHECK_ERROR(hipMemGetAccess(&flags, &location, virtual_memory.virtual_memory_ptr), hipErrorInvalidDevice);
   }
 
   SECTION("invalid virtual memory pointer") {

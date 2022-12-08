@@ -35,7 +35,7 @@ THE SOFTWARE.
 /**
  * Test Description
  * ------------------------ 
- *    - Tries to reserve upper limit of type size_t bytes of virtual memory
+ *    - Tries to reserve upper limit of type `size_t` bytes of virtual memory
  * Test source
  * ------------------------ 
  *    - unit/virtualMemory/hipMemAddressReserve.cc

@@ -45,7 +45,6 @@ TEST_CASE("Unit_hipMemGetAccess_Positive_Basic") {
            "attribute. Hence skipping the testing with Pass result.\n");
     return;
   }
-
   size_t size = 2 * 1024;
   unsigned long long flags{0};
   VirtualMemoryGuard virtual_memory{size};
@@ -81,7 +80,6 @@ TEST_CASE("Unit_hipMemGetAccess_Negative_Parameters") {
            "attribute. Hence skipping the testing with Pass result.\n");
     return;
   }
-
   size_t size = 2 * 1024;
   unsigned long long flags{0};
   VirtualMemoryGuard virtual_memory{size};

@@ -44,7 +44,7 @@ TEST_CASE("Unit_hipMemGetAllocationPropertiesFromHandle_Positive_Basic") {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeVirtualMemoryManagement "
            "attribute. Hence skipping the testing with Pass result.\n");
     return;
-  }  
+  }
   size_t size = 2 * 1024;
   VirtualMemoryGuard virtual_memory{size};
 

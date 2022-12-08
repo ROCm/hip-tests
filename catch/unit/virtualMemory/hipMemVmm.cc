@@ -46,7 +46,6 @@ TEST_CASE("Unit_hipMemVmm_OneToOne_Basic") {
            "attribute. Hence skipping the testing with Pass result.\n");
     return;
   }
-
   size_t size = 4 * 1024;
   VirtualMemoryGuard virtual_memory{size};
 
@@ -81,7 +80,6 @@ TEST_CASE("Unit_hipMemVmm_OneToN_Basic") {
            "attribute. Hence skipping the testing with Pass result.\n");
     return;
   }
-
   size_t size = 4 * 1024;
   VirtualMemoryGuard virtual_memory_A{size};
   VirtualMemoryGuard virtual_memory_B{size, 0, &virtual_memory_A.handle};

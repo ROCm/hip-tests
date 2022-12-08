@@ -45,19 +45,10 @@ TEST_CASE("Unit_hipMemAddressFree_Positive_Basic") {
     return;
   }
   void* virtual_memory_ptr;
-  size_t allocation_size{0};
-  size_t granularity{0};
   int size_mult = GENERATE(8, 32, 128);
+  size_t allocation_size = calculate_allocation_size(size_mult * 1024);
 
-  hipMemAllocationProp properties{};
-  properties.type = hipMemAllocationTypePinned;
-  properties.location.id = 0;
-  properties.location.type = hipMemLocationTypeDevice;
-  HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &properties, hipMemAllocationGranularityRecommended));
-  REQUIRE(granularity != 0);
-  allocation_size = granularity * ((2 * 1024 + granularity - 1) / granularity);
-
-  HIP_CHECK(hipMemAddressReserve(&virtual_memory_ptr, allocation_size, 0, 0, 0));
+  HIP_CHECK(hipMemAddressReserve(&virtual_memory_ptr, allocation_size, 0, nullptr, 0));
   HIP_CHECK(hipMemAddressFree(virtual_memory_ptr, allocation_size));
 }
 
@@ -85,25 +76,16 @@ TEST_CASE("Unit_hipMemAddressFree_Negative_Parameters") {
     return;
   }
   void* virtual_memory_ptr;
-  size_t allocation_size{0};
-  size_t granularity{0};
-
-  hipMemAllocationProp properties{};
-  properties.type = hipMemAllocationTypePinned;
-  properties.location.id = 0;
-  properties.location.type = hipMemLocationTypeDevice;
-  HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &properties, hipMemAllocationGranularityRecommended));
-  REQUIRE(granularity != 0);
-  allocation_size = granularity * ((2 * 1024 + granularity - 1) / granularity);
+  size_t allocation_size = calculate_allocation_size(2 * 1024);
 
   SECTION("free memory two times") {
-    HIP_CHECK(hipMemAddressReserve(&virtual_memory_ptr, allocation_size, 0, 0, 0));
+    HIP_CHECK(hipMemAddressReserve(&virtual_memory_ptr, allocation_size, 0, nullptr, 0));
     HIP_CHECK(hipMemAddressFree(virtual_memory_ptr, allocation_size));
     HIP_CHECK_ERROR(hipMemAddressFree(virtual_memory_ptr, allocation_size), hipErrorInvalidValue);
   }
 
   SECTION("free more memory than reserved") {
-    HIP_CHECK(hipMemAddressReserve(&virtual_memory_ptr, allocation_size, 0, 0, 0));
+    HIP_CHECK(hipMemAddressReserve(&virtual_memory_ptr, allocation_size, 0, nullptr, 0));
     HIP_CHECK_ERROR(hipMemAddressFree(virtual_memory_ptr, 2 * allocation_size), hipErrorInvalidValue);
     HIP_CHECK(hipMemAddressFree(virtual_memory_ptr, allocation_size));
   }

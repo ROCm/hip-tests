@@ -17,24 +17,34 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <resource_guards.hh>
+#include "virtual_memory_common.hh"
 
-static int is_virtual_memory_management_supported(const int deviceId) {
-  int vmm_flag = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&vmm_flag, hipDeviceAttributeVirtualMemoryManagementSupported, deviceId));
+/**
+ * @addtogroup hipMemAddressReserve hipMemAddressReserve
+ * @{
+ * @ingroup VirtualTest
+ * `hipMemAddressReserve(void** ptr, size_t size, size_t alignment,
+ * void* addr, unsigned long long flags)` -
+ * Reserves an address range
+ * ________________________
+ * Test cases from other modules:
+ *    - @ref Unit_hipMemVmm_OneToOne_Basic
+ *    - @ref Unit_hipMemVmm_OneToN_Basic
+ */
 
-  return vmm_flag;
-}
-
-static int calculate_allocation_size(size_t raw_size, int deviceId=0) {
-  size_t granularity{0};
-
-  hipMemAllocationProp properties{};
-  properties.type = hipMemAllocationTypePinned;
-  properties.location.id = deviceId;
-  properties.location.type = hipMemLocationTypeDevice;
-  HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &properties, hipMemAllocationGranularityRecommended));
-  REQUIRE(granularity != 0);
-
-  return granularity * ((raw_size + granularity - 1) / granularity);
+/**
+ * Test Description
+ * ------------------------ 
+ *    - Tries to reserve upper limit of type size_t bytes of virtual memory
+ * Test source
+ * ------------------------ 
+ *    - unit/virtualMemory/hipMemAddressReserve.cc
+ * Test requirements
+ * ------------------------ 
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipMemAddressReserve_Negative_Basic") {
+	void* virtual_memory_ptr;
+	size_t allocation_size = calculate_allocation_size(std::numeric_limits<size_t>::max());
+	HIP_CHECK_ERROR(hipMemAddressReserve(&virtual_memory_ptr, allocation_size, 0, nullptr, 0), hipErrorInvalidValue);
 }

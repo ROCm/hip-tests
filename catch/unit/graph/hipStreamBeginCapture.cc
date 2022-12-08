@@ -937,7 +937,7 @@ TEST_CASE(
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamBeginCapture_MultiGPU") {
+TEST_CASE("Unit_hipStreamBeginCapture_Positive_MultiGPU") {
   int devcount = 0;
   HIP_CHECK(hipGetDeviceCount(&devcount));
   // If only single GPU is detected then return
@@ -1015,7 +1015,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_MultiGPU") {
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamBeginCapture_nestedStreamCapture") {
+TEST_CASE("Unit_hipStreamBeginCapture_Positive_nestedStreamCapture") {
   constexpr int INCREMENT_KERNEL_FINALEXP_VAL = 7;
 
   GraphGuard graph_guard;
@@ -1074,7 +1074,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_nestedStreamCapture") {
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamBeginCapture_streamReuse") {
+TEST_CASE("Unit_hipStreamBeginCapture_Positive_streamReuse") {
   constexpr int increment_kernel_vals[3] = {7, 3, 5};
 
   GraphsGuard graphs(3);
@@ -1168,7 +1168,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_streamReuse") {
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamBeginCapture_captureComplexGraph") {
+TEST_CASE("Unit_hipStreamBeginCapture_Positive_captureComplexGraph") {
   constexpr int GRIDSIZE = 256;
   constexpr int BLOCKSIZE = 256;
   constexpr int CONST_KER1_VAL = 3;
@@ -1263,7 +1263,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_captureComplexGraph") {
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamBeginCapture_captureEmptyStreams") {
+TEST_CASE("Unit_hipStreamBeginCapture_Positive_captureEmptyStreams") {
   GraphGuard graph_guard;
   hipGraph_t &graph = graph_guard.graph();
 

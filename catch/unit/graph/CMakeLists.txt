@@ -85,6 +85,7 @@ set(TEST_SRC
   hipStreamUpdateCaptureDependencies.cc
   hipThreadExchangeStreamCaptureMode.cc
   hipLaunchHostFunc.cc
+  hipUserObjectCreate.cc
 )
 
 hip_add_exe_to_target(NAME GraphsTest

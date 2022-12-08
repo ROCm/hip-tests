@@ -28,8 +28,8 @@ THE SOFTWARE.
  * Reserves an address range
  * ________________________
  * Test cases from other modules:
- *    - @ref Unit_hipMemVmm_OneToOne_Basic
- *    - @ref Unit_hipMemVmm_OneToN_Basic
+ *    - @ref Unit_hipMemVmm_Positive_OneToOne_Mapping
+ *    - @ref Unit_hipMemVmm_Positive_OneToN_Mapping
  */
 
 /**

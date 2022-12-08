@@ -94,8 +94,6 @@
 	   "Unit_hipStreamSynchronize_NullStreamAndStreamPerThread",
 	   "Note: intermittent Seg fault failure ",
 	   "Unit_hipGraphAddEventRecordNode_Functional_WithoutFlags",
-	   "Unit_hipGraphAddEventRecordNode_MultipleRun",
-	   "Unit_hipGraphAddEventRecordNode_Functional_WithoutFlags",
 	   "Unit_hipMemGetAddressRange_Negative"
 	]
 }

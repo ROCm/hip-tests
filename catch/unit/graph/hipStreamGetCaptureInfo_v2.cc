@@ -57,7 +57,7 @@ void checkStreamCaptureInfo_v2(hipStreamCaptureMode mode, hipStream_t stream) {
 
   SECTION("Linear sequence graph") {
     HIP_CHECK(hipStreamBeginCapture(stream, mode));
-    graphSequenceLinear(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), B_d.ptr(), N,
+    captureSequenceLinear(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), B_d.ptr(), N,
                         stream);
     HIP_CHECK(hipStreamGetCaptureInfo_v2(stream, &captureStatus, &capSequenceID,
                                          &capInfoGraph, &nodelist,
@@ -72,7 +72,7 @@ void checkStreamCaptureInfo_v2(hipStreamCaptureMode mode, hipStream_t stream) {
 
   SECTION("Branched sequence graph") {
     HIP_CHECK(hipStreamBeginCapture(stream, mode));
-    graphSequenceBranched(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), B_d.ptr(),
+    captureSequenceBranched(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), B_d.ptr(),
                           N, stream, streams_guard.stream_list(),
                           events_guard.event_list());
     HIP_CHECK(hipStreamGetCaptureInfo_v2(stream, &captureStatus, &capSequenceID,
@@ -97,7 +97,7 @@ void checkStreamCaptureInfo_v2(hipStreamCaptureMode mode, hipStream_t stream) {
   REQUIRE(capInfoGraph != nullptr);
   REQUIRE(numDependencies == numDepsCreated);
 
-  graphSequenceCompute(A_d.ptr(), B_h.host_ptr(), B_d.ptr(), N, stream);
+  captureSequenceCompute(A_d.ptr(), B_h.host_ptr(), B_d.ptr(), N, stream);
 
   // End capture and verify graph is returned
   HIP_CHECK(hipStreamEndCapture(stream, &graph));
@@ -125,7 +125,7 @@ void checkStreamCaptureInfo_v2(hipStreamCaptureMode mode, hipStream_t stream) {
   hipGraphExec_t graphExec = graphExec_guard.graphExec();
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < StreamCapture_sizes::LAUNCH_ITERS; i++) {
+  for (int i = 0; i < kLaunchIters; i++) {
     std::fill_n(A_h.host_ptr(), N, static_cast<float>(i));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
     HIP_CHECK(hipStreamSynchronize(stream));
@@ -243,6 +243,7 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_v2_Negative_Parameters") {
                                                &numDependencies),
                     hipErrorInvalidValue);
   }
+#if HT_NVIDIA // EXSWHTEC-216
   SECTION("Capture status when checked on null stream") {
     GraphGuard graph_guard;
     hipGraph_t &graph = graph_guard.graph();
@@ -264,4 +265,5 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_v2_Negative_Parameters") {
                                                &nodelist, &numDependencies),
                     hipErrorContextIsDestroyed);
   }
+#endif
 }

@@ -144,7 +144,7 @@ public:
     for (auto &e : events_) static_cast<void>(hipEventDestroy(e));
   }
 
-  hipEvent_t& operator[](int index) { return events_.at(index); }
+  hipEvent_t& operator[](int index) { return events_[index]; }
 
   operator hipEvent_t() const { return events_.at(0); }
 
@@ -167,7 +167,7 @@ public:
     for (auto &s : streams_) static_cast<void>(hipStreamDestroy(s));
   }
 
-  hipStream_t& operator[](int index) { return streams_.at(index); }
+  hipStream_t& operator[](int index) { return streams_[index]; }
 
   operator hipStream_t() const { return streams_.at(0); }
 
@@ -230,7 +230,7 @@ class GraphsGuard {
     for (auto &g : graphs_) static_cast<void>(hipGraphDestroy(g));
   }
 
-  hipGraph_t& operator[](int index) { return graphs_.at(index); }
+  hipGraph_t& operator[](int index) { return graphs_[index]; }
 
   operator hipGraph_t() const { return graphs_.at(0); }
 

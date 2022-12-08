@@ -46,7 +46,7 @@ void checkStreamCaptureInfo(hipStreamCaptureMode mode, hipStream_t stream) {
   LinearAllocGuard<float> A_d(LinearAllocs::hipMalloc, Nbytes);
 
   HIP_CHECK(hipStreamBeginCapture(stream, mode));
-  graphSequenceSimple(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), N, stream);
+  captureSequenceSimple(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), N, stream);
 
   // Capture status is active and sequence id is valid
   HIP_CHECK(hipStreamGetCaptureInfo(stream, &captureStatus, &capSequenceID));
@@ -71,7 +71,7 @@ void checkStreamCaptureInfo(hipStreamCaptureMode mode, hipStream_t stream) {
   hipGraphExec_t graphExec = graphExec_guard.graphExec();
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < StreamCapture_sizes::LAUNCH_ITERS; i++) {
+  for (int i = 0; i < kLaunchIters; i++) {
     std::fill_n(A_h.host_ptr(), N, static_cast<float>(i));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
     HIP_CHECK(hipStreamSynchronize(stream));
@@ -176,6 +176,7 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_Negative_Parameters") {
     HIP_CHECK_ERROR(hipStreamGetCaptureInfo(stream, nullptr, &capSequenceID),
                     hipErrorInvalidValue);
   }
+#if HT_NVIDIA // EXSWHTEC-216
   SECTION("Capture status when checked on null stream") {
     GraphGuard graph_guard;
     hipGraph_t &graph = graph_guard.graph();
@@ -194,4 +195,5 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_Negative_Parameters") {
         hipStreamGetCaptureInfo(InvalidStream(), &cStatus, &capSequenceID),
         hipErrorContextIsDestroyed);
   }
+#endif
 }

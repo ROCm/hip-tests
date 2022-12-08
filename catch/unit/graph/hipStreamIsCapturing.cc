@@ -65,7 +65,7 @@ TEST_CASE("Unit_hipStreamIsCapturing_Negative_Parameters") {
                     hipErrorStreamCaptureImplicit);
     HIP_CHECK(hipStreamEndCapture(stream, &graph));
   }
-
+#if HT_NVIDIA // EXSWHTEC-216
   SECTION("Check capture status when stream is uninitialized") {
     hipStreamCaptureStatus cStatus;
 
@@ -77,6 +77,7 @@ TEST_CASE("Unit_hipStreamIsCapturing_Negative_Parameters") {
     HIP_CHECK_ERROR(hipStreamIsCapturing(InvalidStream(), &cStatus),
                     hipErrorContextIsDestroyed);
   }
+#endif
 }
 
 /**
@@ -119,7 +120,7 @@ void checkStreamCaptureStatus(hipStreamCaptureMode mode, hipStream_t stream) {
   REQUIRE(hipStreamCaptureStatusNone == cStatus);
 
   HIP_CHECK(hipStreamBeginCapture(stream, mode));
-  graphSequenceSimple(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), N, stream);
+  captureSequenceSimple(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), N, stream);
 
   // Status is active during stream capture
   HIP_CHECK(hipStreamIsCapturing(stream, &cStatus));
@@ -136,7 +137,7 @@ void checkStreamCaptureStatus(hipStreamCaptureMode mode, hipStream_t stream) {
   hipGraphExec_t graphExec = graphExec_guard.graphExec();
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < StreamCapture_sizes::LAUNCH_ITERS; i++) {
+  for (int i = 0; i < kLaunchIters; i++) {
     std::fill_n(A_h.host_ptr(), N, static_cast<float>(i));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
     HIP_CHECK(hipStreamSynchronize(stream));
@@ -204,7 +205,7 @@ TEST_CASE("Unit_hipStreamIsCapturing_Positive_Thread") {
   const hipStreamCaptureMode captureMode = hipStreamCaptureModeGlobal;
 
   HIP_CHECK(hipStreamBeginCapture(stream, captureMode));
-  graphSequenceSimple(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), N, stream);
+  captureSequenceSimple(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), N, stream);
 
   std::thread t(thread_func, stream);
   t.join();

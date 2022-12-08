@@ -23,15 +23,12 @@ THE SOFTWARE.
 #include <utils.hh>
 #include <resource_guards.hh>
 
-namespace StreamCapture_sizes {
-  constexpr int LAUNCH_ITERS = 10;
-  constexpr unsigned blocks = 512;
-  constexpr unsigned threadsPerBlock = 256;
-  constexpr size_t N = 1000000;
-}
+namespace {
+inline constexpr size_t kLaunchIters = 10;
+}  // anonymous namespace
 
 template <typename T>
-void graphSequenceSimple(T *hostMem1, T *devMem1, T* hostMem2, size_t N, hipStream_t captureStream) {
+void captureSequenceSimple(T *hostMem1, T *devMem1, T* hostMem2, size_t N, hipStream_t captureStream) {
   size_t Nbytes = N * sizeof(T);
 
   HIP_CHECK(hipMemsetAsync(devMem1, 0, Nbytes, captureStream));
@@ -40,7 +37,7 @@ void graphSequenceSimple(T *hostMem1, T *devMem1, T* hostMem2, size_t N, hipStre
 }
 
 template <typename T>
-void graphSequenceLinear(T *hostMem1, T *devMem1, T *hostMem2, T *devMem2, size_t N, hipStream_t captureStream) {
+void captureSequenceLinear(T *hostMem1, T *devMem1, T *hostMem2, T *devMem2, size_t N, hipStream_t captureStream) {
   size_t Nbytes = N * sizeof(T);
 
   HIP_CHECK(hipMemcpyAsync(devMem1, hostMem1, Nbytes, hipMemcpyHostToDevice, captureStream));
@@ -49,7 +46,7 @@ void graphSequenceLinear(T *hostMem1, T *devMem1, T *hostMem2, T *devMem2, size_
 }
 
 template <typename T>
-void graphSequenceBranched(T *hostMem1, T *devMem1, T *hostMem2, T *devMem2, size_t N, hipStream_t captureStream, std::vector<hipStream_t>& streams, std::vector<hipEvent_t>& events) {
+void captureSequenceBranched(T *hostMem1, T *devMem1, T *hostMem2, T *devMem2, size_t N, hipStream_t captureStream, std::vector<hipStream_t>& streams, std::vector<hipEvent_t>& events) {
   size_t Nbytes = N * sizeof(T);  
 
   HIP_CHECK(hipEventRecord(events[0], captureStream));
@@ -65,11 +62,13 @@ void graphSequenceBranched(T *hostMem1, T *devMem1, T *hostMem2, T *devMem2, siz
 }
 
 template <typename T>
-void graphSequenceCompute(T *devMem1, T *hostMem2, T *devMem2, size_t N, hipStream_t stream) {
+void captureSequenceCompute(T *devMem1, T *hostMem2, T *devMem2, size_t N, hipStream_t stream) {
   size_t Nbytes = N * sizeof(T);
+  constexpr unsigned blocks = 512;
+  constexpr unsigned threadsPerBlock = 256;
 
-  hipLaunchKernelGGL(HipTest::vector_square, dim3(StreamCapture_sizes::blocks),
-                        dim3(StreamCapture_sizes::threadsPerBlock), 0, stream, devMem1, devMem2, N);
+  hipLaunchKernelGGL(HipTest::vector_square, dim3(blocks),
+                        dim3(threadsPerBlock), 0, stream, devMem1, devMem2, N);
 
   HIP_CHECK(hipMemcpyAsync(hostMem2, devMem2, Nbytes, hipMemcpyDeviceToHost, stream));
 }

@@ -21,6 +21,7 @@
 # Common Tests - Test independent of all platforms
 set(TEST_SRC
     hipMemVmm.cc
+    hipMemGetAccess.cc
 )
 
 hip_add_exe_to_target(NAME VirtualMemoryTest

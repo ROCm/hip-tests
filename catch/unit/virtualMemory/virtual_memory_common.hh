@@ -19,7 +19,7 @@ THE SOFTWARE.
 
 #include <resource_guards.hh>
 
-int is_virtual_memory_management_supported(const int deviceId) {
+static int is_virtual_memory_management_supported(const int deviceId) {
   int vmm = 0;
   HIP_CHECK(hipDeviceGetAttribute(&vmm, hipDeviceAttributeVirtualMemoryManagementSupported, deviceId));
 

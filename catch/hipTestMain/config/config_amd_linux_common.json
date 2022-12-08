@@ -13,6 +13,8 @@
 	   "Unit_hipDeviceGetPCIBusId_Negative_PartialFill",
 	   "Unit_hipInit_Negative",
 	   "Unit_hipMemset_Negative_OutOfBoundsPtr",
+	   "Unit_hipDeviceReset_Positive_Basic",
+	   "Unit_hipDeviceReset_Positive_Threaded",
 	   "Unit_hipMemGetAddressRange_Negative"
 	]
 }

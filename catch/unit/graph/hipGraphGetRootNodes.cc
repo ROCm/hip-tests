@@ -41,17 +41,59 @@ Argument Validation ::
 #include <hip_test_checkers.hh>
 #include <hip_test_kernels.hh>
 
+namespace {
+inline constexpr size_t kNumOfRootNodes = 2;
+}  // anonymous namespace
+
+/**
+ * Local Function to validate number of root nodes.
+ */
+static void validate_hipGraphGetRootNodes(size_t numNodesToGet,
+                                        int testnum,
+                                        std::vector<hipGraphNode_t> nodelist,
+                                        hipGraph_t graph) {
+  size_t numNodes = numNodesToGet;
+  hipGraphNode_t *nodes = new hipGraphNode_t[numNodes]{};
+  int found_count = 0;
+  HIP_CHECK(hipGraphGetRootNodes(graph, nodes, &numNodes));
+  // Verify added nodes are present in the node entries returned
+  for (size_t i = 0; i < kNumOfRootNodes; i++) {
+    for (size_t j = 0; j < numNodes; j++) {
+      if (nodelist[i] == nodes[j]) {
+        found_count++;
+        break;
+      }
+    }
+  }
+  // Validate
+  if (testnum == 0) {
+    REQUIRE(found_count == kNumOfRootNodes);
+  } else if (testnum == 1) {
+    // Verify numNodes is unchanged
+    REQUIRE(numNodes == numNodesToGet);
+    REQUIRE(found_count == numNodesToGet);
+  } else if (testnum == 2) {
+    // Verify numNodes is reset to actual number of nodes
+    REQUIRE(numNodes == nodelist.size());
+    REQUIRE(found_count == kNumOfRootNodes);
+    // Verify additional entries in nodes are set to nullptr
+    for (auto i = numNodes; i < numNodesToGet; i++) {
+      REQUIRE(nodes[i] == nullptr);
+    }
+  }
+
+  delete[] nodes;
+}
+
 /**
  * Functional Test for API fetching root node list
  */
-TEST_CASE("Unit_hipGraphGetRootNodes_Functional") {
+TEST_CASE("Unit_hipGraphGetRootNodes_Positive_Functional") {
   constexpr size_t N = 1024;
   constexpr size_t Nbytes = N * sizeof(int);
   constexpr auto blocksPerCU = 6;  // to hide latency
   constexpr auto threadsPerBlock = 256;
-  constexpr auto addlEntries = 5;
   hipGraph_t graph;
-
 
   hipGraphNode_t memcpyNode, kernelNode;
   hipKernelNodeParams kernelNodeParams{};
@@ -91,42 +133,41 @@ TEST_CASE("Unit_hipGraphGetRootNodes_Functional") {
                                     dependencies.size(), C_h, C_d,
                                     Nbytes, hipMemcpyDeviceToHost));
 
+  size_t numRootNodes{};
   // Get numRootNodes by passing rootnodes list as nullptr.
   // verify : numRootNodes is set to actual number of root nodes added
-  size_t numRootNodes{};
-  HIP_CHECK(hipGraphGetRootNodes(graph, nullptr, &numRootNodes));
-  INFO("Num of nodes returned by GetRootNodes : " << numRootNodes);
-  REQUIRE(numRootNodes == rootnodelist.size());
-
-  // Request for extra/additional nodes.
-  // verify : totNodes is reset to actual number of root nodes present
-  // verify : additional entries in rootnodes list are set to nullptr
-  size_t totNodes = numRootNodes + addlEntries;
-  int numBytes = sizeof(hipGraphNode_t) * totNodes;
-  hipGraphNode_t* rootnodes =
-                 reinterpret_cast<hipGraphNode_t *>(malloc(numBytes));
-  REQUIRE(rootnodes != nullptr);
-  HIP_CHECK(hipGraphGetRootNodes(graph, rootnodes, &totNodes));
-  REQUIRE(totNodes == rootnodelist.size());
-  for (auto i = numRootNodes; i < numRootNodes + addlEntries; i++) {
-    REQUIRE(rootnodes[i] == nullptr);
+  // Scenario 1
+  SECTION("Validate number of rootnodes") {
+    HIP_CHECK(hipGraphGetRootNodes(graph, nullptr, &numRootNodes));
+    INFO("Num of nodes returned by GetRootNodes : " << numRootNodes);
+    REQUIRE(numRootNodes == rootnodelist.size());
   }
 
-  // Verify added nodes(without dependencies) are present
-  // in the root nodes fetched.
-  for (auto Node : rootnodelist) {
-    bool found = false;
-    for (size_t i = 0; i < numRootNodes; i++) {
-      if (Node == rootnodes[i]) {
-        found = true;
-        break;
-      }
-    }
+  // Scenario 2
+  SECTION("Validate root node list when numRootNodes = num of nodes") {
+    validate_hipGraphGetRootNodes(kNumOfRootNodes, 0,
+                                    rootnodelist, graph);
+  }
 
-    if (!found) {
-      INFO("Returned root node " << Node << " not present in added list");
-      REQUIRE(false);
-    }
+  // Scenario 3
+  SECTION("Validate root node list when numRootNodes < num of nodes") {
+    validate_hipGraphGetRootNodes(kNumOfRootNodes - 1, 1,
+                                    rootnodelist, graph);
+  }
+
+  // Scenario 4
+  SECTION("Validate root node list when numRootNodes > num of nodes") {
+    validate_hipGraphGetRootNodes(kNumOfRootNodes + 1, 2,
+                                    rootnodelist, graph);
+  }
+
+  // Scenario 5
+  SECTION("Validate numRootNodes is 0 when no nodes in graph") {
+    hipGraph_t emptyGraph{};
+    HIP_CHECK(hipGraphCreate(&emptyGraph, 0));
+    HIP_CHECK(hipGraphGetRootNodes(emptyGraph, nullptr, &numRootNodes));
+    REQUIRE(numRootNodes == 0);
+    HIP_CHECK(hipGraphDestroy(emptyGraph));
   }
 
   // Instantiate and launch the graph
@@ -141,7 +182,6 @@ TEST_CASE("Unit_hipGraphGetRootNodes_Functional") {
   HIP_CHECK(hipGraphExecDestroy(graphExec));
   HIP_CHECK(hipGraphDestroy(graph));
   HIP_CHECK(hipStreamDestroy(streamForGraph));
-  free(rootnodes);
 }
 
 
@@ -302,35 +342,16 @@ TEST_CASE("Unit_hipGraphGetRootNodes_ParamValidation") {
   REQUIRE(nodes != nullptr);
 
   SECTION("graph as nullptr") {
-    hipError_t ret = hipGraphGetRootNodes(nullptr, nodes, &numRootNodes);
-    REQUIRE(ret == hipErrorInvalidValue);
+    HIP_CHECK_ERROR(hipGraphGetRootNodes(nullptr, nodes, &numRootNodes), hipErrorInvalidValue);
+  }
+
+  SECTION("graph is uninitialized") {
+    hipGraph_t graph_uninit{};
+    HIP_CHECK_ERROR(hipGraphGetRootNodes(graph_uninit, nodes, &numRootNodes), hipErrorInvalidValue);
   }
 
   SECTION("numRootNodes as nullptr") {
-    hipError_t ret = hipGraphGetRootNodes(graph, nodes, nullptr);
-    REQUIRE(ret == hipErrorInvalidValue);
-  }
-
-  SECTION("no nodes in graph") {
-    hipGraph_t emptyGraph{};
-    HIP_CHECK(hipGraphCreate(&emptyGraph, 0));
-    HIP_CHECK(hipGraphGetRootNodes(emptyGraph, nullptr, &numRootNodes));
-    REQUIRE(numRootNodes == 0);
-  }
-
-  SECTION("numRootNodes less than actual number of nodes") {
-    size_t numPartNodes = numRootNodes - 1;
-    hipGraphNodeType nodeType;
-    HIP_CHECK(hipGraphGetRootNodes(graph, nodes, &numPartNodes));
-
-    // verify numPartNodes is unchanged
-    REQUIRE(numPartNodes == numRootNodes - 1);
-    // verify partial node list returned has valid nodes
-    for (size_t i = 0; i < numPartNodes; i++) {
-      HIP_CHECK(hipGraphNodeGetType(nodes[i], &nodeType));
-      REQUIRE(nodeType >= 0);
-      REQUIRE(nodeType < hipGraphNodeTypeCount);
-    }
+    HIP_CHECK_ERROR(hipGraphGetRootNodes(graph, nodes, nullptr), hipErrorInvalidValue);
   }
 
   HIP_CHECK(hipGraphDestroy(graph));

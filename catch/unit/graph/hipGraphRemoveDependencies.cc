@@ -44,7 +44,9 @@ Testcase Scenarios :
 #include <hip_test_checkers.hh>
 #include <hip_test_kernels.hh>
 
-#define TOTAL_NUM_OF_EDGES 6
+namespace {
+inline constexpr size_t kNumOfEdges = 6;
+}  // anonymous namespace
 
 /**
  * Kernel Functions to perform square and return in the same
@@ -89,8 +91,8 @@ TEST_CASE("Unit_hipGraphRemoveDependencies_Func_Manual") {
   memsetParams.dst = reinterpret_cast<void*>(A_d);
   memsetParams.value = 0;
   memsetParams.pitch = 0;
-  memsetParams.elementSize = sizeof(char);
-  memsetParams.width = Nbytes;
+  memsetParams.elementSize = sizeof(int);
+  memsetParams.width = N;
   memsetParams.height = 1;
   HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph, nullptr, 0,
                                                     &memsetParams));
@@ -99,8 +101,8 @@ TEST_CASE("Unit_hipGraphRemoveDependencies_Func_Manual") {
   memsetParams.dst = reinterpret_cast<void*>(B_d);
   memsetParams.value = 0;
   memsetParams.pitch = 0;
-  memsetParams.elementSize = sizeof(char);
-  memsetParams.width = Nbytes;
+  memsetParams.elementSize = sizeof(int);
+  memsetParams.width = N;
   memsetParams.height = 1;
   HIP_CHECK(hipGraphAddMemsetNode(&memset_B, graph, nullptr, 0,
                                                     &memsetParams));
@@ -143,31 +145,38 @@ TEST_CASE("Unit_hipGraphRemoveDependencies_Func_Manual") {
   HIP_CHECK(hipGraphAddDependencies(graph, &memsetKer_C, &kernel_vecAdd, 1));
   HIP_CHECK(hipGraphAddDependencies(graph, &kernel_vecAdd, &memcpyD2H_C, 1));
 
-  SECTION("scenario 1") {
+  size_t numEdgesExpected = kNumOfEdges;
+  SECTION("Remove some dependencies") {
     // Remove some dependencies
     constexpr size_t numEdgesRemoved = 3;
-    HIP_CHECK(hipGraphRemoveDependencies(graph, &memcpyH2D_A,
-                                        &kernel_vecAdd, 1));
-    HIP_CHECK(hipGraphRemoveDependencies(graph, &memcpyH2D_B,
-                                        &kernel_vecAdd, 1));
-    HIP_CHECK(hipGraphRemoveDependencies(graph, &memsetKer_C,
-                                        &kernel_vecAdd, 1));
-    // Validate manually with hipGraphGetEdges() API
-    hipGraphNode_t fromnode[TOTAL_NUM_OF_EDGES]{};
-    hipGraphNode_t tonode[TOTAL_NUM_OF_EDGES]{};
-    size_t numEdges = TOTAL_NUM_OF_EDGES;
-    HIP_CHECK(hipGraphGetEdges(graph, fromnode, tonode, &numEdges));
-
     hipGraphNode_t expected_from_nodes[numEdgesRemoved] = {memcpyH2D_A,
     memcpyH2D_B, memsetKer_C};
     hipGraphNode_t expected_to_nodes[numEdgesRemoved] = {kernel_vecAdd,
     kernel_vecAdd, kernel_vecAdd};
+    SECTION("Node by Node") {
+      HIP_CHECK(hipGraphRemoveDependencies(graph, &memcpyH2D_A,
+                                        &kernel_vecAdd, 1));
+      HIP_CHECK(hipGraphRemoveDependencies(graph, &memcpyH2D_B,
+                                        &kernel_vecAdd, 1));
+      HIP_CHECK(hipGraphRemoveDependencies(graph, &memsetKer_C,
+                                        &kernel_vecAdd, 1));
+    }
+    SECTION("Node lists") {
+      HIP_CHECK(hipGraphRemoveDependencies(graph, expected_from_nodes, expected_to_nodes, numEdgesRemoved));
+    }
+
+    // Validate manually with hipGraphGetEdges() API
+    hipGraphNode_t fromnode[kNumOfEdges]{};
+    hipGraphNode_t tonode[kNumOfEdges]{};
+    size_t numEdges = kNumOfEdges;
+    HIP_CHECK(hipGraphGetEdges(graph, fromnode, tonode, &numEdges));
+
     bool nodeFound;
     int found_count = 0;
     for (size_t idx_from = 0; idx_from < numEdgesRemoved; idx_from++) {
       nodeFound = false;
       int idx = 0;
-      for (; idx < TOTAL_NUM_OF_EDGES; idx++) {
+      for (; idx < kNumOfEdges; idx++) {
         if (expected_from_nodes[idx_from] == fromnode[idx]) {
           nodeFound = true;
           break;
@@ -179,21 +188,22 @@ TEST_CASE("Unit_hipGraphRemoveDependencies_Func_Manual") {
     }
     // Ensure none of the nodes are discovered
     REQUIRE(0 == found_count);
-    // Validate with returned number of edges from hipGraphGetEdges() API
-    numEdges = 0;
-    HIP_CHECK(hipGraphGetEdges(graph, nullptr, nullptr, &numEdges));
-    size_t numEdgesExpected = TOTAL_NUM_OF_EDGES - numEdgesRemoved;
-    REQUIRE(numEdgesExpected == numEdges);
+    numEdgesExpected = kNumOfEdges - numEdgesRemoved;
+  }
+  SECTION("Remove all dependencies") {
+    size_t numEdges = kNumOfEdges;
+    hipGraphNode_t fromnode[kNumOfEdges]{};
+    hipGraphNode_t tonode[kNumOfEdges]{};
+    HIP_CHECK(hipGraphGetEdges(graph, fromnode, tonode, &numEdges));
+
+    HIP_CHECK(hipGraphRemoveDependencies(graph, fromnode, tonode, numEdges));
+    numEdgesExpected = 0;
   }
 
-  SECTION("scenario 3") {
-    HIP_CHECK(hipGraphRemoveDependencies(graph, &memcpyH2D_A,
-                                        &kernel_vecAdd, 0));
-    size_t numEdges = 0;
-    HIP_CHECK(hipGraphGetEdges(graph, nullptr, nullptr, &numEdges));
-    size_t numEdgesExpected = TOTAL_NUM_OF_EDGES;
-    REQUIRE(numEdgesExpected == numEdges);
-  }
+  // Validate with returned number of edges from hipGraphGetEdges() API
+  size_t numEdges = 0;
+  HIP_CHECK(hipGraphGetEdges(graph, nullptr, nullptr, &numEdges));
+  REQUIRE(numEdgesExpected == numEdges);
   // Destroy
   HipTest::freeArrays(A_d, B_d, C_d, A_h, B_h, C_h, false);
   HIP_CHECK(hipGraphDestroy(graph));
@@ -254,22 +264,37 @@ TEST_CASE("Unit_hipGraphRemoveDependencies_Func_StrmCapture") {
   HIP_CHECK(hipGraphGetNodes(graph, nodes, &numNodes));
   HIP_CHECK(hipGraphGetEdges(graph, nullptr, nullptr, &numEdges));
   REQUIRE(7 == numNodes);
-  REQUIRE(TOTAL_NUM_OF_EDGES == numEdges);
+  REQUIRE(kNumOfEdges == numEdges);
   // Get the edges and remove one edge. Verify edge is removed.
-  hipGraphNode_t fromnode[TOTAL_NUM_OF_EDGES]{};
-  hipGraphNode_t tonode[TOTAL_NUM_OF_EDGES]{};
+  hipGraphNode_t fromnode[kNumOfEdges]{};
+  hipGraphNode_t tonode[kNumOfEdges]{};
   HIP_CHECK(hipGraphGetEdges(graph, fromnode, tonode, &numEdges));
-  HIP_CHECK(hipGraphRemoveDependencies(graph, &fromnode[0],
+  size_t expected_num_edges = kNumOfEdges;
+
+  SECTION("Remove some dependencies") {
+    HIP_CHECK(hipGraphRemoveDependencies(graph, &fromnode[0],
                                        &tonode[0], 1));
+    HIP_CHECK(hipGraphRemoveDependencies(graph, &fromnode[1],
+                                       &tonode[1], 1));
+    HIP_CHECK(hipGraphRemoveDependencies(graph, &fromnode[2],
+                                       &tonode[2], 1));
+    expected_num_edges = 3;
+  }
+  SECTION("Remove all dependencies") {
+    HIP_CHECK(hipGraphRemoveDependencies(graph, fromnode, tonode, numEdges));
+    expected_num_edges = 0;
+  }
   // Verify
   HIP_CHECK(hipGraphGetEdges(graph, nullptr, nullptr, &numEdges));
-  size_t expected_num_edges = TOTAL_NUM_OF_EDGES - 1;
   REQUIRE(expected_num_edges == numEdges);
   // Destroy
   HIP_CHECK(hipGraphDestroy(graph));
   HIP_CHECK(hipStreamDestroy(stream1));
   HIP_CHECK(hipStreamDestroy(stream2));
   HIP_CHECK(hipStreamDestroy(stream3));
+  HIP_CHECK(hipEventDestroy(forkStreamEvent));
+  HIP_CHECK(hipEventDestroy(memsetEvent1));
+  HIP_CHECK(hipEventDestroy(memsetEvent2));
   HipTest::freeArrays(A_d, B_d, C_d, A_h, B_h, C_h, false);
 }
 
@@ -376,10 +401,77 @@ TEST_CASE("Unit_hipGraphRemoveDependencies_ChangeComputeFunc") {
   HIP_CHECK(hipStreamDestroy(streamForGraph));
 }
 
+TEST_CASE("Unit_hipGraphRemoveDependencies_Positive_Parameters") {
+  constexpr size_t Nbytes = 1024;
+  hipGraphNode_t memcpyH2D_A;
+  hipGraphNode_t memcpyD2H_A;
+  hipGraphNode_t memset_A;
+  hipMemsetParams memsetParams{};
+  char *A_d;
+  char *A_h;
+  hipGraph_t graph;
+  HIP_CHECK(hipGraphCreate(&graph, 0));
+
+  HIP_CHECK(hipMalloc(&A_d, Nbytes));
+  A_h = reinterpret_cast<char*>(malloc(Nbytes));
+
+  memset(&memsetParams, 0, sizeof(memsetParams));
+  memsetParams.dst = reinterpret_cast<void*>(A_d);
+  memsetParams.value = 0;
+  memsetParams.pitch = 0;
+  memsetParams.elementSize = sizeof(char);
+  memsetParams.width = Nbytes;
+  memsetParams.height = 1;
+
+  HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph, nullptr, 0,
+                                   &memsetParams));
+
+  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_A, graph, nullptr, 0, A_d, A_h, Nbytes, hipMemcpyHostToDevice));
+  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyD2H_A, graph, nullptr, 0, A_h, A_d, Nbytes, hipMemcpyDeviceToHost));
+
+  HIP_CHECK(hipGraphAddDependencies(graph, &memset_A, &memcpyH2D_A, 1));
+  HIP_CHECK(hipGraphAddDependencies(graph, &memcpyH2D_A, &memcpyD2H_A, 1));
+  size_t totalEdges = 2;
+
+  SECTION("numDependencies is zero, To/From are nullptr") {
+    HIP_CHECK(hipGraphRemoveDependencies(graph, nullptr, nullptr, 0));
+  }
+  SECTION("numDependencies is zero, To or From are nullptr") {
+    HIP_CHECK(hipGraphRemoveDependencies(graph, &memcpyH2D_A, nullptr, 0));
+    HIP_CHECK(hipGraphRemoveDependencies(graph, nullptr, &memcpyH2D_A, 0));
+  }
+  SECTION("numDependencies is zero, To/From are valid") {
+    HIP_CHECK(hipGraphRemoveDependencies(graph, &memcpyH2D_A, &memcpyD2H_A, 0));
+  }
+  SECTION("numDependencies is zero, To/From are the same") {
+    HIP_CHECK(hipGraphRemoveDependencies(graph, &memcpyH2D_A, &memcpyH2D_A, 0));
+  }
+
+  size_t numEdges = 0;
+  HIP_CHECK(hipGraphGetEdges(graph, nullptr, nullptr, &numEdges));
+  REQUIRE(totalEdges == numEdges);
+
+  SECTION("numDependencies < To/From length") {
+    size_t numDependencies = 0;
+    hipGraphNode_t from_list[] = {memset_A, memcpyH2D_A};
+    hipGraphNode_t to_list[] = {memcpyH2D_A, memcpyD2H_A};
+    HIP_CHECK(hipGraphRemoveDependencies(graph, from_list, to_list, 1));
+    HIP_CHECK(hipGraphNodeGetDependencies(memcpyH2D_A, nullptr, &numDependencies));
+    REQUIRE(numDependencies == 0);
+    HIP_CHECK(hipGraphNodeGetDependencies(memcpyD2H_A, nullptr, &numDependencies));
+    REQUIRE(numDependencies == 1);
+  }
+  // Destroy
+  HIP_CHECK(hipFree(A_d));
+  HIP_CHECK(hipGraphDestroy(graph));
+  free(A_h);
+}
+
+
 /**
  * Scenario 5: Negative Tests
  */
-TEST_CASE("Unit_hipGraphRemoveDependencies_Negative") {
+TEST_CASE("Unit_hipGraphRemoveDependencies_Negative_Parameters") {
   hipGraph_t graph{};
   HIP_CHECK(hipGraphCreate(&graph, 0));
   hipEvent_t event_start, event_end;
@@ -406,53 +498,55 @@ TEST_CASE("Unit_hipGraphRemoveDependencies_Negative") {
                                                             event_start));
   HIP_CHECK(hipGraphAddEventRecordNode(&event_node_end, graph, nullptr, 0,
                                                             event_end));
-  // create empty node
-  hipGraphNode_t emptyNode{};
-  HIP_CHECK(hipGraphAddEmptyNode(&emptyNode, graph, nullptr, 0));
   // Add dependencies between nodes
   HIP_CHECK(hipGraphAddDependencies(graph, &event_node_start, &memset_A, 1));
   HIP_CHECK(hipGraphAddDependencies(graph, &memset_A, &event_node_end, 1));
 
   SECTION("graph is nullptr") {
-    REQUIRE(hipErrorInvalidValue ==
-        hipGraphRemoveDependencies(nullptr, &event_node_start, &memset_A, 1));
-  }
-
-  SECTION("from is nullptr") {
-    REQUIRE(hipErrorInvalidValue ==
-        hipGraphRemoveDependencies(graph, nullptr, &memset_A, 1));
-  }
-
-  SECTION("to is nullptr") {
-    REQUIRE(hipErrorInvalidValue ==
-        hipGraphRemoveDependencies(graph, &event_node_start, nullptr, 1));
+    HIP_CHECK_ERROR(hipGraphRemoveDependencies(nullptr, &event_node_start, &memset_A, 1), hipErrorInvalidValue);
   }
 
   SECTION("graph is uninitialized") {
     hipGraph_t graph_uninit{};
-    REQUIRE(hipErrorInvalidValue ==
-        hipGraphRemoveDependencies(graph_uninit, &event_node_start,
-                                   nullptr, 1));
+    HIP_CHECK_ERROR(hipGraphRemoveDependencies(graph_uninit, &event_node_start, &memset_A, 1), hipErrorInvalidValue);
   }
 
-  SECTION("non existing node") {
-    REQUIRE(hipErrorInvalidValue ==
-        hipGraphRemoveDependencies(graph, &event_node_start,
-                                   &emptyNode, 1));
+  SECTION("To or From is nullptr") {
+    HIP_CHECK_ERROR(hipGraphRemoveDependencies(graph, nullptr, &memset_A, 1), hipErrorInvalidValue);
+    HIP_CHECK_ERROR(hipGraphRemoveDependencies(graph, &event_node_start, nullptr, 1), hipErrorInvalidValue);
   }
 
-  SECTION("remove non existing dependency") {
-    REQUIRE(hipErrorInvalidValue ==
-        hipGraphRemoveDependencies(graph, &event_node_start,
-                                   &event_node_end, 1));
+  SECTION("To/From is nullptr") {
+    HIP_CHECK_ERROR(hipGraphRemoveDependencies(graph, nullptr, nullptr, 1), hipErrorInvalidValue);
+  }
+
+  SECTION("To/From belong to different graph") {
+    hipGraph_t graph1;
+    hipGraphNode_t emptyNode1{};
+    hipGraphNode_t emptyNode2{};
+    HIP_CHECK(hipGraphCreate(&graph1, 0));
+    // create empty node
+    HIP_CHECK(hipGraphAddEmptyNode(&emptyNode1, graph1, nullptr, 0));
+    HIP_CHECK(hipGraphAddEmptyNode(&emptyNode2, graph1, nullptr, 0));
+    HIP_CHECK(hipGraphAddDependencies(graph1, &emptyNode1, &emptyNode2, 1));
+    HIP_CHECK_ERROR(hipGraphRemoveDependencies(graph, &emptyNode1, &emptyNode2, 1), hipErrorInvalidValue);
+    HIP_CHECK(hipGraphDestroy(graph1));
+  }
+
+  SECTION("Remove non existing dependency") {
+    HIP_CHECK_ERROR(hipGraphRemoveDependencies(graph, &event_node_start, &event_node_end, 1), hipErrorInvalidValue);
   }
 
   SECTION("remove same dependency twice") {
     HIP_CHECK(hipGraphRemoveDependencies(graph, &event_node_start,
                                    &memset_A, 1));
-    REQUIRE(hipErrorInvalidValue ==
-        hipGraphRemoveDependencies(graph, &event_node_start,
-                                   &memset_A, 1));
+    HIP_CHECK_ERROR(hipGraphRemoveDependencies(graph, &event_node_start, &memset_A, 1), hipErrorInvalidValue);
+  }
+
+  SECTION("numDependencies > To/From length") {
+    hipGraphNode_t from_list[] = {event_node_start, memset_A};
+    hipGraphNode_t to_list[] = {memset_A, event_node_end};
+    HIP_CHECK_ERROR(hipGraphRemoveDependencies(graph, from_list, to_list, 3), hipErrorInvalidValue);
   }
 
   HIP_CHECK(hipFree(A_d));

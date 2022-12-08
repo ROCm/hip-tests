@@ -40,15 +40,59 @@ and does update numNodes.
 #include <hip_test_checkers.hh>
 #include <hip_test_kernels.hh>
 
+namespace {
+inline constexpr size_t kNumOfNodes = 4;
+}  // anonymous namespace
+
+/**
+ * Local Function to validate number of nodes.
+ */
+static void validate_hipGraphGetNodes(size_t numNodesToGet,
+                                        int testnum,
+                                        std::vector<hipGraphNode_t> nodelist,
+                                        hipGraph_t graph) {
+  size_t numNodes = numNodesToGet;
+  hipGraphNode_t *nodes = new hipGraphNode_t[numNodes]{};
+  int found_count = 0;
+  HIP_CHECK(hipGraphGetNodes(graph, nodes, &numNodes));
+  // Verify added nodes are present in the node entries returned
+  for (size_t i = 0; i < kNumOfNodes; i++) {
+    for (size_t j = 0; j < numNodes; j++) {
+      if (nodelist[i] == nodes[j]) {
+        found_count++;
+        break;
+      }
+    }
+  }
+  // Validate
+  if (testnum == 0) {
+    REQUIRE(found_count == kNumOfNodes);
+  } else if (testnum == 1) {
+    // Verify numNodes is unchanged
+    REQUIRE(numNodes == numNodesToGet);
+    REQUIRE(found_count == numNodesToGet);
+  } else if (testnum == 2) {
+    // Verify numNodes is reset to actual number of nodes
+    REQUIRE(numNodes == nodelist.size());
+    REQUIRE(found_count == kNumOfNodes);
+    // Verify additional entries in nodes are set to nullptr
+    for (auto i = numNodes; i < numNodesToGet; i++) {
+      REQUIRE(nodes[i] == nullptr);
+    }
+  }
+
+  delete[] nodes;
+}
+
+
 /**
  * Functional Test for hipGraphGetNodes API fetching node list
  */
-TEST_CASE("Unit_hipGraphGetNodes_Functional") {
+TEST_CASE("Unit_hipGraphGetNodes_Positive_Functional") {
   constexpr size_t N = 1024;
   constexpr size_t Nbytes = N * sizeof(int);
   constexpr auto blocksPerCU = 6;  // to hide latency
   constexpr auto threadsPerBlock = 256;
-  constexpr auto addlEntries = 4;
   hipGraph_t graph;
   hipGraphNode_t memcpyNode, kernelNode;
   hipKernelNodeParams kernelNodeParams{};
@@ -90,40 +134,42 @@ TEST_CASE("Unit_hipGraphGetNodes_Functional") {
                                     Nbytes, hipMemcpyDeviceToHost));
   nodelist.push_back(memcpyNode);
 
-  // Get numNodes by passing nodes as nullptr.
-  // verify : numNodes is set to actual number of nodes added
+  
   size_t numNodes{};
-  HIP_CHECK(hipGraphGetNodes(graph, nullptr, &numNodes));
-  INFO("Num of nodes returned by GetNodes : " << numNodes);
-  REQUIRE(numNodes == nodelist.size());
-
-  // Request for extra/additional nodes.
-  // verify : totNodes is reset to actual number of nodes
-  // verify : additional entries in nodes are set to nullptr
-  size_t totNodes = numNodes + addlEntries;
-  int numBytes = sizeof(hipGraphNode_t) * totNodes;
-  hipGraphNode_t* nodes = reinterpret_cast<hipGraphNode_t *>(malloc(numBytes));
-  REQUIRE(nodes != nullptr);
-  HIP_CHECK(hipGraphGetNodes(graph, nodes, &totNodes));
-  REQUIRE(totNodes == nodelist.size());
-  for (auto i = numNodes; i < numNodes + addlEntries; i++) {
-    REQUIRE(nodes[i] == nullptr);
+  // Get numNodes by passing nodes as nullptr.
+  // Verify numNodes is set to actual number of nodes added
+  // Scenario 1
+  SECTION("Validate number of nodes") {
+    HIP_CHECK(hipGraphGetNodes(graph, nullptr, &numNodes));
+    INFO("Num of nodes returned by GetNodes : " << numNodes);
+    REQUIRE(numNodes == nodelist.size());
   }
 
-  // Verify added nodes are present in the node entries returned
-  for (auto Node : nodelist) {
-    bool found = false;
-    for (size_t i = 0; i < numNodes; i++) {
-      if (Node == nodes[i]) {
-        found = true;
-        break;
-      }
-    }
+  // Scenario 2
+  SECTION("Validate node list when numNodes = num of nodes") {
+    validate_hipGraphGetNodes(kNumOfNodes, 0,
+                                    nodelist, graph);
+  }
 
-    if (!found) {
-      INFO("Added node " << Node << " not present in returned list");
-      REQUIRE(false);
-    }
+  // Scenario 3
+  SECTION("Validate node list when numNodes < num of nodes") {
+    validate_hipGraphGetNodes(kNumOfNodes - 1, 1,
+                                    nodelist, graph);
+  }
+
+  // Scenario 4
+  SECTION("Validate node list when numNodes > num of nodes") {
+    validate_hipGraphGetNodes(kNumOfNodes + 1, 2,
+                                    nodelist, graph);
+  }
+
+  // Scenario 5
+  SECTION("Validate numNodes is 0 when no nodes in graph") {
+    hipGraph_t emptyGraph{};
+    HIP_CHECK(hipGraphCreate(&emptyGraph, 0));
+    HIP_CHECK(hipGraphGetNodes(emptyGraph, nullptr, &numNodes));
+    REQUIRE(numNodes == 0);
+    HIP_CHECK(hipGraphDestroy(emptyGraph));
   }
 
   // Instantiate and launch the graph
@@ -138,14 +184,13 @@ TEST_CASE("Unit_hipGraphGetNodes_Functional") {
   HIP_CHECK(hipGraphExecDestroy(graphExec));
   HIP_CHECK(hipGraphDestroy(graph));
   HIP_CHECK(hipStreamDestroy(streamForGraph));
-  free(nodes);
 }
 
 /**
  * Begin stream capture and push operations to stream.
  * Verify nodes of created graph are matching the operations pushed.
  */
-TEST_CASE("Unit_hipGraphGetNodes_CapturedStream") {
+TEST_CASE("Unit_hipGraphGetNodes_Positive_CapturedStream") {
   hipGraph_t graph{nullptr};
   hipGraphExec_t graphExec{nullptr};
   constexpr unsigned blocks = 512;
@@ -250,7 +295,7 @@ TEST_CASE("Unit_hipGraphGetNodes_CapturedStream") {
  * as input and output parameters and validates the behavior.
  * Test will include both negative and positive scenarios.
  */
-TEST_CASE("Unit_hipGraphGetNodes_ParamValidation") {
+TEST_CASE("Unit_hipGraphGetNodes_Negative_Parameters") {
   hipStream_t stream{nullptr};
   hipGraph_t graph{nullptr};
   constexpr unsigned blocks = 512;
@@ -284,35 +329,16 @@ TEST_CASE("Unit_hipGraphGetNodes_ParamValidation") {
   REQUIRE(nodes != nullptr);
 
   SECTION("graph as nullptr") {
-    hipError_t ret = hipGraphGetNodes(nullptr, nodes, &numNodes);
-    REQUIRE(ret == hipErrorInvalidValue);
+    HIP_CHECK_ERROR(hipGraphGetNodes(nullptr, nodes, &numNodes), hipErrorInvalidValue);
+  }
+
+  SECTION("graph is uninitialized") {
+    hipGraph_t graph_uninit{};
+    HIP_CHECK_ERROR(hipGraphGetNodes(graph_uninit, nodes, &numNodes), hipErrorInvalidValue);
   }
 
   SECTION("numNodes as nullptr") {
-    hipError_t ret = hipGraphGetNodes(graph, nodes, nullptr);
-    REQUIRE(ret == hipErrorInvalidValue);
-  }
-
-  SECTION("no nodes in graph") {
-    hipGraph_t emptyGraph{};
-    HIP_CHECK(hipGraphCreate(&emptyGraph, 0));
-    HIP_CHECK(hipGraphGetNodes(emptyGraph, nullptr, &numNodes));
-    REQUIRE(numNodes == 0);
-  }
-
-  SECTION("numNodes less than actual number of nodes") {
-    size_t numPartNodes = numNodes - 1;
-    hipGraphNodeType nodeType;
-    HIP_CHECK(hipGraphGetNodes(graph, nodes, &numPartNodes));
-
-    // verify numPartNodes is unchanged
-    REQUIRE(numPartNodes == numNodes - 1);
-    // verify partial node list returned has valid nodes
-    for (size_t i = 0; i < numPartNodes; i++) {
-      HIP_CHECK(hipGraphNodeGetType(nodes[i], &nodeType));
-      REQUIRE(nodeType >= 0);
-      REQUIRE(nodeType < hipGraphNodeTypeCount);
-    }
+    HIP_CHECK_ERROR(hipGraphGetNodes(graph, nodes, nullptr), hipErrorInvalidValue);
   }
 
   HIP_CHECK(hipGraphDestroy(graph));

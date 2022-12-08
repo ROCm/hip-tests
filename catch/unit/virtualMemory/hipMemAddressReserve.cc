@@ -44,6 +44,11 @@ THE SOFTWARE.
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemAddressReserve_Negative_Basic") {
+  if (!is_virtual_memory_management_supported(0)) {
+    HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeVirtualMemoryManagement "
+           "attribute. Hence skipping the testing with Pass result.\n");
+    return;
+  }
 	void* virtual_memory_ptr;
 	size_t allocation_size = calculate_allocation_size(std::numeric_limits<size_t>::max());
 	HIP_CHECK_ERROR(hipMemAddressReserve(&virtual_memory_ptr, allocation_size, 0, nullptr, 0), hipErrorInvalidValue);

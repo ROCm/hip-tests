@@ -131,7 +131,6 @@ class VirtualMemoryGuard {
 
   VirtualMemoryGuard(const size_t size, const int deviceId=0,
                      const hipMemGenericAllocationHandle_t* inheritedHandle=nullptr) {
-    allocation_size_ = size;
     hipMemAllocationProp properties{};
     properties.type = hipMemAllocationTypePinned;
     properties.location.id = deviceId;
@@ -142,7 +141,8 @@ class VirtualMemoryGuard {
     size_t granularity{0};
 
     HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &properties, hipMemAllocationGranularityRecommended));
-    HIP_CHECK(hipMemAddressReserve(&virtual_memory_ptr, allocation_size_, granularity, nullptr, 0));
+    allocation_size_ = granularity * ((size + granularity - 1) / granularity);
+    HIP_CHECK(hipMemAddressReserve(&virtual_memory_ptr, allocation_size_, 0, nullptr, 0));
     if (inheritedHandle) {
       is_handle_inherited_ = true;
       handle = *inheritedHandle;

@@ -70,7 +70,7 @@ TEST_CASE("Unit_hipGraphKernelNodeSetParams_Negative") {
     HIP_CHECK_ERROR(hipGraphKernelNodeSetParams(kNode, nullptr), hipErrorInvalidValue);
   }
 
-#if HT_NVIDIA // on AMD this returns hipErrorInvalidValue
+#if HT_NVIDIA  // on AMD this returns hipErrorInvalidValue
   SECTION("Pass NodeParams func data member as nullptr") {
     kNodeParams.func = nullptr;
     HIP_CHECK_ERROR(hipGraphKernelNodeSetParams(kNode, &kNodeParams),
@@ -78,14 +78,14 @@ TEST_CASE("Unit_hipGraphKernelNodeSetParams_Negative") {
   }
 #endif
 
-#if HT_NVIDIA // segfaults on AMD
+#if HT_NVIDIA  // segfaults on AMD
   SECTION("Pass kernelParams data member as nullptr") {
     kNodeParams.kernelParams = nullptr;
     HIP_CHECK_ERROR(hipGraphKernelNodeSetParams(kNode, &kNodeParams), hipErrorInvalidValue);
   }
 #endif
 
-#if HT_NVIDIA // segfaults on AMD
+#if HT_NVIDIA  // segfaults on AMD
   SECTION("node is not a kernel node") {
     hipGraphNode_t empty_node;
     HIP_CHECK(hipGraphAddEmptyNode(&empty_node, graph, nullptr, 0));

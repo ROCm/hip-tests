@@ -77,7 +77,7 @@ TEST_CASE("Unit_hipGraphAddKernelNode_Negative") {
         hipErrorInvalidValue);
   }
 
-#if HT_NVIDIA // on AMD this returns hipErrorInvalidValue
+#if HT_NVIDIA  // on AMD this returns hipErrorInvalidValue
   SECTION("Pass NodeParams func data member as nullptr") {
     kNodeParams.func = nullptr;
     HIP_CHECK_ERROR(hipGraphAddKernelNode(&kNode, graph, nullptr, 0, &kNodeParams),

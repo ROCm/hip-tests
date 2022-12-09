@@ -22,7 +22,7 @@ THE SOFTWARE.
 /**
  * @addtogroup hipMemRelease hipMemRelease
  * @{
- * @ingroup VirutalTest
+ * @ingroup VirtualTest
  * `hipError_t hipMemRelease(hipMemGenericAllocationHandle_t handle);` -
  * Release a memory handle representing a memory allocation which was
  * previously allocated through hipMemCreate.

@@ -49,7 +49,7 @@ TEST_CASE("Unit_hipMemAddressReserve_Negative_Basic") {
            "attribute. Hence skipping the testing with Pass result.\n");
     return;
   }
-	void* virtual_memory_ptr;
+	void* virtual_memory_ptr{nullptr};
 	size_t allocation_size = calculate_allocation_size(std::numeric_limits<size_t>::max());
 	HIP_CHECK_ERROR(hipMemAddressReserve(&virtual_memory_ptr, allocation_size, 0, nullptr, 0), hipErrorInvalidValue);
 }

@@ -49,7 +49,7 @@ THE SOFTWARE.
  * ------------------------ 
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipMemMap_Negative_Parameters") {
+TEST_CASE("Unit_hipMemMap_Negative_Basic") {
   if (!is_virtual_memory_management_supported(0)) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeVirtualMemoryManagement "
            "attribute. Hence skipping the testing with Pass result.\n");

@@ -39,7 +39,7 @@ THE SOFTWARE.
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemAddressFree_Positive_Basic") {
-  if (!is_virtual_memory_management_supported(0)) {
+  if (!is_virtual_memory_management_supported()) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeVirtualMemoryManagement "
            "attribute. Hence skipping the testing with Pass result.\n");
     return;
@@ -68,7 +68,7 @@ TEST_CASE("Unit_hipMemAddressFree_Positive_Basic") {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemAddressFree_Negative_Parameters") {
-  if (!is_virtual_memory_management_supported(0)) {
+  if (!is_virtual_memory_management_supported()) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeVirtualMemoryManagement "
            "attribute. Hence skipping the testing with Pass result.\n");
     return;
@@ -101,7 +101,7 @@ TEST_CASE("Unit_hipMemAddressFree_Negative_Parameters") {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemAddressFree_Negative_FreeMemoryTwoTimes") {
-  if (!is_virtual_memory_management_supported(0)) {
+  if (!is_virtual_memory_management_supported()) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeVirtualMemoryManagement "
            "attribute. Hence skipping the testing with Pass result.\n");
     return;
@@ -127,7 +127,7 @@ TEST_CASE("Unit_hipMemAddressFree_Negative_FreeMemoryTwoTimes") {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemAddressFree_Negative_FreeBeforeUnmap") {
-  if (!is_virtual_memory_management_supported(0)) {
+  if (!is_virtual_memory_management_supported()) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeVirtualMemoryManagement "
            "attribute. Hence skipping the testing with Pass result.\n");
     return;

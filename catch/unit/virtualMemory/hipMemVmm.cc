@@ -41,7 +41,7 @@ THE SOFTWARE.
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemVmm_Positive_OneToOne_Mapping") {
-  if (!is_virtual_memory_management_supported(0)) {
+  if (!is_virtual_memory_management_supported()) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeVirtualMemoryManagement "
            "attribute. Hence skipping the testing with Pass result.\n");
     return;
@@ -75,7 +75,7 @@ TEST_CASE("Unit_hipMemVmm_Positive_OneToOne_Mapping") {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemVmm_Positive_OneToN_Mapping") {
-  if (!is_virtual_memory_management_supported(0)) {
+  if (!is_virtual_memory_management_supported()) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeVirtualMemoryManagement "
            "attribute. Hence skipping the testing with Pass result.\n");
     return;

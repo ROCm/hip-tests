@@ -19,14 +19,14 @@ THE SOFTWARE.
 
 #include <resource_guards.hh>
 
-static int is_virtual_memory_management_supported(const int deviceId) {
+static int is_virtual_memory_management_supported(const int deviceId=0) {
   int vmm_flag = 0;
   HIP_CHECK(hipDeviceGetAttribute(&vmm_flag, hipDeviceAttributeVirtualMemoryManagementSupported, deviceId));
 
   return vmm_flag;
 }
 
-static int calculate_allocation_size(size_t raw_size, int deviceId=0) {
+static int calculate_allocation_size(const size_t raw_size, const int deviceId=0) {
   size_t granularity{0};
 
   hipMemAllocationProp properties{};

@@ -37,7 +37,7 @@ THE SOFTWARE.
  *    - unit/virtualMemory/hipMemGetAllocationPropertiesFromHandle.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= Hip version
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemGetAllocationPropertiesFromHandle_Positive_Basic") {
   if (!is_virtual_memory_management_supported()) {

@@ -21,7 +21,7 @@
 # Common Tests - Test independent of all platforms
 set(TEST_SRC
     hipMemVmm.cc
-    hipMemGetAccess.cc
+    hipMemSetGetAccess.cc
     hipMemGetAllocationPropertiesFromHandle.cc
     hipMemAddressFree.cc
     hipMemAddressReserve.cc

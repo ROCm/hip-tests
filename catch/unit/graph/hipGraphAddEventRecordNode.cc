@@ -40,7 +40,8 @@ end. Instantiate and Launch the Graph. Wait for the event to complete.
 Verify that hipEventElapsedTime() returns error.
  6) Validate scenario 2 by running the graph multiple times in a loop
 (100 times) after instantiation.
- 7) Negative Scenarios
+ 7) Validate that no error is reported when numDeps <= dependencies length
+ 8) Negative Scenarios
     - Output node is a nullptr.
     - Input graph is a nullptr.
     - Input dependencies is a nullptr.
@@ -221,9 +222,7 @@ TEST_CASE("Unit_hipGraphAddEventRecordNode_Functional_ElapsedTime") {
 TEST_CASE("Unit_hipGraphAddEventRecordNode_Functional_WithFlags") {
   // Create events with different flags using hipEventCreate and
   // elapsed time is not validated
-  SECTION("Flag = hipEventDefault") {
-    validateAddEventRecordNode(false, true, 1, hipEventDefault); 
-  }
+  SECTION("Flag = hipEventDefault") { validateAddEventRecordNode(false, true, 1, hipEventDefault); }
 
   SECTION("Flag = hipEventBlockingSync") {
     validateAddEventRecordNode(false, true, 1, hipEventBlockingSync);
@@ -296,7 +295,46 @@ TEST_CASE("Unit_hipGraphAddEventRecordNode_Functional_TimingDisabled") {
 }
 
 /**
- * Scenario 7: All negative tests
+ * Scenario 7: Positive parameter tests
+ */
+TEST_CASE("Unit_hipGraphAddEventRecordNode_Positive_Parameters") {
+  using namespace std::placeholders;
+  hipGraph_t graph;
+  HIP_CHECK(hipGraphCreate(&graph, 0));
+  hipEvent_t event;
+  HIP_CHECK(hipEventCreate(&event));
+  hipGraphNode_t eventrec;
+
+  hipGraphNode_t dep_node = nullptr;
+  hipGraphNode_t dep_node2 = nullptr;
+  HIP_CHECK(hipGraphAddEmptyNode(&dep_node, graph, nullptr, 0));
+  HIP_CHECK(hipGraphAddEmptyNode(&dep_node2, graph, nullptr, 0));
+  hipGraphNode_t dep_nodes[] = {dep_node, dep_node2};
+
+  SECTION("numDependencies is zero, dependencies is not nullptr") {
+    size_t numDeps = 0;
+    HIP_CHECK(hipGraphAddEventRecordNode(&eventrec, graph, dep_nodes, 0, event));
+    HIP_CHECK(hipGraphNodeGetDependencies(eventrec, nullptr, &numDeps));
+    REQUIRE(numDeps == 0);
+  }
+
+  SECTION("numDependencies < dependencies length") {
+    size_t numDeps = 0;
+    HIP_CHECK(hipGraphAddEventRecordNode(&eventrec, graph, dep_nodes, 1, event));
+    HIP_CHECK(hipGraphNodeGetDependencies(eventrec, nullptr, &numDeps));
+    REQUIRE(numDeps == 1);
+  }
+
+  SECTION("numDependencies == dependencies length") {
+    size_t numDeps = 0;
+    HIP_CHECK(hipGraphAddEventRecordNode(&eventrec, graph, dep_nodes, 2, event));
+    HIP_CHECK(hipGraphNodeGetDependencies(eventrec, nullptr, &numDeps));
+    REQUIRE(numDeps == 2);
+  }
+}
+
+/**
+ * Scenario 8: All negative tests
  */
 TEST_CASE("Unit_hipGraphAddEventRecordNode_Negative") {
   using namespace std::placeholders;

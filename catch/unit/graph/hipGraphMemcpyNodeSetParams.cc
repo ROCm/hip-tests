@@ -98,9 +98,11 @@ TEST_CASE("Unit_hipGraphMemcpyNodeSetParams_Positive_Basic") {
     Memcpy3DArrayHostShell<async>(Memcpy3DWrapper<async, true, true>);
   }
 
+#if HT_NVIDIA  // Disabled on AMD due to defect - EXSWHTEC-220
   SECTION("Array from/to Device") {
     Memcpy3DArrayDeviceShell<async>(Memcpy3DWrapper<async, true, true>);
   }
+#endif
 }
 
 /**

@@ -28,6 +28,7 @@ set(TEST_SRC
     hipMemCreate.cc
     hipMemGetAllocationGranularity.cc
     hipMemMap.cc
+    hipMemRelease.cc
 )
 
 hip_add_exe_to_target(NAME VirtualMemoryTest

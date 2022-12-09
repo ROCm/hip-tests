@@ -37,7 +37,7 @@ TEST_CASE("Unit_hipOccupancyMaxPotentialBlockSize_Negative_Parameters") {
     return hipOccupancyMaxPotentialBlockSize(gridSize, blockSize, f1, 0, 0);
   });
 
-#ifndef HT_NVIDIA
+#if HT_AMD
   SECTION("Kernel function is NULL") {
     int blockSize = 0;
     int gridSize = 0;

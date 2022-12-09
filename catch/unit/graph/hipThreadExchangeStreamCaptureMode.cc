@@ -36,8 +36,7 @@ THE SOFTWARE.
 
 /* Local Function for swaping stream capture mode of a thread
  */
-static void hipGraphLaunchWithMode(hipStream_t stream,
-                                   hipStreamCaptureMode mode) {
+static void hipGraphLaunchWithMode(hipStream_t stream, hipStreamCaptureMode mode) {
   constexpr size_t N = 1024;
   size_t Nbytes = N * sizeof(float);
   constexpr float fill_value = 5.0f;
@@ -49,14 +48,13 @@ static void hipGraphLaunchWithMode(hipStream_t stream,
   LinearAllocGuard<float> B_h(LinearAllocs::malloc, Nbytes);
   LinearAllocGuard<float> A_d(LinearAllocs::hipMalloc, Nbytes);
   LinearAllocGuard<float> B_d(LinearAllocs::hipMalloc, Nbytes);
-  float *C_d;
+  float* C_d;
 
   HIP_CHECK(hipThreadExchangeStreamCaptureMode(&mode));
 
   HIP_CHECK(hipStreamBeginCapture(stream, mode));
 
-  captureSequenceLinear(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), B_d.ptr(), N,
-                      stream);
+  captureSequenceLinear(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), B_d.ptr(), N, stream);
   captureSequenceCompute(A_d.ptr(), B_h.host_ptr(), B_d.ptr(), N, stream);
 
   if (mode == hipStreamCaptureModeRelaxed) {
@@ -105,12 +103,10 @@ TEST_CASE("Unit_hipThreadExchangeStreamCaptureMode_Positive_Functional") {
   StreamGuard stream_guard(Streams::created);
   hipStream_t stream = stream_guard.stream();
 
-  const hipStreamCaptureMode captureModeMain =
-      GENERATE(hipStreamCaptureModeGlobal, hipStreamCaptureModeThreadLocal,
-               hipStreamCaptureModeRelaxed);
-  const hipStreamCaptureMode captureModeThread =
-      GENERATE(hipStreamCaptureModeGlobal, hipStreamCaptureModeThreadLocal,
-               hipStreamCaptureModeRelaxed);
+  const hipStreamCaptureMode captureModeMain = GENERATE(
+      hipStreamCaptureModeGlobal, hipStreamCaptureModeThreadLocal, hipStreamCaptureModeRelaxed);
+  const hipStreamCaptureMode captureModeThread = GENERATE(
+      hipStreamCaptureModeGlobal, hipStreamCaptureModeThreadLocal, hipStreamCaptureModeRelaxed);
 
   hipGraphLaunchWithMode(stream, captureModeMain);
   std::thread t(threadFuncCaptureMode, stream, captureModeThread);
@@ -119,41 +115,37 @@ TEST_CASE("Unit_hipThreadExchangeStreamCaptureMode_Positive_Functional") {
 
 /**
  * Test Description
- * ------------------------ 
+ * ------------------------
  *    - Test to verify API behavior with invalid arguments:
  *        -# Mode as nullptr
  *        -# Mode as -1
  *        -# Mode as INT_MAX
  *        -# Mode other than existing 3 modes (hipStreamCaptureModeRelaxed + 1)
  * Test source
- * ------------------------ 
+ * ------------------------
  *    - catch\unit\graph\hipThreadExchangeStreamCaptureMode.cc
  * Test requirements
- * ------------------------ 
+ * ------------------------
  *    - HIP_VERSION >= 5.3
  */
-#if HT_AMD // getting error in Cuda Setup
+#if HT_AMD  // getting error in Cuda Setup
 TEST_CASE("Unit_hipThreadExchangeStreamCaptureMode_Negative_Parameters") {
   hipStreamCaptureMode mode;
 
   SECTION("Pass Mode as nullptr") {
-    HIP_CHECK_ERROR(hipThreadExchangeStreamCaptureMode(nullptr),
-                    hipErrorInvalidValue);
+    HIP_CHECK_ERROR(hipThreadExchangeStreamCaptureMode(nullptr), hipErrorInvalidValue);
   }
   SECTION("Pass Mode as -1") {
     mode = hipStreamCaptureMode(-1);
-    HIP_CHECK_ERROR(hipThreadExchangeStreamCaptureMode(&mode),
-                    hipErrorInvalidValue);
+    HIP_CHECK_ERROR(hipThreadExchangeStreamCaptureMode(&mode), hipErrorInvalidValue);
   }
   SECTION("Pass Mode as INT_MAX") {
     mode = hipStreamCaptureMode(INT_MAX);
-    HIP_CHECK_ERROR(hipThreadExchangeStreamCaptureMode(&mode),
-                    hipErrorInvalidValue);
+    HIP_CHECK_ERROR(hipThreadExchangeStreamCaptureMode(&mode), hipErrorInvalidValue);
   }
   SECTION("Pass Mode as hipStreamCaptureModeRelaxed + 1") {
     mode = hipStreamCaptureMode(hipStreamCaptureModeRelaxed + 1);
-    HIP_CHECK_ERROR(hipThreadExchangeStreamCaptureMode(&mode),
-                    hipErrorInvalidValue);
+    HIP_CHECK_ERROR(hipThreadExchangeStreamCaptureMode(&mode), hipErrorInvalidValue);
   }
 }
 #endif

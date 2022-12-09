@@ -30,10 +30,10 @@ THE SOFTWARE.
  * enqueues a host function call in a stream
  */
 
-static void hostNodeCallbackDummy(void *data) { REQUIRE(data == nullptr); }
+static void hostNodeCallbackDummy(void* data) { REQUIRE(data == nullptr); }
 
-static void hostNodeCallback(void *data) {
-  float **userData = static_cast<float **>(data);
+static void hostNodeCallback(void* data) {
+  float** userData = static_cast<float**>(data);
 
   float input_data = *(userData[0]);
   float output_data = *(userData[1]);
@@ -59,16 +59,14 @@ TEST_CASE("Unit_hipLaunchHostFunc_Negative_Parameters") {
   hipStream_t stream = stream_guard.stream();
 
   HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
-#if HT_NVIDIA // EXSWHTEC-216
+#if HT_NVIDIA  // EXSWHTEC-216
   SECTION("Pass stream as nullptr") {
     hipHostFn_t fn = hostNodeCallbackDummy;
-    HIP_CHECK_ERROR(hipLaunchHostFunc(nullptr, fn, nullptr),
-                    hipErrorStreamCaptureImplicit);
+    HIP_CHECK_ERROR(hipLaunchHostFunc(nullptr, fn, nullptr), hipErrorStreamCaptureImplicit);
   }
 #endif
   SECTION("Pass functions as nullptr") {
-    HIP_CHECK_ERROR(hipLaunchHostFunc(stream, nullptr, nullptr),
-                    hipErrorInvalidValue);
+    HIP_CHECK_ERROR(hipLaunchHostFunc(stream, nullptr, nullptr), hipErrorInvalidValue);
   }
 
   SECTION("Pass uninitialized stream") {
@@ -77,8 +75,7 @@ TEST_CASE("Unit_hipLaunchHostFunc_Negative_Parameters") {
       StreamGuard sg(Streams::created);
       return sg.stream();
     };
-    HIP_CHECK_ERROR(hipLaunchHostFunc(InvalidStream(), fn, nullptr),
-                    hipErrorContextIsDestroyed);
+    HIP_CHECK_ERROR(hipLaunchHostFunc(InvalidStream(), fn, nullptr), hipErrorContextIsDestroyed);
   }
 }
 
@@ -110,8 +107,8 @@ TEST_CASE("Unit_hipLaunchHostFunc_Positive_Functional") {
   captureSequenceSimple(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), 1, stream);
 
   hipHostFn_t fn = hostNodeCallback;
-  float *data[2] = {A_h.host_ptr(), B_h.host_ptr()};
-  HIP_CHECK(hipLaunchHostFunc(stream, fn, static_cast<void *>(data)));
+  float* data[2] = {A_h.host_ptr(), B_h.host_ptr()};
+  HIP_CHECK(hipLaunchHostFunc(stream, fn, static_cast<void*>(data)));
 
   HIP_CHECK(hipStreamEndCapture(stream, &graph));
   // Validate end capture is successful
@@ -131,9 +128,9 @@ TEST_CASE("Unit_hipLaunchHostFunc_Positive_Functional") {
   HIP_CHECK(hipGraphDestroy(graph));
 }
 
-static void thread_func_pos(hipStream_t *stream, hipHostFn_t fn, float **data){
+static void thread_func_pos(hipStream_t* stream, hipHostFn_t fn, float** data){
 
-    HIP_CHECK(hipLaunchHostFunc(*stream, fn, static_cast<void *>(data)))}
+    HIP_CHECK(hipLaunchHostFunc(*stream, fn, static_cast<void*>(data)))}
 
 /**
  * Test Description
@@ -163,7 +160,7 @@ TEST_CASE("Unit_hipLaunchHostFunc_Positive_Thread") {
   captureSequenceSimple(A_h.host_ptr(), A_d.ptr(), B_h.host_ptr(), 1, stream);
 
   hipHostFn_t fn = hostNodeCallback;
-  float *data[2] = {A_h.host_ptr(), B_h.host_ptr()};
+  float* data[2] = {A_h.host_ptr(), B_h.host_ptr()};
   std::thread t(thread_func_pos, &stream, fn, data);
   t.join();
 

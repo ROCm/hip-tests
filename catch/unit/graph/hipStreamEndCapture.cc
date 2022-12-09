@@ -66,11 +66,9 @@ TEST_CASE("Unit_hipStreamEndCapture_Negative_Parameters") {
   SECTION("Destroy stream and try to end capture") {
     hipStream_t destroyed_stream;
     HIP_CHECK(hipStreamCreate(&destroyed_stream));
-    HIP_CHECK(
-        hipStreamBeginCapture(destroyed_stream, hipStreamCaptureModeGlobal));
+    HIP_CHECK(hipStreamBeginCapture(destroyed_stream, hipStreamCaptureModeGlobal));
     HIP_CHECK(hipStreamDestroy(destroyed_stream));
-    HIP_CHECK_ERROR(hipStreamEndCapture(destroyed_stream, &graph),
-                    hipErrorContextIsDestroyed);
+    HIP_CHECK_ERROR(hipStreamEndCapture(destroyed_stream, &graph), hipErrorContextIsDestroyed);
   }
 }
 
@@ -109,8 +107,7 @@ TEST_CASE("Unit_hipStreamEndCapture_Positive_GraphDestroy") {
 }
 
 static void thread_func_neg(hipStream_t stream, hipGraph_t graph) {
-  HIP_ASSERT(hipErrorStreamCaptureWrongThread ==
-             hipStreamEndCapture(stream, &graph));
+  HIP_ASSERT(hipErrorStreamCaptureWrongThread == hipStreamEndCapture(stream, &graph));
 }
 
 /**
@@ -154,7 +151,7 @@ TEST_CASE("Unit_hipStreamEndCapture_Negative_Thread") {
   HIP_CHECK(hipGraphDestroy(graph));
 }
 
-static void thread_func_pos(hipStream_t stream, hipGraph_t *graph) {
+static void thread_func_pos(hipStream_t stream, hipGraph_t* graph) {
   HIP_CHECK(hipStreamEndCapture(stream, graph));
 }
 

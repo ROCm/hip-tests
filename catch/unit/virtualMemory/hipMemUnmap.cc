@@ -44,7 +44,7 @@ THE SOFTWARE.
  *    - unit/virtualMemory/hipMemUnmap.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= Hip version
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemUnmap_Negative_Parameters") {
   if (!is_virtual_memory_management_supported()) {

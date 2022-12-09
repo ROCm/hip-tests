@@ -42,8 +42,8 @@ static void hipGraphLaunchWithMode(hipStream_t stream,
   size_t Nbytes = N * sizeof(float);
   constexpr float fill_value = 5.0f;
 
-  GraphGuard graph_guard;
-  hipGraph_t &graph = graph_guard.graph();
+  hipGraph_t graph{nullptr};
+  hipGraphExec_t graphExec{nullptr};
 
   LinearAllocGuard<float> A_h(LinearAllocs::malloc, Nbytes);
   LinearAllocGuard<float> B_h(LinearAllocs::malloc, Nbytes);
@@ -68,10 +68,10 @@ static void hipGraphLaunchWithMode(hipStream_t stream,
   // Validate end capture is successful
   REQUIRE(graph != nullptr);
 
-  GraphExecGuard graphExec_guard(graph);
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
 
   std::fill_n(A_h.host_ptr(), N, fill_value);
-  HIP_CHECK(hipGraphLaunch(graphExec_guard.graphExec(), stream));
+  HIP_CHECK(hipGraphLaunch(graphExec, stream));
   HIP_CHECK(hipStreamSynchronize(stream));
 
   // Validate the computation
@@ -79,6 +79,9 @@ static void hipGraphLaunchWithMode(hipStream_t stream,
   if (mode == hipStreamCaptureModeRelaxed) {
     HIP_CHECK(hipFree(C_d));
   }
+
+  HIP_CHECK(hipGraphExecDestroy(graphExec));
+  HIP_CHECK(hipGraphDestroy(graph));
 }
 
 void threadFuncCaptureMode(hipStream_t stream, hipStreamCaptureMode mode) {
@@ -98,7 +101,7 @@ void threadFuncCaptureMode(hipStream_t stream, hipStreamCaptureMode mode) {
  * ------------------------
  *    - HIP_VERSION >= 5.3
  */
-TEST_CASE("Unit_hipThreadExchangeStreamCaptureMode_Functional") {
+TEST_CASE("Unit_hipThreadExchangeStreamCaptureMode_Positive_Functional") {
   StreamGuard stream_guard(Streams::created);
   hipStream_t stream = stream_guard.stream();
 
@@ -130,7 +133,7 @@ TEST_CASE("Unit_hipThreadExchangeStreamCaptureMode_Functional") {
  *    - HIP_VERSION >= 5.3
  */
 #if HT_AMD // getting error in Cuda Setup
-TEST_CASE("Unit_hipThreadExchangeStreamCaptureMode_Negative") {
+TEST_CASE("Unit_hipThreadExchangeStreamCaptureMode_Negative_Parameters") {
   hipStreamCaptureMode mode;
 
   SECTION("Pass Mode as nullptr") {

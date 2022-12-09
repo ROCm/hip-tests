@@ -75,8 +75,8 @@ UpdateStreamCaptureDependenciesSet(hipStream_t stream,
   LinearAllocGuard<float> B_d(LinearAllocs::hipMalloc, Nbytes);
   LinearAllocGuard<float> C_d(LinearAllocs::hipMalloc, Nbytes);
 
-  GraphGuard graph_guard;
-  hipGraph_t &graph = graph_guard.graph();
+  hipGraph_t graph{nullptr};
+  hipGraphExec_t graphExec{nullptr};
   EventsGuard events_guard(3);
   StreamsGuard streams_guard(2);
 
@@ -167,8 +167,7 @@ UpdateStreamCaptureDependenciesSet(hipStream_t stream,
   HIP_CHECK(hipStreamEndCapture(stream, &graph));
   REQUIRE(graph != nullptr);
 
-  GraphExecGuard graphExec_guard(graph);
-  hipGraphExec_t graphExec = graphExec_guard.graphExec();
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
 
   // Replay the recorded sequence multiple times
   for (int i = 0; i < kLaunchIters; i++) {
@@ -179,6 +178,9 @@ UpdateStreamCaptureDependenciesSet(hipStream_t stream,
     ArrayFindIfNot(B_h.host_ptr(),
                    static_cast<float>(i) * static_cast<float>(i), N);
   }
+
+  HIP_CHECK(hipGraphExecDestroy(graphExec));
+  HIP_CHECK(hipGraphDestroy(graph));
 }
 
 /* Local Function for adding new dependency
@@ -203,8 +205,8 @@ UpdateStreamCaptureDependenciesAdd(hipStream_t stream,
   LinearAllocGuard<float> B_d(LinearAllocs::hipMalloc, Nbytes);
   LinearAllocGuard<float> C_d(LinearAllocs::hipMalloc, Nbytes);
 
-  GraphGuard graph_guard;
-  hipGraph_t &graph = graph_guard.graph();
+  hipGraph_t graph{nullptr};
+  hipGraphExec_t graphExec{nullptr};
   EventsGuard events_guard(3);
   StreamsGuard streams_guard(2);
 
@@ -292,8 +294,7 @@ UpdateStreamCaptureDependenciesAdd(hipStream_t stream,
   HIP_CHECK(hipStreamEndCapture(stream, &graph));
   REQUIRE(graph != nullptr);
 
-  GraphExecGuard graphExec_guard(graph);
-  hipGraphExec_t graphExec = graphExec_guard.graphExec();
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
 
   // Replay the recorded sequence multiple times
   for (int i = 0; i < kLaunchIters; i++) {
@@ -303,6 +304,9 @@ UpdateStreamCaptureDependenciesAdd(hipStream_t stream,
     HIP_CHECK(hipStreamSynchronize(stream));
     ArrayFindIfNot(B_h.host_ptr(), static_cast<float>(i) * 2, N);
   }
+
+  HIP_CHECK(hipGraphExecDestroy(graphExec));
+  HIP_CHECK(hipGraphDestroy(graph));
 }
 
 /**
@@ -376,8 +380,7 @@ TEST_CASE("Unit_hipStreamAddCaptureDependencies_Positive_Functional") {
  *    - HIP_VERSION >= 5.3
  */
 TEST_CASE("Unit_hipStreamUpdateCaptureDependencies_Positive_Parameters") {
-  GraphGuard graph_guard;
-  hipGraph_t &graph = graph_guard.graph();
+  hipGraph_t graph{nullptr};
 
   const auto stream_type = GENERATE(Streams::perThread, Streams::created);
   StreamGuard stream_guard(stream_type);
@@ -394,6 +397,8 @@ TEST_CASE("Unit_hipStreamUpdateCaptureDependencies_Positive_Parameters") {
   HIP_CHECK(hipStreamUpdateCaptureDependencies(stream, nullptr, 0, flag));
 
   HIP_CHECK(hipStreamEndCapture(stream, &graph));
+
+  HIP_CHECK(hipGraphDestroy(graph));
 }
 
 /**
@@ -415,6 +420,7 @@ TEST_CASE("Unit_hipStreamUpdateCaptureDependencies_Positive_Parameters") {
 TEST_CASE("Unit_hipStreamUpdateCaptureDependencies_Negative_Parameters") {
   const int Nbytes = 100;
   hipGraph_t capInfoGraph{nullptr};
+  hipGraph_t graph{nullptr};
 
   hipStreamCaptureStatus captureStatus;
   size_t numDependencies;
@@ -424,8 +430,6 @@ TEST_CASE("Unit_hipStreamUpdateCaptureDependencies_Negative_Parameters") {
 
   LinearAllocGuard<char> A_d(LinearAllocs::hipMalloc, Nbytes);
 
-  GraphGuard graph_guard;
-  hipGraph_t &graph = graph_guard.graph();
   StreamGuard stream_guard(Streams::created);
   hipStream_t stream = stream_guard.stream();
 
@@ -492,4 +496,6 @@ TEST_CASE("Unit_hipStreamUpdateCaptureDependencies_Negative_Parameters") {
                         hipStreamAddCaptureDependencies),
                     hipErrorIllegalState);
   }
+
+  HIP_CHECK(hipGraphDestroy(graph));
 }

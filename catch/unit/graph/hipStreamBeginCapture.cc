@@ -61,8 +61,8 @@ void captureStreamAndLaunchGraph(F graphFunc, hipStreamCaptureMode mode,
   constexpr size_t N = 1000000;
   size_t Nbytes = N * sizeof(T);
 
-  GraphGuard graph_guard;
-  hipGraph_t &graph = graph_guard.graph();
+  hipGraph_t graph{nullptr};
+  hipGraphExec_t graphExec{nullptr};
 
   // Host and Device allocation
   LinearAllocGuard<T> A_h(LinearAllocs::malloc, Nbytes);
@@ -81,8 +81,8 @@ void captureStreamAndLaunchGraph(F graphFunc, hipStreamCaptureMode mode,
   // Validate end capture is successful
   REQUIRE(graph != nullptr);
 
-  GraphExecGuard graphExec_guard(graph);
-  hipGraphExec_t graphExec = graphExec_guard.graphExec();
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+  REQUIRE(graphExec != nullptr);
 
   // Replay the recorded sequence multiple times
   for (int i = 0; i < kLaunchIters; i++) {
@@ -92,6 +92,9 @@ void captureStreamAndLaunchGraph(F graphFunc, hipStreamCaptureMode mode,
     ArrayFindIfNot(B_h.host_ptr(),
                    static_cast<float>(i) * static_cast<float>(i), N);
   }
+
+  HIP_CHECK(hipGraphExecDestroy(graphExec))
+  HIP_CHECK(hipGraphDestroy(graph));
 }
 
 /**
@@ -202,8 +205,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_Negative_Parameters") {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_Basic") {
-  GraphGuard graph_guard;
-  hipGraph_t &graph = graph_guard.graph();
+  hipGraph_t graph{nullptr};
   const auto stream_type = GENERATE(Streams::perThread, Streams::created);
   StreamGuard stream_guard(stream_type);
   hipStream_t s = stream_guard.stream();
@@ -215,16 +217,15 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_Basic") {
   HIP_CHECK(hipStreamBeginCapture(s, captureMode));
 
   HIP_CHECK(hipStreamEndCapture(s, &graph));
+  HIP_CHECK(hipGraphDestroy(graph));
 }
 
 /* Local function for inter stream event synchronization
  */
 static void interStrmEventSyncCapture(const hipStream_t &stream1,
                                       const hipStream_t &stream2) {
-  GraphGuard graph_guard1;
-  hipGraph_t &graph1 = graph_guard1.graph();
-  GraphGuard graph_guard2;
-  hipGraph_t &graph2 = graph_guard2.graph();
+  hipGraph_t graph1{nullptr}, graph2{nullptr};
+  hipGraphExec_t graphExec1{nullptr}, graphExec2{nullptr};
 
   EventsGuard events_guard(1);
   hipEvent_t event = events_guard[0];
@@ -246,10 +247,10 @@ static void interStrmEventSyncCapture(const hipStream_t &stream1,
   REQUIRE(numNodes1 == 1);
   REQUIRE(numNodes2 == 2);
 
-  GraphExecGuard graphExec_guard1(graph1);
-  hipGraphExec_t graphExec1 = graphExec_guard1.graphExec();
-  GraphExecGuard graphExec_guard2(graph2);
-  hipGraphExec_t graphExec2 = graphExec_guard2.graphExec();
+  HIP_CHECK(hipGraphInstantiate(&graphExec1, graph1, nullptr, nullptr, 0));
+  REQUIRE(graphExec1 != nullptr);
+  HIP_CHECK(hipGraphInstantiate(&graphExec2, graph2, nullptr, nullptr, 0));
+  REQUIRE(graphExec2 != nullptr);
 
   // Replay the recorded sequence multiple times
   for (int i = 0; i < kLaunchIters; i++) {
@@ -259,16 +260,20 @@ static void interStrmEventSyncCapture(const hipStream_t &stream1,
     HIP_CHECK(hipStreamSynchronize(stream1));
     HIP_CHECK(hipStreamSynchronize(stream2));
   }
+
+  // Free
+  HIP_CHECK(hipGraphExecDestroy(graphExec2));
+  HIP_CHECK(hipGraphExecDestroy(graphExec1));
+  HIP_CHECK(hipGraphDestroy(graph2));
+  HIP_CHECK(hipGraphDestroy(graph1));
 }
 
 /* Local function for colligated stream capture
  */
 static void colligatedStrmCapture(const hipStream_t &stream1,
                                   const hipStream_t &stream2) {
-  GraphGuard graph_guard1;
-  hipGraph_t &graph1 = graph_guard1.graph();
-  GraphGuard graph_guard2;
-  hipGraph_t &graph2 = graph_guard2.graph();
+  hipGraph_t graph1{nullptr}, graph2{nullptr};
+  hipGraphExec_t graphExec1{nullptr}, graphExec2{nullptr};
 
   EventsGuard events_guard(1);
   hipEvent_t event = events_guard[0];
@@ -286,10 +291,10 @@ static void colligatedStrmCapture(const hipStream_t &stream1,
   REQUIRE(graph2 != nullptr);
   REQUIRE(graph1 != nullptr);
 
-  GraphExecGuard graphExec_guard1(graph1);
-  hipGraphExec_t graphExec1 = graphExec_guard1.graphExec();
-  GraphExecGuard graphExec_guard2(graph2);
-  hipGraphExec_t graphExec2 = graphExec_guard2.graphExec();
+  HIP_CHECK(hipGraphInstantiate(&graphExec1, graph1, nullptr, nullptr, 0));
+  REQUIRE(graphExec1 != nullptr);
+  HIP_CHECK(hipGraphInstantiate(&graphExec2, graph2, nullptr, nullptr, 0));
+  REQUIRE(graphExec2 != nullptr);
 
   // Replay the recorded sequence multiple times
   for (int i = 0; i < kLaunchIters; i++) {
@@ -299,6 +304,12 @@ static void colligatedStrmCapture(const hipStream_t &stream1,
     HIP_CHECK(hipStreamSynchronize(stream1));
     HIP_CHECK(hipStreamSynchronize(stream2));
   }
+
+  // Free
+  HIP_CHECK(hipGraphExecDestroy(graphExec2));
+  HIP_CHECK(hipGraphExecDestroy(graphExec1));
+  HIP_CHECK(hipGraphDestroy(graph2));
+  HIP_CHECK(hipGraphDestroy(graph1));
 }
 
 /* Local function for colligated stream capture functionality
@@ -308,10 +319,8 @@ static void colligatedStrmCaptureFunc(const hipStream_t &stream1,
   constexpr size_t N = 1000000;
   size_t Nbytes = N * sizeof(int);
 
-  GraphGuard graph_guard1;
-  hipGraph_t &graph1 = graph_guard1.graph();
-  GraphGuard graph_guard2;
-  hipGraph_t &graph2 = graph_guard2.graph();
+  hipGraph_t graph1{nullptr}, graph2{nullptr};
+  hipGraphExec_t graphExec1{nullptr}, graphExec2{nullptr};
 
   // Host and device allocation
   LinearAllocGuard<int> A_h(LinearAllocs::malloc, Nbytes);
@@ -339,10 +348,10 @@ static void colligatedStrmCaptureFunc(const hipStream_t &stream1,
   REQUIRE(graph1 != nullptr);
 
   // Create Executable Graphs
-  GraphExecGuard graphExec_guard1(graph1);
-  hipGraphExec_t graphExec1 = graphExec_guard1.graphExec();
-  GraphExecGuard graphExec_guard2(graph2);
-  hipGraphExec_t graphExec2 = graphExec_guard2.graphExec();
+  HIP_CHECK(hipGraphInstantiate(&graphExec1, graph1, nullptr, nullptr, 0));
+  REQUIRE(graphExec1 != nullptr);
+  HIP_CHECK(hipGraphInstantiate(&graphExec2, graph2, nullptr, nullptr, 0));
+  REQUIRE(graphExec2 != nullptr);
 
   // Execute the Graphs
   for (int iter = 0; iter < kLaunchIters; iter++) {
@@ -355,6 +364,12 @@ static void colligatedStrmCaptureFunc(const hipStream_t &stream1,
     ArrayFindIfNot(B_h.host_ptr(), iter * iter, N);
     ArrayFindIfNot(D_h.host_ptr(), iter * iter, N);
   }
+
+  // Free
+  HIP_CHECK(hipGraphExecDestroy(graphExec2));
+  HIP_CHECK(hipGraphExecDestroy(graphExec1));
+  HIP_CHECK(hipGraphDestroy(graph2));
+  HIP_CHECK(hipGraphDestroy(graph1));
 }
 
 /* Stream Capture thread function
@@ -375,10 +390,8 @@ static void multithreadedTest(hipStreamCaptureMode mode) {
   constexpr size_t N = 1000000;
   size_t Nbytes = N * sizeof(int);
 
-  GraphGuard graph_guard1;
-  hipGraph_t &graph1 = graph_guard1.graph();
-  GraphGuard graph_guard2;
-  hipGraph_t &graph2 = graph_guard2.graph();
+  hipGraph_t graph1{nullptr}, graph2{nullptr};
+  hipGraphExec_t graphExec1{nullptr}, graphExec2{nullptr};
   StreamGuard stream_guard1(Streams::created);
   hipStream_t stream1 = stream_guard1.stream();
   StreamGuard stream_guard2(Streams::created);
@@ -403,10 +416,10 @@ static void multithreadedTest(hipStreamCaptureMode mode) {
   t2.join();
 
   // Create Executable Graphs
-  GraphExecGuard graphExec_guard1(graph1);
-  hipGraphExec_t graphExec1 = graphExec_guard1.graphExec();
-  GraphExecGuard graphExec_guard2(graph2);
-  hipGraphExec_t graphExec2 = graphExec_guard2.graphExec();
+  HIP_CHECK(hipGraphInstantiate(&graphExec1, graph1, nullptr, nullptr, 0));
+  REQUIRE(graphExec1 != nullptr);
+  HIP_CHECK(hipGraphInstantiate(&graphExec2, graph2, nullptr, nullptr, 0));
+  REQUIRE(graphExec2 != nullptr);
 
   // Execute the Graphs
   for (int iter = 0; iter < kLaunchIters; iter++) {
@@ -419,6 +432,12 @@ static void multithreadedTest(hipStreamCaptureMode mode) {
     ArrayFindIfNot(B_h.host_ptr(), iter * iter, N);
     ArrayFindIfNot(D_h.host_ptr(), iter * iter, N);
   }
+
+  // Free
+  HIP_CHECK(hipGraphExecDestroy(graphExec2));
+  HIP_CHECK(hipGraphExecDestroy(graphExec1));
+  HIP_CHECK(hipGraphDestroy(graph2));
+  HIP_CHECK(hipGraphDestroy(graph1));
 }
 
 /**
@@ -590,7 +609,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_Multithreaded") {
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_Multiplestrms") {
   StreamsGuard streams(3);
-  GraphsGuard graphs(3);
+  hipGraph_t graphs[3];
 
   size_t numNodes1 = 0, numNodes2 = 0, numNodes3 = 0;
   SECTION("Capture Multiple stream with interdependent events") {
@@ -640,6 +659,10 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_Multiplestrms") {
     REQUIRE(numNodes2 == 1);
     REQUIRE(numNodes3 == 1);
   }
+
+  for (int i = 0; i < 3; i++) {
+    HIP_CHECK(hipGraphDestroy(graphs[i]));
+  }
 }
 
 /**
@@ -659,8 +682,8 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_Multiplestrms") {
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_CapturingFromWithinStrms") {
   constexpr int INCREMENT_KERNEL_FINALEXP_VAL = 7;
 
-  GraphGuard graph_guard;
-  hipGraph_t &graph = graph_guard.graph();
+  hipGraph_t graph{nullptr};
+  hipGraphExec_t graphExec{nullptr};
   StreamsGuard streams(3);
   EventsGuard events(3);
 
@@ -699,12 +722,15 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_CapturingFromWithinStrms") {
   HIP_CHECK(hipDeviceSynchronize());
 
   // Create Executable Graphs
-  GraphExecGuard graphExec_guard(graph);
-  hipGraphExec_t graphExec = graphExec_guard.graphExec();
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+  REQUIRE(graphExec != nullptr);
 
   HIP_CHECK(hipGraphLaunch(graphExec, streams[0]));
   HIP_CHECK(hipStreamSynchronize(streams[0]));
   REQUIRE((*hostMem) == INCREMENT_KERNEL_FINALEXP_VAL);
+
+  HIP_CHECK(hipGraphExecDestroy(graphExec))
+  HIP_CHECK(hipGraphDestroy(graph));
 }
 
 /**
@@ -748,7 +774,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_Negative_DetectingInvalidCapture") {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_CapturingMultGraphsFrom1Strm") {
-  GraphsGuard graphs(3);
+  hipGraph_t graphs[3];
 
   StreamGuard stream_guard(Streams::created);
   hipStream_t stream1 = stream_guard.stream();
@@ -771,12 +797,14 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_CapturingMultGraphsFrom1Strm") {
   }
   // Instantiate and execute all graphs
   for (int i = 0; i < 3; i++) {
+    hipGraphExec_t graphExec{nullptr};
     HIP_CHECK(hipMemset(devMem, 0, sizeof(int)));
-    GraphExecGuard graphExec_guard(graphs[i]);
-    hipGraphExec_t graphExec = graphExec_guard.graphExec();
+    HIP_CHECK(hipGraphInstantiate(&graphExec, graphs[i], nullptr, nullptr, 0));
     HIP_CHECK(hipGraphLaunch(graphExec, stream1));
     HIP_CHECK(hipStreamSynchronize(stream1));
     REQUIRE((*hostMem) == (i + 1));
+    HIP_CHECK(hipGraphExecDestroy(graphExec));
+    HIP_CHECK(hipGraphDestroy(graphs[i]));
   }
 }
 
@@ -892,8 +920,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_Negative_UnsafeCallsDuringCapture") {
  */
 TEST_CASE(
     "Unit_hipStreamBeginCapture_Negative_EndingCapturewhenCaptureInProgress") {
-  GraphGuard graph_guard;
-  hipGraph_t &graph = graph_guard.graph();
+  hipGraph_t graph{nullptr};
 
   StreamsGuard streams_guard(2);
   hipStream_t stream1 = streams_guard[0];
@@ -914,7 +941,7 @@ TEST_CASE(
   SECTION("End strm capture when forked strm still has operations") {
     EventsGuard events_guard(2);
     hipEvent_t e1 = events_guard[0];
-    hipEvent_t e2 = events_guard[0];
+    hipEvent_t e2 = events_guard[1];
     HIP_CHECK(hipStreamBeginCapture(stream1, hipStreamCaptureModeGlobal));
     dummyKernel<<<1, 1, 0, stream1>>>();
     HIP_CHECK(hipEventRecord(e1, stream1));
@@ -1020,8 +1047,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_MultiGPU") {
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_nestedStreamCapture") {
   constexpr int INCREMENT_KERNEL_FINALEXP_VAL = 7;
 
-  GraphGuard graph_guard;
-  hipGraph_t &graph = graph_guard.graph();
+  hipGraph_t graph{nullptr};
   StreamsGuard streams(3);
   EventsGuard events(4);
 
@@ -1054,10 +1080,14 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_nestedStreamCapture") {
   HIP_CHECK(hipMemset(devMem_g.ptr(), 0, sizeof(int)));
   HIP_CHECK(hipDeviceSynchronize());
   // Create Executable Graphs
-  GraphExecGuard graphExec_g(graph);
-  HIP_CHECK(hipGraphLaunch(graphExec_g.graphExec(), streams[0]));
+  hipGraphExec_t graphExec{nullptr};
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+  HIP_CHECK(hipGraphLaunch(graphExec, streams[0]));
   HIP_CHECK(hipStreamSynchronize(streams[0]));
   REQUIRE((*hostMem_g.host_ptr()) == INCREMENT_KERNEL_FINALEXP_VAL);
+
+  HIP_CHECK(hipGraphExecDestroy(graphExec));
+  HIP_CHECK(hipGraphDestroy(graph));
 }
 
 /**
@@ -1079,7 +1109,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_nestedStreamCapture") {
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_streamReuse") {
   constexpr int increment_kernel_vals[3] = {7, 3, 5};
 
-  GraphsGuard graphs(3);
+  hipGraph_t graphs[3];
   StreamsGuard streams(3);
   EventsGuard events(4);
   LinearAllocGuard<int> hostMem_g1 =
@@ -1150,11 +1180,14 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_streamReuse") {
   HIP_CHECK(hipDeviceSynchronize());
   // Create Executable Graphs and verify graphs
   for (int i = 0; i < 3; i++) {
+    hipGraphExec_t graphExec{nullptr};
     HIP_CHECK(hipMemset(devMem[i], 0, sizeof(int)));
-    GraphExecGuard graphExec_guard(graphs[i]);
-    HIP_CHECK(hipGraphLaunch(graphExec_guard.graphExec(), streams[i]));
+    HIP_CHECK(hipGraphInstantiate(&graphExec, graphs[i], nullptr, nullptr, 0));
+    HIP_CHECK(hipGraphLaunch(graphExec, streams[i]));
     HIP_CHECK(hipStreamSynchronize(streams[i]));
     REQUIRE((*hostMem[i]) == increment_kernel_vals[i]);
+    HIP_CHECK(hipGraphExecDestroy(graphExec));
+    HIP_CHECK(hipGraphDestroy(graphs[i]));
   }
 }
 
@@ -1177,8 +1210,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_captureComplexGraph") {
   constexpr int CONST_KER2_VAL = 2;
   constexpr int CONST_KER3_VAL = 5;
 
-  GraphGuard graph_guard;
-  hipGraph_t &graph = graph_guard.graph();
+  hipGraph_t graph{nullptr};
   StreamsGuard streams(5);
   EventsGuard events(7);
   // Allocate Device memory and Host memory
@@ -1231,8 +1263,8 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_captureComplexGraph") {
                            hipMemcpyDefault, streams[0]));
   HIP_CHECK(hipStreamEndCapture(streams[0], &graph)); // End Capture
   // Execute and test the graph
-  GraphExecGuard graphExec_g(graph);
-  hipGraphExec_t graphExec = graphExec_g.graphExec();
+  hipGraphExec_t graphExec{nullptr};
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
   // Verify graph
   for (int iter = 0; iter < kLaunchIters; iter++) {
     std::fill_n(Ah.host_ptr(), N, iter);
@@ -1251,6 +1283,9 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_captureComplexGraph") {
     }
   }
   REQUIRE(gCbackIter == (2 * kLaunchIters));
+
+  HIP_CHECK(hipGraphExecDestroy(graphExec));
+  HIP_CHECK(hipGraphDestroy(graph));
 }
 
 /**
@@ -1266,8 +1301,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_captureComplexGraph") {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_captureEmptyStreams") {
-  GraphGuard graph_guard;
-  hipGraph_t &graph = graph_guard.graph();
+  hipGraph_t graph{nullptr};
 
   // Stream and event create
   StreamsGuard streams(3);
@@ -1286,4 +1320,6 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_captureEmptyStreams") {
   size_t numNodes = 0;
   HIP_CHECK(hipGraphGetNodes(graph, nullptr, &numNodes));
   REQUIRE(numNodes == 0);
+
+  HIP_CHECK(hipGraphDestroy(graph));
 }

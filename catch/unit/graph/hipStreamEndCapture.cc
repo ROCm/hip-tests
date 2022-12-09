@@ -134,8 +134,7 @@ TEST_CASE("Unit_hipStreamEndCapture_Negative_Thread") {
   LinearAllocGuard<float> B_h(LinearAllocs::malloc, Nbytes);
   LinearAllocGuard<float> A_d(LinearAllocs::hipMalloc, Nbytes);
 
-  GraphGuard graph_guard;
-  hipGraph_t &graph = graph_guard.graph();
+  hipGraph_t graph{nullptr};
   StreamGuard stream_guard(Streams::created);
   hipStream_t stream = stream_guard.stream();
 
@@ -180,8 +179,8 @@ TEST_CASE("Unit_hipStreamEndCapture_Positive_Thread") {
   LinearAllocGuard<float> B_h(LinearAllocs::malloc, Nbytes);
   LinearAllocGuard<float> A_d(LinearAllocs::hipMalloc, Nbytes);
 
-  GraphGuard graph_guard;
-  hipGraph_t &graph = graph_guard.graph();
+  hipGraph_t graph{nullptr};
+  hipGraphExec_t graphExec{nullptr};
   StreamGuard stream_guard(Streams::created);
   hipStream_t stream = stream_guard.stream();
 
@@ -195,8 +194,7 @@ TEST_CASE("Unit_hipStreamEndCapture_Positive_Thread") {
   // Validate end capture is successful
   REQUIRE(graph != nullptr);
 
-  GraphExecGuard graphExec_guard(graph);
-  hipGraphExec_t graphExec = graphExec_guard.graphExec();
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
 
   // Replay the recorded sequence multiple times
   for (int i = 0; i < kLaunchIters; i++) {
@@ -205,4 +203,7 @@ TEST_CASE("Unit_hipStreamEndCapture_Positive_Thread") {
     HIP_CHECK(hipStreamSynchronize(stream));
     ArrayFindIfNot(B_h.host_ptr(), static_cast<float>(i), N);
   }
+
+  HIP_CHECK(hipGraphExecDestroy(graphExec));
+  HIP_CHECK(hipGraphDestroy(graph));
 }

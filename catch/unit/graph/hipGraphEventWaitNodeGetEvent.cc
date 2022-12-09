@@ -59,11 +59,17 @@ static void validateEventWaitNodeGetEvent(unsigned flag) {
 TEST_CASE("Unit_hipGraphEventWaitNodeGetEvent_Functional") {
   // Create event nodes with different flags and validate with
   // hipGraphEventWaitNodeGetEvent.
-  SECTION("Flag = hipEventDefault") { validateEventWaitNodeGetEvent(hipEventDefault); }
+  SECTION("Flag = hipEventDefault") {
+    validateEventWaitNodeGetEvent(hipEventDefault);
+  }
 
-  SECTION("Flag = hipEventBlockingSync") { validateEventWaitNodeGetEvent(hipEventBlockingSync); }
+  SECTION("Flag = hipEventBlockingSync") {
+    validateEventWaitNodeGetEvent(hipEventBlockingSync);
+  }
 
-  SECTION("Flag = hipEventDisableTiming") { validateEventWaitNodeGetEvent(hipEventDisableTiming); }
+  SECTION("Flag = hipEventDisableTiming") {
+    validateEventWaitNodeGetEvent(hipEventDisableTiming);
+  }
 }
 
 /**

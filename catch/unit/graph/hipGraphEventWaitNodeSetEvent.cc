@@ -219,11 +219,17 @@ TEST_CASE("Unit_hipGraphEventWaitNodeSetEvent_SetProp") {
  * Scenario 1
  */
 TEST_CASE("Unit_hipGraphEventWaitNodeSetEvent_SetGet") {
-  SECTION("Flag = hipEventDefault") { validateEventWaitNodeSetEvent(hipEventDefault); }
+  SECTION("Flag = hipEventDefault") {
+    validateEventWaitNodeSetEvent(hipEventDefault);
+  }
 
-  SECTION("Flag = hipEventBlockingSync") { validateEventWaitNodeSetEvent(hipEventBlockingSync); }
+  SECTION("Flag = hipEventBlockingSync") {
+    validateEventWaitNodeSetEvent(hipEventBlockingSync);
+  }
 
-  SECTION("Flag = hipEventDisableTiming") { validateEventWaitNodeSetEvent(hipEventDisableTiming); }
+  SECTION("Flag = hipEventDisableTiming") {
+    validateEventWaitNodeSetEvent(hipEventDisableTiming);
+  }
 }
 
 /**

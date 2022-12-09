@@ -36,7 +36,7 @@ void checkStreamCaptureInfo(hipStreamCaptureMode mode, hipStream_t stream) {
   size_t Nbytes = N * sizeof(float);
 
   hipStreamCaptureStatus captureStatus{hipStreamCaptureStatusNone};
-  unsigned long long capSequenceID = 0; // NOLINT
+  unsigned long long capSequenceID = 0;  // NOLINT
 
   hipGraph_t graph{nullptr};
   hipGraphExec_t graphExec{nullptr};
@@ -101,9 +101,8 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_Positive_Functional") {
   StreamGuard stream_guard(stream_type);
   hipStream_t stream = stream_guard.stream();
 
-  const hipStreamCaptureMode captureMode =
-      GENERATE(hipStreamCaptureModeGlobal, hipStreamCaptureModeThreadLocal,
-               hipStreamCaptureModeRelaxed);
+  const hipStreamCaptureMode captureMode = GENERATE(
+      hipStreamCaptureModeGlobal, hipStreamCaptureModeThreadLocal, hipStreamCaptureModeRelaxed);
 
   checkStreamCaptureInfo(captureMode, stream);
 }
@@ -124,15 +123,14 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_Positive_UniqueID") {
   constexpr int numStreams = 100;
   hipStreamCaptureStatus captureStatus{hipStreamCaptureStatusNone};
   std::vector<int> idlist;
-  unsigned long long capSequenceID{}; // NOLINT
+  unsigned long long capSequenceID{};  // NOLINT
   hipGraph_t graph{nullptr};
 
   StreamsGuard streams(numStreams);
 
   for (int i = 0; i < numStreams; i++) {
     HIP_CHECK(hipStreamBeginCapture(streams[i], hipStreamCaptureModeGlobal));
-    HIP_CHECK(
-        hipStreamGetCaptureInfo(streams[i], &captureStatus, &capSequenceID));
+    HIP_CHECK(hipStreamGetCaptureInfo(streams[i], &captureStatus, &capSequenceID));
     REQUIRE(captureStatus == hipStreamCaptureStatusActive);
     REQUIRE(capSequenceID > 0);
     idlist.push_back(capSequenceID);
@@ -141,8 +139,7 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_Positive_UniqueID") {
   for (int i = 0; i < numStreams; i++) {
     for (int j = i + 1; j < numStreams; j++) {
       if (idlist[i] == idlist[j]) {
-        INFO("Same identifier returned for stream " << i << " and stream "
-                                                    << j);
+        INFO("Same identifier returned for stream " << i << " and stream " << j);
         REQUIRE(false);
       }
     }
@@ -170,16 +167,15 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_Positive_UniqueID") {
  */
 TEST_CASE("Unit_hipStreamGetCaptureInfo_Negative_Parameters") {
   hipStreamCaptureStatus cStatus;
-  unsigned long long capSequenceID; // NOLINT
+  unsigned long long capSequenceID;  // NOLINT
   const auto stream_type = GENERATE(Streams::perThread, Streams::created);
   StreamGuard stream_guard(stream_type);
   hipStream_t stream = stream_guard.stream();
 
   SECTION("Capture Status location as nullptr") {
-    HIP_CHECK_ERROR(hipStreamGetCaptureInfo(stream, nullptr, &capSequenceID),
-                    hipErrorInvalidValue);
+    HIP_CHECK_ERROR(hipStreamGetCaptureInfo(stream, nullptr, &capSequenceID), hipErrorInvalidValue);
   }
-#if HT_NVIDIA // EXSWHTEC-216
+#if HT_NVIDIA  // EXSWHTEC-216
   SECTION("Capture status when checked on null stream") {
     hipGraph_t graph{nullptr};
     HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
@@ -194,9 +190,8 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_Negative_Parameters") {
       return sg.stream();
     };
 
-    HIP_CHECK_ERROR(
-        hipStreamGetCaptureInfo(InvalidStream(), &cStatus, &capSequenceID),
-        hipErrorContextIsDestroyed);
+    HIP_CHECK_ERROR(hipStreamGetCaptureInfo(InvalidStream(), &cStatus, &capSequenceID),
+                    hipErrorContextIsDestroyed);
   }
 #endif
 }

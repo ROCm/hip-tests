@@ -51,8 +51,7 @@ TEST_CASE("Unit_hipStreamIsCapturing_Negative_Parameters") {
   hipStream_t stream = stream_guard.stream();
 
   SECTION("Check capture status with null pCaptureStatus.") {
-    HIP_CHECK_ERROR(hipStreamIsCapturing(stream, nullptr),
-                    hipErrorInvalidValue);
+    HIP_CHECK_ERROR(hipStreamIsCapturing(stream, nullptr), hipErrorInvalidValue);
   }
 
   SECTION("Check capture status when checked on null stream") {
@@ -60,12 +59,11 @@ TEST_CASE("Unit_hipStreamIsCapturing_Negative_Parameters") {
     hipGraph_t graph{nullptr};
 
     HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
-    HIP_CHECK_ERROR(hipStreamIsCapturing(nullptr, &cStatus),
-                    hipErrorStreamCaptureImplicit);
+    HIP_CHECK_ERROR(hipStreamIsCapturing(nullptr, &cStatus), hipErrorStreamCaptureImplicit);
     HIP_CHECK(hipStreamEndCapture(stream, &graph));
     HIP_CHECK(hipGraphDestroy(graph));
   }
-#if HT_NVIDIA // EXSWHTEC-216
+#if HT_NVIDIA  // EXSWHTEC-216
   SECTION("Check capture status when stream is uninitialized") {
     hipStreamCaptureStatus cStatus;
 
@@ -74,8 +72,7 @@ TEST_CASE("Unit_hipStreamIsCapturing_Negative_Parameters") {
       return sg.stream();
     };
 
-    HIP_CHECK_ERROR(hipStreamIsCapturing(InvalidStream(), &cStatus),
-                    hipErrorContextIsDestroyed);
+    HIP_CHECK_ERROR(hipStreamIsCapturing(InvalidStream(), &cStatus), hipErrorContextIsDestroyed);
   }
 #endif
 }
@@ -165,9 +162,8 @@ TEST_CASE("Unit_hipStreamIsCapturing_Positive_Functional") {
   StreamGuard stream_guard(stream_type);
   hipStream_t stream = stream_guard.stream();
 
-  const hipStreamCaptureMode captureMode =
-      GENERATE(hipStreamCaptureModeGlobal, hipStreamCaptureModeThreadLocal,
-               hipStreamCaptureModeRelaxed);
+  const hipStreamCaptureMode captureMode = GENERATE(
+      hipStreamCaptureModeGlobal, hipStreamCaptureModeThreadLocal, hipStreamCaptureModeRelaxed);
 
   checkStreamCaptureStatus(captureMode, stream);
 }

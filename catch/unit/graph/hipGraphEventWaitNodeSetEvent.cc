@@ -275,7 +275,9 @@ TEST_CASE("Unit_hipGraphEventWaitNodeSetEvent_Negative") {
     HIP_CHECK(hipFree(A_d));
   }
 
-  SECTION("input node is event record node") { setEventRecordNode(); }
+  SECTION("input node is event record node") {
+    setEventRecordNode();
+  }
 
   SECTION("input node is uninitialized node") {
     hipGraphNode_t node_uninit{};

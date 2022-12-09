@@ -133,6 +133,8 @@ TEST_CASE("Unit_hipMemGetAccess_Negative_Parameters") {
  *            -# Expected output: return `hipErrorInvalidValue`
  *        -# Pointer to the access array is `nullptr`
  *            -# Expected output: return `hipErrorInvalidValue`
+ *        -# Pointer to the virtual memory is `nullptr`
+ *            -# Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------ 
  *    - unit/virtualMemory/hipMemSetGetAccess.cc
@@ -179,6 +181,10 @@ TEST_CASE("Unit_hipMemSetAccess_Negative_Parameters") {
 
   SECTION("access is nullptr") {
     HIP_CHECK_ERROR(hipMemSetAccess(virtual_memory_ptr, allocation_size, nullptr, 0), hipErrorInvalidValue);
+  }
+
+  SECTION("virtual memory pointer is nullptr") {
+    HIP_CHECK_ERROR(hipMemSetAccess(nullptr, allocation_size, &access, 1), hipErrorInvalidValue);
   }
 
   HIP_CHECK(hipMemUnmap(virtual_memory_ptr, allocation_size));

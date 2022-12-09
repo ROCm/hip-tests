@@ -47,7 +47,7 @@ void captureSequenceLinear(T *hostMem1, T *devMem1, T *hostMem2, T *devMem2, siz
 
 template <typename T>
 void captureSequenceBranched(T *hostMem1, T *devMem1, T *hostMem2, T *devMem2, size_t N, hipStream_t captureStream, std::vector<hipStream_t>& streams, std::vector<hipEvent_t>& events) {
-  size_t Nbytes = N * sizeof(T);  
+  size_t Nbytes = N * sizeof(T);
 
   HIP_CHECK(hipEventRecord(events[0], captureStream));
   HIP_CHECK(hipStreamWaitEvent(streams[0], events[0], 0));

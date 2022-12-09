@@ -37,7 +37,8 @@ void checkStreamCaptureInfo_v2(hipStreamCaptureMode mode, hipStream_t stream) {
   constexpr size_t N = 1000000;
   size_t Nbytes = N * sizeof(float);
 
-  hipGraph_t capInfoGraph{nullptr};
+  hipGraph_t graph{nullptr}, capInfoGraph{nullptr};
+  hipGraphExec_t graphExec{nullptr};
   const hipGraphNode_t *nodelist{};
   int numDepsCreated = 0;
   hipStreamCaptureStatus captureStatus{hipStreamCaptureStatusNone};
@@ -50,8 +51,6 @@ void checkStreamCaptureInfo_v2(hipStreamCaptureMode mode, hipStream_t stream) {
   LinearAllocGuard<float> A_d(LinearAllocs::hipMalloc, Nbytes);
   LinearAllocGuard<float> B_d(LinearAllocs::hipMalloc, Nbytes);
 
-  GraphGuard graph_guard;
-  hipGraph_t &graph = graph_guard.graph();
   EventsGuard events_guard(3);
   StreamsGuard streams_guard(2);
 
@@ -121,8 +120,8 @@ void checkStreamCaptureInfo_v2(hipStreamCaptureMode mode, hipStream_t stream) {
   HIP_CHECK(hipStreamGetCaptureInfo_v2(stream, &captureStatus));
   REQUIRE(captureStatus == hipStreamCaptureStatusNone);
 
-  GraphExecGuard graphExec_guard(graph);
-  hipGraphExec_t graphExec = graphExec_guard.graphExec();
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+  REQUIRE(graphExec != nullptr);
 
   // Replay the recorded sequence multiple times
   for (int i = 0; i < kLaunchIters; i++) {
@@ -132,6 +131,9 @@ void checkStreamCaptureInfo_v2(hipStreamCaptureMode mode, hipStream_t stream) {
     ArrayFindIfNot(B_h.host_ptr(),
                    static_cast<float>(i) * static_cast<float>(i), N);
   }
+
+  HIP_CHECK(hipGraphExecDestroy(graphExec))
+  HIP_CHECK(hipGraphDestroy(graph));
 }
 
 /**
@@ -183,10 +185,9 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_v2_Positive_UniqueID") {
   hipStreamCaptureStatus captureStatus{hipStreamCaptureStatusNone};
   std::vector<int> idlist;
   unsigned long long capSequenceID{}; // NOLINT
+  hipGraph_t graph{nullptr};
 
   StreamsGuard streams(numStreams);
-  GraphGuard graph_guard;
-  hipGraph_t &graph = graph_guard.graph();
 
   for (int i = 0; i < numStreams; i++) {
     HIP_CHECK(hipStreamBeginCapture(streams[i], hipStreamCaptureModeGlobal));
@@ -209,6 +210,7 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_v2_Positive_UniqueID") {
 
   for (int i = 0; i < numStreams; i++) {
     HIP_CHECK(hipStreamEndCapture(streams[i], &graph));
+    HIP_CHECK(hipGraphDestroy(graph));
   }
 }
 
@@ -245,14 +247,14 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_v2_Negative_Parameters") {
   }
 #if HT_NVIDIA // EXSWHTEC-216
   SECTION("Capture status when checked on null stream") {
-    GraphGuard graph_guard;
-    hipGraph_t &graph = graph_guard.graph();
+    hipGraph_t graph{nullptr};
     HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
     HIP_CHECK_ERROR(hipStreamGetCaptureInfo_v2(nullptr, &captureStatus,
                                                &capSequenceID, &capInfoGraph,
                                                &nodelist, &numDependencies),
                     hipErrorStreamCaptureImplicit);
     HIP_CHECK(hipStreamEndCapture(stream, &graph));
+    HIP_CHECK(hipGraphDestroy(graph));
   }
   SECTION("Capture status when stream is uninitialized") {
     constexpr auto InvalidStream = [] {

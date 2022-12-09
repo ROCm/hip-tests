@@ -57,13 +57,13 @@ TEST_CASE("Unit_hipStreamIsCapturing_Negative_Parameters") {
 
   SECTION("Check capture status when checked on null stream") {
     hipStreamCaptureStatus cStatus;
-    GraphGuard graph_guard;
-    hipGraph_t &graph = graph_guard.graph();
+    hipGraph_t graph{nullptr};
 
     HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
     HIP_CHECK_ERROR(hipStreamIsCapturing(nullptr, &cStatus),
                     hipErrorStreamCaptureImplicit);
     HIP_CHECK(hipStreamEndCapture(stream, &graph));
+    HIP_CHECK(hipGraphDestroy(graph));
   }
 #if HT_NVIDIA // EXSWHTEC-216
   SECTION("Check capture status when stream is uninitialized") {
@@ -107,9 +107,8 @@ void checkStreamCaptureStatus(hipStreamCaptureMode mode, hipStream_t stream) {
 
   hipStreamCaptureStatus cStatus;
   size_t Nbytes = N * sizeof(float);
-
-  GraphGuard graph_guard;
-  hipGraph_t &graph = graph_guard.graph();
+  hipGraph_t graph{nullptr};
+  hipGraphExec_t graphExec{nullptr};
 
   LinearAllocGuard<float> A_h(LinearAllocs::malloc, Nbytes);
   LinearAllocGuard<float> B_h(LinearAllocs::malloc, Nbytes);
@@ -133,8 +132,8 @@ void checkStreamCaptureStatus(hipStreamCaptureMode mode, hipStream_t stream) {
   HIP_CHECK(hipStreamIsCapturing(stream, &cStatus));
   REQUIRE(hipStreamCaptureStatusNone == cStatus);
 
-  GraphExecGuard graphExec_guard(graph);
-  hipGraphExec_t graphExec = graphExec_guard.graphExec();
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+  REQUIRE(graphExec != nullptr);
 
   // Replay the recorded sequence multiple times
   for (int i = 0; i < kLaunchIters; i++) {
@@ -143,6 +142,9 @@ void checkStreamCaptureStatus(hipStreamCaptureMode mode, hipStream_t stream) {
     HIP_CHECK(hipStreamSynchronize(stream));
     ArrayFindIfNot(B_h.host_ptr(), static_cast<float>(i), N);
   }
+
+  HIP_CHECK(hipGraphExecDestroy(graphExec))
+  HIP_CHECK(hipGraphDestroy(graph));
 }
 
 /**
@@ -193,8 +195,7 @@ TEST_CASE("Unit_hipStreamIsCapturing_Positive_Thread") {
   constexpr size_t N = 1000000;
   size_t Nbytes = N * sizeof(float);
 
-  GraphGuard graph_guard;
-  hipGraph_t &graph = graph_guard.graph();
+  hipGraph_t graph{nullptr};
   StreamGuard stream_guard(Streams::created);
   hipStream_t stream = stream_guard.stream();
 
@@ -211,4 +212,5 @@ TEST_CASE("Unit_hipStreamIsCapturing_Positive_Thread") {
   t.join();
 
   HIP_CHECK(hipStreamEndCapture(stream, &graph));
+  HIP_CHECK(hipGraphDestroy(graph));
 }

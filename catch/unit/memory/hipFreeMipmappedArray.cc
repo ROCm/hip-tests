@@ -61,7 +61,7 @@ TEMPLATE_TEST_CASE("Unit_hipFreeMipmappedArrayImplicitSyncArray", "", char, floa
   HIP_CHECK(hipFreeMipmappedArray(arrayPtr));
   HIP_CHECK(hipStreamQuery(nullptr));
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }
 
@@ -69,7 +69,7 @@ TEST_CASE("Unit_hipFreeMipmappedArray_Negative_Nullptr") {
 #ifdef _WIN32
   HIP_CHECK_ERROR(hipFreeMipmappedArray(nullptr), hipErrorInvalidValue);
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }
 
@@ -96,7 +96,7 @@ TEST_CASE("Unit_hipFreeMipmappedArray_Negative_DoubleFree") {
   HIP_CHECK(hipFreeMipmappedArray(arrayPtr));
   HIP_CHECK_ERROR(hipFreeMipmappedArray(arrayPtr), hipErrorContextIsDestroyed);
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }
 
@@ -137,6 +137,6 @@ TEMPLATE_TEST_CASE("Unit_hipFreeMipmappedArrayMultiTArray", "", char, int) {
   
   HIP_CHECK_THREAD_FINALIZE();
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }

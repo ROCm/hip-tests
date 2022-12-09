@@ -81,7 +81,7 @@ TEST_CASE("Unit_hipMallocMipmappedArray_DiffSizes") {
   MallocMipmappedArray_DiffSizes(0);
   HIP_CHECK_THREAD_FINALIZE();
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }
 
@@ -111,7 +111,7 @@ TEST_CASE("Unit_hipMallocMipmappedArray_MultiThread") {
     REQUIRE(false);
   }
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }
 
@@ -184,7 +184,7 @@ TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_happy", "", char, uint2, int4, 
     HIP_CHECK(hipFreeMipmappedArray(array));
   }
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }
 
@@ -256,7 +256,7 @@ TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_MaxTexture", "", int, uint4, us
     HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, &desc, extent, numLevels, flag), hipErrorInvalidValue);
   }
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }
 
@@ -297,7 +297,7 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NullArrayPtr") {
   HIP_CHECK_ERROR(hipMallocMipmappedArray(nullptr, &desc, makeMipmappedExtent(flag, s), numLevels, flag),
                   hipErrorInvalidValue);
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }
 
@@ -313,7 +313,7 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NullDescPtr") {
   HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, nullptr, makeMipmappedExtent(flag, s), numLevels, flag),
                   hipErrorInvalidValue);
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }
 
@@ -330,7 +330,7 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_ZeroWidth") {
   HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, &desc, make_hipExtent(0, s, s), numLevels, flag),
                   hipErrorInvalidValue);
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }
 
@@ -352,7 +352,7 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_ZeroHeight") {
                     hipErrorInvalidValue);
   }
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }
 
@@ -378,7 +378,7 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_InvalidFlags") {
 
   HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, &desc, makeMipmappedExtent(flag, s), numLevels, flag), hipErrorInvalidValue);
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }
 
@@ -405,7 +405,7 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_InvalidFormat") {
   desc.f = GENERATE(hipChannelFormatKindNone, 0xBEEF);
   testInvalidDescriptionMipmapped(desc);
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }
 
@@ -430,7 +430,7 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_BadChannelLayout") {
 
   testInvalidDescriptionMipmapped(desc);
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }
 
@@ -442,7 +442,7 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_8BitFloat") {
 
   testInvalidDescriptionMipmapped(desc);
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }
 
@@ -469,7 +469,7 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_DifferentChannelSizes") {
 
   testInvalidDescriptionMipmapped(desc);
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }
 
@@ -484,7 +484,7 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_BadChannelSize") {
 
   testInvalidDescriptionMipmapped(desc);
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }
 
@@ -501,7 +501,7 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NumericLimit") {
   HIP_CHECK_ERROR(hipMallocMipmappedArray(&arrayPtr, &desc, makeMipmappedExtent(flag, size), numLevels, flag),
                   hipErrorInvalidValue);
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }
 
@@ -522,7 +522,7 @@ TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_Negative_Non2DTextureGather", "
 
   HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, &desc, extent, numLevels, flags), hipErrorInvalidValue);
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }
 
@@ -537,7 +537,7 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NumLevels") {
   HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, &desc, makeMipmappedExtent(flag, size), numLevels, flag),
                   hipErrorInvalidValue);
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }
 
@@ -561,6 +561,6 @@ TEST_CASE("Unit_hipGetMipmappedArrayLevel_Negative") {
   }
   HIP_CHECK(hipFreeMipmappedArray(array));
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }

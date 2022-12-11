@@ -160,7 +160,7 @@ static void queryLesserNumOfDeps(const std::vector<hipGraphNode_t> &Nlist,
 /**
  * Functional Test for getting dependencies of node in graph and verifying execution
  */
-TEST_CASE("Unit_hipGraphNodeGetDependencies_Positive_Functional") {
+TEST_CASE("Unit_hipGraphNodeGetDependencies_Functional") {
   constexpr size_t N = 1024;
   constexpr size_t Nbytes = N * sizeof(int);
   constexpr auto blocksPerCU = 6;  // to hide latency
@@ -272,30 +272,19 @@ TEST_CASE("Unit_hipGraphNodeGetDependencies_Positive_Functional") {
                                    nodelist.data(), nodelist.size(),
                                    &kernelNodeParams));
 
-
   HIP_CHECK(hipGraphNodeGetDependencies(kernel_vecAdd, nullptr, &numDeps));
   REQUIRE(numDeps == nodelist.size());
 
-  SECTION("Validate number of dependencies when numDeps = num of nodes") {
-    // Verify api When Dependencies are requested for actual number of nodes.
-    queryActualNumOfDeps(nodelist, kernel_vecAdd, numDeps);
-  }  
+  // Verify api When Dependencies are requested for actual number of nodes.
+  queryActualNumOfDeps(nodelist, kernel_vecAdd, numDeps);
 
-  SECTION("Validate number of dependencies when numDeps > num of nodes") {
-    queryGreaterNumOfDeps(nodelist, kernel_vecAdd, numDeps);
-  }
+  // Verify api When Dependencies are requested for more than
+  // actual number of nodes.
+  queryGreaterNumOfDeps(nodelist, kernel_vecAdd, numDeps);
 
-  SECTION("Validate number of dependencies when numDeps < num of nodes") {
-    queryLesserNumOfDeps(nodelist, kernel_vecAdd, numDeps);
-  }
-
-  SECTION("Validate number of dependecies is 0 when passed node is a root node") {
-    hipGraphNode_t depnodes;
-    HIP_CHECK(hipGraphNodeGetDependencies(memcpyH2D_A, &depnodes, &numDeps));
-
-    // Api expected to return success and no dependencies.
-    REQUIRE(numDeps == 0);
-  }
+  // Verify api When Dependencies are requested for less than
+  // actual number of nodes.
+  queryLesserNumOfDeps(nodelist, kernel_vecAdd, numDeps);
 
   HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyD2H, graph, &kernel_vecAdd, 1,
                                     Sum_h, Sum_d,
@@ -330,7 +319,7 @@ TEST_CASE("Unit_hipGraphNodeGetDependencies_Positive_Functional") {
  * as input and output parameters and validates the behavior.
  * Test will include both negative and positive scenarios.
  */
-TEST_CASE("Unit_hipGraphNodeGetDependencies_Negative_Parameters") {
+TEST_CASE("Unit_hipGraphNodeGetDependencies_ParamValidation") {
   hipGraph_t graph{};
   const int numBytes = 100;
   size_t numDeps{1};
@@ -350,17 +339,28 @@ TEST_CASE("Unit_hipGraphNodeGetDependencies_Negative_Parameters") {
   HIP_CHECK(hipGraphAddMemsetNode(&memsetNode, graph, nullptr,
                                                     0, &memsetParams));
 
+  SECTION("node passed is a root node") {
+    ret = hipGraphNodeGetDependencies(memsetNode, &depnodes, &numDeps);
+
+    // Api expected to return success and no dependencies.
+    REQUIRE(ret == hipSuccess);
+    REQUIRE(numDeps == 0);
+  }
+
   SECTION("node as nullptr") {
-    HIP_CHECK_ERROR(hipGraphNodeGetDependencies(nullptr, &depnodes, &numDeps), hipErrorInvalidValue);
+    ret = hipGraphNodeGetDependencies(nullptr, &depnodes, &numDeps);
+    REQUIRE(ret == hipErrorInvalidValue);
   }
 
   SECTION("NumDependencies as nullptr") {
-    HIP_CHECK_ERROR(hipGraphNodeGetDependencies(memsetNode, &depnodes, nullptr), hipErrorInvalidValue);
+    ret = hipGraphNodeGetDependencies(memsetNode, &depnodes, nullptr);
+    REQUIRE(ret == hipErrorInvalidValue);
   }
 
   SECTION("node as un-initialized/invalid parameter") {
     hipGraphNode_t uninit_node{};
-    HIP_CHECK_ERROR(hipGraphNodeGetDependencies(uninit_node, &depnodes, &numDeps), hipErrorInvalidValue);
+    ret = hipGraphNodeGetDependencies(uninit_node, &depnodes, &numDeps);
+    REQUIRE(ret == hipErrorInvalidValue);
   }
 
   HIP_CHECK(hipGraphDestroy(graph));

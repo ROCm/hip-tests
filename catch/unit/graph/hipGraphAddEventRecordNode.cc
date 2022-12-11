@@ -298,7 +298,6 @@ TEST_CASE("Unit_hipGraphAddEventRecordNode_Functional_TimingDisabled") {
  * Scenario 7: Positive parameter tests
  */
 TEST_CASE("Unit_hipGraphAddEventRecordNode_Positive_Parameters") {
-  using namespace std::placeholders;
   hipGraph_t graph;
   HIP_CHECK(hipGraphCreate(&graph, 0));
   hipEvent_t event;
@@ -311,26 +310,27 @@ TEST_CASE("Unit_hipGraphAddEventRecordNode_Positive_Parameters") {
   HIP_CHECK(hipGraphAddEmptyNode(&dep_node2, graph, nullptr, 0));
   hipGraphNode_t dep_nodes[] = {dep_node, dep_node2};
 
+  size_t numDeps = 0;
   SECTION("numDependencies is zero, dependencies is not nullptr") {
-    size_t numDeps = 0;
     HIP_CHECK(hipGraphAddEventRecordNode(&eventrec, graph, dep_nodes, 0, event));
     HIP_CHECK(hipGraphNodeGetDependencies(eventrec, nullptr, &numDeps));
     REQUIRE(numDeps == 0);
   }
 
   SECTION("numDependencies < dependencies length") {
-    size_t numDeps = 0;
     HIP_CHECK(hipGraphAddEventRecordNode(&eventrec, graph, dep_nodes, 1, event));
     HIP_CHECK(hipGraphNodeGetDependencies(eventrec, nullptr, &numDeps));
     REQUIRE(numDeps == 1);
   }
 
   SECTION("numDependencies == dependencies length") {
-    size_t numDeps = 0;
     HIP_CHECK(hipGraphAddEventRecordNode(&eventrec, graph, dep_nodes, 2, event));
     HIP_CHECK(hipGraphNodeGetDependencies(eventrec, nullptr, &numDeps));
     REQUIRE(numDeps == 2);
   }
+
+  HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipEventDestroy(event));
 }
 
 /**

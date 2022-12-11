@@ -34,10 +34,11 @@ Testcase Scenarios :
     executable graph to event2. Verify that the event record node still
     contains event1.
   3) Scenario to verify that hipGraphExecEventRecordNodeSetEvent returns an error when event is
-created on different device. Create an event record node with event1 and add it to graph.
-Instantiate the graph to create an executable graph. Call the API to change the event in the
-    executable graph to event2 which has been created on different device. Verify that error is
-reported. 4) Negative Scenarios
+     created on different device. Create an event record node with event1 and add it to graph.
+     Instantiate the graph to create an executable graph. Call the API to change the event in the
+     executable graph to event2 which has been created on different device. Verify that error is
+     reported.
+  4) Negative Scenarios
     - Input executable graph is a nullptr.
     - Input node is a nullptr.
     - Input event to set is a nullptr.
@@ -193,7 +194,6 @@ TEST_CASE("Unit_hipGraphExecEventRecordNodeSetEvent_Negative_DifferentDevices") 
   }
   hipGraphExec_t graphExec;
   hipGraph_t graph;
-  hipStream_t streamForGraph;
   hipEvent_t event1, event2, event_out;
 
   HIP_CHECK(hipSetDevice(0));
@@ -204,7 +204,6 @@ TEST_CASE("Unit_hipGraphExecEventRecordNodeSetEvent_Negative_DifferentDevices") 
   HIP_CHECK(hipSetDevice(0));
   hipGraphNode_t eventrec;
   HIP_CHECK(hipGraphCreate(&graph, 0));
-  HIP_CHECK(hipStreamCreate(&streamForGraph));
   HIP_CHECK(hipGraphAddEventRecordNode(&eventrec, graph, nullptr, 0, event1));
 
   // Create node, error should be reported as event is on different device
@@ -216,7 +215,6 @@ TEST_CASE("Unit_hipGraphExecEventRecordNodeSetEvent_Negative_DifferentDevices") 
   HIP_CHECK(hipGraphDestroy(graph));
   HIP_CHECK(hipEventDestroy(event2));
   HIP_CHECK(hipEventDestroy(event1))
-  HIP_CHECK(hipStreamDestroy(streamForGraph));
 }
 
 /**

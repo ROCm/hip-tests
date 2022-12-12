@@ -22,15 +22,21 @@ THE SOFTWARE.
 
 #include "reportGenerators.h"
 
-int main()
+int main(int argc, char** argv)
 {
+  if (argc != 2) {
+    std::cout << "Please provide the path to the cloned HIP/include/ directory as an argument! Only one argument supported." << std::endl;
+    std::cout << "\tExample: ./generateHipAPICoverage /workspace/user1/HIP/include/" << std::endl;
+    return -1;
+  }
+  std::string hip_include_path = argv[1];
   /*
   Relative paths to all needed files, as it is expected that the application
   is called from the HIP/tests/catch/coverage directory.
   */
-  std::string hip_api_header_file{findAbsolutePathOfFile("../../include/hip/hip_runtime_api.h")};
-  std::string hip_rtc_header_file{findAbsolutePathOfFile("../../include/hip/hiprtc.h")};
-  std::string tests_root_directory{findAbsolutePathOfFile("../../tests/catch")};
+  std::string hip_api_header_file{findAbsolutePathOfFile(hip_include_path + "/hip/hip_runtime_api.h")};
+  std::string hip_rtc_header_file{findAbsolutePathOfFile(hip_include_path + "/hip/hiprtc.h")};
+  std::string tests_root_directory{findAbsolutePathOfFile("../../catch")};
 
   std::vector<std::string> api_group_names;
   // Extract all HIP API declarations from the HIP API header file.

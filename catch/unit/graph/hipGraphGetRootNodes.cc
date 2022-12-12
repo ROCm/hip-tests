@@ -17,39 +17,42 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
-Testcase Scenarios
-------------------
-Functional ::
- 1) Add nodes to graph with and without dependencies, verify the api returns list of
- root nodes (i.e., nodes without dependencies).
- 2) Pass nodes as nullptr and verify api returns actual number of root nodes added to graph.
- 3) If NumRootNodes passed is greater than the actual number of root nodes, the remaining entries in
- nodes list will be set to NULL, and the number of nodes actually obtained will be returned in NumRootNodes.
- 4) Create a graph with stream capture done on multiple dependent streams.
- Verify root nodes of created graph are matching the operations pushed which doesn't have dependencies.
-
-Argument Validation ::
- 1) Pass graph as nullptr and verify api returns error code.
- 2) Pass numRootNodes as nullptr and other params as valid values. Expect api to return error code.
- 3) When there are no nodes in graph, expect numRootNodes to be set to zero.
- 4) Pass numRootNodes less than actual number of nodes. Expect api to populate requested number of node entries
- and does update numRootNodes.
-*/
 #include <functional>
 
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 #include <hip_test_kernels.hh>
+#include <hip_test_defgroups.hh>
 
 #include "graph_dependency_common.hh"
+
+/**
+ * @addtogroup hipGraphGetRootNodes hipGraphGetRootNodes
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphGetRootNodes(hipGraph_t graph, hipGraphNode_t *nodes, size_t *numNodes)` -
+ * returns graph's root nodes
+ */
 
 namespace {
 inline constexpr size_t kNumOfRootNodes = 3;
 }  // anonymous namespace
 
 /**
- * Functional Test for API fetching root node list
+ * Test Description
+ * ------------------------
+ *    - Functional test to validate API for different number of root nodes:
+ *        -# Validate number of root nodes
+ *        -# Validate root node list when numRootNodes = num of root nodes
+ *        -# Validate root node list when numRootNodes < num of root nodes
+ *        -# Validate root node list when numRootNodes > num of root nodes
+ *        -# Validate numRootNodes is 0 when no nodes in graph
+ * Test source
+ * ------------------------
+ *    - catch\unit\graph\hipGraphGetRootNodes.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphGetRootNodes_Positive_Functional") {
   using namespace std::placeholders;
@@ -86,21 +89,21 @@ TEST_CASE("Unit_hipGraphGetRootNodes_Positive_Functional") {
   }
 
   // Scenario 2
-  SECTION("Validate root node list when numRootNodes = num of nodes") {
-    validateGraphNodesCommon(std::bind(hipGraphGetRootNodes, graph, _1, _2),
-                                  rootnodelist, kNumOfRootNodes, GraphGetNodesTest::equalNumNodes);
+  SECTION("Validate root node list when numRootNodes = num of root nodes") {
+    validateGraphNodesCommon(std::bind(hipGraphGetRootNodes, graph, _1, _2), rootnodelist,
+                             kNumOfRootNodes, GraphGetNodesTest::equalNumNodes);
   }
 
   // Scenario 3
-  SECTION("Validate root node list when numRootNodes < num of nodes") {
-    validateGraphNodesCommon(std::bind(hipGraphGetRootNodes, graph, _1, _2),
-                                  rootnodelist, kNumOfRootNodes - 1, GraphGetNodesTest::lesserNumNodes);
+  SECTION("Validate root node list when numRootNodes < num of root nodes") {
+    validateGraphNodesCommon(std::bind(hipGraphGetRootNodes, graph, _1, _2), rootnodelist,
+                             kNumOfRootNodes - 1, GraphGetNodesTest::lesserNumNodes);
   }
 
   // Scenario 4
-  SECTION("Validate root node list when numRootNodes > num of nodes") {
-    validateGraphNodesCommon(std::bind(hipGraphGetRootNodes, graph, _1, _2),
-                                  rootnodelist, kNumOfRootNodes + 1, GraphGetNodesTest::greaterNumNodes);
+  SECTION("Validate root node list when numRootNodes > num of root nodes") {
+    validateGraphNodesCommon(std::bind(hipGraphGetRootNodes, graph, _1, _2), rootnodelist,
+                             kNumOfRootNodes + 1, GraphGetNodesTest::greaterNumNodes);
   }
 
   // Scenario 5
@@ -131,6 +134,17 @@ TEST_CASE("Unit_hipGraphGetRootNodes_Positive_Functional") {
  * Create a graph with stream capture done on multiple dependent streams. Verify root nodes
  * of created graph are matching the operations pushed which doesn't have dependencies.
  */
+/**
+ * Test Description
+ * ------------------------
+ *    - - Test to verify root nodes of created graph are matching the captured operations
+ * Test source
+ * ------------------------
+ *    - catch\unit\graph\hipGraphGetRootNodes.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphGetRootNodes_Positive_CapturedStream") {
   hipStream_t streamForGraph{nullptr};
   hipGraph_t graph{nullptr};
@@ -155,7 +169,8 @@ TEST_CASE("Unit_hipGraphGetRootNodes_Positive_CapturedStream") {
   EventsGuard events(3);
 
   // Capture stream
-  captureNodesCommon(graph, A_h, A_d, B_h, B_d, C_h, C_d, N, streams.stream_list(), events.event_list());
+  captureNodesCommon(graph, A_h, A_d, B_h, B_d, C_h, C_d, N, streams.stream_list(),
+                     events.event_list());
   REQUIRE(graph != nullptr);
 
   // Verify numof root nodes
@@ -164,7 +179,7 @@ TEST_CASE("Unit_hipGraphGetRootNodes_Positive_CapturedStream") {
   INFO("Num of nodes returned by GetRootNodes : " << numRootNodes);
 
   int numBytes = sizeof(hipGraphNode_t) * numRootNodes;
-  hipGraphNode_t* nodes = reinterpret_cast<hipGraphNode_t *>(malloc(numBytes));
+  hipGraphNode_t* nodes = reinterpret_cast<hipGraphNode_t*>(malloc(numBytes));
   REQUIRE(nodes != nullptr);
 
   hipGraphNodeType nodeType;
@@ -187,8 +202,8 @@ TEST_CASE("Unit_hipGraphGetRootNodes_Positive_CapturedStream") {
   // Validate the computation
   for (size_t i = 0; i < N; i++) {
     if (C_h[i] != A_h[i] + B_h[i]) {
-      INFO("C not matching at " << i << " C_h[i] " << C_h[i]
-                                           << " A_h[i] + B_h[i] " << A_h[i] + B_h[i]);
+      INFO("C not matching at " << i << " C_h[i] " << C_h[i] << " A_h[i] + B_h[i] "
+                                << A_h[i] + B_h[i]);
       REQUIRE(false);
     }
   }
@@ -200,11 +215,19 @@ TEST_CASE("Unit_hipGraphGetRootNodes_Positive_CapturedStream") {
   free(nodes);
 }
 
-
 /**
- * Test performs api parameter validation by passing various values
- * as input and output parameters and validates the behavior.
- * Test will include both negative and positive scenarios.
+ * Test Description
+ * ------------------------
+ *    - Test to verify API behavior with invalid arguments:
+ *        -# Null Graph
+ *        -# Graph is uninitialized
+ *        -# numRootNodes as nullptr
+ * Test source
+ * ------------------------
+ *    - catch\unit\graph\hipGraphGetRootNodes.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphGetRootNodes_Negative_Parameters") {
   hipGraph_t graph{nullptr};
@@ -218,15 +241,13 @@ TEST_CASE("Unit_hipGraphGetRootNodes_Negative_Parameters") {
 
   // create event record nodes
   hipGraphNode_t event_node_start, event_node_end;
-  HIP_CHECK(hipGraphAddEventRecordNode(&event_node_start, graph, nullptr, 0,
-                                                            event_start));
-  HIP_CHECK(hipGraphAddEventRecordNode(&event_node_end, graph, nullptr, 0,
-                                                            event_end));
+  HIP_CHECK(hipGraphAddEventRecordNode(&event_node_start, graph, nullptr, 0, event_start));
+  HIP_CHECK(hipGraphAddEventRecordNode(&event_node_end, graph, nullptr, 0, event_end));
 
   HIP_CHECK(hipGraphGetRootNodes(graph, nullptr, &numRootNodes));
   INFO("Num of nodes returned by GetRootNodes : " << numRootNodes);
   int numBytes = sizeof(hipGraphNode_t) * numRootNodes;
-  hipGraphNode_t* nodes = reinterpret_cast<hipGraphNode_t *>(malloc(numBytes));
+  hipGraphNode_t* nodes = reinterpret_cast<hipGraphNode_t*>(malloc(numBytes));
   REQUIRE(nodes != nullptr);
 
   SECTION("graph as nullptr") {

@@ -17,31 +17,22 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
-Testcase Scenarios
-------------------
-Functional ::
-1) Add nodes to graph and get nodes. Verify the added nodes are present in returned list.
-2) Pass nodes as nullptr and verify numNodes returns actual number of nodes added to graph.
-3) If numNodes passed is greater than the actual number of nodes, the remaining entries in nodes
-will be set to NULL, and the number of nodes actually obtained will be returned in numNodes.
-4) Begin stream capture and push operations to stream. Verify nodes of created graph are matching the
-operations pushed.
-
-Argument Validation ::
-1) Pass graph as nullptr and verify api returns error code.
-2) Pass numNodes as nullptr and other params as valid values. Expect api to return error code.
-3) When there are no nodes in graph, expect numNodes to be set to zero.
-4) Pass numNodes less than actual number of nodes. Expect api to populate requested number of node entries
-and does update numNodes.
-*/
 #include <functional>
 
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 #include <hip_test_kernels.hh>
+#include <hip_test_defgroups.hh>
 
 #include "graph_dependency_common.hh"
+
+/**
+ * @addtogroup hipGraphGetNodes hipGraphGetNodes
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphGetNodes(hipGraph_t graph, hipGraphNode_t *nodes, size_t *numNodes)` -
+ * returns graph nodes
+ */
 
 namespace {
 inline constexpr size_t kNumOfNodes = 7;
@@ -49,6 +40,22 @@ inline constexpr size_t kNumOfNodes = 7;
 
 /**
  * Functional Test for hipGraphGetNodes API fetching node list
+ */
+/**
+ * Test Description
+ * ------------------------
+ *    - Functional test to validate API for different number of nodes:
+ *        -# Validate number of nodes
+ *        -# Validate node list when numNodes = num of nodes
+ *        -# Validate node list when numNodes < num of nodes
+ *        -# Validate node list when numNodes > num of nodes
+ *        -# Validate numNodes is 0 when no nodes in graph
+ * Test source
+ * ------------------------
+ *    - catch\unit\graph\hipGraphGetNodes.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphGetNodes_Positive_Functional") {
   using namespace std::placeholders;
@@ -70,7 +77,7 @@ TEST_CASE("Unit_hipGraphGetNodes_Positive_Functional") {
 
   // Create dependencies
   HIP_CHECK(hipGraphAddDependencies(graph, &from_nodes[0], &to_nodes[0], 6));
-  
+
   size_t numNodes{};
   // Get numNodes by passing nodes as nullptr.
   // Verify numNodes is set to actual number of nodes added
@@ -83,20 +90,20 @@ TEST_CASE("Unit_hipGraphGetNodes_Positive_Functional") {
 
   // Scenario 2
   SECTION("Validate node list when numNodes = num of nodes") {
-    validateGraphNodesCommon(std::bind(hipGraphGetNodes, graph, _1, _2),
-                                  nodelist, kNumOfNodes, GraphGetNodesTest::equalNumNodes);
+    validateGraphNodesCommon(std::bind(hipGraphGetNodes, graph, _1, _2), nodelist, kNumOfNodes,
+                             GraphGetNodesTest::equalNumNodes);
   }
 
   // Scenario 3
   SECTION("Validate node list when numNodes < num of nodes") {
-    validateGraphNodesCommon(std::bind(hipGraphGetNodes, graph, _1, _2),
-                                  nodelist, kNumOfNodes - 1, GraphGetNodesTest::lesserNumNodes);
+    validateGraphNodesCommon(std::bind(hipGraphGetNodes, graph, _1, _2), nodelist, kNumOfNodes - 1,
+                             GraphGetNodesTest::lesserNumNodes);
   }
 
   // Scenario 4
   SECTION("Validate node list when numNodes > num of nodes") {
-    validateGraphNodesCommon(std::bind(hipGraphGetNodes, graph, _1, _2),
-                                  nodelist, kNumOfNodes + 1, GraphGetNodesTest::greaterNumNodes);
+    validateGraphNodesCommon(std::bind(hipGraphGetNodes, graph, _1, _2), nodelist, kNumOfNodes + 1,
+                             GraphGetNodesTest::greaterNumNodes);
   }
 
   // Scenario 5
@@ -123,8 +130,15 @@ TEST_CASE("Unit_hipGraphGetNodes_Positive_Functional") {
 }
 
 /**
- * Begin stream capture and push operations to stream.
- * Verify nodes of created graph are matching the operations pushed.
+ * Test Description
+ * ------------------------
+ *    - Test to verify nodes of created graph are matching the captured operations
+ * Test source
+ * ------------------------
+ *    - catch\unit\graph\hipGraphGetNodes.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphGetNodes_Positive_CapturedStream") {
   hipGraph_t graph{nullptr};
@@ -151,7 +165,8 @@ TEST_CASE("Unit_hipGraphGetNodes_Positive_CapturedStream") {
   EventsGuard events(3);
 
   // Capture stream
-  captureNodesCommon(graph, A_h, A_d, B_h, B_d, C_h, C_d, N, streams.stream_list(), events.event_list());
+  captureNodesCommon(graph, A_h, A_d, B_h, B_d, C_h, C_d, N, streams.stream_list(),
+                     events.event_list());
   REQUIRE(graph != nullptr);
 
   size_t numNodes{};
@@ -160,7 +175,7 @@ TEST_CASE("Unit_hipGraphGetNodes_Positive_CapturedStream") {
   REQUIRE(numNodes == numMemcpy + numKernel + numMemset);
 
   int numBytes = sizeof(hipGraphNode_t) * numNodes;
-  hipGraphNode_t* nodes = reinterpret_cast<hipGraphNode_t *>(malloc(numBytes));
+  hipGraphNode_t* nodes = reinterpret_cast<hipGraphNode_t*>(malloc(numBytes));
   REQUIRE(nodes != nullptr);
 
   HIP_CHECK(hipGraphGetNodes(graph, nodes, &numNodes));
@@ -198,8 +213,8 @@ TEST_CASE("Unit_hipGraphGetNodes_Positive_CapturedStream") {
   // Validate the computation
   for (size_t i = 0; i < N; i++) {
     if (C_h[i] != A_h[i] + B_h[i]) {
-      INFO("C not matching at " << i << " C_h[i] " << C_h[i]
-                                           << " A_h[i] + B_h[i] " << A_h[i] + B_h[i]);
+      INFO("C not matching at " << i << " C_h[i] " << C_h[i] << " A_h[i] + B_h[i] "
+                                << A_h[i] + B_h[i]);
       REQUIRE(false);
     }
   }
@@ -212,9 +227,18 @@ TEST_CASE("Unit_hipGraphGetNodes_Positive_CapturedStream") {
 }
 
 /**
- * Test performs api parameter validation by passing various values
- * as input and output parameters and validates the behavior.
- * Test will include both negative and positive scenarios.
+ * Test Description
+ * ------------------------
+ *    - Test to verify API behavior with invalid arguments:
+ *        -# Null Graph
+ *        -# Graph is uninitialized
+ *        -# numNodes as nullptr
+ * Test source
+ * ------------------------
+ *    - catch\unit\graph\hipGraphGetNodes.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphGetNodes_Negative_Parameters") {
   hipGraph_t graph{nullptr};
@@ -228,16 +252,14 @@ TEST_CASE("Unit_hipGraphGetNodes_Negative_Parameters") {
 
   // create event record nodes
   hipGraphNode_t event_node_start, event_node_end;
-  HIP_CHECK(hipGraphAddEventRecordNode(&event_node_start, graph, nullptr, 0,
-                                                            event_start));
-  HIP_CHECK(hipGraphAddEventRecordNode(&event_node_end, graph, nullptr, 0,
-                                                            event_end));
+  HIP_CHECK(hipGraphAddEventRecordNode(&event_node_start, graph, nullptr, 0, event_start));
+  HIP_CHECK(hipGraphAddEventRecordNode(&event_node_end, graph, nullptr, 0, event_end));
 
   HIP_CHECK(hipGraphGetNodes(graph, nullptr, &numNodes));
   INFO("Num of nodes returned by GetNodes : " << numNodes);
 
   int numBytes = sizeof(hipGraphNode_t) * numNodes;
-  hipGraphNode_t* nodes = reinterpret_cast<hipGraphNode_t *>(malloc(numBytes));
+  hipGraphNode_t* nodes = reinterpret_cast<hipGraphNode_t*>(malloc(numBytes));
   REQUIRE(nodes != nullptr);
 
   SECTION("graph as nullptr") {

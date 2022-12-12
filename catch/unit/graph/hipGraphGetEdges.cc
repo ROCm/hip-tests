@@ -17,30 +17,20 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
-Testcase Scenarios :
- 1) Add nodes to graph with dependencies defined. Call api and verify number
-    of edges and from/to list returned corresponds to the dependencies defined.
- 2) Pass from and to as nullptr and verify the api returns number of edges.
- 3) Pass numEdges lesser than actual number and verify the api returns from/to
-    list with requested number of edges.
- 4) Pass numEdges greater than actual number and verify the remaining entries
-    in from/to list are set to null and number of edges actually returned will
-    be written to numEdges.
- 5) Validate numEdges when 0 or 1 node is present in graph.
- 6) Negative Test Cases
-    - Input graph parameter is a nullptr.
-    - From node parameter is a nullptr.
-    - To node parameter is a nullptr.
-    - numEdges parameter is a nullptr.
-    - Input graph parameter is uninitialized.
-*/
-
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 #include <hip_test_kernels.hh>
+#include <hip_test_defgroups.hh>
 
 #include "graph_dependency_common.hh"
+
+/**
+ * @addtogroup hipGraphGetEdges hipGraphGetEdges
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphGetEdges(hipGraph_t graph, hipGraphNode_t *from, hipGraphNode_t *to, size_t *numEdges)`
+ * - returns a graph's dependency edges
+ */
 
 namespace {
 inline constexpr size_t kNumOfEdges = 6;
@@ -49,14 +39,13 @@ inline constexpr size_t kNumOfEdges = 6;
 /**
  * Local Function to validate number of edges.
  */
-static void validate_hipGraphGetEdges_fromto(size_t testNumEdges,
-                                        GraphGetNodesTest test_type,
-                                        std::vector<hipGraphNode_t>& nodes_from,
-                                        std::vector<hipGraphNode_t>& nodes_to,
-                                        hipGraph_t graph) {
+static void validate_hipGraphGetEdges_fromto(size_t testNumEdges, GraphGetNodesTest test_type,
+                                             std::vector<hipGraphNode_t>& nodes_from,
+                                             std::vector<hipGraphNode_t>& nodes_to,
+                                             hipGraph_t graph) {
   size_t numEdges = testNumEdges;
-  hipGraphNode_t *fromnode = new hipGraphNode_t[numEdges]{};
-  hipGraphNode_t *tonode = new hipGraphNode_t[numEdges]{};
+  hipGraphNode_t* fromnode = new hipGraphNode_t[numEdges]{};
+  hipGraphNode_t* tonode = new hipGraphNode_t[numEdges]{};
   HIP_CHECK(hipGraphGetEdges(graph, fromnode, tonode, &numEdges));
   bool nodeFound;
   int found_count = 0;
@@ -100,10 +89,22 @@ static void validate_hipGraphGetEdges_fromto(size_t testNumEdges,
 }
 
 /**
- * Scenario 1: Finctionality tests to validate hipGraphGetEdges()
- * for different number of edges.
+ * Test Description
+ * ------------------------
+ *    - Functional test to validate API for different number of edges:
+ *        -# Validate number of edges
+ *        -# Validate from/to list when numEdges = num of edges
+ *        -# Validate from/to list when numEdges = less than num of edges
+ *        -# Validate from/to list when numEdges = more than num of edges
+ *        -# Validate number of edges when zero or one node in graph
+ * Test source
+ * ------------------------
+ *    - catch\unit\graph\hipGraphGetEdges.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipGraphGetEdges_Positive_Functionality") {
+TEST_CASE("Unit_hipGraphGetEdges_Positive_Functional") {
   constexpr size_t N = 1024;
   hipGraph_t graph;
   int *A_d, *B_d, *C_d;
@@ -130,18 +131,18 @@ TEST_CASE("Unit_hipGraphGetEdges_Positive_Functionality") {
   }
   // Scenario 2
   SECTION("Validate from/to list when numEdges = num of edges") {
-    validate_hipGraphGetEdges_fromto(kNumOfEdges, GraphGetNodesTest::equalNumNodes,
-                                    from_nodes, to_nodes, graph);
+    validate_hipGraphGetEdges_fromto(kNumOfEdges, GraphGetNodesTest::equalNumNodes, from_nodes,
+                                     to_nodes, graph);
   }
   // Scenario 3
   SECTION("Validate from/to list when numEdges = less than num of edges") {
-    validate_hipGraphGetEdges_fromto(kNumOfEdges - 1, GraphGetNodesTest::lesserNumNodes,
-                                    from_nodes, to_nodes, graph);
+    validate_hipGraphGetEdges_fromto(kNumOfEdges - 1, GraphGetNodesTest::lesserNumNodes, from_nodes,
+                                     to_nodes, graph);
   }
   // Scenario 4
   SECTION("Validate from/to list when numEdges = more than num of edges") {
     validate_hipGraphGetEdges_fromto(kNumOfEdges + 1, GraphGetNodesTest::greaterNumNodes,
-                                    from_nodes, to_nodes, graph);
+                                     from_nodes, to_nodes, graph);
   }
   // Scenario 5
   SECTION("Validate number of edges when zero or one node in graph") {
@@ -162,8 +163,15 @@ TEST_CASE("Unit_hipGraphGetEdges_Positive_Functionality") {
 }
 
 /**
- * Begin stream capture and push operations to stream.
- * Verify nodes of created graph are matching the operations pushed.
+ * Test Description
+ * ------------------------
+ *    - Test to verify edges of created graph are matching the captured operations
+ * Test source
+ * ------------------------
+ *    - catch\unit\graph\hipGraphGetEdges.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphGetEdges_Positive_CapturedStream") {
   hipGraph_t graph{nullptr};
@@ -181,7 +189,8 @@ TEST_CASE("Unit_hipGraphGetEdges_Positive_CapturedStream") {
   EventsGuard events(3);
 
   // Capture stream
-  captureNodesCommon(graph, A_h, A_d, B_h, B_d, C_h, C_d, N, streams.stream_list(), events.event_list());
+  captureNodesCommon(graph, A_h, A_d, B_h, B_d, C_h, C_d, N, streams.stream_list(),
+                     events.event_list());
   REQUIRE(graph != nullptr);
 
   size_t numEdges = 0;
@@ -189,16 +198,16 @@ TEST_CASE("Unit_hipGraphGetEdges_Positive_CapturedStream") {
   REQUIRE(numEdges == kNumOfEdges);
 
   int numBytes = sizeof(hipGraphNode_t) * numEdges;
-  hipGraphNode_t* from_nodes = reinterpret_cast<hipGraphNode_t *>(malloc(numBytes));
+  hipGraphNode_t* from_nodes = reinterpret_cast<hipGraphNode_t*>(malloc(numBytes));
   REQUIRE(from_nodes != nullptr);
-  hipGraphNode_t* to_nodes = reinterpret_cast<hipGraphNode_t *>(malloc(numBytes));
+  hipGraphNode_t* to_nodes = reinterpret_cast<hipGraphNode_t*>(malloc(numBytes));
   REQUIRE(to_nodes != nullptr);
 
   HIP_CHECK(hipGraphGetEdges(graph, from_nodes, to_nodes, &numEdges));
   for (size_t i = 0; i < 2; i++) {
     hipGraphNode_t* current_nodes = (i == 0) ? from_nodes : to_nodes;
     for (size_t j = 0; j < numEdges; j++) {
-    HIP_CHECK(hipGraphNodeGetType(current_nodes[j], &nodeType));
+      HIP_CHECK(hipGraphNodeGetType(current_nodes[j], &nodeType));
       switch (nodeType) {
         case hipGraphNodeTypeMemcpy:
           cntMemcpy[i]++;
@@ -215,7 +224,7 @@ TEST_CASE("Unit_hipGraphGetEdges_Positive_CapturedStream") {
         default:
           INFO("Unexpected nodetype returned : " << nodeType);
           REQUIRE(false);
-     }
+      }
     }
     REQUIRE(cntMemcpy[i] == numMemcpy[i]);
     REQUIRE(cntKernel[i] == numKernel[i]);
@@ -227,13 +236,25 @@ TEST_CASE("Unit_hipGraphGetEdges_Positive_CapturedStream") {
 }
 
 /**
- * Scenario 5: Negative Test Cases
+ * Test Description
+ * ------------------------
+ *    - Test to verify API behavior with invalid arguments:
+ *        -# Null Graph
+ *        -# Graph is uninitialized
+ *        -# From is nullptr
+ *        -# To is nullptr
+ *        -# numEdges is nullptr
+ * Test source
+ * ------------------------
+ *    - catch\unit\graph\hipGraphGetEdges.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphGetEdges_Negative_Parameters") {
   hipGraph_t graph{}, graph_uninit{};
   HIP_CHECK(hipGraphCreate(&graph, 0));
-  hipGraphNode_t nodes_from[kNumOfEdges]{},
-                nodes_to[kNumOfEdges]{};
+  hipGraphNode_t nodes_from[kNumOfEdges]{}, nodes_to[kNumOfEdges]{};
 
   hipEvent_t event_start, event_end;
   HIP_CHECK(hipEventCreateWithFlags(&event_start, hipEventDisableTiming));
@@ -241,21 +262,21 @@ TEST_CASE("Unit_hipGraphGetEdges_Negative_Parameters") {
 
   // create event record nodes
   hipGraphNode_t event_node_start, event_node_end;
-  HIP_CHECK(hipGraphAddEventRecordNode(&event_node_start, graph, nullptr, 0,
-                                                            event_start));
-  HIP_CHECK(hipGraphAddEventRecordNode(&event_node_end, graph, nullptr, 0,
-                                                            event_end));
+  HIP_CHECK(hipGraphAddEventRecordNode(&event_node_start, graph, nullptr, 0, event_start));
+  HIP_CHECK(hipGraphAddEventRecordNode(&event_node_end, graph, nullptr, 0, event_end));
 
   // Add dependency between nodes
   HIP_CHECK(hipGraphAddDependencies(graph, &event_node_start, &event_node_end, 1));
 
   size_t numEdges = 0;
   SECTION("graph is nullptr") {
-    HIP_CHECK_ERROR(hipGraphGetEdges(nullptr, nodes_from, nodes_to, &numEdges), hipErrorInvalidValue);
+    HIP_CHECK_ERROR(hipGraphGetEdges(nullptr, nodes_from, nodes_to, &numEdges),
+                    hipErrorInvalidValue);
   }
 
   SECTION("graph is uninitialized") {
-    HIP_CHECK_ERROR(hipGraphGetEdges(graph_uninit, nodes_from, nodes_to, &numEdges), hipErrorInvalidValue);
+    HIP_CHECK_ERROR(hipGraphGetEdges(graph_uninit, nodes_from, nodes_to, &numEdges),
+                    hipErrorInvalidValue);
   }
 
   SECTION("From is nullptr") {
@@ -274,4 +295,3 @@ TEST_CASE("Unit_hipGraphGetEdges_Negative_Parameters") {
   HIP_CHECK(hipEventDestroy(event_end));
   HIP_CHECK(hipEventDestroy(event_start));
 }
-

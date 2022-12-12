@@ -17,21 +17,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
-Testcase Scenarios :
- 1) Add different kinds of nodes to graph and add dependencies to nodes.
- Verify sequence of graph execution is based on dependencies created.
- 2) Negative Scenarios
-*/
-
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 #include <hip_test_kernels.hh>
+#include <hip_test_defgroups.hh>
 
 #include "graph_dependency_common.hh"
 
 /**
- * Functional Test for adding dependencies in graph and verifying execution.
+ * @addtogroup hipGraphAddDependencies hipGraphAddDependencies
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphAddDependencies(hipGraph_t graph, const hipGraphNode_t *from, const hipGraphNode_t *to,
+ * size_t numDependencies)` - adds dependency edges to a graph
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Functional Test for adding dependencies in graph and verifying execution:
+ *        -# Create dependencies node by node
+ *        -# Create dependencies with node lists
+ * Test source
+ * ------------------------
+ *    - catch\unit\graph\hipGraphAddDependencies.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddDependencies_Positive_Functional") {
   constexpr size_t N = 1024;
@@ -82,14 +94,30 @@ TEST_CASE("Unit_hipGraphAddDependencies_Positive_Functional") {
   HIP_CHECK(hipStreamDestroy(streamForGraph));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Test to verify API behavior with special cases of valid arguments:
+ *        -# numDependencies is zero, To/From are nullptr
+ *        -# numDependencies is zero, To or From are nullptr
+ *        -# numDependencies is zero, To/From are valid
+ *        -# numDependencies is zero, To/From are the same
+ *        -# numDependencies < To/From length
+ * Test source
+ * ------------------------
+ *    - catch\unit\graph\hipGraphAddDependencies.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphAddDependencies_Positive_Parameters") {
   constexpr size_t Nbytes = 1024;
   hipGraphNode_t memcpyH2D_A;
   hipGraphNode_t memcpyD2H_A;
   hipGraphNode_t memset_A;
   hipMemsetParams memsetParams{};
-  char *A_d;
-  char *A_h;
+  char* A_d;
+  char* A_h;
   hipGraph_t graph;
   HIP_CHECK(hipGraphCreate(&graph, 0));
 
@@ -104,11 +132,12 @@ TEST_CASE("Unit_hipGraphAddDependencies_Positive_Parameters") {
   memsetParams.width = Nbytes;
   memsetParams.height = 1;
 
-  HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph, nullptr, 0,
-                                   &memsetParams));
+  HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph, nullptr, 0, &memsetParams));
 
-  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_A, graph, nullptr, 0, A_d, A_h, Nbytes, hipMemcpyHostToDevice));
-  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyD2H_A, graph, nullptr, 0, A_h, A_d, Nbytes, hipMemcpyDeviceToHost));
+  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_A, graph, nullptr, 0, A_d, A_h, Nbytes,
+                                    hipMemcpyHostToDevice));
+  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyD2H_A, graph, nullptr, 0, A_h, A_d, Nbytes,
+                                    hipMemcpyDeviceToHost));
 
   SECTION("numDependencies is zero, To/From are nullptr") {
     HIP_CHECK(hipGraphAddDependencies(graph, nullptr, nullptr, 0));
@@ -118,11 +147,9 @@ TEST_CASE("Unit_hipGraphAddDependencies_Positive_Parameters") {
     HIP_CHECK(hipGraphAddDependencies(graph, nullptr, &memcpyH2D_A, 0));
   }
   SECTION("numDependencies is zero, To/From are valid") {
-
     HIP_CHECK(hipGraphAddDependencies(graph, &memcpyH2D_A, &memcpyD2H_A, 0));
   }
   SECTION("numDependencies is zero, To/From are the same") {
-
     HIP_CHECK(hipGraphAddDependencies(graph, &memcpyH2D_A, &memcpyH2D_A, 0));
   }
   SECTION("numDependencies < To/From length") {
@@ -143,14 +170,33 @@ TEST_CASE("Unit_hipGraphAddDependencies_Positive_Parameters") {
 }
 
 /**
- * Negative Tests for hipGraphAddDependencies.
+ * Test Description
+ * ------------------------
+ *    - Test to verify API behavior with invalid arguments:
+ *        -# Null Graph
+ *        -# Graph is uninitialized
+ *        -# To or From is nullptr
+ *        -# To/From are null graph node
+ *        -# From belongs to different graph
+ *        -# To belongs to different graph
+ *        -# From is uninitialized
+ *        -# To is uninitialized
+ *        -# Duplicate Dependencies
+ *        -# Same Node Dependencies
+ *        -# numDependencies > To/From length
+ * Test source
+ * ------------------------
+ *    - catch\unit\graph\hipGraphAddDependencies.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddDependencies_Negative_Parameters") {
   // Initialize
   constexpr size_t Nbytes = 1024;
   hipGraph_t graph;
   HIP_CHECK(hipGraphCreate(&graph, 0));
-  char *A_d;
+  char* A_d;
   hipGraphNode_t memset_A;
   hipMemsetParams memsetParams{};
   HIP_CHECK(hipMalloc(&A_d, Nbytes));
@@ -163,89 +209,88 @@ TEST_CASE("Unit_hipGraphAddDependencies_Negative_Parameters") {
   memsetParams.height = 1;
   hipGraphNode_t memcpyH2D_A;
   hipGraphNode_t memcpyD2H_A;
-  char *A_h;
+  char* A_h;
   A_h = reinterpret_cast<char*>(malloc(Nbytes));
 
   SECTION("Null Graph") {
-    HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph, nullptr, 0,
-                                   &memsetParams));
-    HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_A, graph, nullptr, 0,
-                                   A_d, A_h, Nbytes, hipMemcpyHostToDevice));
-    HIP_CHECK_ERROR(hipGraphAddDependencies(nullptr, &memset_A, &memcpyH2D_A, 1), hipErrorInvalidValue);
+    HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph, nullptr, 0, &memsetParams));
+    HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_A, graph, nullptr, 0, A_d, A_h, Nbytes,
+                                      hipMemcpyHostToDevice));
+    HIP_CHECK_ERROR(hipGraphAddDependencies(nullptr, &memset_A, &memcpyH2D_A, 1),
+                    hipErrorInvalidValue);
   }
 
   SECTION("graph is uninitialized") {
     hipGraph_t graph_uninit{};
-    HIP_CHECK_ERROR(hipGraphAddDependencies(graph_uninit, &memset_A, &memcpyH2D_A, 1), hipErrorInvalidValue);
+    HIP_CHECK_ERROR(hipGraphAddDependencies(graph_uninit, &memset_A, &memcpyH2D_A, 1),
+                    hipErrorInvalidValue);
   }
 
   SECTION("To or From is nullptr") {
-    HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph, nullptr, 0,
-                                    &memsetParams));
+    HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph, nullptr, 0, &memsetParams));
     HIP_CHECK_ERROR(hipGraphAddDependencies(graph, &memset_A, nullptr, 1), hipErrorInvalidValue);
     HIP_CHECK_ERROR(hipGraphAddDependencies(graph, nullptr, &memset_A, 1), hipErrorInvalidValue);
   }
 
-  SECTION("To/From are Null Graph Node") {
+  SECTION("To/From are nullptr") {
     HIP_CHECK_ERROR(hipGraphAddDependencies(graph, nullptr, nullptr, 1), hipErrorInvalidValue);
   }
 
   SECTION("From belongs to different graph") {
     hipGraph_t graph1;
     HIP_CHECK(hipGraphCreate(&graph1, 0));
-    HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph1, nullptr, 0,
-                                    &memsetParams));
-    HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_A, graph, nullptr, 0,
-                            A_d, A_h, Nbytes, hipMemcpyHostToDevice));
-    HIP_CHECK_ERROR(hipGraphAddDependencies(graph, &memset_A, &memcpyH2D_A, 1), hipErrorInvalidValue);
+    HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph1, nullptr, 0, &memsetParams));
+    HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_A, graph, nullptr, 0, A_d, A_h, Nbytes,
+                                      hipMemcpyHostToDevice));
+    HIP_CHECK_ERROR(hipGraphAddDependencies(graph, &memset_A, &memcpyH2D_A, 1),
+                    hipErrorInvalidValue);
     HIP_CHECK(hipGraphDestroy(graph1));
   }
 
   SECTION("To belongs to different graph") {
     hipGraph_t graph1;
     HIP_CHECK(hipGraphCreate(&graph1, 0));
-    HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph, nullptr, 0,
-                                &memsetParams));
-    HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_A, graph1, nullptr,
-                                0, A_d, A_h, Nbytes, hipMemcpyHostToDevice));
-    HIP_CHECK_ERROR(hipGraphAddDependencies(graph, &memset_A, &memcpyH2D_A, 1), hipErrorInvalidValue);
+    HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph, nullptr, 0, &memsetParams));
+    HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_A, graph1, nullptr, 0, A_d, A_h, Nbytes,
+                                      hipMemcpyHostToDevice));
+    HIP_CHECK_ERROR(hipGraphAddDependencies(graph, &memset_A, &memcpyH2D_A, 1),
+                    hipErrorInvalidValue);
     HIP_CHECK(hipGraphDestroy(graph1));
   }
 
   SECTION("From is uninitialized") {
-    HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_A, graph, nullptr,
-                                0, A_d, A_h, Nbytes, hipMemcpyHostToDevice));
-    HIP_CHECK_ERROR(hipGraphAddDependencies(graph, &memset_A, &memcpyH2D_A, 1), hipErrorInvalidValue);
+    HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_A, graph, nullptr, 0, A_d, A_h, Nbytes,
+                                      hipMemcpyHostToDevice));
+    HIP_CHECK_ERROR(hipGraphAddDependencies(graph, &memset_A, &memcpyH2D_A, 1),
+                    hipErrorInvalidValue);
   }
 
   SECTION("To is uninitialized") {
-    HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph, nullptr, 0,
-                                    &memsetParams));
-    HIP_CHECK_ERROR(hipGraphAddDependencies(graph, &memset_A, &memcpyH2D_A, 1), hipErrorInvalidValue);
+    HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph, nullptr, 0, &memsetParams));
+    HIP_CHECK_ERROR(hipGraphAddDependencies(graph, &memset_A, &memcpyH2D_A, 1),
+                    hipErrorInvalidValue);
   }
 
   SECTION("Duplicate Dependencies") {
-    HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph, nullptr, 0,
-                          &memsetParams));
-    HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_A, graph, nullptr, 0,
-                          A_d, A_h, Nbytes, hipMemcpyHostToDevice));
+    HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph, nullptr, 0, &memsetParams));
+    HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_A, graph, nullptr, 0, A_d, A_h, Nbytes,
+                                      hipMemcpyHostToDevice));
     HIP_CHECK(hipGraphAddDependencies(graph, &memset_A, &memcpyH2D_A, 1));
-    HIP_CHECK_ERROR(hipGraphAddDependencies(graph, &memset_A, &memcpyH2D_A, 1), hipErrorInvalidValue);
+    HIP_CHECK_ERROR(hipGraphAddDependencies(graph, &memset_A, &memcpyH2D_A, 1),
+                    hipErrorInvalidValue);
   }
 
   SECTION("Same Node Dependencies") {
-    HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph, nullptr, 0,
-                                    &memsetParams));
+    HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph, nullptr, 0, &memsetParams));
     HIP_CHECK_ERROR(hipGraphAddDependencies(graph, &memset_A, &memset_A, 1), hipErrorInvalidValue);
   }
 
   SECTION("numDependencies > To/From length") {
-    HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph, nullptr, 0,
-                                   &memsetParams));
-    HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_A, graph, nullptr, 0,
-                                   A_d, A_h, Nbytes, hipMemcpyHostToDevice));
-    HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyD2H_A, graph, nullptr, 0,
-                                   A_h, A_d, Nbytes, hipMemcpyDeviceToHost));
+    HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph, nullptr, 0, &memsetParams));
+    HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_A, graph, nullptr, 0, A_d, A_h, Nbytes,
+                                      hipMemcpyHostToDevice));
+    HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyD2H_A, graph, nullptr, 0, A_h, A_d, Nbytes,
+                                      hipMemcpyDeviceToHost));
     hipGraphNode_t from_list[] = {memset_A, memcpyH2D_A};
     hipGraphNode_t to_list[] = {memcpyH2D_A, memcpyD2H_A};
     HIP_CHECK_ERROR(hipGraphAddDependencies(graph, from_list, to_list, 3), hipErrorInvalidValue);

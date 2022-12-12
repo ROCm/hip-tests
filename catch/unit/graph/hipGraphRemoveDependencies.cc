@@ -44,6 +44,8 @@ Testcase Scenarios :
 #include <hip_test_checkers.hh>
 #include <hip_test_kernels.hh>
 
+#include "graph_dependency_common.hh"
+
 namespace {
 inline constexpr size_t kNumOfEdges = 6;
 }  // anonymous namespace
@@ -66,100 +68,40 @@ static __global__ void vector_square(int* A_d, size_t N_ELMTS) {
  * Scenario 1 and Scenario 3: Validate hipGraphRemoveDependencies
  * for manually created graph.
  */
-TEST_CASE("Unit_hipGraphRemoveDependencies_Func_Manual") {
+TEST_CASE("Unit_hipGraphRemoveDependencies_Positive_Functional") {
   constexpr size_t N = 1024;
-  constexpr size_t Nbytes = N * sizeof(int);
-  constexpr auto blocksPerCU = 6;  // to hide latency
-  constexpr auto threadsPerBlock = 256;
   hipGraph_t graph;
-  hipGraphNode_t memset_A, memset_B, memsetKer_C;
-  hipGraphNode_t memcpyH2D_A, memcpyH2D_B, memcpyD2H_C;
-  hipGraphNode_t kernel_vecAdd;
-  hipKernelNodeParams kernelNodeParams{};
   int *A_d, *B_d, *C_d;
   int *A_h, *B_h, *C_h;
-  hipMemsetParams memsetParams{};
-  int memsetVal{};
-  size_t NElem{N};
 
   HipTest::initArrays(&A_d, &B_d, &C_d, &A_h, &B_h, &C_h, N, false);
-  unsigned blocks = HipTest::setNumBlocks(blocksPerCU, threadsPerBlock, N);
 
   HIP_CHECK(hipGraphCreate(&graph, 0));
 
-  memset(&memsetParams, 0, sizeof(memsetParams));
-  memsetParams.dst = reinterpret_cast<void*>(A_d);
-  memsetParams.value = 0;
-  memsetParams.pitch = 0;
-  memsetParams.elementSize = sizeof(int);
-  memsetParams.width = N;
-  memsetParams.height = 1;
-  HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph, nullptr, 0,
-                                                    &memsetParams));
-
-  memset(&memsetParams, 0, sizeof(memsetParams));
-  memsetParams.dst = reinterpret_cast<void*>(B_d);
-  memsetParams.value = 0;
-  memsetParams.pitch = 0;
-  memsetParams.elementSize = sizeof(int);
-  memsetParams.width = N;
-  memsetParams.height = 1;
-  HIP_CHECK(hipGraphAddMemsetNode(&memset_B, graph, nullptr, 0,
-                                                    &memsetParams));
-
-  void* kernelArgs1[] = {&C_d, &memsetVal, reinterpret_cast<void *>(&NElem)};
-  kernelNodeParams.func =
-                       reinterpret_cast<void *>(HipTest::memsetReverse<int>);
-  kernelNodeParams.gridDim = dim3(blocks);
-  kernelNodeParams.blockDim = dim3(threadsPerBlock);
-  kernelNodeParams.sharedMemBytes = 0;
-  kernelNodeParams.kernelParams = reinterpret_cast<void**>(kernelArgs1);
-  kernelNodeParams.extra = nullptr;
-  HIP_CHECK(hipGraphAddKernelNode(&memsetKer_C, graph, nullptr, 0,
-                                                        &kernelNodeParams));
-
-  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_A, graph, nullptr, 0, A_d, A_h,
-                                   Nbytes, hipMemcpyHostToDevice));
-
-  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_B, graph, nullptr, 0, B_d, B_h,
-                                   Nbytes, hipMemcpyHostToDevice));
-
-  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyD2H_C, graph, nullptr, 0, C_h, C_d,
-                                   Nbytes, hipMemcpyDeviceToHost));
-
-  void* kernelArgs2[] = {&A_d, &B_d, &C_d, reinterpret_cast<void *>(&NElem)};
-  kernelNodeParams.func = reinterpret_cast<void *>(HipTest::vectorADD<int>);
-  kernelNodeParams.gridDim = dim3(blocks);
-  kernelNodeParams.blockDim = dim3(threadsPerBlock);
-  kernelNodeParams.sharedMemBytes = 0;
-  kernelNodeParams.kernelParams = reinterpret_cast<void**>(kernelArgs2);
-  kernelNodeParams.extra = nullptr;
-  HIP_CHECK(hipGraphAddKernelNode(&kernel_vecAdd, graph, nullptr, 0,
-                                                        &kernelNodeParams));
+  std::vector<hipGraphNode_t> from_nodes;
+  std::vector<hipGraphNode_t> to_nodes;
+  std::vector<hipGraphNode_t> nodelist;
+  graphNodesCommon(graph, A_h, A_d, B_h, B_d, C_h, C_d, N, from_nodes, to_nodes, nodelist);
 
   // Create dependencies
-  HIP_CHECK(hipGraphAddDependencies(graph, &memset_A, &memcpyH2D_A, 1));
-  HIP_CHECK(hipGraphAddDependencies(graph, &memset_B, &memcpyH2D_B, 1));
-  HIP_CHECK(hipGraphAddDependencies(graph, &memcpyH2D_A, &kernel_vecAdd, 1));
-  HIP_CHECK(hipGraphAddDependencies(graph, &memcpyH2D_B, &kernel_vecAdd, 1));
-  HIP_CHECK(hipGraphAddDependencies(graph, &memsetKer_C, &kernel_vecAdd, 1));
-  HIP_CHECK(hipGraphAddDependencies(graph, &kernel_vecAdd, &memcpyD2H_C, 1));
+  HIP_CHECK(hipGraphAddDependencies(graph, &from_nodes[0], &to_nodes[0], 6));
 
   size_t numEdgesExpected = kNumOfEdges;
   SECTION("Remove some dependencies") {
     // Remove some dependencies
     constexpr size_t numEdgesRemoved = 3;
-    hipGraphNode_t expected_from_nodes[numEdgesRemoved] = {memcpyH2D_A,
-    memcpyH2D_B, memsetKer_C};
-    hipGraphNode_t expected_to_nodes[numEdgesRemoved] = {kernel_vecAdd,
-    kernel_vecAdd, kernel_vecAdd};
+    hipGraphNode_t expected_from_nodes[numEdgesRemoved] = {from_nodes[2],
+    from_nodes[3], from_nodes[4]};
+    hipGraphNode_t expected_to_nodes[numEdgesRemoved] = {to_nodes[2],
+    to_nodes[3], to_nodes[4]};
+
     SECTION("Node by Node") {
-      HIP_CHECK(hipGraphRemoveDependencies(graph, &memcpyH2D_A,
-                                        &kernel_vecAdd, 1));
-      HIP_CHECK(hipGraphRemoveDependencies(graph, &memcpyH2D_B,
-                                        &kernel_vecAdd, 1));
-      HIP_CHECK(hipGraphRemoveDependencies(graph, &memsetKer_C,
-                                        &kernel_vecAdd, 1));
+      HIP_CHECK(hipGraphRemoveDependencies(graph, &from_nodes[2],
+                                        &to_nodes[2], 1));
+      HIP_CHECK(hipGraphRemoveDependencies(graph, &from_nodes[3],
+                                        &to_nodes[3], 1));
+      HIP_CHECK(hipGraphRemoveDependencies(graph, &from_nodes[4],
+                                        &to_nodes[4], 1));
     }
     SECTION("Node lists") {
       HIP_CHECK(hipGraphRemoveDependencies(graph, expected_from_nodes, expected_to_nodes, numEdgesRemoved));
@@ -212,53 +154,20 @@ TEST_CASE("Unit_hipGraphRemoveDependencies_Func_Manual") {
 /**
  * Scenario 2: Validate hipGraphRemoveDependencies for stream captured graph.
  */
-TEST_CASE("Unit_hipGraphRemoveDependencies_Func_StrmCapture") {
-  hipStream_t stream1, stream2, stream3;
-  hipEvent_t forkStreamEvent, memsetEvent1, memsetEvent2;
+TEST_CASE("Unit_hipGraphRemoveDependencies_Positive_StrmCapture") {
   hipGraph_t graph;
   constexpr size_t N = 1024;
-  constexpr size_t Nbytes = N * sizeof(int);
-  constexpr auto blocksPerCU = 6;  // to hide latency
-  constexpr auto threadsPerBlock = 256;
   int *A_d, *B_d, *C_d;
   int *A_h, *B_h, *C_h;
-  size_t NElem{N};
-  int memsetVal{};
 
   HipTest::initArrays(&A_d, &B_d, &C_d, &A_h, &B_h, &C_h, N, false);
-  unsigned blocks = HipTest::setNumBlocks(blocksPerCU, threadsPerBlock, N);
   // Create streams and events
-  HIP_CHECK(hipStreamCreate(&stream1));
-  HIP_CHECK(hipStreamCreate(&stream2));
-  HIP_CHECK(hipStreamCreate(&stream3));
-  HIP_CHECK(hipEventCreate(&forkStreamEvent));
-  HIP_CHECK(hipEventCreate(&memsetEvent1));
-  HIP_CHECK(hipEventCreate(&memsetEvent2));
-  // Begin stream capture
-  HIP_CHECK(hipStreamBeginCapture(stream1, hipStreamCaptureModeGlobal));
-  HIP_CHECK(hipEventRecord(forkStreamEvent, stream1));
-  HIP_CHECK(hipStreamWaitEvent(stream2, forkStreamEvent, 0));
-  HIP_CHECK(hipStreamWaitEvent(stream3, forkStreamEvent, 0));
-  // Add operations to stream3
-  hipLaunchKernelGGL(HipTest::memsetReverse<int>,
-                    dim3(blocks), dim3(threadsPerBlock), 0, stream3,
-                    C_d, memsetVal, NElem);
-  HIP_CHECK(hipEventRecord(memsetEvent1, stream3));
-  // Add operations to stream2
-  HIP_CHECK(hipMemsetAsync(B_d, 0, Nbytes, stream2));
-  HIP_CHECK(hipMemcpyAsync(B_d, B_h, Nbytes, hipMemcpyHostToDevice, stream2));
-  HIP_CHECK(hipEventRecord(memsetEvent2, stream2));
-  // Add operations to stream1
-  HIP_CHECK(hipMemsetAsync(A_d, 0, Nbytes, stream1));
-  HIP_CHECK(hipMemcpyAsync(A_d, A_h, Nbytes, hipMemcpyHostToDevice, stream1));
-  HIP_CHECK(hipStreamWaitEvent(stream1, memsetEvent2, 0));
-  HIP_CHECK(hipStreamWaitEvent(stream1, memsetEvent1, 0));
-  hipLaunchKernelGGL(HipTest::vectorADD<int>,
-                    dim3(blocks), dim3(threadsPerBlock), 0, stream1,
-                    A_d, B_d, C_d, NElem);
-  HIP_CHECK(hipMemcpyAsync(C_h, C_d, Nbytes, hipMemcpyDeviceToHost,
-                           stream1));
-  HIP_CHECK(hipStreamEndCapture(stream1, &graph));
+  StreamsGuard streams(3);
+  EventsGuard events(3);
+
+  // Capture stream
+  captureNodesCommon(graph, A_h, A_d, B_h, B_d, C_h, C_d, N, streams.stream_list(), events.event_list());
+
   hipGraphNode_t* nodes{nullptr};
   size_t numNodes = 0, numEdges = 0;
   HIP_CHECK(hipGraphGetNodes(graph, nodes, &numNodes));
@@ -289,12 +198,6 @@ TEST_CASE("Unit_hipGraphRemoveDependencies_Func_StrmCapture") {
   REQUIRE(expected_num_edges == numEdges);
   // Destroy
   HIP_CHECK(hipGraphDestroy(graph));
-  HIP_CHECK(hipStreamDestroy(stream1));
-  HIP_CHECK(hipStreamDestroy(stream2));
-  HIP_CHECK(hipStreamDestroy(stream3));
-  HIP_CHECK(hipEventDestroy(forkStreamEvent));
-  HIP_CHECK(hipEventDestroy(memsetEvent1));
-  HIP_CHECK(hipEventDestroy(memsetEvent2));
   HipTest::freeArrays(A_d, B_d, C_d, A_h, B_h, C_h, false);
 }
 
@@ -302,7 +205,7 @@ TEST_CASE("Unit_hipGraphRemoveDependencies_Func_StrmCapture") {
  * Scenario 4: Dynamically modify dependencies in a graph using
  * hipGraphRemoveDependencies and verify the computation.
  */
-TEST_CASE("Unit_hipGraphRemoveDependencies_ChangeComputeFunc") {
+TEST_CASE("Unit_hipGraphRemoveDependencies_Positive_ChangeComputeFunc") {
   hipStream_t streamForGraph;
   HIP_CHECK(hipStreamCreate(&streamForGraph));
   constexpr size_t N = 1024;

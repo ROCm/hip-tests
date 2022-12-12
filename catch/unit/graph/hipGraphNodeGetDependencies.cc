@@ -36,131 +36,19 @@ Argument Validation:
 4) Pass node as un-initialized/invalid parameter and verify api returns error code.
 
 */
+#include <functional>
 
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 #include <hip_test_kernels.hh>
 
-static __global__ void updateResult(int* C_d, int* Res_d, int val,
-                                                  int64_t NELEM) {
-  size_t offset = (blockIdx.x * blockDim.x + threadIdx.x);
-  size_t stride = blockDim.x * gridDim.x;
-
-  for (int64_t i = NELEM - stride + offset; i >= 0; i -= stride) {
-    Res_d[i] = C_d[i] + val;
-  }
-}
-
-static __global__ void vectorSum(const int* A_d, const int* B_d,
-                                 const int* C_d, int* Res_d, size_t NELEM) {
-  size_t offset = (blockIdx.x * blockDim.x + threadIdx.x);
-  size_t stride = blockDim.x * gridDim.x;
-
-  for (size_t i = offset; i < NELEM; i += stride) {
-    Res_d[i] = A_d[i] + B_d[i] + C_d[i];
-  }
-}
-
-/**
- * Verify api when GetDependencies is requested
- * for actual number of nodes.
- */
-static void queryActualNumOfDeps(const std::vector<hipGraphNode_t> &Nlist,
-                             hipGraphNode_t kernel_vecAdd, size_t numDeps) {
-  hipGraphNode_t* depnodes;
-  int numBytes = sizeof(hipGraphNode_t) * numDeps;
-  depnodes = reinterpret_cast<hipGraphNode_t *>(malloc(numBytes));
-  REQUIRE(depnodes != nullptr);
-  HIP_CHECK(hipGraphNodeGetDependencies(kernel_vecAdd, depnodes, &numDeps));
-  REQUIRE(numDeps == Nlist.size());
-
-  // Verify all dependencies are present in the node entries returned
-  for (auto Node : Nlist) {
-    bool found = false;
-    for (size_t i = 0; i < numDeps; i++) {
-      if (Node == depnodes[i]) {
-        found = true;
-        break;
-      }
-    }
-
-    if (!found) {
-      INFO("Dependency node " << Node << " not present in returned list");
-      REQUIRE(false);
-    }
-  }
-  free(depnodes);
-}
-
-/**
- * Verify api when GetDependencies queried
- * for greater number than actual number of nodes.
- */
-static void queryGreaterNumOfDeps(const std::vector<hipGraphNode_t> &Nlist,
-                             hipGraphNode_t kernel_vecAdd, size_t numDeps) {
-  constexpr auto addlEntries = 4;
-  hipGraphNode_t* depnodes;
-  size_t totDeps = numDeps + addlEntries;
-  int numBytes = sizeof(hipGraphNode_t) * totDeps;
-  depnodes = reinterpret_cast<hipGraphNode_t *>(malloc(numBytes));
-  REQUIRE(depnodes != nullptr);
-  HIP_CHECK(hipGraphNodeGetDependencies(kernel_vecAdd, depnodes, &totDeps));
-  REQUIRE(totDeps == Nlist.size());
-
-  for (auto i = numDeps; i < numDeps + addlEntries; i++) {
-    REQUIRE(depnodes[i] == nullptr);
-  }
-
-  // Verify all dependencies are present in the node entries returned
-  for (auto Node : Nlist) {
-    bool found = false;
-    for (size_t i = 0; i < numDeps; i++) {
-      if (Node == depnodes[i]) {
-        found = true;
-        break;
-      }
-    }
-
-    if (!found) {
-      INFO("Dependency node " << Node << " not present in returned list");
-      REQUIRE(false);
-    }
-  }
-  free(depnodes);
-}
-
-/**
- * Verify api when GetDependencies queried
- * for lesser number than actual number of nodes.
- */
-static void queryLesserNumOfDeps(const std::vector<hipGraphNode_t> &Nlist,
-                             hipGraphNode_t kernel_vecAdd, size_t numDeps) {
-  size_t totDeps = numDeps - 1;
-  hipGraphNode_t* depnodes;
-  int numBytes = sizeof(hipGraphNode_t) * totDeps;
-  size_t count{};
-  depnodes = reinterpret_cast<hipGraphNode_t *>(malloc(numBytes));
-  REQUIRE(depnodes != nullptr);
-  HIP_CHECK(hipGraphNodeGetDependencies(kernel_vecAdd, depnodes, &totDeps));
-  REQUIRE(totDeps == Nlist.size() - 1);
-
-  // Verify all dependencies are present in the node entries returned
-  for (auto Node : Nlist) {
-    for (size_t i = 0; i < totDeps; i++) {
-      if (Node == depnodes[i]) {
-        count++;
-        break;
-      }
-    }
-  }
-  REQUIRE(count == totDeps);
-  free(depnodes);
-}
+#include "graph_dependency_common.hh"
 
 /**
  * Functional Test for getting dependencies of node in graph and verifying execution
  */
 TEST_CASE("Unit_hipGraphNodeGetDependencies_Positive_Functional") {
+  using namespace std::placeholders;
   constexpr size_t N = 1024;
   constexpr size_t Nbytes = N * sizeof(int);
   constexpr auto blocksPerCU = 6;  // to hide latency
@@ -217,7 +105,7 @@ TEST_CASE("Unit_hipGraphNodeGetDependencies_Positive_Functional") {
                                         reinterpret_cast<void *>(&NElem)};
   memset(&kernelNodeParams, 0, sizeof(kernelNodeParams));
   kernelNodeParams.func =
-                       reinterpret_cast<void *>(updateResult);
+                       reinterpret_cast<void *>(updateResult<int>);
   kernelNodeParams.gridDim = dim3(blocks);
   kernelNodeParams.blockDim = dim3(threadsPerBlock);
   kernelNodeParams.sharedMemBytes = 0;
@@ -232,7 +120,7 @@ TEST_CASE("Unit_hipGraphNodeGetDependencies_Positive_Functional") {
                                         reinterpret_cast<void *>(&NElem)};
   memset(&kernelNodeParams, 0, sizeof(kernelNodeParams));
   kernelNodeParams.func =
-                       reinterpret_cast<void *>(updateResult);
+                       reinterpret_cast<void *>(updateResult<int>);
   kernelNodeParams.gridDim = dim3(blocks);
   kernelNodeParams.blockDim = dim3(threadsPerBlock);
   kernelNodeParams.sharedMemBytes = 0;
@@ -247,7 +135,7 @@ TEST_CASE("Unit_hipGraphNodeGetDependencies_Positive_Functional") {
                                         reinterpret_cast<void *>(&NElem)};
   memset(&kernelNodeParams, 0, sizeof(kernelNodeParams));
   kernelNodeParams.func =
-                       reinterpret_cast<void *>(updateResult);
+                       reinterpret_cast<void *>(updateResult<int>);
   kernelNodeParams.gridDim = dim3(blocks);
   kernelNodeParams.blockDim = dim3(threadsPerBlock);
   kernelNodeParams.sharedMemBytes = 0;
@@ -262,7 +150,7 @@ TEST_CASE("Unit_hipGraphNodeGetDependencies_Positive_Functional") {
                                              reinterpret_cast<void *>(&NElem)};
   memset(&kernelNodeParams, 0, sizeof(kernelNodeParams));
   kernelNodeParams.func =
-                       reinterpret_cast<void *>(vectorSum);
+                       reinterpret_cast<void *>(vectorSum<int>);
   kernelNodeParams.gridDim = dim3(blocks);
   kernelNodeParams.blockDim = dim3(threadsPerBlock);
   kernelNodeParams.sharedMemBytes = 0;
@@ -277,16 +165,18 @@ TEST_CASE("Unit_hipGraphNodeGetDependencies_Positive_Functional") {
   REQUIRE(numDeps == nodelist.size());
 
   SECTION("Validate number of dependencies when numDeps = num of nodes") {
-    // Verify api When Dependencies are requested for actual number of nodes.
-    queryActualNumOfDeps(nodelist, kernel_vecAdd, numDeps);
-  }  
-
-  SECTION("Validate number of dependencies when numDeps > num of nodes") {
-    queryGreaterNumOfDeps(nodelist, kernel_vecAdd, numDeps);
+    validateGraphNodesCommon(std::bind(hipGraphNodeGetDependencies, kernel_vecAdd, _1, _2),
+                                  nodelist, numDeps, GraphGetNodesTest::equalNumNodes);
   }
 
   SECTION("Validate number of dependencies when numDeps < num of nodes") {
-    queryLesserNumOfDeps(nodelist, kernel_vecAdd, numDeps);
+    validateGraphNodesCommon(std::bind(hipGraphNodeGetDependencies, kernel_vecAdd, _1, _2),
+                                  nodelist, numDeps - 1, GraphGetNodesTest::lesserNumNodes);
+  }
+
+  SECTION("Validate number of dependencies when numDeps > num of nodes") {
+    validateGraphNodesCommon(std::bind(hipGraphNodeGetDependencies, kernel_vecAdd, _1, _2),
+                                  nodelist, numDeps + 1, GraphGetNodesTest::greaterNumNodes);
   }
 
   SECTION("Validate number of dependecies is 0 when passed node is a root node") {
@@ -335,7 +225,6 @@ TEST_CASE("Unit_hipGraphNodeGetDependencies_Negative_Parameters") {
   const int numBytes = 100;
   size_t numDeps{1};
   hipGraphNode_t memsetNode{}, depnodes{};
-  hipError_t ret{};
   char *A_d;
 
   HIP_CHECK(hipGraphCreate(&graph, 0));

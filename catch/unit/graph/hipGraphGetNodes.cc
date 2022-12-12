@@ -35,105 +35,41 @@ Argument Validation ::
 4) Pass numNodes less than actual number of nodes. Expect api to populate requested number of node entries
 and does update numNodes.
 */
+#include <functional>
 
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 #include <hip_test_kernels.hh>
 
+#include "graph_dependency_common.hh"
+
 namespace {
-inline constexpr size_t kNumOfNodes = 4;
+inline constexpr size_t kNumOfNodes = 7;
 }  // anonymous namespace
-
-/**
- * Local Function to validate number of nodes.
- */
-static void validate_hipGraphGetNodes(size_t numNodesToGet,
-                                        int testnum,
-                                        std::vector<hipGraphNode_t> nodelist,
-                                        hipGraph_t graph) {
-  size_t numNodes = numNodesToGet;
-  hipGraphNode_t *nodes = new hipGraphNode_t[numNodes]{};
-  int found_count = 0;
-  HIP_CHECK(hipGraphGetNodes(graph, nodes, &numNodes));
-  // Verify added nodes are present in the node entries returned
-  for (size_t i = 0; i < kNumOfNodes; i++) {
-    for (size_t j = 0; j < numNodes; j++) {
-      if (nodelist[i] == nodes[j]) {
-        found_count++;
-        break;
-      }
-    }
-  }
-  // Validate
-  if (testnum == 0) {
-    REQUIRE(found_count == kNumOfNodes);
-  } else if (testnum == 1) {
-    // Verify numNodes is unchanged
-    REQUIRE(numNodes == numNodesToGet);
-    REQUIRE(found_count == numNodesToGet);
-  } else if (testnum == 2) {
-    // Verify numNodes is reset to actual number of nodes
-    REQUIRE(numNodes == nodelist.size());
-    REQUIRE(found_count == kNumOfNodes);
-    // Verify additional entries in nodes are set to nullptr
-    for (auto i = numNodes; i < numNodesToGet; i++) {
-      REQUIRE(nodes[i] == nullptr);
-    }
-  }
-
-  delete[] nodes;
-}
-
 
 /**
  * Functional Test for hipGraphGetNodes API fetching node list
  */
 TEST_CASE("Unit_hipGraphGetNodes_Positive_Functional") {
+  using namespace std::placeholders;
   constexpr size_t N = 1024;
-  constexpr size_t Nbytes = N * sizeof(int);
-  constexpr auto blocksPerCU = 6;  // to hide latency
-  constexpr auto threadsPerBlock = 256;
   hipGraph_t graph;
-  hipGraphNode_t memcpyNode, kernelNode;
-  hipKernelNodeParams kernelNodeParams{};
   hipStream_t streamForGraph;
   int *A_d, *B_d, *C_d;
   int *A_h, *B_h, *C_h;
-  std::vector<hipGraphNode_t> dependencies, nodelist;
   hipGraphExec_t graphExec;
-  size_t NElem{N};
 
   HIP_CHECK(hipStreamCreate(&streamForGraph));
-  HipTest::initArrays(&A_d, &B_d, &C_d, &A_h, &B_h, &C_h, N, false);
-  unsigned blocks = HipTest::setNumBlocks(blocksPerCU, threadsPerBlock, N);
-
   HIP_CHECK(hipGraphCreate(&graph, 0));
-  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyNode, graph, NULL, 0, A_d, A_h,
-                                   Nbytes, hipMemcpyHostToDevice));
-  dependencies.push_back(memcpyNode);
-  nodelist.push_back(memcpyNode);
-  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyNode, graph, NULL, 0, B_d, B_h,
-                                   Nbytes, hipMemcpyHostToDevice));
-  dependencies.push_back(memcpyNode);
-  nodelist.push_back(memcpyNode);
+  HipTest::initArrays(&A_d, &B_d, &C_d, &A_h, &B_h, &C_h, N, false);
 
-  void* kernelArgs[] = {&A_d, &B_d, &C_d, reinterpret_cast<void *>(&NElem)};
-  kernelNodeParams.func = reinterpret_cast<void *>(HipTest::vectorADD<int>);
-  kernelNodeParams.gridDim = dim3(blocks);
-  kernelNodeParams.blockDim = dim3(threadsPerBlock);
-  kernelNodeParams.sharedMemBytes = 0;
-  kernelNodeParams.kernelParams = reinterpret_cast<void**>(kernelArgs);
-  kernelNodeParams.extra = nullptr;
-  HIP_CHECK(hipGraphAddKernelNode(&kernelNode, graph, dependencies.data(),
-                                  dependencies.size(), &kernelNodeParams));
-  dependencies.clear();
-  dependencies.push_back(kernelNode);
-  nodelist.push_back(kernelNode);
-  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyNode, graph, dependencies.data(),
-                                    dependencies.size(), C_h, C_d,
-                                    Nbytes, hipMemcpyDeviceToHost));
-  nodelist.push_back(memcpyNode);
+  std::vector<hipGraphNode_t> from_nodes;
+  std::vector<hipGraphNode_t> to_nodes;
+  std::vector<hipGraphNode_t> nodelist;
+  graphNodesCommon(graph, A_h, A_d, B_h, B_d, C_h, C_d, N, from_nodes, to_nodes, nodelist);
 
+  // Create dependencies
+  HIP_CHECK(hipGraphAddDependencies(graph, &from_nodes[0], &to_nodes[0], 6));
   
   size_t numNodes{};
   // Get numNodes by passing nodes as nullptr.
@@ -147,20 +83,20 @@ TEST_CASE("Unit_hipGraphGetNodes_Positive_Functional") {
 
   // Scenario 2
   SECTION("Validate node list when numNodes = num of nodes") {
-    validate_hipGraphGetNodes(kNumOfNodes, 0,
-                                    nodelist, graph);
+    validateGraphNodesCommon(std::bind(hipGraphGetNodes, graph, _1, _2),
+                                  nodelist, kNumOfNodes, GraphGetNodesTest::equalNumNodes);
   }
 
   // Scenario 3
   SECTION("Validate node list when numNodes < num of nodes") {
-    validate_hipGraphGetNodes(kNumOfNodes - 1, 1,
-                                    nodelist, graph);
+    validateGraphNodesCommon(std::bind(hipGraphGetNodes, graph, _1, _2),
+                                  nodelist, kNumOfNodes - 1, GraphGetNodesTest::lesserNumNodes);
   }
 
   // Scenario 4
   SECTION("Validate node list when numNodes > num of nodes") {
-    validate_hipGraphGetNodes(kNumOfNodes + 1, 2,
-                                    nodelist, graph);
+    validateGraphNodesCommon(std::bind(hipGraphGetNodes, graph, _1, _2),
+                                  nodelist, kNumOfNodes + 1, GraphGetNodesTest::greaterNumNodes);
   }
 
   // Scenario 5
@@ -193,40 +129,29 @@ TEST_CASE("Unit_hipGraphGetNodes_Positive_Functional") {
 TEST_CASE("Unit_hipGraphGetNodes_Positive_CapturedStream") {
   hipGraph_t graph{nullptr};
   hipGraphExec_t graphExec{nullptr};
-  constexpr unsigned blocks = 512;
-  constexpr unsigned threadsPerBlock = 256;
   constexpr size_t N = 1000000;
-  size_t Nbytes = N * sizeof(float);
-  constexpr int numMemcpy{2}, numKernel{1}, numMemset{1};
+  constexpr int numMemcpy{3}, numKernel{2}, numMemset{2};
   int cntMemcpy{}, cntKernel{}, cntMemset{};
-  hipStream_t stream, streamForGraph;
+  hipStream_t streamForGraph;
   hipGraphNodeType nodeType;
-  float *A_d, *C_d;
-  float *A_h, *C_h;
+  float *A_d, *B_d, *C_d;
+  float *A_h, *B_h, *C_h;
 
-  A_h = reinterpret_cast<float*>(malloc(Nbytes));
-  C_h = reinterpret_cast<float*>(malloc(Nbytes));
-  REQUIRE(A_h != nullptr);
-  REQUIRE(C_h != nullptr);
-  HIP_CHECK(hipMalloc(&A_d, Nbytes));
-  HIP_CHECK(hipMalloc(&C_d, Nbytes));
-  REQUIRE(A_d != nullptr);
-  REQUIRE(C_d != nullptr);
-
+  HipTest::initArrays(&A_d, &B_d, &C_d, &A_h, &B_h, &C_h, N, false);
   HIP_CHECK(hipStreamCreate(&streamForGraph));
+
   // Initialize input buffer
   for (size_t i = 0; i < N; ++i) {
-      A_h[i] = 3.146f + i;  // Pi
+    A_h[i] = 3.146f + i;  // Pi
+    B_h[i] = 3.146f + i;  // Pi
   }
 
-  HIP_CHECK(hipStreamCreate(&stream));
-  HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
-  HIP_CHECK(hipMemcpyAsync(A_d, A_h, Nbytes, hipMemcpyHostToDevice, stream));
-  HIP_CHECK(hipMemsetAsync(C_d, 0, Nbytes, stream));
-  hipLaunchKernelGGL(HipTest::vector_square, dim3(blocks),
-                              dim3(threadsPerBlock), 0, stream, A_d, C_d, N);
-  HIP_CHECK(hipMemcpyAsync(C_h, C_d, Nbytes, hipMemcpyDeviceToHost, stream));
-  HIP_CHECK(hipStreamEndCapture(stream, &graph));
+  // Create streams and events
+  StreamsGuard streams(3);
+  EventsGuard events(3);
+
+  // Capture stream
+  captureNodesCommon(graph, A_h, A_d, B_h, B_d, C_h, C_d, N, streams.stream_list(), events.event_list());
   REQUIRE(graph != nullptr);
 
   size_t numNodes{};
@@ -272,22 +197,18 @@ TEST_CASE("Unit_hipGraphGetNodes_Positive_CapturedStream") {
 
   // Validate the computation
   for (size_t i = 0; i < N; i++) {
-    if (C_h[i] != A_h[i] * A_h[i]) {
-      INFO("A and C not matching at " << i << " C_h[i] " << C_h[i]
-                                           << " A_h[i] " << A_h[i]);
+    if (C_h[i] != A_h[i] + B_h[i]) {
+      INFO("C not matching at " << i << " C_h[i] " << C_h[i]
+                                           << " A_h[i] + B_h[i] " << A_h[i] + B_h[i]);
       REQUIRE(false);
     }
   }
 
   HIP_CHECK(hipStreamDestroy(streamForGraph));
-  HIP_CHECK(hipStreamDestroy(stream));
   HIP_CHECK(hipGraphExecDestroy(graphExec));
   HIP_CHECK(hipGraphDestroy(graph));
-  free(A_h);
-  free(C_h);
+  HipTest::freeArrays(A_d, B_d, C_d, A_h, B_h, C_h, false);
   free(nodes);
-  HIP_CHECK(hipFree(A_d));
-  HIP_CHECK(hipFree(C_d));
 }
 
 /**
@@ -296,31 +217,22 @@ TEST_CASE("Unit_hipGraphGetNodes_Positive_CapturedStream") {
  * Test will include both negative and positive scenarios.
  */
 TEST_CASE("Unit_hipGraphGetNodes_Negative_Parameters") {
-  hipStream_t stream{nullptr};
   hipGraph_t graph{nullptr};
-  constexpr unsigned blocks = 512;
-  constexpr unsigned threadsPerBlock = 256;
-  constexpr size_t N = 1000000;
-  size_t Nbytes = N * sizeof(float), numNodes{};
-  float *A_d, *C_d;
-  float *A_h, *C_h;
-  A_h = reinterpret_cast<float*>(malloc(Nbytes));
-  C_h = reinterpret_cast<float*>(malloc(Nbytes));
-  REQUIRE(A_h != nullptr);
-  REQUIRE(C_h != nullptr);
-  HIP_CHECK(hipMalloc(&A_d, Nbytes));
-  HIP_CHECK(hipMalloc(&C_d, Nbytes));
-  REQUIRE(A_d != nullptr);
-  REQUIRE(C_d != nullptr);
+  size_t numNodes{0};
 
-  HIP_CHECK(hipStreamCreate(&stream));
-  HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
-  HIP_CHECK(hipMemcpyAsync(A_d, A_h, Nbytes, hipMemcpyHostToDevice, stream));
-  HIP_CHECK(hipMemsetAsync(C_d, 0, Nbytes, stream));
-  hipLaunchKernelGGL(HipTest::vector_square, dim3(blocks),
-                              dim3(threadsPerBlock), 0, stream, A_d, C_d, N);
-  HIP_CHECK(hipMemcpyAsync(C_h, C_d, Nbytes, hipMemcpyDeviceToHost, stream));
-  HIP_CHECK(hipStreamEndCapture(stream, &graph));
+  HIP_CHECK(hipGraphCreate(&graph, 0));
+
+  hipEvent_t event_start, event_end;
+  HIP_CHECK(hipEventCreateWithFlags(&event_start, hipEventDisableTiming));
+  HIP_CHECK(hipEventCreateWithFlags(&event_end, hipEventDisableTiming));
+
+  // create event record nodes
+  hipGraphNode_t event_node_start, event_node_end;
+  HIP_CHECK(hipGraphAddEventRecordNode(&event_node_start, graph, nullptr, 0,
+                                                            event_start));
+  HIP_CHECK(hipGraphAddEventRecordNode(&event_node_end, graph, nullptr, 0,
+                                                            event_end));
+
   HIP_CHECK(hipGraphGetNodes(graph, nullptr, &numNodes));
   INFO("Num of nodes returned by GetNodes : " << numNodes);
 
@@ -342,10 +254,7 @@ TEST_CASE("Unit_hipGraphGetNodes_Negative_Parameters") {
   }
 
   HIP_CHECK(hipGraphDestroy(graph));
-  HIP_CHECK(hipStreamDestroy(stream));
-  free(A_h);
-  free(C_h);
+  HIP_CHECK(hipEventDestroy(event_end));
+  HIP_CHECK(hipEventDestroy(event_start));
   free(nodes);
-  HIP_CHECK(hipFree(A_d));
-  HIP_CHECK(hipFree(C_d));
 }

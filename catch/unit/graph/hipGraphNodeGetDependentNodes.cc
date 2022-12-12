@@ -152,7 +152,7 @@ TEST_CASE("Unit_hipGraphNodeGetDependentNodes_Positive_Functional") {
     validateGraphNodesCommon(std::bind(hipGraphNodeGetDependentNodes, kernel_vecSqr, _1, _2),
                              nodelist, numDeps + 1, GraphGetNodesTest::greaterNumNodes);
   }
-
+#if HT_NVIDIA // EXSWHTEC-218
   SECTION("Validate number of dependent nodes when passed node is the last in graph") {
     hipGraphNode_t depnodes;
     HIP_CHECK(hipGraphNodeGetDependentNodes(kernelmod3, &depnodes, &numDeps));
@@ -160,7 +160,7 @@ TEST_CASE("Unit_hipGraphNodeGetDependentNodes_Positive_Functional") {
     // Api expected to return success and no dependent nodes.
     REQUIRE(numDeps == 0);
   }
-
+#endif
   // Compute sum from all dependent nodes
   void* kernelArgsAdd[] = {&Res1_d, &Res2_d, &Res3_d, &Sum_d, reinterpret_cast<void*>(&NElem)};
   memset(&kernelNodeParams, 0, sizeof(kernelNodeParams));

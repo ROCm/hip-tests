@@ -51,9 +51,11 @@ TEST_CASE("Unit_hipMemcpy2D_Positive_Synchronization_Behavior") {
     Memcpy2DDtoHPinnedSyncBehavior(hipMemcpy2D, true);
   }
 
+#if HT_NVIDIA // Disabled on AMD due to defect - 
   SECTION("Device to Device") { Memcpy2DDtoDSyncBehavior(hipMemcpy2D, false); }
 
   SECTION("Host to Host") { Memcpy2DHtoHSyncBehavior(hipMemcpy2D, true); }
+#endif
 }
 
 TEST_CASE("Unit_hipMemcpy2D_Positive_Parameters") {
@@ -103,11 +105,13 @@ TEST_CASE("Unit_hipMemcpy2D_Negative_Parameters") {
           hipErrorInvalidValue);
     }
 
+#if HT_NVIDIA // Disabled on AMD due to defect - 
     SECTION("Invalid MemcpyKind") {
       HIP_CHECK_ERROR(
           hipMemcpy2D(dst, dpitch, src, spitch, width, height, static_cast<hipMemcpyKind>(-1)),
           hipErrorInvalidMemcpyDirection);
     }
+#endif
   };
 
   SECTION("Host to Device") {

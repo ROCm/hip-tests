@@ -32,6 +32,7 @@ class HipAPIGroup{
   std::string getName() const;
   int getTotalNumberOfAPIs() const;
   int getTotalNumberOfCalls() const;
+  int getTotalNumberOfTestCases() const;
   int getNumberOfCalledAPIs() const;
   int getNumberOfNotCalledAPIs() const;
   int getNumberOfDeprecatedAPIs() const;
@@ -44,6 +45,7 @@ class HipAPIGroup{
   int total_number_of_apis;
   int number_of_api_calls;
   float percentage_of_called_apis;
+  int number_of_test_cases;
   std::string parent_group_name;
   std::vector<HipAPI> called_apis;
   std::vector<HipAPI> not_called_apis;

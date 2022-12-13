@@ -24,13 +24,15 @@ THE SOFTWARE.
 
 BasicAPIStats::BasicAPIStats(std::vector<HipAPIGroup>& hip_api_groups):
     number_of_called_apis{0}, number_of_not_called_apis{0},
-    number_of_deprecated_apis{0}, total_number_of_api_calls{0}
+    number_of_deprecated_apis{0}, total_number_of_api_calls{0},
+    total_number_of_test_cases{0}
 {
   for (auto const& hip_api_group: hip_api_groups) {
     number_of_called_apis += hip_api_group.getNumberOfCalledAPIs();
     number_of_not_called_apis += hip_api_group.getNumberOfNotCalledAPIs();
     number_of_deprecated_apis += hip_api_group.getNumberOfDeprecatedAPIs();
     total_number_of_api_calls += hip_api_group.getTotalNumberOfCalls();
+    total_number_of_test_cases += hip_api_group.getTotalNumberOfTestCases();
   }
   total_number_of_apis = number_of_called_apis + number_of_not_called_apis + number_of_deprecated_apis;
   tests_coverage_percentage = 100.f * number_of_called_apis / (number_of_called_apis + number_of_not_called_apis);
@@ -162,6 +164,14 @@ void generateHTMLReportFiles(std::vector<HipAPI>& hip_apis, std::vector<HipAPIGr
 
   coverage_report << five_tabs << "<tr>";
   coverage_report << six_tabs << "<td></td>";
+  coverage_report << six_tabs << "<td class=\"headerValue\">" << hip_rtc_header_file << "</td>";
+  coverage_report << six_tabs << "<td class=\"headerItem\">Total number of test cases:</td>";
+  coverage_report << six_tabs << "<td class=\"headerCovTableEntry\">" << basic_stats.total_number_of_test_cases << "</td>";
+  coverage_report << six_tabs << "<td></td>";
+  coverage_report << five_tabs << "</tr>";
+
+  coverage_report << five_tabs << "<tr>";
+  coverage_report << six_tabs << "<td></td>";
   coverage_report << six_tabs << "<td></td>";
   coverage_report << six_tabs << "<td class=\"headerItem\">HIP APIs that are called at least once:</td>";
   coverage_report << six_tabs << "<td class=\"headerCovTableEntry\">" << basic_stats.number_of_called_apis << "</td>";
@@ -217,7 +227,8 @@ void generateHTMLReportFiles(std::vector<HipAPI>& hip_apis, std::vector<HipAPIGr
   coverage_report << one_tab << "<center>";
   coverage_report << one_tab << "<table width=\"60%\" cellpadding=1 cellspacing=1 border=0>";
   coverage_report << two_tabs << "<tr>";
-  coverage_report << three_tabs << "<td width=\"40%\"><br></td>";
+  coverage_report << three_tabs << "<td width=\"30%\"><br></td>";
+  coverage_report << three_tabs << "<td width=\"10%\"></td>";
   coverage_report << three_tabs << "<td width=\"10%\"></td>";
   coverage_report << three_tabs << "<td width=\"10%\"></td>";
   coverage_report << three_tabs << "<td width=\"10%\"></td>";
@@ -231,6 +242,7 @@ void generateHTMLReportFiles(std::vector<HipAPI>& hip_apis, std::vector<HipAPIGr
   coverage_report << three_tabs << "<td class=\"tableHead\">Module</td>";
   coverage_report << three_tabs << "<td class=\"tableHead\">HIP APIs</td>";
   coverage_report << three_tabs << "<td class=\"tableHead\">HIP API Calls</td>";
+  coverage_report << three_tabs << "<td class=\"tableHead\">Test cases</td>";
   coverage_report << three_tabs << "<td class=\"tableHead\">Called APIs</td>";
   coverage_report << three_tabs << "<td class=\"tableHead\">Not called APIs</td>";
   coverage_report << three_tabs << "<td class=\"tableHead\">Deprecated APIs</td>";
@@ -256,6 +268,7 @@ void generateHTMLReportFiles(std::vector<HipAPI>& hip_apis, std::vector<HipAPIGr
   coverage_report << three_tabs << "<td></td>";
   coverage_report << three_tabs << "<td class=\"headerCovTableEntry\">" << basic_stats.total_number_of_apis << "</td>";
   coverage_report << three_tabs << "<td class=\"headerCovTableEntry\">" << basic_stats.total_number_of_api_calls << "</td>";
+  coverage_report << three_tabs << "<td class=\"headerCovTableEntry\">" << basic_stats.total_number_of_test_cases << "</td>";
   coverage_report << three_tabs << "<td class=\"headerCovTableEntry\">" << basic_stats.number_of_called_apis << "</td>";
   coverage_report << three_tabs << "<td class=\"headerCovTableEntry\">" << basic_stats.number_of_not_called_apis << "</td>";
   coverage_report << three_tabs << "<td class=\"headerCovTableEntry\">" << basic_stats.number_of_deprecated_apis << "</td>";

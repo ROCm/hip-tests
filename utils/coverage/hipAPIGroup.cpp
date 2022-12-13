@@ -27,7 +27,8 @@ bool operator==(const HipAPIGroup& l_hip_api_group, const HipAPIGroup& r_hip_api
 }
 
 HipAPIGroup::HipAPIGroup(std::string group_name, std::vector<HipAPI>& hip_apis):
-    group_name{group_name}, number_of_api_calls{0}, percentage_of_called_apis{0.f}, total_number_of_apis{0}
+    group_name{group_name}, number_of_api_calls{0}, percentage_of_called_apis{0.f},
+    total_number_of_apis{0}, number_of_test_cases{0}
 {
   for (auto const& hip_api: hip_apis) {
     if (hip_api.getGroupName() != group_name) {
@@ -45,6 +46,7 @@ HipAPIGroup::HipAPIGroup(std::string group_name, std::vector<HipAPI>& hip_apis):
     }
 
     number_of_api_calls += hip_api.getNumberOfCalls();
+    number_of_test_cases += hip_api.getNumberOfTestCases();
   }
 
   total_number_of_apis = called_apis.size() + not_called_apis.size() + deprecated_apis.size();
@@ -65,6 +67,10 @@ int HipAPIGroup::getTotalNumberOfAPIs() const {
 
 int HipAPIGroup::getTotalNumberOfCalls() const {
   return number_of_api_calls;
+}
+
+int HipAPIGroup::getTotalNumberOfTestCases() const {
+  return number_of_test_cases;
 }
 
 int HipAPIGroup::getNumberOfCalledAPIs() const {
@@ -156,6 +162,7 @@ std::string HipAPIGroup::getBasicStatsHTML() const
   html_object << three_tabs << "<td class=\"coverFile\"><a href=\"testModules/" << group_name << ".html\">" << group_name << "</a></td>";
   html_object << three_tabs << "<td class=\"" << font_class << "\">" << total_number_of_apis << "</td>";
   html_object << three_tabs << "<td class=\"" << font_class << "\">" << number_of_api_calls << "</td>";
+  html_object << three_tabs << "<td class=\"" << font_class << "\">" << number_of_test_cases << "</td>";
   html_object << three_tabs << "<td class=\"" << font_class << "\">" << called_apis.size() << "</td>";
   html_object << three_tabs << "<td class=\"" << font_class << "\">" << not_called_apis.size() << "</td>";
   html_object << three_tabs << "<td class=\"" << font_class << "\">" << deprecated_apis.size() << "</td>";
@@ -206,6 +213,12 @@ std::string HipAPIGroup::createHTMLReport() const
   html_report << five_tabs << "<tr>";
   html_report << six_tabs << "<td class=\"headerItem\">HIP API calls within test source files:</td>";
   html_report << six_tabs << "<td class=\"headerCovTableEntry\">" << number_of_api_calls << "</td>";
+  html_report << six_tabs << "<td></td>";
+  html_report << five_tabs << "</tr>";
+
+  html_report << five_tabs << "<tr>";
+  html_report << six_tabs << "<td class=\"headerItem\">Total number of test cases:</td>";
+  html_report << six_tabs << "<td class=\"headerCovTableEntry\">" << number_of_test_cases << "</td>";
   html_report << six_tabs << "<td></td>";
   html_report << five_tabs << "</tr>";
 

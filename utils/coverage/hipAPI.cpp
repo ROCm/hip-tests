@@ -34,7 +34,7 @@ bool operator<(const HipAPI& l_hip_api, const HipAPI& r_hip_api) {
 }
 
 HipAPI::HipAPI(std::string api_name, bool deprecated_flag, std::string api_group_name):
-  api_name{api_name}, number_of_calls{0}, deprecated{deprecated_flag}, api_group_name{api_group_name} {}
+  api_name{api_name}, deprecated{deprecated_flag}, api_group_name{api_group_name} {}
 
 std::string HipAPI::getName() const {
   return api_name;
@@ -76,11 +76,8 @@ std::string HipAPI::getBasicStatsXML() const
     xml_node << "\t\t\t<NAME>" << "[DEPRECATED] " << api_name << "</NAME>\n";
   }
 
-  if (number_of_calls) {
-    xml_node << "\t\t\t<NUMBER-OF-API-CALLS>" << number_of_calls << "</NUMBER-OF-API-CALLS>\n";
-  }
-
   if (!file_occurrences.empty()) {
+    xml_node << "\t\t\t<NUMBER-OF-API-CALLS>" << file_occurrences.size() << "</NUMBER-OF-API-CALLS>\n";
     xml_node << "\t\t\t<FILE-OCCURRENCES>\n";
     for (auto const& file_occurrence: file_occurrences) {
       xml_node << "\t\t\t\t<FILE-OCCURRENCE>" << file_occurrence.file_name << ":" << file_occurrence.line_number << "</FILE-OCCURRENCE>\n";
@@ -124,7 +121,14 @@ std::string HipAPI::createHTMLReport() const {
 
   html_report << five_tabs << "<tr>";
   html_report << six_tabs << "<td class=\"headerItem\">Calls within test source files:</td>";
-  html_report << six_tabs << "<td class=\"headerCovTableEntry\">" << number_of_calls << "</td>";
+  html_report << six_tabs << "<td class=\"headerCovTableEntry\">" << file_occurrences.size() << "</td>";
+  html_report << six_tabs << "<td></td>";
+  html_report << six_tabs << "<td></td>";
+  html_report << five_tabs << "</tr>";
+
+  html_report << five_tabs << "<tr>";
+  html_report << six_tabs << "<td class=\"headerItem\">Number of test cases:</td>";
+  html_report << six_tabs << "<td class=\"headerCovTableEntry\">" << test_cases.size() << "</td>";
   html_report << six_tabs << "<td></td>";
   html_report << six_tabs << "<td></td>";
   html_report << five_tabs << "</tr>";
@@ -137,10 +141,34 @@ std::string HipAPI::createHTMLReport() const {
   html_report << two_tabs << "<tr><td class=\"ruler\"><img src=\"../resources/glass.png\" width=3 height=3></td></tr>\n";
   html_report << one_tab << "</table>";
 
-  // Add info about API occurrences in the test files.
   html_report << one_tab << "<center>";
+  // Add info about test cases
   html_report << one_tab << "<table width=\"50%\" cellpadding=1 cellspacing=1 border=0>";
-  if (number_of_calls) {
+  if (!test_cases.empty()) {
+    html_report << two_tabs << "<tr>";
+    html_report << three_tabs << "<td class=\"tableHead\">Test case ID</td>";
+    html_report << two_tabs << "</tr>";
+
+    for (auto const& test_case: test_cases) {
+      html_report << two_tabs << "<tr>";
+      html_report << three_tabs << "<td class=\"coverFile\">" << test_case << "</td>";
+      html_report << two_tabs << "</tr>";
+    }
+  } else {
+    html_report << two_tabs << "<tr>";
+    html_report << three_tabs << "<td class=\"headerItem\" style=\"text-align:center\"><br>There are no test cases detected within doxygen comments.</td>";
+    html_report << two_tabs << "</tr>";
+  }
+  html_report << one_tab << "</table>";
+
+  html_report << one_tab << "<br>";
+  html_report << one_tab << "<table width=\"100%\" border=0 cellspacing=0 cellpadding=0>";
+  html_report << two_tabs << "<tr><td class=\"ruler\"><img src=\"../resources/glass.png\" width=3 height=3></td></tr>";
+  html_report << one_tab << "</table>";
+
+  // Add info about API occurrences in the test files.
+  html_report << one_tab << "<table width=\"50%\" cellpadding=1 cellspacing=1 border=0>";
+  if (!file_occurrences.empty()) {
     html_report << two_tabs << "<tr>";
     html_report << three_tabs << "<td width=\"80%\"><br></td>";
     html_report << three_tabs << "<td width=\"20%\"><br></td>";

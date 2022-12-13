@@ -45,12 +45,13 @@ class HipAPI {
   friend bool operator<(const HipAPI& l_hip_api, const HipAPI& r_hip_api);
 
  public:
-  HipAPI(std::string api_name, bool deprecatedFlag, std::string api_group_name);
+  HipAPI(std::string api_name, bool deprecated_flag, std::string api_group_name);
   std::string getName() const;
   std::string getGroupName() const;
   int getNumberOfCalls() const;
-  void increaseNumberOfCalls();
-  void addFileOccurrence(FileOccurrence fileOccurence);
+  int getNumberOfTestCases() const;
+  void addFileOccurrence(FileOccurrence file_occurence);
+  void addTestCase(std::string test_case);
   bool isDeprecated() const;
   std::string getBasicStatsXML() const;
   std::string createHTMLReport() const;
@@ -60,4 +61,5 @@ class HipAPI {
   bool deprecated;
   std::string api_group_name;
   std::vector<FileOccurrence> file_occurrences;
+  std::vector<std::string> test_cases;
 };

@@ -48,8 +48,51 @@ void findAPICallInFile(HipAPI& hip_api, std::string test_module_file) {
     if ((line.find(api_call_with_assert) != std::string::npos) ||
         (line.find(api_call_with_assignment) != std::string::npos) ||
         (line.find(api_call_with_parameter) != std::string::npos)) {
-      hip_api.increaseNumberOfCalls();
       hip_api.addFileOccurrence(FileOccurrence(test_module_file, line_number));
+    }
+  }
+
+  test_module_file_handler.close();
+}
+
+/*
+Used to find all HIP API test cases within the passed test .cc files.
+Matching test case is detected when the HIP API in defined within doxygen comment.
+*/
+void findAPITestCaseInFile(HipAPI& hip_api, std::string test_module_file) {
+  std::fstream test_module_file_handler;
+  test_module_file_handler.open(test_module_file);
+
+  int line_number{0};
+  std::string line;
+
+  std::string add_group_definition{"@addtogroup"};
+  std::string ref_test_case{"@ref"};
+  std::string test_case_definition{"TEST_CASE("};
+  std::string current_api_name{"None"};
+  std::string test_case{"None"};
+
+  while (std::getline(test_module_file_handler, line)) {
+    ++line_number;
+    if (line.find(add_group_definition) != std::string::npos) {
+      current_api_name = line.substr(line.find(add_group_definition) + 1);
+      current_api_name = current_api_name.substr(current_api_name.rfind(" ") + 1);
+    }
+
+    if (hip_api.getName() != current_api_name) {
+      continue;
+    }
+
+    if (line.find(ref_test_case) != std::string::npos) {
+      test_case = line.substr(line.rfind(" ") + 1);
+      hip_api.addTestCase(test_case);
+      continue;
+    }
+
+    if (line.find(test_case_definition) != std::string::npos) {
+      test_case = line.substr(line.find("\"") + 1);
+      test_case = test_case.substr(0, test_case.find("\""));
+      hip_api.addTestCase(test_case);
     }
   }
 
@@ -64,6 +107,7 @@ void searchForAPI(HipAPI& hip_api, std::vector<std::string>& test_module_files) 
   std::cout << "Searching for " << hip_api.getName() << " in test module files." << std::endl;
   for (auto const& test_module_file: test_module_files) {
     findAPICallInFile(hip_api, test_module_file);
+    findAPITestCaseInFile(hip_api, test_module_file);
   }
 }
 

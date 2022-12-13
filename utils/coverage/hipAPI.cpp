@@ -33,8 +33,8 @@ bool operator<(const HipAPI& l_hip_api, const HipAPI& r_hip_api) {
   return l_hip_api.api_name < r_hip_api.api_name;
 }
 
-HipAPI::HipAPI(std::string api_name, bool deprecatedFlag, std::string api_group_name):
-  api_name{api_name}, number_of_calls{0}, deprecated{deprecatedFlag}, api_group_name{api_group_name} {}
+HipAPI::HipAPI(std::string api_name, bool deprecated_flag, std::string api_group_name):
+  api_name{api_name}, number_of_calls{0}, deprecated{deprecated_flag}, api_group_name{api_group_name} {}
 
 std::string HipAPI::getName() const {
   return api_name;
@@ -45,15 +45,19 @@ std::string HipAPI::getGroupName() const {
 }
 
 int HipAPI::getNumberOfCalls() const {
-  return number_of_calls;
+  return file_occurrences.size();
 }
 
-void HipAPI::increaseNumberOfCalls() {
-  ++number_of_calls;
+int HipAPI::getNumberOfTestCases() const {
+  return test_cases.size();
 }
 
 void HipAPI::addFileOccurrence(FileOccurrence file_occurrence) {
   file_occurrences.push_back(file_occurrence);
+}
+
+void HipAPI::addTestCase(std::string test_case) {
+  test_cases.push_back(test_case);
 }
 
 bool HipAPI::isDeprecated() const

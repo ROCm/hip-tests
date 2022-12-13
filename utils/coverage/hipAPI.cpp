@@ -143,10 +143,10 @@ std::string HipAPI::createHTMLReport() const {
 
   html_report << one_tab << "<center>";
   // Add info about test cases
-  html_report << one_tab << "<table width=\"20%\" cellpadding=1 cellspacing=1 border=0>";
+  html_report << one_tab << "<table width=\"30%\" cellpadding=1 cellspacing=1 border=0>";
   if (!test_cases.empty()) {
     html_report << two_tabs << "<tr>";
-    html_report << three_tabs << "<td class=\"tableHead\"><br></td>";
+    html_report << three_tabs << "<td><br></td>";
     html_report << two_tabs << "</tr>";
 
     html_report << two_tabs << "<tr>";

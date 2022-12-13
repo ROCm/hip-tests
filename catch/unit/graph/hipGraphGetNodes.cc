@@ -39,9 +39,6 @@ inline constexpr size_t kNumOfNodes = 7;
 }  // anonymous namespace
 
 /**
- * Functional Test for hipGraphGetNodes API fetching node list
- */
-/**
  * Test Description
  * ------------------------
  *    - Functional test to validate API for different number of nodes:

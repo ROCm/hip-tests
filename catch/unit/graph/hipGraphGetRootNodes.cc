@@ -129,11 +129,6 @@ TEST_CASE("Unit_hipGraphGetRootNodes_Positive_Functional") {
   HIP_CHECK(hipStreamDestroy(streamForGraph));
 }
 
-
-/**
- * Create a graph with stream capture done on multiple dependent streams. Verify root nodes
- * of created graph are matching the operations pushed which doesn't have dependencies.
- */
 /**
  * Test Description
  * ------------------------

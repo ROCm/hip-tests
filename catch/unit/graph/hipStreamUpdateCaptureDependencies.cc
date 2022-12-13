@@ -438,7 +438,7 @@ TEST_CASE("Unit_hipStreamUpdateCaptureDependencies_Negative_Parameters") {
                     hipErrorInvalidValue);
   }
 
-#if HT_NVIDIA  // EXSWHTEC-216
+#if HT_NVIDIA  // EXSWHTEC-227
   SECTION("numDeps exceeding actual number of nodes") {
     HIP_CHECK_ERROR(
         hipStreamUpdateCaptureDependencies(stream, dependencies.data(), dependencies.size() + 1,
@@ -454,7 +454,7 @@ TEST_CASE("Unit_hipStreamUpdateCaptureDependencies_Negative_Parameters") {
   }
 #endif
 
-#if HT_AMD  // EXSWHTEC-216
+#if HT_AMD  // EXSWHTEC-227
   HIP_CHECK(hipStreamUpdateCaptureDependencies(stream, dependencies.data(), dependencies.size(),
                                                hipStreamAddCaptureDependencies));
 #endif

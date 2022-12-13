@@ -59,7 +59,7 @@ TEST_CASE("Unit_hipLaunchHostFunc_Negative_Parameters") {
   hipStream_t stream = stream_guard.stream();
 
   HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
-#if HT_NVIDIA  // EXSWHTEC-216
+#if HT_NVIDIA  // EXSWHTEC-228
   SECTION("Pass stream as nullptr") {
     hipHostFn_t fn = hostNodeCallbackDummy;
     HIP_CHECK_ERROR(hipLaunchHostFunc(nullptr, fn, nullptr), hipErrorStreamCaptureImplicit);

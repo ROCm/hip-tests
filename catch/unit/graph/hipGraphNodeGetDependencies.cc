@@ -165,15 +165,15 @@ TEST_CASE("Unit_hipGraphNodeGetDependencies_Positive_Functional") {
     validateGraphNodesCommon(std::bind(hipGraphNodeGetDependencies, kernel_vecAdd, _1, _2),
                              nodelist, numDeps + 1, GraphGetNodesTest::greaterNumNodes);
   }
-#if HT_NVIDIA // EXSWHTEC-218
+
   SECTION("Validate number of dependecies is 0 when passed node is a root node") {
     hipGraphNode_t depnodes;
+    numDeps = 1;
     HIP_CHECK(hipGraphNodeGetDependencies(memcpyH2D_A, &depnodes, &numDeps));
 
     // Api expected to return success and no dependencies.
     REQUIRE(numDeps == 0);
   }
-#endif
 
   HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyD2H, graph, &kernel_vecAdd, 1, Sum_h, Sum_d, Nbytes,
                                     hipMemcpyDeviceToHost));

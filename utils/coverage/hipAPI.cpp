@@ -156,7 +156,7 @@ std::string HipAPI::createHTMLReport() const {
 
     html_report << two_tabs << "<tr>";
     html_report << three_tabs << "<td class=\"tableHead\">Test case ID</td>";
-    html_report << three_tabs << "<td class=\"tableHead\">Test source file</td>";
+    html_report << three_tabs << "<td class=\"tableHead\">Test case occurrence in file</td>";
     html_report << three_tabs << "<td class=\"tableHead\">Line number</td>";
     html_report << two_tabs << "</tr>";
 
@@ -188,7 +188,7 @@ std::string HipAPI::createHTMLReport() const {
     html_report << two_tabs << "</tr>";
 
     html_report << two_tabs << "<tr>";
-    html_report << three_tabs << "<td class=\"tableHead\">Test source file</td>";
+    html_report << three_tabs << "<td class=\"tableHead\">API occurrence in file</td>";
     html_report << three_tabs << "<td class=\"tableHead\">Line number</td>";
     html_report << two_tabs << "</tr>";
 

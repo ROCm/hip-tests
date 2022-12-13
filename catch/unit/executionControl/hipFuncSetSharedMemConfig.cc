@@ -52,6 +52,7 @@ TEST_CASE("Unit_hipFuncSetSharedMemConfig_Negative_Parameters") {
   }
 }
 
+// This test is exclusive to AMD
 TEST_CASE("Unit_hipFuncSetSharedMemConfig_Negative_Not_Supported") {
   HIP_CHECK_ERROR(
       hipFuncSetSharedMemConfig(reinterpret_cast<void*>(kernel), hipSharedMemBankSizeDefault),

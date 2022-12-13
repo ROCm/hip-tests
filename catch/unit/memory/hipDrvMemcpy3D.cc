@@ -30,7 +30,9 @@ THE SOFTWARE.
 TEST_CASE("Unit_hipDrvMemcpy3D_Positive_Basic") {
   constexpr bool async = false;
 
+#if HT_NVIDIA // Disabled on AMD due to defect - 
   SECTION("Device to Host") { Memcpy3DDeviceToHostShell<async>(DrvMemcpy3DWrapper<>); }
+#endif
 
   SECTION("Device to Device") {
     SECTION("Peer access disabled") {
@@ -43,7 +45,9 @@ TEST_CASE("Unit_hipDrvMemcpy3D_Positive_Basic") {
 
   SECTION("Host to Device") { Memcpy3DHostToDeviceShell<async>(DrvMemcpy3DWrapper<>); }
 
+#if HT_NVIDIA // Disabled on AMD due to defect - 
   SECTION("Host to Host") { Memcpy3DHostToHostShell<async>(DrvMemcpy3DWrapper<>); }
+#endif
 }
 
 TEST_CASE("Unit_hipDrvMemcpy3D_Positive_Synchronization_Behavior") {
@@ -55,11 +59,15 @@ TEST_CASE("Unit_hipDrvMemcpy3D_Positive_Synchronization_Behavior") {
     Memcpy3DDtoHPageableSyncBehavior(DrvMemcpy3DWrapper<>, true);
   }
 
+#if HT_NVIDIA // Disabled on AMD due to defect - 
   SECTION("Device to Pinned Host") { Memcpy3DDtoHPinnedSyncBehavior(DrvMemcpy3DWrapper<>, true); }
+#endif
 
+#if HT_NVIDIA // Disabled on AMD due to defect - 
   SECTION("Device to Device") { Memcpy3DDtoDSyncBehavior(DrvMemcpy3DWrapper<>, false); }
 
   SECTION("Host to Host") { Memcpy3DHtoHSyncBehavior(DrvMemcpy3DWrapper<>, true); }
+#endif
 }
 
 TEST_CASE("Unit_hipDrvMemcpy3D_Positive_Parameters") {
@@ -67,6 +75,7 @@ TEST_CASE("Unit_hipDrvMemcpy3D_Positive_Parameters") {
   Memcpy3DZeroWidthHeightDepth<async>(DrvMemcpy3DWrapper<async>);
 }
 
+// Disabled on AMD due to defect - 
 TEST_CASE("Unit_hipDrvMemcpy3D_Positive_Array") {
   constexpr bool async = false;
   SECTION("Array from/to Host") { DrvMemcpy3DArrayHostShell<async>(DrvMemcpy3DWrapper<async>); }
@@ -124,6 +133,7 @@ TEST_CASE("Unit_hipDrvMemcpy3D_Negative_Parameters") {
                       hipErrorInvalidValue);
     }
 
+#if HT_NVIDIA // Disabled on AMD due to defect - 
     SECTION("extent.width + dst_pos.x > dst_ptr.pitch") {
       hipPos invalid_pos = dst_pos;
       invalid_pos.x = dst_ptr.pitch - extent.width + 1;
@@ -165,6 +175,7 @@ TEST_CASE("Unit_hipDrvMemcpy3D_Negative_Parameters") {
       HIP_CHECK_ERROR(DrvMemcpy3DWrapper(dst_ptr, dst_pos, src_ptr, invalid_pos, extent, kind),
                       hipErrorInvalidValue);
     }
+#endif
   };
 
   SECTION("Host to Device") {

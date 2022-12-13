@@ -22,6 +22,11 @@
 	   "Unit_hipFuncSetAttribute_Positive_MaxDynamicSharedMemorySize",
 	   "Unit_hipFuncSetAttribute_Positive_PreferredSharedMemoryCarveout",
 	   "Unit_hipFuncSetAttribute_Positive_Parameters",
-	   "Unit_hipFuncSetAttribute_Negative_Parameters"
+	   "Unit_hipFuncSetAttribute_Negative_Parameters",
+	   "Note: the following 4 tests are disabled due to defect - ",
+	   "Unit_hipFuncSetCacheConfig_Negative_Not_Supported",
+	   "Unit_hipFuncSetSharedMemConfig_Negative_Not_Supported",
+	   "Unit_hipFuncSetAttribute_Positive_MaxDynamicSharedMemorySize_Not_Supported",
+	   "Unit_hipFuncSetAttribute_Positive_PreferredSharedMemoryCarveout_Not_Supported"
 	]
 }

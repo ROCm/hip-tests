@@ -39,10 +39,7 @@ set(TEST_SRC
     hipStreamSynchronize.cc
     hipStreamQuery.cc
     hipDeviceGetStreamPriorityRange.cc
-<<<<<<< HEAD
-=======
     hipStreamACb_StrmSyncTiming.cc
->>>>>>> 0571115bed8cb52878200c2421b292c6e8e181f8
     )
 
     # set_source_files_properties(hipStreamAttachMemAsync.cc PROPERTIES COMPILE_FLAGS -std=c++17)

@@ -140,8 +140,6 @@ TEST_CASE("Unit_hipMallocManaged_Advanced") {
   HIP_CHECK(hipFree(B));
   REQUIRE(maxError != 0.0f);
 }
-<<<<<<< HEAD
-=======
 
 /*
    This testcase verifies that hipMallocManaged returns an OutOfMemory error for allocations much
@@ -158,4 +156,3 @@ TEST_CASE("Unit_hipMallocManaged_Large") {
   float* A;
   HIP_CHECK_ERROR(hipMallocManaged(&A, std::numeric_limits<size_t>::max()), hipErrorOutOfMemory);
 }
->>>>>>> 0571115bed8cb52878200c2421b292c6e8e181f8

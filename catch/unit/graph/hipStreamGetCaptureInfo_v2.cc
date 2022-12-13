@@ -235,7 +235,7 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_v2_Negative_Parameters") {
                                                &nodelist, &numDependencies),
                     hipErrorInvalidValue);
   }
-#if HT_NVIDIA  // EXSWHTEC-216
+#if HT_NVIDIA  // EXSWHTEC-216, EXSWHTEC-228
   SECTION("Capture status when checked on null stream") {
     hipGraph_t graph{nullptr};
     HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));

@@ -25,6 +25,9 @@ THE SOFTWARE.
 FileOccurrence::FileOccurrence(std::string file_name, int line_number):
   file_name{file_name}, line_number{line_number} {}
 
+TestCaseOccurrence::TestCaseOccurrence(std::string test_case_name, std::string file_name, int line_number):
+  FileOccurrence{file_name, line_number}, test_case_name{test_case_name} {}
+
 bool operator==(const HipAPI& l_hip_api, const HipAPI& r_hip_api) {
   return l_hip_api.api_name == r_hip_api.api_name;
 }
@@ -56,7 +59,7 @@ void HipAPI::addFileOccurrence(FileOccurrence file_occurrence) {
   file_occurrences.push_back(file_occurrence);
 }
 
-void HipAPI::addTestCase(std::string test_case) {
+void HipAPI::addTestCase(TestCaseOccurrence test_case) {
   test_cases.push_back(test_case);
 }
 
@@ -143,19 +146,25 @@ std::string HipAPI::createHTMLReport() const {
 
   html_report << one_tab << "<center>";
   // Add info about test cases
-  html_report << one_tab << "<table width=\"30%\" cellpadding=1 cellspacing=1 border=0>";
+  html_report << one_tab << "<table width=\"70%\" cellpadding=1 cellspacing=1 border=0>";
   if (!test_cases.empty()) {
     html_report << two_tabs << "<tr>";
-    html_report << three_tabs << "<td><br></td>";
+    html_report << three_tabs << "<td width=\"20%\"><br></td>";
+    html_report << three_tabs << "<td width=\"60%\"><br></td>";
+    html_report << three_tabs << "<td width=\"20%\"><br></td>";
     html_report << two_tabs << "</tr>";
 
     html_report << two_tabs << "<tr>";
     html_report << three_tabs << "<td class=\"tableHead\">Test case ID</td>";
+    html_report << three_tabs << "<td class=\"tableHead\">Test source file</td>";
+    html_report << three_tabs << "<td class=\"tableHead\">Line number</td>";
     html_report << two_tabs << "</tr>";
 
     for (auto const& test_case: test_cases) {
       html_report << two_tabs << "<tr>";
-      html_report << three_tabs << "<td class=\"coverFile\">" << test_case << "</td>";
+      html_report << three_tabs << "<td class=\"coverFile\">" << test_case.test_case_name << "</td>";
+      html_report << three_tabs << "<td class=\"coverFile\">" << test_case.file_name << "</td>";
+      html_report << three_tabs << "<td class=\"headerCovTableEntry\">" << test_case.line_number << "</td>";
       html_report << two_tabs << "</tr>";
     }
   } else {

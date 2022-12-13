@@ -36,6 +36,16 @@ class FileOccurrence {
 };
 
 /*
+Helper class used to store information in what file has the API Test Case been detected,
+and on what line of code in that file.
+*/
+class TestCaseOccurrence : public FileOccurrence {
+ public:
+  std::string test_case_name;
+  TestCaseOccurrence(std::string test_case_name, std::string file_name, int line_number);
+};
+
+/*
 Class used to store infromation about each HIP API. All information
 is related to the API name, number of calls from test .cc files,
 and its status of deprecation.
@@ -51,7 +61,7 @@ class HipAPI {
   int getNumberOfCalls() const;
   int getNumberOfTestCases() const;
   void addFileOccurrence(FileOccurrence file_occurence);
-  void addTestCase(std::string test_case);
+  void addTestCase(TestCaseOccurrence test_case);
   bool isDeprecated() const;
   std::string getBasicStatsXML() const;
   std::string createHTMLReport() const;
@@ -61,5 +71,5 @@ class HipAPI {
   bool deprecated;
   std::string api_group_name;
   std::vector<FileOccurrence> file_occurrences;
-  std::vector<std::string> test_cases;
+  std::vector<TestCaseOccurrence> test_cases;
 };

@@ -85,14 +85,14 @@ void findAPITestCaseInFile(HipAPI& hip_api, std::string test_module_file) {
 
     if (line.find(ref_test_case) != std::string::npos) {
       test_case = line.substr(line.rfind(" ") + 1);
-      hip_api.addTestCase(test_case);
+      hip_api.addTestCase(TestCaseOccurrence{test_case, test_module_file, line_number});
       continue;
     }
 
     if (line.find(test_case_definition) != std::string::npos) {
       test_case = line.substr(line.find("\"") + 1);
       test_case = test_case.substr(0, test_case.find("\""));
-      hip_api.addTestCase(test_case);
+      hip_api.addTestCase(TestCaseOccurrence{test_case, test_module_file, line_number});
     }
   }
 

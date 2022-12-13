@@ -129,6 +129,7 @@ TEST_CASE("Unit_hipFuncSetAttribute_Negative_Parameters") {
   }
 }
 
+// This test is exclusive to AMD
 TEST_CASE("Unit_hipFuncSetAttribute_Positive_MaxDynamicSharedMemorySize_Not_Supported") {
   hipFuncAttributes old_attributes;
   HIP_CHECK(hipFuncGetAttributes(&old_attributes, reinterpret_cast<void*>(kernel)));
@@ -142,6 +143,7 @@ TEST_CASE("Unit_hipFuncSetAttribute_Positive_MaxDynamicSharedMemorySize_Not_Supp
   REQUIRE(old_attributes.maxDynamicSharedSizeBytes == new_attributes.maxDynamicSharedSizeBytes);
 }
 
+// This test is exclusive to AMD
 TEST_CASE("Unit_hipFuncSetAttribute_Positive_PreferredSharedMemoryCarveout_Not_Supported") {
   hipFuncAttributes old_attributes;
   HIP_CHECK(hipFuncGetAttributes(&old_attributes, reinterpret_cast<void*>(kernel)));

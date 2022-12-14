@@ -28,20 +28,20 @@ THE SOFTWARE.
  * Reserves an address range
  * ________________________
  * Test cases from other modules:
- *    - @ref Unit_hipMemVmm_Positive_OneToOne_Mapping
- *    - @ref Unit_hipMemVmm_Positive_OneToN_Mapping
+ *  - @ref Unit_hipMemVmm_Positive_OneToOne_Mapping
+ *  - @ref Unit_hipMemVmm_Positive_OneToN_Mapping
  */
 
 /**
  * Test Description
  * ------------------------ 
- *    - Tries to reserve upper limit of type `size_t` bytes of virtual memory
+ *  - Tries to reserve upper limit of type `size_t` bytes of virtual memory
  * Test source
  * ------------------------ 
- *    - unit/virtualMemory/hipMemAddressReserve.cc
+ *  - unit/virtualMemory/hipMemAddressReserve.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemAddressReserve_Negative_Basic") {
   if (!is_virtual_memory_management_supported()) {

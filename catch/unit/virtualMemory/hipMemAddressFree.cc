@@ -30,13 +30,13 @@ THE SOFTWARE.
 /**
  * Test Description
  * ------------------------ 
- *    - Allocates and frees regular chunk of virtual memory
+ *  - Allocates and frees regular chunk of virtual memory
  * Test source
  * ------------------------ 
- *    - unit/virtualMemory/hipMemAddressFree.cc
+ *  - unit/virtualMemory/hipMemAddressFree.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemAddressFree_Positive_Basic") {
   if (!is_virtual_memory_management_supported()) {
@@ -55,17 +55,17 @@ TEST_CASE("Unit_hipMemAddressFree_Positive_Basic") {
 /**
  * Test Description
  * ------------------------ 
- *    - Checks different invalid scenarios with freeing virtual memory:
- *        -# Tries to free more virtual memory than allocated
- *            -# Expected output: return `hipErrorInvalidValue`
- *        -# Tries to free virtual memory with `nullptr`
- *            -# Expected output: return `hipErrorInvalidValue`
+ *  - Checks different invalid scenarios with freeing virtual memory:
+ *    -# Tries to free more virtual memory than allocated
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# Tries to free virtual memory with `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------ 
- *    - unit/virtualMemory/hipMemAddressFree.cc
+ *  - unit/virtualMemory/hipMemAddressFree.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemAddressFree_Negative_Parameters") {
   if (!is_virtual_memory_management_supported()) {
@@ -91,14 +91,14 @@ TEST_CASE("Unit_hipMemAddressFree_Negative_Parameters") {
 /**
  * Test Description
  * ------------------------ 
- *    - Frees virtual memory two times in a row
- *        -# Expected output: return `hipErrorInvalidValue`
+ *  - Frees virtual memory two times in a row
+ *    -# Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------ 
- *    - unit/virtualMemory/hipMemAddressFree.cc
+ *  - unit/virtualMemory/hipMemAddressFree.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemAddressFree_Negative_FreeMemoryTwoTimes") {
   if (!is_virtual_memory_management_supported()) {
@@ -117,14 +117,14 @@ TEST_CASE("Unit_hipMemAddressFree_Negative_FreeMemoryTwoTimes") {
 /**
  * Test Description
  * ------------------------ 
- *    - Frees the virtual memory before it is unmapped from physical memory
- *        -# Expected output: return `hipErrorInvalidValue`
+ *  - Frees the virtual memory before it is unmapped from physical memory
+ *    -# Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------ 
- *    - unit/virtualMemory/hipMemAddressFree.cc
+ *  - unit/virtualMemory/hipMemAddressFree.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemAddressFree_Negative_FreeBeforeUnmap") {
   if (!is_virtual_memory_management_supported()) {

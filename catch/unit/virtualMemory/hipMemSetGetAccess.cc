@@ -31,7 +31,7 @@ THE SOFTWARE.
 /**
  * Test Description
  * ------------------------ 
- *    - Creates new virual memory allocation and checks access flags.
+ *  - Creates new virual memory allocation and checks access flags.
  * Test source
  * ------------------------ 
  *    - unit/virtualMemory/hipMemSetGetAccess.cc
@@ -60,19 +60,19 @@ TEST_CASE("Unit_hipMemGetAccess_Positive_Basic") {
 /**
  * Test Description
  * ------------------------ 
- *    - Passes invalid parameters and checks behaviour:
- *        -# When device is invalid, ordinal is out of range
- *            -# Expected output: return `hipErrorInvalidValue`
- *        -# When virtual memory pointer is `nullptr`
- *            -# Expected output: return `hipErrorInvalidValue`
- *        -# When memory location pointer is `nullptr`
- *            -# Expected output: return `hipErrorInvalidValue`
+ *  - Passes invalid parameters and checks behaviour:
+ *    -# When device is invalid, ordinal is out of range
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When virtual memory pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When memory location pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------ 
- *    - unit/virtualMemory/hipMemSetGetAccess.cc
+ *  - unit/virtualMemory/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemGetAccess_Negative_Parameters") {
   if (!is_virtual_memory_management_supported()) {
@@ -117,30 +117,30 @@ TEST_CASE("Unit_hipMemGetAccess_Negative_Parameters") {
  * given virtual address range.
  * ________________________
  * Test cases from other modules:
- *    - @ref Unit_hipMemVmm_Positive_OneToOne_Mapping
- *    - @ref Unit_hipMemVmm_Positive_OneToN_Mapping
+ *  - @ref Unit_hipMemVmm_Positive_OneToOne_Mapping
+ *  - @ref Unit_hipMemVmm_Positive_OneToN_Mapping
  */
 
 /**
  * Test Description
  * ------------------------ 
- *    - Passes invalid parameters and checks behaviour:
- *        -# Sets access for the larger virtual memory chunk than allocated
- *            -# Expected output: return `hipErrorInvalidValue`
- *        -# Wrong access description array size
- *            -# Expected output: return `hipErrorInvalidValue`
- *        -# Device ID is out of range of available IDs
- *            -# Expected output: return `hipErrorInvalidValue`
- *        -# Pointer to the access array is `nullptr`
- *            -# Expected output: return `hipErrorInvalidValue`
- *        -# Pointer to the virtual memory is `nullptr`
- *            -# Expected output: return `hipErrorInvalidValue`
+ *  - Passes invalid parameters and checks behaviour:
+ *    -# Sets access for the larger virtual memory chunk than allocated
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# Wrong access description array size
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# Device ID is out of range of available IDs
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# Pointer to the access array is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# Pointer to the virtual memory is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------ 
- *    - unit/virtualMemory/hipMemSetGetAccess.cc
+ *  - unit/virtualMemory/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemSetAccess_Negative_Parameters") {
   if (!is_virtual_memory_management_supported()) {
@@ -195,14 +195,14 @@ TEST_CASE("Unit_hipMemSetAccess_Negative_Parameters") {
 /**
  * Test Description
  * ------------------------ 
- *    - Sets access to the virtual memory before it is mapped to the physical memory
- *        -# Expected output: return `hipErrorInvalidValue`
+ *  - Sets access to the virtual memory before it is mapped to the physical memory
+ *    - Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------ 
- *    - unit/virtualMemory/hipMemSetGetAccess.cc
+ *  - unit/virtualMemory/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemSetAccess_Negative_SetBeforeMapped") {
   if (!is_virtual_memory_management_supported()) {

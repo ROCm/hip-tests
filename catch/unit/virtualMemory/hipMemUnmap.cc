@@ -27,24 +27,24 @@ THE SOFTWARE.
  * Unmap memory allocation of a given address range.
  * ________________________
  * Test cases from other modules:
- *    - @ref Unit_hipMemVmm_Positive_OneToOne_Mapping
- *    - @ref Unit_hipMemVmm_Positive_OneToN_Mapping
+ *  - @ref Unit_hipMemVmm_Positive_OneToOne_Mapping
+ *  - @ref Unit_hipMemVmm_Positive_OneToN_Mapping
  */
 
 /**
  * Test Description
  * ------------------------ 
- *    - Passes invalid parameters and checks behaviour:
- *        -# The size of unmapped virtual memory is smaller than allocated
- *            -# Expected output: return `hipErrorInvalidValue`
- *        -# Virtual memory pointer is `nullptr`
- *            -# Expected output: return `hipErrorInvalidValue`
+ *  - Passes invalid parameters and checks behaviour:
+ *    -# The size of unmapped virtual memory is smaller than allocated
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# Virtual memory pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------ 
- *    - unit/virtualMemory/hipMemUnmap.cc
+ *  - unit/virtualMemory/hipMemUnmap.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemUnmap_Negative_Parameters") {
   if (!is_virtual_memory_management_supported()) {

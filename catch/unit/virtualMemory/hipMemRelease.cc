@@ -28,21 +28,21 @@ THE SOFTWARE.
  * previously allocated through hipMemCreate.
  * ________________________
  * Test cases from other modules:
- *    - @ref Unit_hipMemVmm_Positive_OneToOne_Mapping
- *    - @ref Unit_hipMemVmm_Positive_OneToN_Mapping
+ *  - @ref Unit_hipMemVmm_Positive_OneToOne_Mapping
+ *  - @ref Unit_hipMemVmm_Positive_OneToN_Mapping
  */
 
 /**
  * Test Description
  * ------------------------ 
- *    - Releases handle in different scenarios:
- *        -# When physical handle is created and already released
- *            -# Expected output: return hipErrorInvalidValue
- *        -# When physical handle is not created
- *            -# Expected output: return hipErrorInvalidValue
+ *  - Releases handle in different scenarios:
+ *    -# When physical handle is created and already released
+ *      - Expected output: return hipErrorInvalidValue
+ *    -# When physical handle is not created
+ *      - Expected output: return hipErrorInvalidValue
  * Test source
  * ------------------------ 
- *    - unit/virtualMemory/hipMemRelease.cc
+ *  - unit/virtualMemory/hipMemRelease.cc
  * Test requirements
  * ------------------------ 
  *    - HIP_VERSION >= 5.2

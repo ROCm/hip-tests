@@ -28,24 +28,24 @@ THE SOFTWARE.
  * Calculates either the minimal or recommended granularity.
  * ________________________
  * Test cases from other modules:
- *    - @ref Unit_hipMemVmm_Positive_OneToOne_Mapping
- *    - @ref Unit_hipMemVmm_Positive_OneToN_Mapping
+ *  - @ref Unit_hipMemVmm_Positive_OneToOne_Mapping
+ *  - @ref Unit_hipMemVmm_Positive_OneToN_Mapping
  */
 
 /**
  * Test Description
  * ------------------------ 
- *    - Call the API in different negative scenarios regarding parameters:
- *        -# When granularity is nullptr
- *            -# Expected output: return hipErrorInvalidValue
- *        -# When properties are nullptr
- *            -# Expected output: return hipErrorInvalidValue
+ *  - Call the API in different negative scenarios regarding parameters:
+ *    -# When granularity is nullptr
+ *      - Expected output: return hipErrorInvalidValue
+ *    -# When properties are nullptr
+ *      - Expected output: return hipErrorInvalidValue
  * Test source
  * ------------------------ 
- *    - unit/virtualMemory/hipMemGetAllocationGranularity.cc
+ *  - unit/virtualMemory/hipMemGetAllocationGranularity.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemGetAllocationGranularity_Negative_Parameters") {
   if (!is_virtual_memory_management_supported()) {

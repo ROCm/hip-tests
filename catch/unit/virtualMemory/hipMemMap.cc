@@ -28,26 +28,26 @@ THE SOFTWARE.
  * Maps an allocation handle to a reserved virtual address range.
  * ________________________
  * Test cases from other modules:
- *    - @ref Unit_hipMemVmm_Positive_OneToOne_Mapping
- *    - @ref Unit_hipMemVmm_Positive_OneToN_Mapping
+ *  - @ref Unit_hipMemVmm_Positive_OneToOne_Mapping
+ *  - @ref Unit_hipMemVmm_Positive_OneToN_Mapping
  */
 
 /**
  * Test Description
  * ------------------------ 
- *    - Call the API in different negative scenarios regarding parameters:
- *        -# When larger virtual memory than allocated is mapped
- *            -# Expected output: return hipErrorNotSupported
- *        -# When virtual memory pointer is freed
- *            -# Expected output: return hipErrorInvalidValue
- *        -# When physical handle is released
- *            -# Expected output: return hipErrorInvalidValue
+ *  - Call the API in different negative scenarios regarding parameters:
+ *    -# When larger virtual memory than allocated is mapped
+ *      - Expected output: return hipErrorNotSupported
+ *    -# When virtual memory pointer is freed
+ *      - Expected output: return hipErrorInvalidValue
+ *    -# When physical handle is released
+ *      - Expected output: return hipErrorInvalidValue
  * Test source
  * ------------------------ 
- *    - unit/virtualMemory/hipMemMap.cc
+ *  - unit/virtualMemory/hipMemMap.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemMap_Negative_Basic") {
   if (!is_virtual_memory_management_supported()) {

@@ -28,28 +28,28 @@ THE SOFTWARE.
  * Creates a memory allocation described by the properties and size
  * ________________________
  * Test cases from other modules:
- *    - @ref Unit_hipMemVmm_Positive_OneToOne_Mapping
- *    - @ref Unit_hipMemVmm_Positive_OneToN_Mapping
+ *  - @ref Unit_hipMemVmm_Positive_OneToOne_Mapping
+ *  - @ref Unit_hipMemVmm_Positive_OneToN_Mapping
  */
 
 /**
  * Test Description
  * ------------------------ 
- *    - Call the API in different negative scenarios regarding parameters:
- *        -# When allocation size is not the multiple of granularity
- *            -# Expected output: return `hipErrorInvalidValue`
- *        -# When device ordinal within properties is out of available range
- *            -# Expected output: return `hipErrorInvalidDevice`
- *        -# When handle is `nullptr`
- *            -# Expected output: return `hipErrorInvalidValue`
- *        -# When properties are `nullptr`
- *            -# Expected output: return `hipErrorInvalidValue`
+ *  - Call the API in different negative scenarios regarding parameters:
+ *    -# When allocation size is not the multiple of granularity
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When device ordinal within properties is out of available range
+ *      - Expected output: return `hipErrorInvalidDevice`
+ *    -# When handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When properties are `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------ 
- *    - unit/virtualMemory/hipMemCreate.cc
+ *  - unit/virtualMemory/hipMemCreate.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemCreate_Negative_Parameters") {
   if (!is_virtual_memory_management_supported()) {

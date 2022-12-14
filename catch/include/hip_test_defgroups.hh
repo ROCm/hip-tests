@@ -35,4 +35,10 @@ THE SOFTWARE.
  * This section describes the graph management types & functions of HIP runtime API.
  * @}
  */
- 
+
+/**
+ * @defgroup DeviceTest Device Management
+ * @{
+ * This section describes the tests for device management functions of HIP runtime API.
+ * @}
+ */

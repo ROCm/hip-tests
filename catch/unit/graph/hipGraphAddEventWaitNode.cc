@@ -73,7 +73,6 @@ TEST_CASE("Unit_hipGraphAddEventWaitNode_Functional_Simple") {
   HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
   HIP_CHECK(hipGraphLaunch(graphExec, streamForGraph));
   HIP_CHECK(hipStreamSynchronize(streamForGraph));
-
   HIP_CHECK(hipGraphExecDestroy(graphExec));
   HIP_CHECK(hipGraphDestroy(graph));
   HIP_CHECK(hipEventDestroy(event));

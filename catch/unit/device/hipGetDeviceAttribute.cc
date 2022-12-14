@@ -255,7 +255,7 @@ TEST_CASE("Unit_hipGetDeviceAttribute_CheckAttrValues") {
                                     props.texturePitchAlignment));
 }
 
-/**
+/*
  * Validate the hipDeviceAttributeFineGrainSupport property in AMD.
  */
 #ifdef __linux__

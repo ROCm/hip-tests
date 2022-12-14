@@ -28,7 +28,6 @@ THE SOFTWARE.
  * @ingroup DeviceTest
  * `hipDeviceSynchronize(void)` -
  * Waits on all active streams on current device.
- *
  * When this command is invoked, the host thread gets blocked until all the commands associated
  * with streams associated with the device. HIP does not support multiple blocking modes (yet!).
  */

@@ -414,6 +414,11 @@ TEST_CASE("Unit_hipIpcEventHandle_ParameterValidation") {
 }
 
 /**
+ * End doxygen group hipIpcGetEventHandle.
+ * @}
+ */
+
+/**
  * @addtogroup hipIpcOpenEventHandle hipIpcOpenEventHandle
  * @{
  * @ingroup DeviceTest

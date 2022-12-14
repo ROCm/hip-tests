@@ -31,13 +31,13 @@ THE SOFTWARE.
 /**
  * Test Description
  * ------------------------ 
- *    - Reads properties from allocated virtual memory and checks field values
+ *  - Reads properties from allocated virtual memory and checks field values
  * Test source
  * ------------------------ 
- *    - unit/virtualMemory/hipMemGetAllocationPropertiesFromHandle.cc
+ *  - unit/virtualMemory/hipMemGetAllocationPropertiesFromHandle.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemGetAllocationPropertiesFromHandle_Positive_Basic") {
   if (!is_virtual_memory_management_supported()) {
@@ -59,13 +59,13 @@ TEST_CASE("Unit_hipMemGetAllocationPropertiesFromHandle_Positive_Basic") {
 /**
  * Test Description
  * ------------------------ 
- *    - Passes invalid handle to API and expects that `hipErrorInvalidValue` is returned
+ *  - Passes invalid handle to API and expects that `hipErrorInvalidValue` is returned
  * Test source
  * ------------------------ 
- *    - unit/virtualMemory/hipMemGetAllocationPropertiesFromHandle.cc
+ *  - unit/virtualMemory/hipMemGetAllocationPropertiesFromHandle.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemGetAllocationPropertiesFromHandle_Negative_Parameters") {
   if (!is_virtual_memory_management_supported()) {

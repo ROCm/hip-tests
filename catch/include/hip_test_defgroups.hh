@@ -35,3 +35,10 @@ THE SOFTWARE.
  * This section describes the graph management types & functions of HIP runtime API.
  * @}
  */
+
+/**
+ * @defgroup ErrorTest Error Handling
+ * @{
+ * This section describes tests for the error handling functions of HIP runtime API.
+ * @}
+ */

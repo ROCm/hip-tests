@@ -33,15 +33,15 @@ THE SOFTWARE.
 /**
  * Test Description
  * ------------------------ 
- *    - Loads the simple kernel function from the matching module
- *    - Checks that the valid name is returned for the loaded kernel function
+ *  - Loads the simple kernel function from the matching module
+ *  - Checks that the valid name is returned for the loaded kernel function
  * Test source
  * ------------------------ 
- *    - unit/callback/hipKernelNameRef.cc
+ *  - unit/callback/hipKernelNameRef.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= 5.2
- *    - Platform specific (AMD)
+ *  - HIP_VERSION >= 5.2
+ *  - Platform specific (AMD)
  */
 TEST_CASE("Unit_hipKernelNameRef_Positive_Basic") {
   hipModule_t kernel_module{nullptr};
@@ -56,14 +56,14 @@ TEST_CASE("Unit_hipKernelNameRef_Positive_Basic") {
 /**
  * Test Description
  * ------------------------ 
- *    - Checks that the API returns nullptr if the passed function is not loaded
+ *  - Checks that the API returns nullptr if the passed function is not loaded
  * Test source
  * ------------------------ 
- *    - unit/callback/hipKernelNameRef.cc
+ *  - unit/callback/hipKernelNameRef.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= 5.2
- *    - Platform specific (AMD)
+ *  - HIP_VERSION >= 5.2
+ *  - Platform specific (AMD)
  */
 TEST_CASE("Unit_hipKernelNameRef_Negative_Parameters") {
   hipFunction_t kernel_function{nullptr};

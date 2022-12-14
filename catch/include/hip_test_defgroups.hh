@@ -35,3 +35,10 @@ THE SOFTWARE.
  * This section describes the graph management types & functions of HIP runtime API.
  * @}
  */
+
+/**
+ * @defgroup EventTest Event Management
+ * @{
+ * This section describes tests for the event management functions of HIP runtime API.
+ * @}
+ */

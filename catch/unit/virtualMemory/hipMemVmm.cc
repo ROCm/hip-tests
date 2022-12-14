@@ -30,15 +30,15 @@ THE SOFTWARE.
 /**
  * Test Description
  * ------------------------ 
- *    - Maps physical address to the reserved virutal memory range
- *        -# Writes data to the virtual memory range
- *        -# Checks that the data can be acquired and is valid
+ *  - Maps physical address to the reserved virutal memory range
+ *    -# Writes data to the virtual memory range
+ *    -# Checks that the data can be acquired and is valid
  * Test source
  * ------------------------ 
- *    - unit/virtualMemory/hipMemVmm.cc
+ *  - unit/virtualMemory/hipMemVmm.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemVmm_Positive_OneToOne_Mapping") {
   if (!is_virtual_memory_management_supported(0)) {
@@ -62,17 +62,17 @@ TEST_CASE("Unit_hipMemVmm_Positive_OneToOne_Mapping") {
 /**
  * Test Description
  * ------------------------ 
- *    - Maps one physical address to two different reserved virutal memory ranges
- *        -# Writes data to the first virtual memory range
- *        -# Checks that the data can be acquired from the second virtual memory range
- *        -# Expects that the first virtual memory range and the
- *           second virtual memory range contain the same data
+ *  - Maps one physical address to two different reserved virutal memory ranges
+ *    -# Writes data to the first virtual memory range
+ *    -# Checks that the data can be acquired from the second virtual memory range
+ *    -# Expects that the first virtual memory range and the
+ *       second virtual memory range contain the same data
  * Test source
  * ------------------------ 
- *    - unit/virtualMemory/hipMemVmm.cc
+ *  - unit/virtualMemory/hipMemVmm.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemVmm_Positive_OneToN_Mapping") {
   if (!is_virtual_memory_management_supported(0)) {

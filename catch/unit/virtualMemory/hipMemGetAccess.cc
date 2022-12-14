@@ -31,13 +31,13 @@ THE SOFTWARE.
 /**
  * Test Description
  * ------------------------ 
- *    - Creates new virual memory allocation and checks access flags.
+ *  - Creates new virual memory allocation and checks access flags.
  * Test source
  * ------------------------ 
- *    - unit/virtualMemory/hipMemGetAccess.cc
+ *  - unit/virtualMemory/hipMemGetAccess.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemGetAccess_Positive_Basic") {
   if (!is_virtual_memory_management_supported(0)) {
@@ -60,19 +60,19 @@ TEST_CASE("Unit_hipMemGetAccess_Positive_Basic") {
 /**
  * Test Description
  * ------------------------ 
- *    - Passes invalid parameters to the API
- *        -# When device is invalid, ordinal is out of range
- *            -# Expected output: return `hipErrorInvalidValue`
- *        -# When virtual memory pointer is `nullptr`
- *            -# Expected output: return `hipErrorInvalidValue`
- *        -# When memory location pointer is `nullptr`
- *            -# Expected output: return `hipErrorInvalidValue`
+ *  - Passes invalid parameters to the API
+ *    -# When device is invalid, ordinal is out of range
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When virtual memory pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When memory location pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------ 
- *    - unit/virtualMemory/hipMemGetAccess.cc
+ *  - unit/virtualMemory/hipMemGetAccess.cc
  * Test requirements
  * ------------------------ 
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemGetAccess_Negative_Parameters") {
   if (!is_virtual_memory_management_supported(0)) {

@@ -35,7 +35,7 @@ THE SOFTWARE.
  * This section describes tests for the graph management functions of HIP runtime API.
  * @}
  */
- 
+
 /**
  * @defgroup VirtualTest Virtual Memory Management
  * @{

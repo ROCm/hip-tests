@@ -5,6 +5,7 @@ set(TEST_SRC
     hipModuleLoadDataEx.cc 
     hipModuleUnload.cc
     hipModuleGetFunction.cc
+    hipModuleLaunchKernel.cc 
 )
 
 configure_file(not_a_module.txt not_a_module.txt)
@@ -20,6 +21,15 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code
 add_custom_target(get_function_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code)
 
 if(HIP_PLATFORM MATCHES "amd")
+    set(TEST_SRC ${TEST_SRC} hipExtModuleLaunchKernel.cc)
+endif()
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/launch_kernel_module.code
+                   COMMAND ${CMAKE_CXX_COMPILER} --genco --std=c++17 ${CMAKE_CURRENT_SOURCE_DIR}/launch_kernel_module.cc -o launch_kernel_module.code
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/launch_kernel_module.cc)   
+add_custom_target(launch_kernel_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/launch_kernel_module.code)
+
+if(HIP_PLATFORM MATCHES "amd")
     set(RTCLIB "hiprtc")
 else()
     set(RTCLIB "nvrtc")
@@ -30,3 +40,4 @@ hip_add_exe_to_target(NAME ModuleTest
                       LINKER_LIBS ${RTCLIB})
 add_dependencies(ModuleTest empty_module)
 add_dependencies(ModuleTest get_function_module)
+add_dependencies(ModuleTest launch_kernel_module)

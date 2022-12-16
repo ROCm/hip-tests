@@ -14,6 +14,7 @@ set(TEST_SRC
     syncthreadscount.cc
     syncthreadsor.cc
     Atomic_func.cc
+    hfloat2half.cc
 )
 
 if(UNIX)

@@ -50,11 +50,8 @@ hip_add_exe_to_target(NAME ModuleTest
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests
                       LINKER_LIBS ${RTCLIB})
-<<<<<<< HEAD
 add_dependencies(ModuleTest empty_module)
 add_dependencies(ModuleTest get_function_module)
 add_dependencies(ModuleTest launch_kernel_module)
 add_dependencies(ModuleTest get_tex_ref_module)
-=======
 add_dependencies(MemoryTest get_global_test_module)
->>>>>>> 38254e226585dacf591fc78f4280222f84278ed3

@@ -35,3 +35,10 @@ THE SOFTWARE.
  * This section describes the graph management types & functions of HIP runtime API.
  * @}
  */
+
+/**
+ * @defgroup DriverTest Initialization and Version
+ * @{
+ * This section describes tests for the initialization and version functions of HIP runtime API.
+ * @}
+ */

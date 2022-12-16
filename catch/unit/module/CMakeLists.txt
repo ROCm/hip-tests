@@ -6,6 +6,7 @@ set(TEST_SRC
     hipModuleUnload.cc
     hipModuleGetFunction.cc
     hipModuleLaunchKernel.cc
+    hipModuleGetGlobal.cc
     hipModuleGetTexRef.cc
 )
 
@@ -30,6 +31,11 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/launch_kernel_module.code
                    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/launch_kernel_module.cc)   
 add_custom_target(launch_kernel_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/launch_kernel_module.code)
 
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/get_global_test_module.code
+                   COMMAND ${CMAKE_CXX_COMPILER} --genco --std=c++17 ${CMAKE_CURRENT_SOURCE_DIR}/get_global_test_module.cc -o get_global_test_module.code 
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/get_global_test_module.cc)   
+add_custom_target(get_global_test_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/get_global_test_module.code)
+
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/get_tex_ref_module.code
                    COMMAND ${CMAKE_CXX_COMPILER} --genco --std=c++17 ${CMAKE_CURRENT_SOURCE_DIR}/get_tex_ref_module.cc -o get_tex_ref_module.code
                    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/get_tex_ref_module.cc)   
@@ -44,7 +50,11 @@ hip_add_exe_to_target(NAME ModuleTest
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests
                       LINKER_LIBS ${RTCLIB})
+<<<<<<< HEAD
 add_dependencies(ModuleTest empty_module)
 add_dependencies(ModuleTest get_function_module)
 add_dependencies(ModuleTest launch_kernel_module)
 add_dependencies(ModuleTest get_tex_ref_module)
+=======
+add_dependencies(MemoryTest get_global_test_module)
+>>>>>>> 38254e226585dacf591fc78f4280222f84278ed3

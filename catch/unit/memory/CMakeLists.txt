@@ -156,10 +156,7 @@ set(TEST_SRC
     hipMemcpy.cc
     hipMemcpyAsync.cc
     hipMemsetFunctional.cc
-<<<<<<< HEAD
     hipMalloc.cc
-=======
->>>>>>> 0571115bed8cb52878200c2421b292c6e8e181f8
     hipMallocPitch.cc
     hipMallocArray.cc
     hipMalloc3D.cc

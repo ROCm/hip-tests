@@ -1,5 +1,6 @@
 /*
 Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -88,7 +89,7 @@ TEST_CASE("Unit_hipFuncGetAttribute_Negative_Parameters") {
                     hipErrorInvalidValue);
   }
 
-#if HT_NVIDIA // Disabled on AMD due to defect - 
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-245
   SECTION("hfunc == nullptr") {
     HIP_CHECK_ERROR(hipFuncGetAttribute(&value, HIP_FUNC_ATTRIBUTE_BINARY_VERSION, nullptr),
                     hipErrorInvalidResourceHandle);

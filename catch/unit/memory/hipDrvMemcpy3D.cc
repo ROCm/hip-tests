@@ -1,5 +1,6 @@
 /*
 Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -30,7 +31,7 @@ THE SOFTWARE.
 TEST_CASE("Unit_hipDrvMemcpy3D_Positive_Basic") {
   constexpr bool async = false;
 
-#if HT_NVIDIA // Disabled on AMD due to defect - 
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-236
   SECTION("Device to Host") { Memcpy3DDeviceToHostShell<async>(DrvMemcpy3DWrapper<>); }
 #endif
 
@@ -45,7 +46,7 @@ TEST_CASE("Unit_hipDrvMemcpy3D_Positive_Basic") {
 
   SECTION("Host to Device") { Memcpy3DHostToDeviceShell<async>(DrvMemcpy3DWrapper<>); }
 
-#if HT_NVIDIA // Disabled on AMD due to defect - 
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-236
   SECTION("Host to Host") { Memcpy3DHostToHostShell<async>(DrvMemcpy3DWrapper<>); }
 #endif
 }
@@ -59,11 +60,11 @@ TEST_CASE("Unit_hipDrvMemcpy3D_Positive_Synchronization_Behavior") {
     Memcpy3DDtoHPageableSyncBehavior(DrvMemcpy3DWrapper<>, true);
   }
 
-#if HT_NVIDIA // Disabled on AMD due to defect - 
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-236
   SECTION("Device to Pinned Host") { Memcpy3DDtoHPinnedSyncBehavior(DrvMemcpy3DWrapper<>, true); }
 #endif
 
-#if HT_NVIDIA // Disabled on AMD due to defect - 
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-232
   SECTION("Device to Device") { Memcpy3DDtoDSyncBehavior(DrvMemcpy3DWrapper<>, false); }
 
   SECTION("Host to Host") { Memcpy3DHtoHSyncBehavior(DrvMemcpy3DWrapper<>, true); }
@@ -75,7 +76,7 @@ TEST_CASE("Unit_hipDrvMemcpy3D_Positive_Parameters") {
   Memcpy3DZeroWidthHeightDepth<async>(DrvMemcpy3DWrapper<async>);
 }
 
-// Disabled on AMD due to defect - 
+// Disabled on AMD due to defect - EXSWHTEC-238
 TEST_CASE("Unit_hipDrvMemcpy3D_Positive_Array") {
   constexpr bool async = false;
   SECTION("Array from/to Host") { DrvMemcpy3DArrayHostShell<async>(DrvMemcpy3DWrapper<async>); }
@@ -133,7 +134,7 @@ TEST_CASE("Unit_hipDrvMemcpy3D_Negative_Parameters") {
                       hipErrorInvalidValue);
     }
 
-#if HT_NVIDIA // Disabled on AMD due to defect - 
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-237
     SECTION("extent.width + dst_pos.x > dst_ptr.pitch") {
       hipPos invalid_pos = dst_pos;
       invalid_pos.x = dst_ptr.pitch - extent.width + 1;

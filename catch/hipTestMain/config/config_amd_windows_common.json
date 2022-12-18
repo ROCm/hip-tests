@@ -94,6 +94,7 @@
 	   "Unit_hipStreamSynchronize_NullStreamAndStreamPerThread",
 	   "Note: intermittent Seg fault failure ",
 	   "Unit_hipGraphAddEventRecordNode_Functional_WithoutFlags",
+	   "NOTE: The following 2 tests are disabled due to defect - EXSWHTEC-238",
 	   "Unit_hipDrvMemcpy3D_Positive_Array",
 	   "Unit_hipDrvMemcpy3DAsync_Positive_Array"
 	]

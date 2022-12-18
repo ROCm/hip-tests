@@ -134,8 +134,9 @@ TEST_CASE("Unit_hipFuncSetAttribute_Positive_MaxDynamicSharedMemorySize_Not_Supp
   hipFuncAttributes old_attributes;
   HIP_CHECK(hipFuncGetAttributes(&old_attributes, reinterpret_cast<void*>(kernel)));
 
-  HIP_CHECK(hipFuncSetAttribute(reinterpret_cast<void*>(kernel),
-                                hipFuncAttributeMaxDynamicSharedMemorySize, 1024));
+  HIP_CHECK_ERROR(hipFuncSetAttribute(reinterpret_cast<void*>(kernel),
+                                      hipFuncAttributeMaxDynamicSharedMemorySize, 1024),
+                  hipErrorNotSupported);
 
   hipFuncAttributes new_attributes;
   HIP_CHECK(hipFuncGetAttributes(&new_attributes, reinterpret_cast<void*>(kernel)));
@@ -148,8 +149,9 @@ TEST_CASE("Unit_hipFuncSetAttribute_Positive_PreferredSharedMemoryCarveout_Not_S
   hipFuncAttributes old_attributes;
   HIP_CHECK(hipFuncGetAttributes(&old_attributes, reinterpret_cast<void*>(kernel)));
 
-  HIP_CHECK(hipFuncSetAttribute(reinterpret_cast<void*>(kernel),
-                                hipFuncAttributePreferredSharedMemoryCarveout, 50));
+  HIP_CHECK_ERROR(hipFuncSetAttribute(reinterpret_cast<void*>(kernel),
+                                      hipFuncAttributePreferredSharedMemoryCarveout, 50),
+                  hipErrorNotSupported);
 
   hipFuncAttributes new_attributes;
   HIP_CHECK(hipFuncGetAttributes(&new_attributes, reinterpret_cast<void*>(kernel)));

@@ -45,7 +45,9 @@ TEST_CASE("Unit_hipFuncGetAttributes_Positive_Basic") {
 
   SECTION("cacheModeCA") { REQUIRE((attr.cacheModeCA == 0 || attr.cacheModeCA == 1)); }
 
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-242
   SECTION("constSizeBytes") { REQUIRE(attr.constSizeBytes == kConstSizeBytes); }
+#endif
 
   SECTION("maxThreadsPerBlock") {
     REQUIRE(attr.maxThreadsPerBlock == GetDeviceAttribute(hipDeviceAttributeMaxThreadsPerBlock, 0));
@@ -66,8 +68,10 @@ TEST_CASE("Unit_hipFuncGetAttributes_Negative_Parameters") {
     HIP_CHECK_ERROR(hipFuncGetAttributes(nullptr, reinterpret_cast<void*>(attribute_test_kernel)),
                     hipErrorInvalidValue);
   }
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-241
   SECTION("func == nullptr") {
     hipFuncAttributes attr;
     HIP_CHECK_ERROR(hipFuncGetAttributes(&attr, nullptr), hipErrorInvalidDeviceFunction);
   }
+#endif
 }

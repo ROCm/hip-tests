@@ -1,5 +1,6 @@
 /*
 Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -51,7 +52,7 @@ TEST_CASE("Unit_hipMemcpy2D_Positive_Synchronization_Behavior") {
     Memcpy2DDtoHPinnedSyncBehavior(hipMemcpy2D, true);
   }
 
-#if HT_NVIDIA // Disabled on AMD due to defect - 
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-232
   SECTION("Device to Device") { Memcpy2DDtoDSyncBehavior(hipMemcpy2D, false); }
 
   SECTION("Host to Host") { Memcpy2DHtoHSyncBehavior(hipMemcpy2D, true); }
@@ -105,7 +106,7 @@ TEST_CASE("Unit_hipMemcpy2D_Negative_Parameters") {
           hipErrorInvalidValue);
     }
 
-#if HT_NVIDIA // Disabled on AMD due to defect - 
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-234
     SECTION("Invalid MemcpyKind") {
       HIP_CHECK_ERROR(
           hipMemcpy2D(dst, dpitch, src, spitch, width, height, static_cast<hipMemcpyKind>(-1)),

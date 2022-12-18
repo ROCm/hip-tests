@@ -1,5 +1,6 @@
 /*
 Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -29,7 +30,7 @@ THE SOFTWARE.
 TEST_CASE("Unit_hipMemcpyParam2D_Positive_Basic") {
   constexpr bool async = false;
 
-#if HT_NVIDIA // Disabled on AMD due to defect - 
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-236
   SECTION("Device to Host") { Memcpy2DDeviceToHostShell<async>(MemcpyParam2DAdapter<async>()); }
 #endif
 
@@ -44,7 +45,7 @@ TEST_CASE("Unit_hipMemcpyParam2D_Positive_Basic") {
 
   SECTION("Host to Device") { Memcpy2DHostToDeviceShell<async>(MemcpyParam2DAdapter<async>()); }
 
-#if HT_NVIDIA // Disabled on AMD due to defect - 
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-236
   SECTION("Host to Host") { Memcpy2DHostToHostShell<async>(MemcpyParam2DAdapter<async>()); }
 #endif
 }
@@ -58,13 +59,13 @@ TEST_CASE("Unit_hipMemcpyParam2D_Positive_Synchronization_Behavior") {
     Memcpy2DDtoHPageableSyncBehavior(MemcpyParam2DAdapter<>(), true);
   }
 
-#if HT_NVIDIA // Disabled on AMD due to defect - 
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-236
   SECTION("Device to Pinned Host") {
     Memcpy2DDtoHPinnedSyncBehavior(MemcpyParam2DAdapter<>(), true);
   }
 #endif
 
-#if HT_NVIDIA // Disabled on AMD due to defect - 
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-232
   SECTION("Device to Device") { Memcpy2DDtoDSyncBehavior(MemcpyParam2DAdapter<>(), false); }
 
   SECTION("Host to Host") { Memcpy2DHtoHSyncBehavior(MemcpyParam2DAdapter<>(), true); }
@@ -130,32 +131,26 @@ TEST_CASE("Unit_hipMemcpyParam2D_Negative_Parameters") {
                       hipErrorInvalidValue);
     }
 
-#if HT_NVIDIA // Disabled on AMD due to defect - 
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-237
     SECTION("WidthInBytes + srcXInBytes > srcPitch") {
       HIP_CHECK_ERROR(MemcpyParam2DAdapter<>(make_hipExtent(spitch - width + 1, 0, 0))(
                           dst, dpitch, src, spitch, width, height, kind),
                       hipErrorInvalidValue);
     }
-#endif
 
-#if HT_NVIDIA // Disabled on AMD due to defect - 
     SECTION("WidthInBytes + dstXInBytes > dstPitch") {
       HIP_CHECK_ERROR(
           MemcpyParam2DAdapter<>(make_hipExtent(0, 0, 0), make_hipExtent(dpitch - width + 1, 0, 0))(
               dst, dpitch, src, spitch, width, height, kind),
           hipErrorInvalidValue);
     }
-#endif
 
-#if HT_NVIDIA // Disabled on AMD due to defect - 
     SECTION("srcY out of bounds") {
       HIP_CHECK_ERROR(MemcpyParam2DAdapter<>(make_hipExtent(0, 1, 0))(dst, dpitch, src, spitch,
                                                                       width, height, kind),
                       hipErrorInvalidValue);
     }
-#endif
 
-#if HT_NVIDIA // Disabled on AMD due to defect - 
     SECTION("dstY out of bounds") {
       HIP_CHECK_ERROR(MemcpyParam2DAdapter<>(make_hipExtent(0, 0, 0), make_hipExtent(0, 1, 0))(
                           dst, dpitch, src, spitch, width, height, kind),

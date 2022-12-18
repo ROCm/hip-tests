@@ -75,7 +75,7 @@ TEST_CASE("Unit_hipExtLaunchMultiKernelMultiDevice_Negative_Parameters") {
                     hipErrorInvalidValue);
   }
 
-#if HT_NVIDIA // Disabled on AMD due to defect - 
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-244
   SECTION("numDevices == 0") {
     HIP_CHECK_ERROR(hipExtLaunchMultiKernelMultiDevice(params_list.data(), 0, 0u),
                     hipErrorInvalidValue);
@@ -87,7 +87,7 @@ TEST_CASE("Unit_hipExtLaunchMultiKernelMultiDevice_Negative_Parameters") {
                     hipErrorInvalidValue);
   }
 
-#if HT_NVIDIA // Disabled on AMD due to defect - 
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-244
   SECTION("invalid flags") {
     HIP_CHECK_ERROR(hipExtLaunchMultiKernelMultiDevice(params_list.data(), device_count, 999),
                     hipErrorInvalidValue);

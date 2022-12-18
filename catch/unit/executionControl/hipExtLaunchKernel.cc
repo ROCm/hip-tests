@@ -147,7 +147,7 @@ TEST_CASE("Unit_hipExtLaunchKernel_Negative_Parameters") {
                     hipErrorOutOfMemory);
   }
 
-#if HT_NVIDIA // Disabled on AMD due to defect - 
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-243
   SECTION("Invalid stream") {
     hipStream_t stream = nullptr;
     HIP_CHECK(hipStreamCreate(&stream));

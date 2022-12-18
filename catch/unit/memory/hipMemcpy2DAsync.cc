@@ -1,5 +1,6 @@
 /*
 Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -72,10 +73,13 @@ TEST_CASE("Unit_hipMemcpy2DAsync_Positive_Synchronization_Behavior") {
                              false);
   }
 
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-233
   SECTION("Device to Pageable Host") {
     Memcpy2DDtoHPageableSyncBehavior(
         std::bind(hipMemcpy2DAsync, _1, _2, _3, _4, _5, _6, _7, nullptr), true);
   }
+#endif
+
   SECTION("Device to Pinned Host") {
     Memcpy2DDtoHPinnedSyncBehavior(std::bind(hipMemcpy2DAsync, _1, _2, _3, _4, _5, _6, _7, nullptr),
                                    false);
@@ -86,10 +90,12 @@ TEST_CASE("Unit_hipMemcpy2DAsync_Positive_Synchronization_Behavior") {
                              false);
   }
 
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-233
   SECTION("Host to Host") {
     Memcpy2DHtoHSyncBehavior(std::bind(hipMemcpy2DAsync, _1, _2, _3, _4, _5, _6, _7, nullptr),
                              true);
   }
+#endif
 }
 
 TEST_CASE("Unit_hipMemcpy2DAsync_Positive_Parameters") {
@@ -134,11 +140,14 @@ TEST_CASE("Unit_hipMemcpy2DAsync_Negative_Parameters") {
                                        height, kind, nullptr),
                       hipErrorInvalidValue);
     }
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-234
     SECTION("Invalid MemcpyKind") {
       HIP_CHECK_ERROR(hipMemcpy2DAsync(dst, dpitch, src, spitch, width, height,
                                        static_cast<hipMemcpyKind>(-1), nullptr),
                       hipErrorInvalidMemcpyDirection);
     }
+#endif
+#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-235
     SECTION("Invalid stream") {
       StreamGuard stream_guard(Streams::created);
       HIP_CHECK(hipStreamDestroy(stream_guard.stream()));
@@ -146,6 +155,7 @@ TEST_CASE("Unit_hipMemcpy2DAsync_Negative_Parameters") {
           hipMemcpy2DAsync(dst, dpitch, src, spitch, width, height, kind, stream_guard.stream()),
           hipErrorContextIsDestroyed);
     }
+#endif
   };
 
   SECTION("Host to device") {

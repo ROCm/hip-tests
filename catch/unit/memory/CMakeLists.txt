@@ -178,6 +178,7 @@ set(TEST_SRC
     hipMemPoolCreate.cc
     hipMemPoolDestroy.cc
     hipMemPoolTrimTo.cc
+    hipGetSymbolSizeAddress.cc
 )
 endif()
 

@@ -35,4 +35,3 @@ THE SOFTWARE.
  * This section describes the graph management types & functions of HIP runtime API.
  * @}
  */
- 

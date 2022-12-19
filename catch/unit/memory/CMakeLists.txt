@@ -174,6 +174,7 @@ set(TEST_SRC
     hipMemAdvise.cc
     hipMemRangeGetAttributes.cc
     hipMemPoolImportExport.cc
+    hipGetSymbolSizeAddress.cc
 )
 endif()
 

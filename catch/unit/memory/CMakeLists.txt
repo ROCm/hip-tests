@@ -99,6 +99,7 @@ set(TEST_SRC
     hipMemAdvise.cc
     hipMemRangeGetAttributes.cc
     hipMallocAsync.cc
+    hipFreeAsync.cc
 )
 else()
 set(TEST_SRC
@@ -173,6 +174,7 @@ set(TEST_SRC
     hipMemsetAsync.cc
     hipMemAdvise.cc
     hipMemRangeGetAttributes.cc
+    hipFreeAsync.cc
     hipGetSymbolSizeAddress.cc
 )
 endif()

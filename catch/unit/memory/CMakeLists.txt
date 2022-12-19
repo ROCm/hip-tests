@@ -104,6 +104,7 @@ set(TEST_SRC
     hipMemPoolCreate.cc
     hipMemPoolDestroy.cc
     hipMemPoolTrimTo.cc
+    hipMemPoolImportExport.cc
 )
 else()
 set(TEST_SRC
@@ -180,6 +181,7 @@ set(TEST_SRC
     hipMemRangeGetAttributes.cc
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     hipFreeAsync.cc
 =======
     hipMallocFromPoolAsync.cc
@@ -189,6 +191,9 @@ set(TEST_SRC
     hipMemPoolDestroy.cc
     hipMemPoolTrimTo.cc
 >>>>>>> eb551d4e8f35a555cdbc03a6cf3bc07cd07ded15
+=======
+    hipMemPoolImportExport.cc
+>>>>>>> 2c58a3d63dbe96cf24b0d20b87f8efc5a97220ec
     hipGetSymbolSizeAddress.cc
 )
 endif()

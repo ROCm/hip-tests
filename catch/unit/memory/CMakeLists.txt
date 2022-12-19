@@ -174,6 +174,7 @@ set(TEST_SRC
     hipMemAdvise.cc
     hipMemRangeGetAttributes.cc
     hipMallocAsync.cc
+    hipGetSymbolSizeAddress.cc
 )
 endif()
 

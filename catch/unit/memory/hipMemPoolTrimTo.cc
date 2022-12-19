@@ -21,9 +21,36 @@
 
 #include <limits>
 
+/**
+ * @addtogroup hipMemPoolTrimTo hipMemPoolTrimTo
+ * @{
+ * @ingroup StreamOTest
+ * `hipMemPoolTrimTo(hipMemPool_t mem_pool, size_t min_bytes_to_hold)` -
+ * Releases freed memory back to the OS.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipMemPoolApi_Basic
+ */
+
 constexpr hipMemPoolProps kPoolPropsForTrim = {
     hipMemAllocationTypePinned, hipMemHandleTypeNone, {hipMemLocationTypeDevice, 0}, nullptr, {0}};
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When memory pool handle is invalid (-1):
+ *      - Expected output: do not return `hipSuccess`
+ *    -# When not possible to trim to the requested memory block
+ *      - Expected output: do not return `hipSuccess`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemPoolTrimTo.cc
+ * Test requirements
+ * ------------------------
+ *  - Runtime supports Memory Pools
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemPoolTrimTo_Negative_Parameter") {
   HIP_CHECK(hipSetDevice(0));
   int mem_pool_support = 0;

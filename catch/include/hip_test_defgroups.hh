@@ -583,3 +583,10 @@ TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_And"){}
  * End doxygen group StreamMTest.
  * @}
  */
+
+/**
+ * @defgroup StreamOTest Ordered Memory Allocator
+ * @{
+ * This section describes the tests for Stream Ordered Memory Allocator functions of HIP runtime API.
+ * @}
+ */

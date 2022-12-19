@@ -17,16 +17,20 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
- * hipMemPoolImportExport tests
-
- */
-
 #include <hip_test_common.hh>
 #ifdef __linux__
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/syscall.h>
+
+/**
+ * @addtogroup hipMemPoolExportToShareableHandle hipMemPoolExportToShareableHandle
+ * @{
+ * @ingroup StreamOTest
+ * `hipMemPoolExportToShareableHandle(void* shared_handle, hipMemPool_t mem_pool,
+ * hipMemAllocationHandleType handle_type, unsigned int flags)` -
+ * xports a memory pool to the requested handle type.
+ */
 
 constexpr hipMemPoolProps kPoolPropsForExport = {hipMemAllocationTypePinned,
                                                  hipMemHandleTypePosixFileDescriptor,
@@ -37,6 +41,21 @@ constexpr hipMemPoolProps kPoolPropsForExport = {hipMemAllocationTypePinned,
 constexpr hipMemPoolProps kPoolPropsNonShareable = {
     hipMemAllocationTypePinned, hipMemHandleTypeNone, {hipMemLocationTypeDevice, 0}, nullptr, {0}};
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates a shareable memory pool.
+ *  - Spawns child process and exports the memory pool to it.
+ *  - Imports pointer and creates memory pool.
+ *  - Performs memory read/write.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemPoolImportExport.cc
+ * Test requirements
+ * ------------------------
+ *  - Runtime supports Memory Pools
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemPoolImportExport_Positive") {
   int mem_pool_support = 0;
   HIP_CHECK(hipDeviceGetAttribute(&mem_pool_support, hipDeviceAttributeMemoryPoolsSupported, 0));
@@ -128,7 +147,26 @@ TEST_CASE("Unit_hipMemPoolImportExport_Positive") {
   }
 }
 
-
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When output pointer to shared handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When memory pool handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When flags are not valid (-1)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When memory pool is not shareable
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemPoolImportExport.cc
+ * Test requirements
+ * -----------------------
+ *  - Runtime supports Memory Pools
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemPoolExportToShareableHandle_Negative_Parameters") {
   int mem_pool_support = 0;
   HIP_CHECK(hipDeviceGetAttribute(&mem_pool_support, hipDeviceAttributeMemoryPoolsSupported, 0));
@@ -185,6 +223,43 @@ TEST_CASE("Unit_hipMemPoolExportToShareableHandle_Negative_Parameters") {
   }
 }
 
+/**
+ * End doxygen group hipMemPoolExportToShareableHandle.
+ * @}
+ */
+
+/**
+ * @addtogroup hipMemPoolImportFromShareableHandle hipMemPoolImportFromShareableHandle
+ * @{
+ * @ingroup StreamOTest
+ * `hipMemPoolImportFromShareableHandle(hipMemPool_t* mem_pool, void* shared_handle,
+ * hipMemAllocationHandleType handle_type, unsigned int flags)` -
+ * Imports a memory pool from a shared handle.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipMemPoolImportExport_Positive
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+  *    -# When pointer to shared handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When output pointer to memory pool is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When flags are not valid (-1)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When invalid allocations are performed on the memory pool
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemPoolImportExport.cc
+ * Test requirements
+ * ------------------------
+ *  - Runtime supports Memory Pools
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemPoolImportFromShareableHandle_Negative_Parameters") {
   int mem_pool_support = 0;
   HIP_CHECK(hipDeviceGetAttribute(&mem_pool_support, hipDeviceAttributeMemoryPoolsSupported, 0));
@@ -259,6 +334,38 @@ TEST_CASE("Unit_hipMemPoolImportFromShareableHandle_Negative_Parameters") {
   }
 }
 
+/**
+ * End doxygen group hipMemPoolImportFromShareableHandle.
+ * @}
+ */
+
+/**
+ * @addtogroup hipMemPoolExportPointer hipMemPoolExportPointer
+ * @{
+ * @ingroup StreamOTest
+ * `hipMemPoolExportPointer(hipMemPoolPtrExportData* export_data, void* dev_ptr)` -
+ * Export data to share a memory pool allocation between processes.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipMemPoolImportExport_Positive
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When output pointer to the shared data is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pointer to the memory being exported is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemPoolImportExport.cc
+ * Test requirements
+ * ------------------------
+ *  - Runtime supports Memory Pools
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemPoolExportPointer_Negative_Parameters") {
   int mem_pool_support = 0;
   HIP_CHECK(hipDeviceGetAttribute(&mem_pool_support, hipDeviceAttributeMemoryPoolsSupported, 0));
@@ -293,6 +400,39 @@ TEST_CASE("Unit_hipMemPoolExportPointer_Negative_Parameters") {
   HIP_CHECK(hipMemPoolDestroy(mem_pool));
 }
 
+/**
+ * End doxygen group hipMemPoolExportPointer.
+ * @}
+ */
+
+/**
+ * @addtogroup hipMemPoolImportPointer hipMemPoolImportPointer
+ * @{
+ * @ingroup StreamOTest
+ * `hipMemPoolImportPointer(void** dev_ptr, hipMemPool_t mem_pool,
+ * hipMemPoolPtrExportData* export_data)` -
+ *  Import a memory pool allocation from another process.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipMemPoolImportExport_Positive
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When memory pool handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pointer to the data to be imported is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemPoolImportExport.cc
+ * Test requirements
+ * ------------------------
+ *  - Runtime supports Memory Pools
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemPoolImportPointer_Negative_Parameters") {
   int mem_pool_support = 0;
   HIP_CHECK(hipDeviceGetAttribute(&mem_pool_support, hipDeviceAttributeMemoryPoolsSupported, 0));

@@ -22,6 +22,31 @@
 
 #include <limits>
 
+/**
+ * @addtogroup hipMallocAsync hipMallocAsync
+ * @{
+ * @ingroup StreamOTest
+ * `hipMallocAsync(void** dev_ptr, size_t size, hipStream_t stream)` -
+ * Allocates memory with stream ordered semantics.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Verifies handling of invalid arguments:
+ *    -# When the device allocation pointer is `nullptr`
+ *      - Expected output: do not return `hipSuccess`
+ *    -# When the stream is invalid
+ *      - Expected output: do not return `hipSuccess`
+ *    -# When not possible to allocate requested memory block
+ *      - Expected output: do not return `hipSuccess`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMallocAsync_negative") {
   HIP_CHECK(hipSetDevice(0));
 

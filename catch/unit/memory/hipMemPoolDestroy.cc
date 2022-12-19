@@ -21,6 +21,32 @@
 
 #include <limits>
 
+/**
+ * @addtogroup hipMemPoolDestroy hipMemPoolDestroy
+ * @{
+ * @ingroup StreamOTest
+ * `hipMemPoolDestroy(hipMemPool_t mem_pool)` -
+ * Destroys the specified memory pool.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipMemPoolApi_Basic
+ *  - @ref Unit_hipMemPoolApi_BasicAlloc
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When the memory pool handle is invalid (-1)
+ *      - Expected output: do not return `hipSuccess`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemPoolDestroy.cc
+ * Test requirements
+ * ------------------------
+ *  - Runtime supports Memory Pools
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemPoolDestroy_Negative_Parameter") {
   HIP_CHECK(hipSetDevice(0));
   int mem_pool_support = 0;

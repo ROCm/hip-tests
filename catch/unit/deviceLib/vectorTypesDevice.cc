@@ -26,11 +26,6 @@ THE SOFTWARE.
 #include <type_traits>
 #include <utility>
 
-<<<<<<< HEAD
-template <bool b, typename T = void> using Enable_if_t = typename std::enable_if<b, T>::type;
-
-=======
->>>>>>> 0571115bed8cb52878200c2421b292c6e8e181f8
 using namespace std;
 
 template <class T> __device__ typename std::add_rvalue_reference<T>::type _declval() noexcept;

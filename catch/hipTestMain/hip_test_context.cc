@@ -4,10 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <regex>
-<<<<<<< HEAD
-=======
 #include "hip_test_context.hh"
->>>>>>> 0571115bed8cb52878200c2421b292c6e8e181f8
 #include "hip_test_filesystem.hh"
 
 void TestContext::detectOS() {
@@ -102,19 +99,11 @@ void TestContext::getConfigFiles() {
     abort();
   }
 
-<<<<<<< HEAD
-  const char* env_config = std::getenv("HIP_CATCH_EXCLUDE_FILE");
-  LogPrintf("Env Config file: %s",
-            (env_config != nullptr) ? env_config : "Not found, using common config");
-  // HIP_CATCH_EXCLUDE_FILE is set for custom file path
-  if (env_config != nullptr) {
-=======
   std::string env_config = TestContext::getEnvVar("HIP_CATCH_EXCLUDE_FILE");
   LogPrintf("Env Config file: %s",
             (!env_config.empty()) ? env_config.c_str() : "Not found, using common config");
   // HIP_CATCH_EXCLUDE_FILE is set for custom file path
   if (!env_config.empty()) {
->>>>>>> 0571115bed8cb52878200c2421b292c6e8e181f8
     if(fs::exists(env_config)) {
       config_.json_files.push_back(env_config);
     }

@@ -35,3 +35,11 @@ THE SOFTWARE.
  * This section describes the graph management types & functions of HIP runtime API.
  * @}
  */
+
+/**
+ * @defgroup PeerToPeerTest PeerToPeer Device Memory Access
+ * @{
+ * @warning PeerToPeer support is experimental.
+ * This section describes tests for the PeerToPeer device memory access functions of HIP runtime API.
+ * @}
+ */

@@ -24,7 +24,32 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip/hip_runtime_api.h>
 
+/**
+ * @addtogroup hipModuleLoadData hipModuleLoadData
+ * @{
+ * @ingroup ModuleTest
+ * `hipModuleLoadData(hipModule_t* module, const void* image)` -
+ * Builds module from code object which resides in host memory. Image is pointer to that
+ * location.
+ */
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates different formats of image:
+ *    -# When compiled module is loaded from file
+ *      - Loads module as a binary file into a user space buffer named image.
+ *      - Checks that the module is not `nullptr`.
+ *    -# When module is loaded via RTC
+ *      - Loads RTC module into a user space buffer named image.
+ *      - Checks that the module is not `nullptr`
+ * Test source
+ * ------------------------
+ *  - unit/module/hipModuleLoadData.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipModuleLoadData_Positive_Basic") {
   HIP_CHECK(hipFree(nullptr));
   hipModule_t module = nullptr;
@@ -44,6 +69,23 @@ TEST_CASE("Unit_hipModuleLoadData_Positive_Basic") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When output pointer to the module is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pointer to the space buffer named image is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When image is an empty string
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/module/hipModuleLoadData.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipModuleLoadData_Negative_Parameters") {
   HIP_CHECK(hipFree(nullptr));
   hipModule_t module;

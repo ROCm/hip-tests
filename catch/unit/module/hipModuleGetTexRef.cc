@@ -24,18 +24,59 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip/hip_runtime_api.h>
 
+/**
+ * @addtogroup hipModuleGetTexRef hipModuleGetTexRef
+ * @{
+ * @ingroup ModuleTest
+ * `hipModuleGetTexRef(textureReference** texRef, hipModule_t hmod, const char* name)` -
+ * Returns the handle of the texture reference with the name from the module.
+ */
+
 static hipModule_t GetModule() {
   HIP_CHECK(hipFree(nullptr));
   static const auto mg = ModuleGuard::LoadModule("get_tex_ref_module.code");
   return mg.module();
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Get the texture reference handle from the loaded module.
+ *  - Validates that texture handle is not `nullptr`.
+ * Test source
+ * ------------------------
+ *  - unit/module/hipModuleGetTexRef.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipModuleGetTexRef_Positive_Basic") {
   hipTexRef tex_ref = nullptr;
   HIP_CHECK(hipModuleGetTexRef(&tex_ref, GetModule(), "tex"));
   REQUIRE(tex_ref != nullptr);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When output pointer to the texture reference is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When module is not loaded and is `nullptr`
+ *      - Expected output: return `hipErrorInvalidResourceHandle`
+ *    -# When texture reference name is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When texture reference name is an empty string
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When texture reference name is the name of non-existing texture reference
+ *      - Expected output: return `hipErrorNotFound`
+ * Test source
+ * ------------------------
+ *  - unit/module/hipModuleGetTexRef.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipModuleGetTexRef_Negative_Parameters") {
   hipModule_t module = GetModule();
   hipTexRef tex_ref = nullptr;

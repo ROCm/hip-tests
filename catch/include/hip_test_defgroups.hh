@@ -35,3 +35,10 @@ THE SOFTWARE.
  * This section describes the graph management types & functions of HIP runtime API.
  * @}
  */
+
+/**
+ * @defgroup ModuleTest Module Management
+ * @{
+ * This section describes tests for the module management functions of HIP runtime API.
+ * @}
+ */

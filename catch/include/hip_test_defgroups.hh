@@ -35,3 +35,10 @@ THE SOFTWARE.
  * This section describes the graph management types & functions of HIP runtime API.
  * @}
  */
+
+/**
+ * @defgroup OccupancyTest Occupancy
+ * @{
+ * This section describes tests for the occupancy functions of HIP runtime API.
+ * @}
+ */

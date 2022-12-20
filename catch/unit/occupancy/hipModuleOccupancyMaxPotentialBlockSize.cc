@@ -16,15 +16,33 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/*
-Testcase Scenarios :
-Unit_hipModuleOccupancyMaxPotentialBlockSize_Positive_RangeValidation - Test correct execution of
-hipModuleOccupancyMaxPotentialBlockSize for diffrent parameter values
-Unit_hipModuleOccupancyMaxPotentialBlockSize_Negative_Parameters - Test unsuccessful execution of
-hipModuleOccupancyMaxPotentialBlockSize api when parameters are invalid
-*/
+
 #include "occupancy_common.hh"
 
+/**
+ * @addtogroup hipModuleOccupancyMaxPotentialBlockSize hipModuleOccupancyMaxPotentialBlockSize
+ * @{
+ * @ingroup OccupancyTest
+ * `hipModuleOccupancyMaxPotentialBlockSize(int* gridSize, int* blockSize,
+ * hipFunction_t f, size_t dynSharedMemPerBlk, int blockSizeLimit)` -
+ * Determine the grid and block sizes to achieve maximum occupancy for a kernel.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When output pointer to the grid size is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When output pointer to the block size is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/occupancy/hipModuleOccupancyMaxPotentialBlockSize.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipModuleOccupancyMaxPotentialBlockSize_Negative_Parameters") {
   hipModule_t module;
   hipFunction_t function;
@@ -42,6 +60,21 @@ TEST_CASE("Unit_hipModuleOccupancyMaxPotentialBlockSize_Negative_Parameters") {
   HIP_CHECK(hipModuleUnload(module));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Check if grid size and block size are within valid range using basic kernel functions:
+ *    -# When `dynSharedMemPerBlk = 0, blockSizeLimit = 0`
+ *      - Expected output: return `hipSuccess`
+ *    -# When `dynSharedMemPerBlk = sharedMemPerBlock, blockSizeLimit = maxThreadsPerBlock`
+ *      - Expected output: return `hipSuccess`
+ * Test source
+ * ------------------------
+ *  - unit/occupancy/hipModuleOccupancyMaxPotentialBlockSize.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipModuleOccupancyMaxPotentialBlockSize_Positive_RangeValidation") {
   hipDeviceProp_t devProp;
   hipModule_t module;

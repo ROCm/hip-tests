@@ -47,6 +47,7 @@ set(TEST_SRC
     hipTextureObj2DCheckSRGBModes.cc
     hipTexObjectTests.cc
     hipTextureObjectTests.cc
+    hipBindTextureToMipmappedArray.cc
 )
 
 hip_add_exe_to_target(NAME TextureTest

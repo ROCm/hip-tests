@@ -92,8 +92,29 @@ class TexObjectTestWrapper {
   }
 };
 
-/* hipTexObjectGetResourceDesc tests */
+/**
+ * @addtogroup hipTexObjectGetResourceDesc hipTexObjectGetResourceDesc
+ * @{
+ * @ingroup TextureTest
+ * `hipTexObjectGetResourceDesc(HIP_RESOURCE_DESC* pResDesc,
+ * hipTextureObject_t texObject)` -
+ * Gets resource descriptor of a texture object.
+ */
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates new texture object and an empty resource descriptor.
+ *  - Gets resource descriptor from the texture.
+ *  - Compares it to the empty created one.
+ * Test source
+ * ------------------------
+ *  - unit/texture/hipTexObjectTests.cc
+ * Test requirements
+ * ------------------------
+ *  - Textures supported on device
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGetTexObjectResourceDesc_positive") {
   CHECK_IMAGE_SUPPORT;
 
@@ -108,7 +129,22 @@ TEST_CASE("Unit_hipGetTexObjectResourceDesc_positive") {
   REQUIRE(check_desc.res.array.hArray == tex_obj_wrapper.res_desc.res.array.hArray);
 }
 
-
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When output pointer to the resource descriptor is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the texture is not valid (0)
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/texture/hipTexObjectTests.cc
+ * Test requirements
+ * ------------------------
+ *  - Textures supported on device
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGetTexObjectResourceDesc_Negative_Parameters") {
   CHECK_IMAGE_SUPPORT;
 
@@ -128,8 +164,35 @@ TEST_CASE("Unit_hipGetTexObjectResourceDesc_Negative_Parameters") {
   }
 }
 
+/**
+ * End doxygen group hipTexObjectGetResourceDesc.
+ * @}
+ */
 
-/* hipTexObjectGetResourceViewDesc tests */
+/**
+ * @addtogroup hipTexObjectGetResourceViewDesc hipTexObjectGetResourceViewDesc
+ * @{
+ * @ingroup TextureTest
+ * `hipTexObjectGetResourceViewDesc(HIP_RESOURCE_VIEW_DESC* pResViewDesc,
+ * hipTextureObject_t texObject)` -
+ * Gets resource view descriptor of a texture object.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates new texture object and an empty resource view descriptor.
+ *  - Gets resource view descriptor from the texture.
+ *  - Compares it to the empty created one.
+ * Test source
+ * ------------------------
+ *  - unit/texture/hipTexObjectTests.cc
+ * Test requirements
+ * ------------------------
+ *  - Textures supported on device
+ *  - Platform specific (AMD)
+ *  - HIP_VERSION >= 5.2
+ */
 #if HT_AMD
 TEST_CASE("Unit_hipGetTexObjectResourceViewDesc_positive") {
   CHECK_IMAGE_SUPPORT;
@@ -146,6 +209,23 @@ TEST_CASE("Unit_hipGetTexObjectResourceViewDesc_positive") {
 }
 #endif
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When output pointer to the resource view descriptor is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the texture is not valid (0)
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/texture/hipTexObjectTests.cc
+ * Test requirements
+ * ------------------------
+ *  - Textures supported on device
+ *  - Platform specific (AMD)
+ *  - HIP_VERSION >= 5.2
+ */
 #if HT_AMD
 TEST_CASE("Unit_hipGetTexObjectResourceViewDesc_Negative_Parameters") {
   CHECK_IMAGE_SUPPORT;
@@ -167,9 +247,35 @@ TEST_CASE("Unit_hipGetTexObjectResourceViewDesc_Negative_Parameters") {
 }
 #endif
 
-/* hipTexObjectGetTextureDesc tests */
+/**
+ * End doxygen group hipTexObjectGetResourceViewDesc.
+ * @}
+ */
 
+/**
+ * @addtogroup hipTexObjectGetTextureDesc hipTexObjectGetTextureDesc
+ * @{
+ * @ingroup TextureTest
+ * `hipTexObjectGetTextureDesc(HIP_TEXTURE_DESC* pTexDesc,
+ * hipTextureObject_t texObject)` -
+ * Gets texture descriptor of a texture object.
+ */
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates new texture object and an empty texture descriptor.
+ *  - Gets texture descriptor from the texture.
+ *  - Compares it to the empty created one.
+ * Test source
+ * ------------------------
+ *  - unit/texture/hipTexObjectTests.cc
+ * Test requirements
+ * ------------------------
+ *  - Textures supported on device
+ *  - Platform specific (AMD)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGetTexObjectTextureDesc_positive") {
   CHECK_IMAGE_SUPPORT;
 
@@ -184,7 +290,23 @@ TEST_CASE("Unit_hipGetTexObjectTextureDesc_positive") {
   REQUIRE(check_desc.flags == tex_obj_wrapper.tex_desc.flags);
 }
 
-
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When output pointer to the texture descriptor is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the texture is not valid (0)
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/texture/hipTexObjectTests.cc
+ * Test requirements
+ * ------------------------
+ *  - Textures supported on device
+ *  - Platform specific (AMD)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGetTexObjectTextureDesc_Negative_Parameters") {
   CHECK_IMAGE_SUPPORT;
 
@@ -204,8 +326,31 @@ TEST_CASE("Unit_hipGetTexObjectTextureDesc_Negative_Parameters") {
   }
 }
 
-/* hipTexObjectDestroy test */
+/**
+ * End doxygen group hipTexObjectGetTextureDesc.
+ * @}
+ */
 
+/**
+ * @addtogroup hipTexObjectDestroy hipTexObjectDestroy
+ * @{
+ * @ingroup TextureTest
+ * `hipTexObjectDestroy(hipTextureObject_t texObject)` -
+ * Destroys a texture object.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Successfully destroys regular texture object.
+ * Test source
+ * ------------------------
+ *  - unit/texture/hipTexObjectTests.cc
+ * Test requirements
+ * ------------------------
+ *  - Textures supported on device
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipTexObjectDestroy_positive") {
   CHECK_IMAGE_SUPPORT;
 

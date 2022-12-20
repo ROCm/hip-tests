@@ -19,10 +19,30 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 
+/**
+ * @addtogroup hipGetChannelDesc hipGetChannelDesc
+ * @{
+ * @ingroup TextureTest
+ * `hipGetChannelDesc(hipChannelFormatDesc* desc, hipArray_const_t array)` -
+ * Gets the channel descriptor in an array.
+ */
+
 #define R 8  // rows, height
 #define C 8  // columns, width
 
-
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates a regular channel description.
+ *  - Creates array using previously created description.
+ *  - Checks that valid description is returned.
+ * Test source
+ * ------------------------
+ *  - unit/texture/hipGetChanDesc.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGetChannelDesc_CreateAndGet") {
   CHECK_IMAGE_SUPPORT;
 
@@ -41,7 +61,21 @@ TEST_CASE("Unit_hipGetChannelDesc_CreateAndGet") {
   HIP_CHECK(hipFreeArray(hip_array));
 }
 
-
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When output pointer to the description is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When array handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/texture/hipGetChanDesc.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGetChannelDesc_Negative_Parameters") {
   CHECK_IMAGE_SUPPORT;
 

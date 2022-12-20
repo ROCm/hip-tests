@@ -16,14 +16,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/*
-Testcase Scenarios :
-Unit_hipTextureMipmapRef2D_Positive_Check - Test correct execution of hipBindTextureToMipmappedArray
-api for diffrent mipmapped array sizes and number of levels
-Unit_hipTextureMipmapRef2D_Negative_Parameters - Test unsuccessful execution of
-hipBindTextureToMipmappedArray api when parameters are invalid
-*/
+
 #include <hip_test_common.hh>
+
+/**
+ * @addtogroup hipBindTextureToMipmappedArray hipBindTextureToMipmappedArray
+ * @{
+ * @ingroup TextureTest
+ * `hipBindTextureToMipmappedArray(const textureReference* tex,
+ * hipMipmappedArray_const_t mipmappedArray, const hipChannelFormatDesc* desc)` -
+ * Binds a mipmapped array to a texture.
+ */
 
 texture<float, 2, hipReadModeElementType> texRef;
 
@@ -112,6 +115,20 @@ static void runMipMapTest(unsigned int width, unsigned int height, unsigned int 
 }
 #endif
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Maps texture to the mipmapped array for different mipmapped array
+ *    sizes and number of levels.
+ * Test source
+ * ------------------------
+ *  - unit/texture/hipBindTextureToMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Textures supported on device
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipTextureMipmapRef2D_Positive_Check") {
   CHECK_IMAGE_SUPPORT
   // Height Width Vector
@@ -130,6 +147,25 @@ TEST_CASE("Unit_hipTextureMipmapRef2D_Positive_Check") {
 #endif
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When texture reference is `nullptr`
+ *      - Expected output: do not return `hipSuccess`
+ *    -# When mipmapped array handle is `nullptr`
+ *      - Expected output: do not return `hipSuccess`
+ *    -# When channel descriptor is `nullptr`
+ *      - Expected output: do not return `hipSuccess`
+ * Test source
+ * ------------------------
+ *  - unit/texture/hipBindTextureToMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Textures supported on device
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipTextureMipmapRef2D_Negative_Parameters") {
   CHECK_IMAGE_SUPPORT
 

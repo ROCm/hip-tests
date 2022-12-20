@@ -23,48 +23,46 @@ else()
     message(FATAL_ERROR "Unexpected HIP_PLATFORM: " ${HIP_PLATFORM})
 endif()
 
-# Set HIP Path
-if(NOT DEFINED HIP_PATH)
-    if(DEFINED ENV{HIP_PATH})
-        set(HIP_PATH $ENV{HIP_PATH} CACHE STRING "HIP Path")
-    else()
-        set(HIP_PATH "${PROJECT_BINARY_DIR}")
-    endif()
+if (WIN32)
+    set(EXT ".bat")
 endif()
-message(STATUS "HIP Path: ${HIP_PATH}")
 
-# Set ROCM Path
+# Read -DROCM_Path and env{ROCM_PATH}
 if(NOT DEFINED ROCM_PATH)
     if(DEFINED ENV{ROCM_PATH})
         set(ROCM_PATH $ENV{ROCM_PATH} CACHE STRING "ROCM Path")
-    else()
-        cmake_path(GET HIP_PATH PARENT_PATH ROCM_PATH)
-        if (NOT EXISTS "${ROCM_PATH}/bin/rocm_agent_enumerator")
-            set(ROCM_PATH "/opt/rocm/")
-        endif()
     endif()
 endif()
-file(TO_CMAKE_PATH "${ROCM_PATH}" ROCM_PATH)
-message(STATUS "ROCM Path: ${ROCM_PATH}")
 
-
-if(UNIX)
-    set(CMAKE_CXX_COMPILER "${HIP_PATH}/bin/hipcc")
-    set(CMAKE_C_COMPILER "${HIP_PATH}/bin/hipcc")
-    set(HIPCONFIG_EXECUTABLE "${HIP_PATH}/bin/hipconfig")
-    execute_process(COMMAND perl ${HIPCONFIG_EXECUTABLE} --version
-                    OUTPUT_VARIABLE HIP_VERSION
-                    OUTPUT_STRIP_TRAILING_WHITESPACE)
-else()
-    # using cmake_path as it handles path correctly.
-    # Set both compilers else windows cmake complains of mismatch
-    cmake_path(SET CMAKE_CXX_COMPILER "${HIP_PATH}/bin/hipcc.bat")
-    cmake_path(SET CMAKE_C_COMPILER "${HIP_PATH}/bin/hipcc.bat")
-    set(HIPCONFIG_EXECUTABLE "${HIP_PATH}/bin/hipconfig.bat")
-    execute_process(COMMAND ${HIPCONFIG_EXECUTABLE} --version
-                    OUTPUT_VARIABLE HIP_VERSION
-                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+# Read -DHIP_Path and env{HIP_PATH}
+if(NOT DEFINED HIP_PATH)
+    if(DEFINED ENV{HIP_PATH})
+        set(HIP_PATH $ENV{HIP_PATH} CACHE STRING "HIP Path")
+    endif()
 endif()
+
+# both are not set
+if(NOT DEFINED HIP_PATH AND NOT DEFINED ROCM_PATH)
+    set(HIP_PATH "/opt/rocm")
+    set(ROCM_PATH "/opt/rocm")
+elseif(DEFINED HIP_PATH AND NOT DEFINED ROCM_PATH)
+    execute_process(COMMAND ${HIP_PATH}/bin/hipconfig${EXT} --rocmpath
+                OUTPUT_VARIABLE ROCM_PATH
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+elseif(DEFINED ROCM_PATH AND NOT DEFINED HIP_PATH)
+    set(HIP_PATH ${ROCM_PATH})
+endif()
+message(STATUS "HIP_PATH: ${HIP_PATH}")
+message(STATUS "ROCM_PATH: ${ROCM_PATH}")
+
+
+set(CMAKE_CXX_COMPILER "${HIP_PATH}/bin/hipcc${EXT}")
+set(CMAKE_C_COMPILER "${HIP_PATH}/bin/hipcc${EXT}")
+set(HIPCONFIG_EXECUTABLE "${HIP_PATH}/bin/hipconfig${EXT}")
+execute_process(COMMAND ${HIPCONFIG_EXECUTABLE} --version
+                OUTPUT_VARIABLE HIP_VERSION
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+
 if(HIP_PLATFORM STREQUAL "amd")
     # prioritize -DROCM_PATH over env{ROCM_PATH} for amd platform only
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --rocm-path=${ROCM_PATH}")
@@ -227,14 +225,14 @@ add_custom_target(build_tests)
 
 
 # Tests folder
-add_subdirectory(unit ${CATCH_BUILD_DIR}/unit)
+#add_subdirectory(unit ${CATCH_BUILD_DIR}/unit)
 add_subdirectory(ABM ${CATCH_BUILD_DIR}/ABM)
 add_subdirectory(kernels ${CATCH_BUILD_DIR}/kernels)
 add_subdirectory(hipTestMain ${CATCH_BUILD_DIR}/hipTestMain)
-add_subdirectory(stress ${CATCH_BUILD_DIR}/stress)
-add_subdirectory(TypeQualifiers ${CATCH_BUILD_DIR}/TypeQualifiers)
+#add_subdirectory(stress ${CATCH_BUILD_DIR}/stress)
+#add_subdirectory(TypeQualifiers ${CATCH_BUILD_DIR}/TypeQualifiers)
 if(UNIX)
-   add_subdirectory(multiproc ${CATCH_BUILD_DIR}/multiproc)
+#   add_subdirectory(multiproc ${CATCH_BUILD_DIR}/multiproc)
 endif()
 
 cmake_policy(POP)

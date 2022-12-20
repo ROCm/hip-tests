@@ -38,13 +38,15 @@ TEST_CASE("Unit_hipOccupancyMaxPotentialBlockSize_Negative_Parameters") {
   });
 
 #if HT_AMD
+#if 0 // EXSWHTEC-219
   SECTION("Kernel function is NULL") {
     int blockSize = 0;
     int gridSize = 0;
     // nvcc doesnt support kernelfunc(NULL) for api
     HIP_CHECK_ERROR(hipOccupancyMaxPotentialBlockSize(&gridSize, &blockSize, NULL, 0, 0),
-                    hipErrorInvalidValue);
+                    hipErrorInvalidDeviceFunction);
   }
+#endif
 #endif
 }
 

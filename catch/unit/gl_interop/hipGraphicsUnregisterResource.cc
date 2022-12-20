@@ -25,6 +25,36 @@ THE SOFTWARE.
 
 #include "gl_interop_common.hh"
 
+/**
+ * @addtogroup hipGraphicsUnregisterResource hipGraphicsUnregisterResource
+ * @{
+ * @ingroup GLTest
+ * `hipGraphicsUnregisterResource(hipGraphicsResource_t resource)` -
+ * Unregisters a graphics resource.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipGraphicsGLRegisterBuffer_Positive_Basic
+ *  - @ref Unit_hipGraphicsGLRegisterImage_Positive_Basic
+ *  - @ref Unit_hipGraphicsMapResources_Positive_Basic
+ *  - @ref Unit_hipGraphicsResourceGetMappedPointer_Positive_Basic
+ *  - @ref Unit_hipGraphicsSubResourceGetMappedArray_Positive_Basic
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When resource is already unregistered
+ *      - Expected output: return `hipErrorInvalidContext`
+ *    -# When resource is not unmapped
+ *      - Expected output: return `hipErrorAlreadyMapped`
+ * Test source
+ * ------------------------
+ *  - unit/gl_interop/hipGraphicsUnregisterResource.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphicsUnregisterResource_Negative_Parameters") {
   GLContextScopeGuard gl_context;
 

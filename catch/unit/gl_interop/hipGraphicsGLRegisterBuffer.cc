@@ -25,12 +25,32 @@ THE SOFTWARE.
 
 #include "gl_interop_common.hh"
 
+/**
+ * @addtogroup hipGraphicsGLRegisterBuffer hipGraphicsGLRegisterBuffer
+ * @{
+ * @ingroup GLTest
+ * `hipGraphicsGLRegisterBuffer(hipGraphicsResource** resource,
+ * GLuint buffer, unsigned int flags)` -
+ * Registers a GL Buffer for interop and returns corresponding graphics resource.
+ */
+
 namespace {
 constexpr std::array<unsigned int, 3> kFlags{hipGraphicsRegisterFlagsNone,
                                              hipGraphicsRegisterFlagsReadOnly,
                                              hipGraphicsRegisterFlagsWriteDiscard};
 }  // anonymous namespace
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Registers a GL buffer for each supported register flag.
+ * Test source
+ * ------------------------
+ *  - unit/gl_interop/hipGraphicsGLRegisterBuffer.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphicsGLRegisterBuffer_Positive_Basic") {
   GLContextScopeGuard gl_context;
 
@@ -45,6 +65,18 @@ TEST_CASE("Unit_hipGraphicsGLRegisterBuffer_Positive_Basic") {
   HIP_CHECK(hipGraphicsUnregisterResource(vbo_resource));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Registers the same GL buffer twice.
+ *  - Stores the result in two different graphics resources.
+ * Test source
+ * ------------------------
+ *  - unit/gl_interop/hipGraphicsGLRegisterBuffer.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphicsGLRegisterBuffer_Positive_Register_Twice") {
   GLContextScopeGuard gl_context;
 
@@ -59,6 +91,27 @@ TEST_CASE("Unit_hipGraphicsGLRegisterBuffer_Positive_Register_Twice") {
   HIP_CHECK(hipGraphicsUnregisterResource(vbo_resource_2));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When output pointer to the graphics resource is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When GL buffer is not valid
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When flags are not valid
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When flag is `hipGraphicsRegisterFlagsSurfaceLoadStore`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When flag is `hipGraphicsRegisterFlagsTextureGather`
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/gl_interop/hipGraphicsGLRegisterBuffer.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphicsGLRegisterBuffer_Negative_Parameters") {
   GLContextScopeGuard gl_context;
 

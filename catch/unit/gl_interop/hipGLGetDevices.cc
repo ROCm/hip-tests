@@ -25,11 +25,32 @@ THE SOFTWARE.
 
 #include "gl_interop_common.hh"
 
+/**
+ * @addtogroup hipGLGetDevices hipGLGetDevices
+ * @{
+ * @ingroup GLTest
+ * `hipGLGetDevices(unsigned int* pHipDeviceCount, int* pHipDevices,
+ * unsigned int hipDeviceCount, hipGLDeviceList deviceList)` -
+ * Queries devices associated with GL Context.
+ */
+
 namespace {
 constexpr std::array<hipGLDeviceList, 3> kDeviceLists{
     hipGLDeviceListAll, hipGLDeviceListCurrentFrame, hipGLDeviceListNextFrame};
 }  // anonymous namespace
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Queries devices for each GL Context.
+ *  - Expects that each GL Context return only one device.
+ * Test source
+ * ------------------------
+ *  - unit/gl_interop/hipGLGetDevices.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGLGetDevices_Positive_Basic") {
   GLContextScopeGuard gl_context;
 
@@ -46,6 +67,23 @@ TEST_CASE("Unit_hipGLGetDevices_Positive_Basic") {
   REQUIRE(gl_devices.at(0) == 0);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of different scenarios:
+ *    -# When output pointer to the HIP Device count is `nullptr`
+ *      - Expected output: return `hipSuccess`
+ *    -# When output pointer to the HIP devices is `nullptr`
+ *      - Expected output: return `hipSuccess`
+ *    -# When the total number of HIP devices is 0
+ *      - Expected output: return `hipSuccess`
+ * Test source
+ * ------------------------
+ *  - unit/gl_interop/hipGLGetDevices.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGLGetDevices_Positive_Parameters") {
   GLContextScopeGuard gl_context;
 
@@ -71,6 +109,19 @@ TEST_CASE("Unit_hipGLGetDevices_Positive_Parameters") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When device list enumeration is invalid (-1)
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/gl_interop/hipGLGetDevices.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGLGetDevices_Negative_Parameters") {
   GLContextScopeGuard gl_context;
 

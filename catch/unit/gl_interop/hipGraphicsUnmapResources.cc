@@ -25,6 +25,39 @@ THE SOFTWARE.
 
 #include "gl_interop_common.hh"
 
+/**
+ * @addtogroup hipGraphicsUnmapResources hipGraphicsUnmapResources
+ * @{
+ * @ingroup GLTest
+ * `hipGraphicsUnmapResources(int count, hipGraphicsResource_t* resources,
+ * hipStream_t stream  __dparm(0))` -
+ * Unmaps a graphics resource for hip access.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipGraphicsMapResources_Positive_Basic
+ *  - @ref Unit_hipGraphicsResourceGetMappedPointer_Positive_Basic
+ *  - @ref Unit_hipGraphicsSubResourceGetMappedArray_Positive_Basic
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When count is 0
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When resources pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When resource is not mapped
+ *      - Expected output: return `hipErrorNotMapped`
+ *    -# When stream is not valid
+ *      - Expected output: return `hipErrorContextIsDestroyed`
+ * Test source
+ * ------------------------
+ *  - unit/gl_interop/hipGraphicsUnmapResources.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphicsUnmapResources_Negative_Parameters") {
   GLContextScopeGuard gl_context;
 

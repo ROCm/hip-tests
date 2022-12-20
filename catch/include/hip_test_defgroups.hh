@@ -35,3 +35,10 @@ THE SOFTWARE.
  * This section describes the graph management types & functions of HIP runtime API.
  * @}
  */
+
+/**
+ * @defgroup GLTest Interop
+ * @{
+ * This section describes tests for the GL interop functions of HIP runtime API.
+ * @}
+ */

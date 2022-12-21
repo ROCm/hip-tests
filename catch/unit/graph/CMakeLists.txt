@@ -97,6 +97,8 @@ set(TEST_SRC
   hipStreamUpdateCaptureDependencies.cc
   hipThreadExchangeStreamCaptureMode.cc
   hipLaunchHostFunc.cc
+  hipGraphCreate.cc
+  hipGraphDestroy.cc
   hipUserObjectCreate.cc
   hipGraphKernelNodeSetAttribute.cc
   hipGraphKernelNodeGetAttribute.cc

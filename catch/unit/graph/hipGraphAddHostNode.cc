@@ -1,6 +1,5 @@
 /*
 Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -58,7 +57,6 @@ static void __global__ vector_square(int* B_d, int* D_d) {
     D_d[i] = B_d[i] * B_d[i];
   }
 }
-
 static void vectorsquare_callback(void* ptr) {
   // The callback func is hipHostFn_t which is
   // of type void (*)(void*). This test is designed to

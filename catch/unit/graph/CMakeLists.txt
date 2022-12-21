@@ -82,6 +82,7 @@ set(TEST_SRC
   hipStreamGetCaptureInfo_v2.cc
   hipGraphCreate.cc
   hipGraphDestroy.cc
+  hipUserObjectCreate.cc
 )
 
 hip_add_exe_to_target(NAME GraphsTest

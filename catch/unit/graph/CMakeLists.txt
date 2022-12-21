@@ -99,6 +99,9 @@ set(TEST_SRC
   hipLaunchHostFunc.cc
   hipGraphCreate.cc
   hipGraphDestroy.cc
+  hipGraphExecDestroy.cc
+  hipGraphLaunch_old.cc
+  hipGraphUpload.cc
   hipUserObjectCreate.cc
   hipGraphKernelNodeSetAttribute.cc
   hipGraphKernelNodeGetAttribute.cc

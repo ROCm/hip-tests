@@ -1,6 +1,5 @@
 /*
 Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -114,7 +113,6 @@ TEST_CASE("Unit_hipGraphKernelNodeGetParams_Functional") {
   hipGraph_t graph;
   hipGraphNode_t kNode;
   hipKernelNodeParams kNodeParams{};
-
   HIP_CHECK(hipMalloc(&A_d, sizeof(int) * N));
   HIP_CHECK(hipMalloc(&B_d, sizeof(int) * N));
   HIP_CHECK(hipMalloc(&C_d, sizeof(int) * N));

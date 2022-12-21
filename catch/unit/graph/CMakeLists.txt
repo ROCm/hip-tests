@@ -100,6 +100,10 @@ set(TEST_SRC
   hipUserObjectCreate.cc
   hipGraphKernelNodeSetAttribute.cc
   hipGraphKernelNodeGetAttribute.cc
+  hipUserObjectRelease.cc
+  hipUserObjectRetain.cc
+  hipGraphReleaseUserObject.cc
+  hipGraphRetainUserObject.cc
 )
 
 hip_add_exe_to_target(NAME GraphsTest

@@ -25,6 +25,7 @@
 	   "Unit_hipGraphMemcpyNodeSetParamsToSymbol_Positive_Basic",
 	   "Unit_hipGraphExecMemcpyNodeSetParamsToSymbol_Positive_Basic",
 	   "Unit_hipGraphMemcpyNodeSetParamsFromSymbol_Positive_Basic",
-	   "Unit_hipGraphExecMemcpyNodeSetParamsFromSymbol_Positive_Basic"
+	   "Unit_hipGraphExecMemcpyNodeSetParamsFromSymbol_Positive_Basic",
+	   "Unit_hipGraphAddMemcpyNode_Negative_Parameters"
 	]
 }

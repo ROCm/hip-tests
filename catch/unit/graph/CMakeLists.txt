@@ -83,6 +83,7 @@ set(TEST_SRC
   hipGraphExecDestroy.cc
   hipGraphLaunch_old.cc
   hipGraphUpload.cc
+  hipUserObjectCreate.cc
 )
 
 hip_add_exe_to_target(NAME GraphsTest

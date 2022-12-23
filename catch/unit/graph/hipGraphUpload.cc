@@ -26,6 +26,7 @@ THE SOFTWARE.
  * @ingroup GraphTest
  * `hipGraphUpload(hipGraphExec_t graphExec, hipStream_t stream)` -
  * Uploads graphExec to the device in stream without executing it.
+ * @warning No HIP version supports this API yet.
  */
 
 #if 0

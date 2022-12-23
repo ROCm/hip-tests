@@ -66,6 +66,7 @@ set(TEST_SRC
     hipMemCoherencyTst.cc
     hipMallocManaged.cc
     hipMemRangeGetAttribute.cc
+    hipMemRangeGetAttribute_old.cc
     hipMemcpyFromSymbol.cc
     hipPtrGetAttribute.cc
     hipMemPoolApi.cc
@@ -114,6 +115,7 @@ set(TEST_SRC
     hipMemRangeGetAttributes.cc
     hipMallocMipmappedArray.cc
     hipFreeMipmappedArray.cc
+    hipMemRangeGetAttributes_old.cc
 )
 else()
 set(TEST_SRC
@@ -159,6 +161,7 @@ set(TEST_SRC
     hipMemAdviseMmap.cc
     hipMallocManaged.cc
     hipMemRangeGetAttribute.cc
+    hipMemRangeGetAttribute_old.cc
     hipMemcpyFromSymbol.cc
     hipPtrGetAttribute.cc
     hipMemPoolApi.cc
@@ -201,6 +204,7 @@ set(TEST_SRC
     hipMemAdvise_old.cc
     hipMemAdvise.cc
     hipMemRangeGetAttributes.cc
+    hipMemRangeGetAttributes_old.cc
     hipGetSymbolSizeAddress.cc
     hipMallocMipmappedArray.cc
     hipFreeMipmappedArray.cc

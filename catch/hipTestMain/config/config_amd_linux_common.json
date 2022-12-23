@@ -16,6 +16,9 @@
 	   "Unit_hipDeviceReset_Positive_Basic",
 	   "Unit_hipDeviceReset_Positive_Threaded",
 	   "Unit_hipMemAdvise_AccessedBy_All_Devices",
-	   "Unit_hipMemAdvise_No_Flag_Interference"
+	   "Unit_hipMemAdvise_No_Flag_Interference",
+	   "NOTE: The following 2 tests are disabled due to defect - EXSWHTEC-238",
+	   "Unit_hipDrvMemcpy3D_Positive_Array",
+	   "Unit_hipDrvMemcpy3DAsync_Positive_Array"
 	]
 }

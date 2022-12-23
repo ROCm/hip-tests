@@ -5,6 +5,8 @@ set(TEST_SRC
     hipDestroyExternalMemory.cc
     hipSignalExternalSemaphoresAsync.cc
     hipWaitExternalSemaphoresAsync.cc
+    hipImportExternalSemaphore.cc
+    hipDestroyExternalSemaphore.cc
    )
 
 find_package(Vulkan)

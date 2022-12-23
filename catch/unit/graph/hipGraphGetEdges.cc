@@ -29,16 +29,14 @@ THE SOFTWARE.
  * @{
  * @ingroup GraphTest
  * `hipGraphGetEdges(hipGraph_t graph, hipGraphNode_t *from, hipGraphNode_t *to, size_t *numEdges)`
- * - returns a graph's dependency edges
+ * - Returns a graph's dependency edges.
  */
 
 namespace {
 inline constexpr size_t kNumOfEdges = 6;
 }  // anonymous namespace
 
-/**
- * Local Function to validate number of edges.
- */
+// Local Function to validate number of edges.
 static void validate_hipGraphGetEdges_fromto(size_t testNumEdges, GraphGetNodesTest test_type,
                                              std::vector<hipGraphNode_t>& nodes_from,
                                              std::vector<hipGraphNode_t>& nodes_to,
@@ -91,18 +89,18 @@ static void validate_hipGraphGetEdges_fromto(size_t testNumEdges, GraphGetNodesT
 /**
  * Test Description
  * ------------------------
- *    - Functional test to validate API for different number of edges:
- *        -# Validate number of edges
- *        -# Validate from/to list when numEdges = num of edges
- *        -# Validate from/to list when numEdges = less than num of edges
- *        -# Validate from/to list when numEdges = more than num of edges
- *        -# Validate number of edges when zero or one node in graph
+ *  - Functional test to validate API for different number of edges:
+ *    -# Validate number of edges
+ *    -# Validate from/to list when numEdges = num of edges
+ *    -# Validate from/to list when numEdges = less than num of edges
+ *    -# Validate from/to list when numEdges = more than num of edges
+ *    -# Validate number of edges when zero or one node in graph
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipGraphGetEdges.cc
+ *  - catch\unit\graph\hipGraphGetEdges.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphGetEdges_Positive_Functional") {
   constexpr size_t N = 1024;
@@ -165,13 +163,13 @@ TEST_CASE("Unit_hipGraphGetEdges_Positive_Functional") {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify edges of created graph are matching the captured operations
+ *  - Test to verify edges of created graph are matching the captured operations.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipGraphGetEdges.cc
+ *  - catch\unit\graph\hipGraphGetEdges.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphGetEdges_Positive_CapturedStream") {
   hipGraph_t graph{nullptr};
@@ -238,18 +236,23 @@ TEST_CASE("Unit_hipGraphGetEdges_Positive_CapturedStream") {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify API behavior with invalid arguments:
- *        -# Null Graph
- *        -# Graph is uninitialized
- *        -# From is nullptr
- *        -# To is nullptr
- *        -# numEdges is nullptr
+ *  - Test to verify API behavior with invalid arguments:
+ *    -# When Graph is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When Graph is uninitialized
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When From is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When To is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When numEdges is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipGraphGetEdges.cc
+ *  - catch\unit\graph\hipGraphGetEdges.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphGetEdges_Negative_Parameters") {
   hipGraph_t graph{}, graph_uninit{};

@@ -31,7 +31,10 @@ THE SOFTWARE.
  * @{
  * @ingroup GraphTest
  * `hipGraphGetRootNodes(hipGraph_t graph, hipGraphNode_t *nodes, size_t *numNodes)` -
- * returns graph's root nodes
+ * Returns graph's root nodes.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipGraph_BasicFunctional
  */
 
 namespace {
@@ -41,18 +44,18 @@ inline constexpr size_t kNumOfRootNodes = 3;
 /**
  * Test Description
  * ------------------------
- *    - Functional test to validate API for different number of root nodes:
- *        -# Validate number of root nodes
- *        -# Validate root node list when numRootNodes = num of root nodes
- *        -# Validate root node list when numRootNodes < num of root nodes
- *        -# Validate root node list when numRootNodes > num of root nodes
- *        -# Validate numRootNodes is 0 when no nodes in graph
+ *  - Functional test to validate API for different number of root nodes:
+ *    -# Validate number of root nodes
+ *    -# Validate root node list when numRootNodes = num of root nodes
+ *    -# Validate root node list when numRootNodes < num of root nodes
+ *    -# Validate root node list when numRootNodes > num of root nodes
+ *    -# Validate numRootNodes is 0 when no nodes in graph
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipGraphGetRootNodes.cc
+ *  - catch\unit\graph\hipGraphGetRootNodes.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphGetRootNodes_Positive_Functional") {
   using namespace std::placeholders;
@@ -132,13 +135,13 @@ TEST_CASE("Unit_hipGraphGetRootNodes_Positive_Functional") {
 /**
  * Test Description
  * ------------------------
- *    - - Test to verify root nodes of created graph are matching the captured operations
+ *  - Test to verify root nodes of created graph are matching the captured operations.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipGraphGetRootNodes.cc
+ *  - catch\unit\graph\hipGraphGetRootNodes.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphGetRootNodes_Positive_CapturedStream") {
   hipStream_t streamForGraph{nullptr};
@@ -215,16 +218,19 @@ TEST_CASE("Unit_hipGraphGetRootNodes_Positive_CapturedStream") {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify API behavior with invalid arguments:
- *        -# Null Graph
- *        -# Graph is uninitialized
- *        -# numRootNodes as nullptr
+ *  - Test to verify API behavior with invalid arguments:
+ *    -# When Graph is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When Graph is uninitialized
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When numRootNodes is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipGraphGetRootNodes.cc
+ *  - catch\unit\graph\hipGraphGetRootNodes.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphGetRootNodes_Negative_Parameters") {
   hipGraph_t graph{nullptr};

@@ -26,16 +26,14 @@ THE SOFTWARE.
 
 
 /**
- * @addtogroup hipThreadExchangeStreamCaptureMode
- * hipThreadExchangeStreamCaptureMode
+ * @addtogroup hipThreadExchangeStreamCaptureMode hipThreadExchangeStreamCaptureMode
  * @{
  * @ingroup GraphTest
  * `hipThreadExchangeStreamCaptureMode(hipStreamCaptureMode *mode)` -
- * swaps the stream capture mode of a thread
+ * Swaps the stream capture mode of a thread.
  */
 
-/* Local Function for swaping stream capture mode of a thread
- */
+// Local Function for swaping stream capture mode of a thread
 static void hipGraphLaunchWithMode(hipStream_t stream, hipStreamCaptureMode mode) {
   constexpr size_t N = 1024;
   size_t Nbytes = N * sizeof(float);
@@ -89,15 +87,15 @@ void threadFuncCaptureMode(hipStream_t stream, hipStreamCaptureMode mode) {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify basic functionality for API that swaps the stream capture
- * mode of a thread. All combinations for main and other thread capture modes
- * are tested
+ *  - Test to verify basic functionality for API that swaps the stream capture
+ *    mode of a thread.
+ *  - All combinations for main and other thread capture modes are tested.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipThreadExchangeStreamCaptureMode.cc
+ *  - catch\unit\graph\hipThreadExchangeStreamCaptureMode.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.3
+ *  - HIP_VERSION >= 5.3
  */
 TEST_CASE("Unit_hipThreadExchangeStreamCaptureMode_Positive_Functional") {
   StreamGuard stream_guard(Streams::created);
@@ -116,17 +114,22 @@ TEST_CASE("Unit_hipThreadExchangeStreamCaptureMode_Positive_Functional") {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify API behavior with invalid arguments:
- *        -# Mode as nullptr
- *        -# Mode as -1
- *        -# Mode as INT_MAX
- *        -# Mode other than existing 3 modes (hipStreamCaptureModeRelaxed + 1)
+ *  - Test to verify API behavior with invalid arguments:
+ *    -# When mode is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When mode is -1
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When mode is `INT_MAX`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When mode is other than existing 3 modes (`hipStreamCaptureModeRelaxed` + 1)
+ *      - Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipThreadExchangeStreamCaptureMode.cc
+ *  - catch\unit\graph\hipThreadExchangeStreamCaptureMode.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.3
+ *  - Platform specific (AMD)
+ *  - HIP_VERSION >= 5.3
  */
 #if HT_AMD  // getting error in Cuda Setup
 TEST_CASE("Unit_hipThreadExchangeStreamCaptureMode_Negative_Parameters") {

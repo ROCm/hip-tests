@@ -22,7 +22,46 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
 
-/* Test verifies hipGraphAddKernelNode API Negative scenarios.
+/**
+ * @addtogroup hipGraphAddKernelNode hipGraphAddKernelNode
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphAddKernelNode(hipGraphNode_t* pGraphNode, hipGraph_t graph,
+ * const hipGraphNode_t* pDependencies, size_t numDependencies,
+ * const hipKernelNodeParams* pNodeParams)` -
+ * Creates a kernel execution node and adds it to a graph.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipGraph_BasicFunctional
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When pointer to the graph node is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When graph handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When number of dependencies is not valid
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the list of dependcencies is valid but the number of dependencies is not valid
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pointer to node params is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node params function data member is `nullptr`
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidDeviceFunction`
+ *    -# When node params kernel params data member is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When adding kernel node to graph after graph is destroyed
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphAddKernelNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddKernelNode_Negative") {
   constexpr int N = 1024;

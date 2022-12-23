@@ -19,26 +19,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
-Test Case Scenarios of hipGraphAddHostNode API:
-
-Functional:
-1. Creates graph, Adds HostNode which updates the variable and validates the result
-2. Create graph, Add Graph nodes and clones the graph. Add Host node to the cloned graph
-   and validate the result
-3. Creates graph which performs the square of number in the kernel function and the result
-   is validated in the callback function of hipGraphAddHostNode API
-
-Negative:
-
-1) Pass pGraphNode as nullptr and verify api doesn’t crash, returns error code.
-2) Pass graph as nullptr and verify api doesn’t crash, returns error code.
-3) Pass pNodeParams as nullptr and verify api doesn’t crash, returns error code.
-4) Pass hipHostNodeParams::hipHostFn_t as nullptr and verify api doesn't crash, returns error code.
-*/
-
 #include <hip_test_checkers.hh>
 #include <hip_test_common.hh>
+
+/**
+ * @addtogroup hipGraphAddHostNode hipGraphAddHostNode
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphAddHostNode(hipGraphNode_t* pGraphNode, hipGraph_t graph,
+ * const hipGraphNode_t* pDependencies, size_t numDependencies,
+ * const hipHostNodeParams* pNodeParams)` -
+ * Creates a host execution node and adds it to a graph.
+ */
 
 #define SIZE 1024
 
@@ -73,10 +65,29 @@ static void vectorsquare_callback(void* ptr) {
   }
 }
 
-/*
-This test case verifies the negative scenarios of
-hipGraphAddHostNode API
-*/
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When pointer to the graph node is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When graph handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When number of dependencies is not valid
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When list of dependencies is valid but number of dependencies is not valid
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pointer to host params is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When host params host function data member is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphAddHostNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphAddHostNode_Negative") {
   constexpr size_t N = 1024;
   hipGraph_t graph;
@@ -130,11 +141,20 @@ TEST_CASE("Unit_hipGraphAddHostNode_Negative") {
   HIP_CHECK(hipGraphDestroy(graph));
 }
 
-/*
-This test case verifies hipGraphAddHostNode API in cloned graph
-Creates graph, Add graph nodes and clone the graph
-Add HostNode to the cloned graph and validate the result
-*/
+/**
+ * Test Description
+ * ------------------------
+ *  - Verifies API behaviour in cloned graph.
+ *  - Creates graph and adds nodes.
+ *  - Clones graph and adds host node to the cloned graph.
+ *  - Validates the result.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphAddHostNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphAddHostNode_ClonedGraphWithHostNode") {
   constexpr size_t N = 1024;
   constexpr size_t Nbytes = N * sizeof(int);
@@ -192,6 +212,19 @@ This test case verifies the square of number by
 creating graph, Add kernel node which does the square
 of number and the result is validated by hipGraphAddHostNode API
 */
+/**
+ * Test Description
+ * ------------------------
+ *  - Verifies square of number by creating graph.
+ *  - Adds kernel node which does the square of number.
+ *  - Result is validated.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphAddHostNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphAddHostNode_VectorSquare") {
   constexpr size_t N = 1024;
   constexpr size_t Nbytes = N * sizeof(int);
@@ -250,6 +283,19 @@ Create graph, calls the host function and updates
 the parameters in the callback function and
 validates it.
 */
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates graph and calls the host function.
+ *  - Updates the prameters in the callback function.
+ *  - Validates results.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphAddHostNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphAddHostNode_BasicFunc") {
   constexpr size_t N = 1024;
   constexpr size_t Nbytes = N * sizeof(int);

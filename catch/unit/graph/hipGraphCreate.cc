@@ -25,21 +25,23 @@ THE SOFTWARE.
  * @{
  * @ingroup GraphTest
  * `hipGraphCreate(hipGraph_t *pGraph, unsigned int flags)` -
- * creates a graph
+ * Creates a graph.
  */
 
 /**
  * Test Description
  * ------------------------
- *    - Negative parameter test for hipGraphCreate:
- *        -# Expected hipErrorInvalidValue when pGraph is null
- *        -# Expected hipErrorInvalidValue when flags is not 0
+ *  - Validates handling of invalid parameters:
+ *    -# When output pointer to the graph is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When flags are not default (0)
+ *      - Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------
- *    - unit/graph/hipGraphCreate.cc
+ *  - unit/graph/hipGraphCreate.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphCreate_Negative_Parameters") {
   hipGraph_t graph = nullptr;
@@ -54,14 +56,14 @@ TEST_CASE("Unit_hipGraphCreate_Negative_Parameters") {
 /**
  * Test Description
  * ------------------------
- *    - Basic positive test for hipGraphCreate
- *    - Create an emtpy graph
+ *  - Creates an emtpy graph.
+ *  - Checks that it is not `nullptr`.
  * Test source
  * ------------------------
- *    - unit/graph/hipGraphCreate.cc
+ *  - unit/graph/hipGraphCreate.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphCreate_Positive_Basic") {
   hipGraph_t graph = nullptr;

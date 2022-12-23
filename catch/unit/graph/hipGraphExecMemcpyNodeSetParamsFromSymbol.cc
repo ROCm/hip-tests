@@ -28,6 +28,15 @@ THE SOFTWARE.
 
 #include "graph_memcpy_to_from_symbol_common.hh"
 
+/**
+ * @addtogroup hipGraphExecMemcpyNodeSetParamsFromSymbol hipGraphExecMemcpyNodeSetParamsFromSymbol
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphExecMemcpyNodeSetParamsFromSymbol(hipGraphExec_t hGraphExec, hipGraphNode_t node, void
+ * *dst, const void *symbol, size_t count, size_t offset, hipMemcpyKind kind)` -
+ * Sets the parameters for a memcpy node in the given graphExec to copy from a symbol on the.
+ */
+
 HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_GLOBALS(char)
 HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_GLOBALS(int)
 HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_GLOBALS(float)
@@ -72,31 +81,25 @@ void GraphExecMemcpyFromSymbolSetParamsShell(const void* symbol, const void* alt
 }
 
 /**
- * @addtogroup hipGraphExecMemcpyNodeSetParamsFromSymbol hipGraphExecMemcpyNodeSetParamsFromSymbol
- * @{
- * @ingroup GraphTest
- * `hipGraphExecMemcpyNodeSetParamsFromSymbol(hipGraphExec_t hGraphExec, hipGraphNode_t node, void
- * *dst, const void *symbol, size_t count, size_t offset, hipMemcpyKind kind)` -
- * Sets the parameters for a memcpy node in the given graphExec to copy from a symbol on the
- */
-
-/**
  * Test Description
  * ------------------------
- *    - Verify that data is correctly copied from a symbol after node parameters are set following
- * node addition. A graph is constructed to which a MemcpyFromSymbol node is added with valid but
- * incorrect parameters. After the graph is instantiated the parameters are updated to correct
- * values and the graph executed. Values in destination memory are compared against values known to
- * be in symbol memory.
- * The test is run for scalar, const scalar, array, and const array symbols of types char, int,
- * float and double. For array symbols, the test is repeated for zero and non-zero offset values.
- * Verification is performed for destination memory allocated on host and device.
+ *  - Verify that data is correctly copied from a symbol after node parameters are set following
+ *    node addition.
+ *  - A graph is constructed to which a MemcpyFromSymbol node is added with valid but
+ *    incorrect parameters.
+ *  - After the graph is instantiated the parameters are updated to correct values and the
+ *    graph executed.
+ *  - Values in destination memory are compared against values known to be in symbol memory.
+ *  - The test is run for scalar, const scalar, array, and const array symbols of types char, int,
+ *    float and double.
+ *  - For array symbols, the test is repeated for zero and non-zero offset values.
+ *  - Verification is performed for destination memory allocated on host and device.
  * Test source
  * ------------------------
- *    - unit/graph/hipGraphExecMemcpyNodeSetParamsFromSymbol.cc
+ *  - unit/graph/hipGraphExecMemcpyNodeSetParamsFromSymbol.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParamsFromSymbol_Positive_Basic") {
   SECTION("char") {
@@ -123,18 +126,33 @@ TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParamsFromSymbol_Positive_Basic") {
 /**
  * Test Description
  * ------------------------
- *    - Verify API behavior with invalid arguments:
- *      -# gGraphExec is nullptr
- *      -# node is nullptr
- *      -# dst is nullptr
- *      -# symbol is nullptr
- *      -# count is zero
- *      -# count is larger than symbol size
- *      -# count + offset is larger than symbol size
- *      -# kind is illogical (hipMemcpyHostToDevice)
- *      -# kind is an invalid enum value
- *      -# Changing memcpy direction
- *      -# Changing dst to memory allocated on a different device than the original dst
+ *  - Verify API behavior with invalid arguments:
+ *    -# When gGraphExec is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When dst is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When symbol is `nullptr`
+ *      - Expected output: return `hipErrorInvalidSymbol`
+ *    -# When count is zero
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When count is larger than symbol size
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When count + offset is larger than symbol size
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When kind is illogical (`hipMemcpyHostToDevice`)
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidMemoryDirection`
+ *    -# When kind is an invalid enum value
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidMemoryDirection`
+ *    -# When changing memcpy direction
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When changing dst to memory allocated on a different device than the original dst
+ *      - Multi-device
+ *      - Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------
  *    - unit/graph/hipGraphExecMemcpyNodeSetParamsFromSymbol.cc

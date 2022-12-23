@@ -24,7 +24,10 @@ THE SOFTWARE.
  * @{
  * @ingroup GraphTest
  * `hipGraphExecDestroy(hipGraphExec_t graphExec)` -
- * Destroys an executable graph
+ * Destroys an executable graph.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipGraph_BasicFunctional
  */
 
 static void HostFunctionSetToZero(void* arg) {
@@ -60,14 +63,14 @@ static void CreateTestExecutableGraph(hipGraphExec_t* graph_exec, int* number) {
 /**
  * Test Description
  * ------------------------
- *    - Basic positive test for hipGraphExecDestroy
- *    - create an executable graph and then destroy it
+ *  - Creates an executable graph.
+ *  - Destroys it successfully.
  * Test source
  * ------------------------
- *    - unit/graph/hipGraphExecDestroy.cc
+ *  - unit/graph/hipGraphExecDestroy.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecDestroy_Positive_Basic") {
   int number = 5;
@@ -79,14 +82,15 @@ TEST_CASE("Unit_hipGraphExecDestroy_Positive_Basic") {
 /**
  * Test Description
  * ------------------------
- *    - Basic negative parameter test for hipGraphExecDestroy
- *    - try to destroy an empty hipGraphExec_t object
+ *  - Validates handling of invalid arguments:
+ *    - When executable graph handle is not instantiated
+ *      - Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------
- *    - unit/graph/hipGraphExecDestroy.cc
+ *  - unit/graph/hipGraphExecDestroy.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecDestroy_Negative_Parameters") {
   hipGraphExec_t graph_exec{};

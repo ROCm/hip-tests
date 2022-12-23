@@ -29,17 +29,17 @@ THE SOFTWARE.
  * @{
  * @ingroup GraphTest
  * `hipGraphRemoveDependencies(hipGraph_t graph, const hipGraphNode_t *from, const hipGraphNode_t
- * *to, size_t numDependencies)` - removes dependency edges from a graph
+ * *to, size_t numDependencies)` - Removes dependency edges from a graph.
  */
 
 namespace {
 inline constexpr size_t kNumOfEdges = 6;
 }  // anonymous namespace
 
-/**
- * Kernel Functions to perform square and return in the same
- * input memory location.
- */
+/*
+Kernel Functions to perform square and return in the same
+input memory location.
+*/
 static __global__ void vector_square(int* A_d, size_t N_ELMTS) {
   size_t gputhread = (blockIdx.x * blockDim.x + threadIdx.x);
   size_t stride = blockDim.x * gridDim.x;
@@ -53,18 +53,18 @@ static __global__ void vector_square(int* A_d, size_t N_ELMTS) {
 /**
  * Test Description
  * ------------------------
- *    - Functional Test for removing dependencies in manually created graph and verifying number of
- * edges:
- *        -# Remove some dependencies
- *            -# Node by Node
- *            -# Node lists
- *        -# Remove all dependencies
+ *  - Functional Test for removing dependencies in manually created graph and verifying number of
+ *    edges:
+ *    -# Remove some dependencies
+ *      - Node by Node
+ *      - Node lists
+ *    -# Remove all dependencies
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipGraphRemoveDependencies.cc
+ *  - catch\unit\graph\hipGraphRemoveDependencies.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphRemoveDependencies_Positive_Functional") {
   constexpr size_t N = 1024;
@@ -149,16 +149,16 @@ TEST_CASE("Unit_hipGraphRemoveDependencies_Positive_Functional") {
 /**
  * Test Description
  * ------------------------
- *    - Functional Test for removing dependencies in stream captured graph and verifying number of
- * edges:
- *        -# Remove some dependencies
- *        -# Remove all dependencies
+ *  - Functional Test for removing dependencies in stream captured graph and verifying number of
+ *    edges:
+ *    -# Remove some dependencies
+ *    -# Remove all dependencies
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipGraphRemoveDependencies.cc
+ *  - catch\unit\graph\hipGraphRemoveDependencies.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphRemoveDependenciesPositive_CapturedStream") {
   hipGraph_t graph;
@@ -208,13 +208,13 @@ TEST_CASE("Unit_hipGraphRemoveDependenciesPositive_CapturedStream") {
 /**
  * Test Description
  * ------------------------
- *    - Dynamically modify dependencies in a graph and verify the computation:
+ *  - Dynamically modify dependencies in a graph and verify the computation.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipGraphRemoveDependencies.cc
+ *  - catch\unit\graph\hipGraphRemoveDependencies.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphRemoveDependencies_Positive_ChangeComputeFunc") {
   hipStream_t streamForGraph;
@@ -314,18 +314,19 @@ TEST_CASE("Unit_hipGraphRemoveDependencies_Positive_ChangeComputeFunc") {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify API behavior with special cases of valid arguments:
- *        -# numDependencies is zero, To/From are nullptr
- *        -# numDependencies is zero, To or From are nullptr
- *        -# numDependencies is zero, To/From are valid
- *        -# numDependencies is zero, To/From are the same
- *        -# numDependencies < To/From length
+ *  - Test to verify API behavior with special cases of valid arguments:
+ *    -# When numDependencies is zero, To/From are `nullptr`
+ *      - Platform specific (NVIDIA)
+ *    -# When numDependencies is zero, To or From are `nullptr`
+ *    -# When numDependencies is zero, To/From are valid
+ *    -# When numDependencies is zero, To/From are the same
+ *    -# When numDependencies < To/From length
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipGraphRemoveDependencies.cc
+ *  - catch\unit\graph\hipGraphRemoveDependencies.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphRemoveDependencies_Positive_Parameters") {
   constexpr size_t Nbytes = 1024;
@@ -398,22 +399,22 @@ TEST_CASE("Unit_hipGraphRemoveDependencies_Positive_Parameters") {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify API behavior with invalid arguments:
- *        -# Null Graph
- *        -# Graph is uninitialized
- *        -# To or From is nullptr
- *        -# To/From are nullptr
- *        -# From belongs to different graph
- *        -# To belongs to different graph
- *        -# Remove non existing dependency
- *        -# Remove same dependency twice
- *        -# numDependencies > To/From length
+ *  - Test to verify API behavior with invalid arguments:
+ *    -# When Graph is `nullptr`
+ *    -# When Graph is uninitialized
+ *    -# When To or From is `nullptr`
+ *    -# When To/From are `nullptr`
+ *    -# When To/From belongs to different graph
+ *      - Platform specific (NVIDIA)
+ *    -# When non existing dependency is removed
+ *    -# When same dependency is removed twice
+ *    -# When numDependencies > To/From length
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipGraphRemoveDependencies.cc
+ *  - catch\unit\graph\hipGraphRemoveDependencies.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphRemoveDependencies_Negative_Parameters") {
   hipGraph_t graph{};

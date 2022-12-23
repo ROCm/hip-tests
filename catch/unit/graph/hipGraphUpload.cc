@@ -20,15 +20,15 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 
-#if 0
-
 /**
  * @addtogroup hipGraphUpload hipGraphUpload
  * @{
  * @ingroup GraphTest
  * `hipGraphUpload(hipGraphExec_t graphExec, hipStream_t stream)` -
- * Uploads graphExec to the device in stream without executing it
+ * Uploads graphExec to the device in stream without executing it.
  */
+
+#if 0
 
 static void HostFunctionSetToZero(void *arg)
 {
@@ -86,15 +86,15 @@ static int HipGraphUpload_Positive_Simple(hipStream_t stream) {
 /**
  * Test Description
  * ------------------------ 
- *    - Basic positive test for hipGraphUpload
- *        -# stream as a created stream
- *        -# with stream as hipStreamPerThread
+ *  - Validates several basic scenarios:
+ *    -# When graph is uploaded with a stream as a created stream
+ *    -# with graph is uploaded with a stream as a per thread
  * Test source
  * ------------------------ 
- *    - unit/graph/hipGraphUpload.cc
+ *  - unit/graph/hipGraphUpload.cc
  * Test requirements
  * ------------------------ 
- *    - No hip version supports hipGraphUpload still
+ *  - No hip version supports hipGraphUpload still
  */
 TEST_CASE("Unit_hipGraphUpload_Positive") {
   SECTION("stream as a created stream") {
@@ -107,17 +107,21 @@ TEST_CASE("Unit_hipGraphUpload_Positive") {
   SECTION("with stream as hipStreamPerThread") {
     HipGraphUpload_Positive_Simple(hipStreamPerThread);
   }
-  
+
 }
 
 /**
  * Test Description
  * ------------------------ 
- *    - Negative parameter test for hipGraphUpload
- *        -# graphExec is nullptr and stream is a created stream
- *        -# graphExec is nullptr and stream is hipStreamPerThread
- *        -# graphExec is an empty object
- *        -# graphExec is destroyed before calling hipGraphUpload
+ *  - Validates handling of invalid arguments:
+ *    -# When graph handle is `nullptr` and stream is a created stream
+  *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When graph handle is `nullptr` and stream is per thread
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When graph handle is an empty object
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When graph handle is destroyed before calling upload
+ *      - Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------ 
  *    - unit/graph/hipGraphUpload.cc

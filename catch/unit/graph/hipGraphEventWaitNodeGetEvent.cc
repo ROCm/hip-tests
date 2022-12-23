@@ -17,27 +17,19 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
-Testcase Scenarios :
- 1) Validate that the event returned by hipGraphEventWaitNodeGetEvent matches
-with the event set in hipGraphAddEventWaitNode.
- 2) Negative Scenarios
-    - Input node parameter is passed as nullptr.
-    - Output event parameter is passed as nullptr.
-    - Input node parameter is an empty node.
-    - Input node parameter is a memset node.
-    - Input node parameter is a event record node.
-    - Input node parameter is an uninitialized node.
-*/
-
 #include <hip_test_checkers.hh>
 #include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
 
-
 /**
- * Local Function
+ * @addtogroup hipGraphEventWaitNodeGetEvent hipGraphEventWaitNodeGetEvent
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphEventWaitNodeGetEvent(hipGraphNode_t node, hipEvent_t* event_out)` -
+ * Returns the event associated with an event wait node.
  */
+
+// Local Function
 static void validateEventWaitNodeGetEvent(unsigned flag) {
   hipGraph_t graph;
   HIP_CHECK(hipGraphCreate(&graph, 0));
@@ -54,7 +46,18 @@ static void validateEventWaitNodeGetEvent(unsigned flag) {
 }
 
 /**
- * Scenario 1
+ * Test Description
+ * ------------------------
+ *  - Validate that the event returned matches with the event that is set previously.
+ *    -# When flag is `hipEventDefault`
+ *    -# When flag is `hipEventBlockingSync`
+ *    -# When flag is `hipEventDisableTiming`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphEventWaitNodeGetEvent.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphEventWaitNodeGetEvent_Functional") {
   // Create event nodes with different flags and validate with
@@ -73,7 +76,27 @@ TEST_CASE("Unit_hipGraphEventWaitNodeGetEvent_Functional") {
 }
 
 /**
- * Scenario 2
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When node handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When output pointer to the event is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When input node is empty node
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When input node is memset node
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When input node is a record node
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When input node is not initialized node
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphEventWaitNodeGetEvent.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphEventWaitNodeGetEvent_Negative") {
   hipGraph_t graph;

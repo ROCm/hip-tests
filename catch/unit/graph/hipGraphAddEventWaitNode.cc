@@ -17,33 +17,6 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
-Testcase Scenarios :
- 1) Simple Scenario: Create an event record node and then create an event
-wait node using the same event and add it to graph. Instantiate and Launch
-the Graph. Wait for the graph to complete. The operation must succeed without
-any failures.
- 2) Create a graph 1 with memcpyh2d, event record node (event A), kernel1
-and memcpyd2h nodes. Create a graph 2 with Event Wait (event A) , kernel2
-and memcpyd2h nodes. Instantiate and launch graph1 on stream1 and graph2 on
-stream2. Wait for both graph1 and graph2 to complete. Validate the result of
-both graphs.
- 3) Execute graph1 and graph2 in scenario 2 multiple times in a loop
-(100 times).
- 4) Execute scenario 2 with stream1 = stream2.
- 5) Repeat scenario 2 for different event flags.
- 6) Validate that no error is reported when numDeps <= dependencies length
- 7) Negative Scenarios
-    - Pass input node parameter as nullptr.
-    - Pass input graph parameter as nullptr.
-    - Pass input dependency parameter as nullptr.
-    - Node in dependency is from different graph
-    - Invalid numNodes
-    - Duplicate node in dependencies
-    - Pass input event parameter as nullptr.
-    - Pass uninitialized input graph parameter.
-    - Pass uninitialized input event parameter.
-*/
 #include <functional>
 
 #include <hip_test_checkers.hh>
@@ -53,7 +26,28 @@ both graphs.
 #include "graph_tests_common.hh"
 
 /**
- * Scenario 1
+ * @addtogroup hipGraphAddEventWaitNode hipGraphAddEventWaitNode
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphAddEventWaitNode(hipGraphNode_t* pGraphNode, hipGraph_t graph,
+ * const hipGraphNode_t* pDependencies, size_t numDependencies, hipEvent_t event)` -
+ * Creates an event wait node and adds it to a graph.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Create an event record node.
+ *  - Create an event wait node using the same event and add it to graph.
+ *  - Instantiate and launch the Graph.
+ *  - Wait for the graph to complete.
+ *  - The operation must succeed without any failures.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphAddEventWaitNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddEventWaitNode_Functional_Simple") {
   hipGraph_t graph;
@@ -79,9 +73,7 @@ TEST_CASE("Unit_hipGraphAddEventWaitNode_Functional_Simple") {
   HIP_CHECK(hipStreamDestroy(streamForGraph));
 }
 
-/**
- * Local Function
- */
+// Local Function
 static void validate_hipGraphAddEventWaitNode_internodedep(int test, int nstep,
                                                            unsigned flag = hipEventDefault) {
   constexpr size_t N = 1024;
@@ -214,28 +206,70 @@ static void validate_hipGraphAddEventWaitNode_internodedep(int test, int nstep,
 }
 
 /**
- * Scenario 2
+ * Test Description
+ * ------------------------
+ *  - Create a graph 1 with memcpyh2d, event record node, kernel1
+ *    and memcpyd2h nodes.
+ *  - Create a graph 2 with Event Wait, kernel2 and memcpyd2h nodes.
+ *  - Instantiate and launch graph1 on stream1 and graph2 on stream2.
+ *  - Wait for both graph1 and graph2 to complete.
+ *  - Validate the result of both graphs.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphAddEventWaitNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddEventWaitNode_MultGraphMultStrmDependency") {
   validate_hipGraphAddEventWaitNode_internodedep(0, 1);
 }
 
 /**
- * Scenario 3
+ * Test Description
+ * ------------------------
+ *  - Execute graph1 and graph2 in scenario @ref Unit_hipGraphAddEventWaitNode_MultGraphMultStrmDependency
+ *    multiple times in a loop (100 times).
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphAddEventWaitNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddEventWaitNode_MultipleRun") {
   validate_hipGraphAddEventWaitNode_internodedep(0, 100);
 }
 
 /**
- * Scenario 4
+ * Test Description
+ * ------------------------
+ *  - Execute scenario @ref Unit_hipGraphAddEventWaitNode_MultGraphMultStrmDependency
+ *    with stream1 = stream2.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphAddEventWaitNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddEventWaitNode_MultGraphOneStrmDependency") {
   validate_hipGraphAddEventWaitNode_internodedep(1, 1);
 }
 
 /**
- * Scenario 5
+ * Test Description
+ * ------------------------
+ *  - Repeat scenario @ref Unit_hipGraphAddEventWaitNode_MultGraphMultStrmDependency
+ *    for different event flags.
+ *    -# When flag is `hipEventBlockingSync`
+ *    -# When flag is `hipEventDisableTiming`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphAddEventWaitNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddEventWaitNode_differentFlags") {
   SECTION("flag = hipEventBlockingSync") {
@@ -247,7 +281,21 @@ TEST_CASE("Unit_hipGraphAddEventWaitNode_differentFlags") {
 }
 
 /**
- * Scenario 6: Positive parameter tests
+ * Test Description
+ * ------------------------
+ *  - Validate that no error is reported for different scenarios:
+ *    -# When number of dependencies is zero and dependencies are not `nullptr`
+ *      - Expected output: return dependencies number is zero
+ *    -# When number of dependencies is less than total length
+ *      - Expected output: return dependencies number less than total length
+ *    -# When number of dependencies is equal to the total length
+ *      - Expected output: return dependencies number equal to the total length 
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphAddEventWaitNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddEventWaitNode_Positive_Parameters") {
   hipGraph_t graph;
@@ -286,7 +334,35 @@ TEST_CASE("Unit_hipGraphAddEventWaitNode_Positive_Parameters") {
 }
 
 /**
- * Scenario 7
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When graph handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node dependencies are `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When dependencies are not `nullptr` and the size is not zero
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node in dependency is from different graph
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When number of nodes is not valid (0)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When duplicate node in dependencies
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node event handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When graph is not initialized
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When event is not initialized
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphAddEventWaitNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddEventWaitNode_Negative") {
   using namespace std::placeholders;

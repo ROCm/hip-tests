@@ -28,7 +28,10 @@ THE SOFTWARE.
  * @{
  * @ingroup GraphTest
  * `hipStreamBeginCapture(hipStream_t stream, hipStreamCaptureMode mode)` -
- * begins graph capture on a stream
+ * Begins graph capture on a stream.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipGraph_BasicFunctional
  */
 
 static int gCbackIter = 0;
@@ -98,17 +101,17 @@ void captureStreamAndLaunchGraph(F graphFunc, hipStreamCaptureMode mode, hipStre
 /**
  * Test Description
  * ------------------------
- *    - Basic Functional Test for capturing created/hipStreamPerThread stream
- * and replaying sequence. Test exercises the API on all available modes:
- *        -# Linear sequence capture - each graph node has only one dependency
- *        -# Branched sequence capture - some graph nodes have more than one
- * dependency
+ *  - Basic Functional Test for capturing created/hipStreamPerThread stream
+ *    and replaying sequence.
+ *  - Test exercises the API on all available modes:
+ *    -# Linear sequence capture - each graph node has only one dependency
+ *    -# Branched sequence capture - some graph nodes have more than one dependency
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamBeginCapture.cc
+ *  - catch\unit\graph\hipStreamBeginCapture.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_Functional") {
   const auto stream_type = GENERATE(Streams::perThread, Streams::created);
@@ -143,17 +146,22 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_Functional") {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify API behavior with invalid arguments:
- *        -# Begin capture on legacy/null stream
- *        -# Begin capture on the already captured stream
- *        -# Begin capture with invalid mode
- *        -# Begin capture on uninitialized stream
+ *  - Validates handling of invalid arguments:
+ *    -# When begin capture on legacy/null stream
+ *      - Expected output: return `hipErrorStreamCaptureUnsupported`
+ *    -# When begin capture on the already captured stream
+ *      - Expected output: return `hipErrorIllegalState`
+ *    -# When begin capture with invalid mode
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When begin capture on uninitialized stream
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorContextIsDestroyed`
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamBeginCapture.cc
+ *  - catch\unit\graph\hipStreamBeginCapture.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Negative_Parameters") {
   const auto stream_type = GENERATE(Streams::created);
@@ -187,14 +195,14 @@ TEST_CASE("Unit_hipStreamBeginCapture_Negative_Parameters") {
 /**
  * Test Description
  * ------------------------
- *    - Basic Test to verify basic API functionality with
- * created/hipStreamPerThread stream for available modes
+ *  - Basic Test to verify basic API functionality with
+ *    created/hipStreamPerThread stream for available modes
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamBeginCapture.cc
+ *  - catch\unit\graph\hipStreamBeginCapture.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_Basic") {
   hipGraph_t graph{nullptr};
@@ -211,8 +219,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_Basic") {
   HIP_CHECK(hipGraphDestroy(graph));
 }
 
-/* Local function for inter stream event synchronization
- */
+// Local function for inter stream event synchronization
 static void interStrmEventSyncCapture(const hipStream_t& stream1, const hipStream_t& stream2) {
   hipGraph_t graph1{nullptr}, graph2{nullptr};
   hipGraphExec_t graphExec1{nullptr}, graphExec2{nullptr};
@@ -258,8 +265,7 @@ static void interStrmEventSyncCapture(const hipStream_t& stream1, const hipStrea
   HIP_CHECK(hipGraphDestroy(graph1));
 }
 
-/* Local function for colligated stream capture
- */
+// Local function for colligated stream capture
 static void colligatedStrmCapture(const hipStream_t& stream1, const hipStream_t& stream2) {
   hipGraph_t graph1{nullptr}, graph2{nullptr};
   hipGraphExec_t graphExec1{nullptr}, graphExec2{nullptr};
@@ -301,8 +307,7 @@ static void colligatedStrmCapture(const hipStream_t& stream1, const hipStream_t&
   HIP_CHECK(hipGraphDestroy(graph1));
 }
 
-/* Local function for colligated stream capture functionality
- */
+// Local function for colligated stream capture functionality
 static void colligatedStrmCaptureFunc(const hipStream_t& stream1, const hipStream_t& stream2) {
   constexpr size_t N = 1000000;
   size_t Nbytes = N * sizeof(int);
@@ -358,8 +363,7 @@ static void colligatedStrmCaptureFunc(const hipStream_t& stream1, const hipStrea
   HIP_CHECK(hipGraphDestroy(graph1));
 }
 
-/* Stream Capture thread function
- */
+// Stream Capture thread function
 static void threadStrmCaptureFunc(hipStream_t stream, int* A_h, int* A_d, int* B_h, int* B_d,
                                   hipGraph_t* graph, size_t N, hipStreamCaptureMode mode) {
   // Capture stream
@@ -369,8 +373,7 @@ static void threadStrmCaptureFunc(hipStream_t stream, int* A_h, int* A_d, int* B
   HIP_CHECK(hipStreamEndCapture(stream, graph));
 }
 
-/* Local Function for multithreaded tests
- */
+// Local Function for multithreaded tests
 static void multithreadedTest(hipStreamCaptureMode mode) {
   constexpr size_t N = 1000000;
   size_t Nbytes = N * sizeof(int);
@@ -428,17 +431,19 @@ static void multithreadedTest(hipStreamCaptureMode mode) {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify inter stream event synchronization- Waiting on an event
- recorded on a captured stream. Initiate capture on stream1, record an event on
- stream1, wait for the event on stream2, end the stream1 capture and initiate
- stream capture on stream2
- *        -# Streams are created with hipStreamDefault/hipStreamNonBlocking flag
+ *  - Test to verify inter stream event synchronization.
+ *  - Waiting on an event recorded on a captured stream.
+ *  - Initiate capture on stream1.
+ *  - Record an event on stream1.
+ *  - Wait for the event on stream2.
+ *  - End the stream1 capture and initiate stream capture on stream2.
+ *  - Streams are created with hipStreamDefault/hipStreamNonBlocking flag.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamBeginCapture.cc
+ *  - catch\unit\graph\hipStreamBeginCapture.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_InterStrmEventSync_Flags") {
   const auto stream_flags1 = GENERATE(hipStreamDefault, hipStreamNonBlocking);
@@ -453,18 +458,21 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_InterStrmEventSync_Flags") {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify inter stream event synchronization- Waiting on an event
- * recorded on a captured stream. Initiate capture on stream1, record an event
- * on stream1, wait for the event on stream2, end the stream1 capture and
- * initiate stream capture on stream2
- *        -# Stream1 is created with minimal priority, stream 2 is created with
+ *  - Test to verify inter stream event synchronization.
+ *  - Waiting on an event recorded on a captured stream.
+ *  - Initiate capture on stream1.
+ *  - Record an event on stream1.
+ *  - Wait for the event on stream2.
+ *  - End the stream1 capture.
+ *  - Initiate stream capture on stream2.
+ *  - Stream1 is created with minimal priority, stream 2 is created with
  * maximal priority
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamBeginCapture.cc
+ *  - catch\unit\graph\hipStreamBeginCapture.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_InterStrmEventSync_Priority") {
   int minPriority = 0, maxPriority = 0;
@@ -479,17 +487,19 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_InterStrmEventSync_Priority") {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify colligated streams capture. Capture operation sequences
- * queued in 2 streams by overlapping the 2 captures. Initiate capture on
- * stream1, record an event on stream1, initiate capture on stream 2, end both
- * stream captures
- *        -# Streams are created with hipStreamDefault/hipStreamNonBlocking flag
+ *  - Test to verify colligated streams capture.
+ *  - Capture operation sequences queued in 2 streams by overlapping the 2 captures.
+ *  - Initiate capture on stream1.
+ *  - Record an event on stream1.
+ *  - Initiate capture on stream 2.
+ *  - End both stream captures.
+ *  - Streams are created with hipStreamDefault/hipStreamNonBlocking flag.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamBeginCapture.cc
+ *  - catch\unit\graph\hipStreamBeginCapture.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_ColligatedStrmCapture_Flags") {
   const auto stream_flags1 = GENERATE(hipStreamDefault, hipStreamNonBlocking);
@@ -504,18 +514,20 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_ColligatedStrmCapture_Flags") {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify colligated streams capture. Capture operation sequences
- * queued in 2 streams by overlapping the 2 captures. Initiate capture on
- * stream1, record an event on stream1, initiate capture on stream 2, end both
- * stream captures
- *        -# Stream1 is created with minimal priority, stream 2 is created with
- * maximal priority
+ *  - Test to verify colligated streams capture.
+ *  - Capture operation sequences queued in 2 streams by overlapping the 2 captures.
+ *  - Initiate capture on stream1.
+ *  - Record an event on stream1.
+ *  - Initiate capture on stream2.
+ *  - End both stream captures.
+ *  - Stream1 is created with minimal priority.
+ *  - Stream2 is created with maximal priority.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamBeginCapture.cc
+ *  - catch\unit\graph\hipStreamBeginCapture.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_ColligatedStrmCapture_Priority") {
   int minPriority = 0, maxPriority = 0;
@@ -530,16 +542,17 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_ColligatedStrmCapture_Priority") 
 /**
  * Test Description
  * ------------------------
- *    - Create 2 streams. Start capturing both stream1 and stream2 at the same
- * time. On stream1 queue memcpy, kernel and memcpy operations and on stream2
- * queue memcpy, kernel and memcpy operations. Execute both the captured graphs
- * and validate the results
+ *  - Create 2 streams.
+ *  - Start capturing both stream1 and stream2 at the same time.
+ *  - On stream1 queue memcpy, kernel and memcpy operations.
+ *  - On stream2 queue memcpy, kernel and memcpy operations.
+ *  - Execute both the captured graphs and validate the results.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamBeginCapture.cc
+ *  - catch\unit\graph\hipStreamBeginCapture.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_ColligatedStrmCaptureFunc") {
   StreamGuard stream_guard1(Streams::created);
@@ -552,15 +565,15 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_ColligatedStrmCaptureFunc") {
 /**
  * Test Description
  * ------------------------
- *    - Capture 2 streams in parallel using threads. Execute the graphs in
- * sequence in main thread and validate the results for all available capture
- * modes
+ *  - Capture 2 streams in parallel using threads.
+ *  - Execute the graphs in sequence in main thread.
+ *  - Validate the results for all available capture modes.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamBeginCapture.cc
+ *  - catch\unit\graph\hipStreamBeginCapture.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_Multithreaded") {
   const hipStreamCaptureMode captureMode = GENERATE(
@@ -571,20 +584,25 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_Multithreaded") {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify inter stream event synchronization- Waiting on an event
- * recorded on a captured stream.
- *        -# Initiate capture on stream1, record an event on stream1, wait for
- * the event on stream2, end the stream1 capture and initiate stream capture on
- * stream2. Repeat the same sequence between stream2 and stream3
- *        -# Initiate capture on stream1, record an event on stream1, wait for
- * the event on stream2 and stream3, end the stream1 capture and initiate stream
- * capture on stream2 and stream3
+ *  - Test to verify inter stream event synchronization.
+ *  - Waiting on an event recorded on a captured stream.
+ *    -# Initiate capture on stream1
+ *    -# Record an event on stream1
+ *    -# Wait for the event on stream2
+ *    -# End the stream1 capture
+ *    -# Initiate stream capture on stream2
+ *  - Repeat the same sequence between stream2 and stream3.
+ *    -# Initiate capture on stream1
+ *    -# Record an event on stream1
+ *    -# Wait for the event on stream2 and stream3
+ *    -# End the stream1 capture
+ *    -# Initiate stream capture on stream2 and stream3
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamBeginCapture.cc
+ *  - catch\unit\graph\hipStreamBeginCapture.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_Multiplestrms") {
   StreamsGuard streams(3);
@@ -647,16 +665,16 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_Multiplestrms") {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify queue operations (increment kernels) in 3 streams. Start
- * capturing the streams after some operations have been queued. This scenario
- * validates that only operations queued after hipStreamBeginCapture are
- * captured in the graph
+ *  - Test to verify queue operations (increment kernels) in 3 streams
+ *  - Start capturing the streams after some operations have been queued.
+ *  - This scenario validates that only operations queued after hipStreamBeginCapture are
+ *    captured in the graph.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamBeginCapture.cc
+ *  - catch\unit\graph\hipStreamBeginCapture.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_CapturingFromWithinStrms") {
   constexpr int INCREMENT_KERNEL_FINALEXP_VAL = 7;
@@ -714,15 +732,18 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_CapturingFromWithinStrms") {
 /**
  * Test Description
  * ------------------------
- *    - Detecting invalid capture. Create 2 streams s1 and s2. Start capturing
- * s1. Create event dependency between s1 and s2 using event record and event
- * wait. Try capturing s2. hipStreamBeginCapture must return error
+ *  - Detecting invalid capture.
+ *  - Create 2 streams s1 and s2.
+ *  - Start capturing s1.
+ *  - Create event dependency between s1 and s2 using event record and event
+ *    wait.
+ *  - Try capturing s2 and the function must return error.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamBeginCapture.cc
+ *  - catch\unit\graph\hipStreamBeginCapture.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Negative_DetectingInvalidCapture") {
   StreamsGuard streams(2);
@@ -742,14 +763,15 @@ TEST_CASE("Unit_hipStreamBeginCapture_Negative_DetectingInvalidCapture") {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify wtream reuse. Capture multiple graphs from the same
- * stream. Validate graphs are captured correctly
+ *  - Test to verify wtream reuse
+ *  - Capture multiple graphs from the same stream.
+ *  - Validate graphs are captured correctly.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamBeginCapture.cc
+ *  - catch\unit\graph\hipStreamBeginCapture.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_CapturingMultGraphsFrom1Strm") {
   hipGraph_t graphs[3];
@@ -788,18 +810,23 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_CapturingMultGraphsFrom1Strm") {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify synchronization during stream capture returns an error:
- *        -# Synchronize stream during capture
- *        -# Synchronize device during capture
- *        -# Synchronize event during capture
- *        -# Query stream during capture
- *        -# Query for an event during capture
+ *  - Test to verify synchronization during stream capture returns an error:
+ *    -# When synchronize stream during capture
+ *      - Expected output: return `hipErrorStreamCaptureUnsupported`
+ *    -# When synchronize device during capture
+ *      - Expected output: return `hipErrorStreamCaptureUnsupported`
+ *    -# When synchronize event during capture
+ *      - Expected output: return `hipErrorCapturedEvent`
+ *    -# When query stream during capture
+ *      - Expected output: return `hipErrorStreamCaptureUnsupported`
+ *    -# When query for an event during capture
+ *      - Expected output: return `hipErrorCapturedEvent`
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamBeginCapture.cc
+ *  - catch\unit\graph\hipStreamBeginCapture.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Negative_CheckingSyncDuringCapture") {
   StreamGuard stream_guard(Streams::created);
@@ -834,18 +861,21 @@ TEST_CASE("Unit_hipStreamBeginCapture_Negative_CheckingSyncDuringCapture") {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify unsafe API calls during stream capture with initiated
- * with hipStreamCaptureModeGlobal and hipStreamCaptureModeThreadLocal return an
- * error:
- *        -# hipMalloc during capture
- *        -# hipMemcpy during capture
- *        -# hipMemset during capture
+ *  - Test to verify unsafe API calls during stream capture.
+ *  - When initiated with `hipStreamCaptureModeGlobal` and `hipStreamCaptureModeThreadLocal`
+ *  - Should return an error:
+ *    -# When `hipMalloc` during capture
+ *      - Expected output: return `hipErrorStreamCaptureUnsupported`
+ *    -# When `hipMemcpy` during capture
+ *      - Expected output: return `hipErrorStreamCaptureImplicit`
+ *    -# When `hipMemset` during capture
+ *      - Expected output: return `hipErrorStreamCaptureImplicit`
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamBeginCapture.cc
+ *  - catch\unit\graph\hipStreamBeginCapture.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Negative_UnsafeCallsDuringCapture") {
   StreamGuard stream_guard(Streams::created);
@@ -876,18 +906,20 @@ TEST_CASE("Unit_hipStreamBeginCapture_Negative_UnsafeCallsDuringCapture") {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify end stream capture when the stream capture is still in
- * progress:
- *        -# Abruptly end stream capture when stream capture is in progress in
- * forked stream. hipStreamEndCapture must return an error
- *        -# Abruptly end stream capture when operations in forked stream are
- * still waiting to be captured. hipStreamEndCapture must return an error
+ *  - Test to verify end stream capture when the stream capture is still in
+ *    progress:
+ *    -# Abruptly end stream capture when stream capture is in progress in
+ *      forked stream
+ *      - Expected output: return `hipErroStreamCaptureUnjoined`
+ *    -# Abruptly end stream capture when operations in forked stream are
+ *       still waiting to be captured
+ *      - Expected output: return `hipErroStreamCaptureUnjoined`
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamBeginCapture.cc
+ *  - catch\unit\graph\hipStreamBeginCapture.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Negative_EndingCapturewhenCaptureInProgress") {
   hipGraph_t graph{nullptr};
@@ -925,14 +957,15 @@ TEST_CASE("Unit_hipStreamBeginCapture_Negative_EndingCapturewhenCaptureInProgres
 /**
  * Test Description
  * ------------------------
- *    - Testing independent stream capture using multiple GPUs. Capture a stream
- * in each device context and execute the captured graph in the context GPU
+ *  - Testing independent stream capture using multiple GPUs.
+ *  - Capture a stream in each device context.
+ *  - Execute the captured graph in the context GPU.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamBeginCapture.cc
+ *  - catch\unit\graph\hipStreamBeginCapture.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_MultiGPU") {
   int devcount = 0;
@@ -996,18 +1029,22 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_MultiGPU") {
 /**
  * Test Description
  * ------------------------
- *    - Test Nested Stream Capture Functionality: Create 3 streams. Capture s1,
- * record event e1 on s1, wait for event e1 on s2 and queue operations in s1.
- * Record event e2 on s2 and wait for it on s3. Queue operations on both s2 and
- * s3. Record event e4 on s3 and wait for it in s1. Record event e3 on s2 and
- * wait for it in s1. End stream capture on s1. Execute the graph and verify the
- * result.
+ *  - Test Nested Stream Capture Functionality.
+ *  - Create 3 streams.
+ *  - Capture s1, record event e1 on s1.
+ *  - Wait for event e1 on s2 and queue operations in s1.
+ *  - Record event e2 on s2 and wait for it on s3.
+ *  - Queue operations on both s2 and s3.
+ *  - Record event e4 on s3 and wait for it in s1.
+ *  - Record event e3 on s2 and wait for it in s1.
+ *  - End stream capture on s1.
+ *  - Execute the graph and verify the result.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamBeginCapture.cc
+ *  - catch\unit\graph\hipStreamBeginCapture.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_nestedStreamCapture") {
   constexpr int INCREMENT_KERNEL_FINALEXP_VAL = 7;
@@ -1058,18 +1095,22 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_nestedStreamCapture") {
 /**
  * Test Description
  * ------------------------
- *    - Test Nested Stream Capture Functionality: Create 3 streams. Capture s1,
- * record event e1 on s1, wait for event e1 on s2 and queue operations in s1.
- * Record event e2 on s2 and wait for it on s3. Queue operations on both s2 and
- * s3. Record event e4 on s3 and wait for it in s1. Record event e3 on s2 and
- * wait for it in s1. End stream capture on s1. Queue operations on both s2 and
- * s3, and capture their graphs. Execute the graphs and verify the result.
+ *  - Test Nested Stream Capture Functionality.
+ *  - Create 3 streams.
+ *  - Capture s1, record event e1 on s1.
+ *  - Wait for event e1 on s2 and queue operations in s1.
+ *  - Record event e2 on s2 and wait for it on s3.
+ *  - Queue operations on both s2 and s3.
+ *  - Record event e4 on s3 and wait for it in s1.
+ *  - Record event e3 on s2 and wait for it in s1.
+ *  - End stream capture on s1.
+ *  - Queue operations on both s2 and s3, and capture their graphs. Execute the graphs and verify the result.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamBeginCapture.cc
+ *  - catch\unit\graph\hipStreamBeginCapture.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_streamReuse") {
   constexpr int increment_kernel_vals[3] = {7, 3, 5};
@@ -1148,14 +1189,15 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_streamReuse") {
 /**
  * Test Description
  * ------------------------
- *    - Capture a complex graph containing multiple independent memcpy, kernel
- * and host nodes. Launch the graph on random input data and validate the output
+ *  - Capture a complex graph containing multiple independent memcpy, kernel
+ *    and host nodes.
+ *  - Launch the graph on random input data and validate the output.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamBeginCapture.cc
+ *  - catch\unit\graph\hipStreamBeginCapture.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_captureComplexGraph") {
   constexpr int GRIDSIZE = 256;
@@ -1235,14 +1277,14 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_captureComplexGraph") {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify capturing empty streams (parent + forked streams) and
- * validate the captured graph has no nodes
+ *  - Test to verify capturing empty streams (parent + forked streams).
+ *  - Validate the captured graph has no nodes.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamBeginCapture.cc
+ *  - catch\unit\graph\hipStreamBeginCapture.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamBeginCapture_Positive_captureEmptyStreams") {
   hipGraph_t graph{nullptr};

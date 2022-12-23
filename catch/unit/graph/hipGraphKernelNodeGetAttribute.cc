@@ -23,8 +23,37 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
 
+/**
+ * @addtogroup hipGraphKernelNodeGetAttribute hipGraphKernelNodeGetAttribute
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphKernelNodeGetAttribute(hipGraphNode_t hNode, hipKernelNodeAttrID attr,
+ * hipKernelNodeAttrValue* value)` -
+ * Gets a node attribute.
+ */
+
 #define THREADS_PER_BLOCK 512
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When node handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node is not a kernel node
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When attribute is not valid (-1)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When output pointer to the value is `nullptr`
+ *      - Platform specific (AMD)
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphKernelNodeGetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphKernelNodeGetAttribute_Negative_Parameters") {
   constexpr int N = 1024;
 

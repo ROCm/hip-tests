@@ -27,7 +27,7 @@ THE SOFTWARE.
  * @{
  * @ingroup GraphTest
  * `hipLaunchHostFunc(hipStream_t stream, hipHostFn_t fn, void *userData)` -
- * enqueues a host function call in a stream
+ * Enqueues a host function call in a stream.
  */
 
 static void hostNodeCallbackDummy(void* data) { REQUIRE(data == nullptr); }
@@ -43,16 +43,20 @@ static void hostNodeCallback(void* data) {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify API behavior with invalid arguments:
- *        -# Stream is legacy/nullptr stream
- *        -# Function is nullptr
- *        -# Stream is uninitialized
+ *  - Validates handling of invalid arguments:
+ *    -# When stream is legacy/`nullptr` stream
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorStreamCaptureImplicit`
+ *    -# When function is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When stream is uninitialized
+ *      - Expected output: return `hipErrorContextIsDestroyed`
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipLaunchHostFunc.cc
+ *  - catch\unit\graph\hipLaunchHostFunc.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.3
+ *  - HIP_VERSION >= 5.3
  */
 TEST_CASE("Unit_hipLaunchHostFunc_Negative_Parameters") {
   StreamGuard stream_guard(Streams::created);
@@ -82,14 +86,14 @@ TEST_CASE("Unit_hipLaunchHostFunc_Negative_Parameters") {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify enquing a host function into a stream, which checks if
- * the captured computation result is correct
+ *  - Test to verify enquing a host function into a stream. 
+ *  - Checks if the captured computation result is correct.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipLaunchHostFunc.cc
+ *  - catch\unit\graph\hipLaunchHostFunc.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.3
+ *  - HIP_VERSION >= 5.3
  */
 TEST_CASE("Unit_hipLaunchHostFunc_Positive_Functional") {
   LinearAllocGuard<float> A_h(LinearAllocs::malloc, sizeof(float));
@@ -135,14 +139,14 @@ static void thread_func_pos(hipStream_t* stream, hipHostFn_t fn, float** data){
 /**
  * Test Description
  * ------------------------
- *    - Test to verify enquing a host function into a stream on a different
- * thread, which checks if the captured computation result is correct
+ *  - Test to verify enquing a host function into a stream on a different thread.
+ *  - Checks if the captured computation result is correct.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipLaunchHostFunc.cc
+ *  - catch\unit\graph\hipLaunchHostFunc.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.3
+ *  - HIP_VERSION >= 5.3
  */
 TEST_CASE("Unit_hipLaunchHostFunc_Positive_Thread") {
   LinearAllocGuard<float> A_h(LinearAllocs::malloc, sizeof(float));

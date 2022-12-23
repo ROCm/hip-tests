@@ -23,6 +23,15 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
 
+/**
+ * @addtogroup hipGraphKernelNodeSetAttribute hipGraphKernelNodeSetAttribute
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphKernelNodeSetAttribute(hipGraphNode_t hNode, hipKernelNodeAttrID attr,
+ * const hipKernelNodeAttrValue* value)` -
+ * Sets a node attribute.
+ */
+
 #define THREADS_PER_BLOCK 512
 
 namespace {
@@ -39,6 +48,17 @@ static bool CompareAccessPolicyWindow(const hipKernelNodeAttrValue& lhs,
       lhs.accessPolicyWindow.missProp == rhs.accessPolicyWindow.missProp;
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that access policy window value can be set successfully.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphKernelNodeSetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphKernelNodeSetAttribute_Positive_AccessPolicyWindow") {
   constexpr int N = 1024;
 
@@ -93,6 +113,17 @@ TEST_CASE("Unit_hipGraphKernelNodeSetAttribute_Positive_AccessPolicyWindow") {
   HIP_CHECK(hipFree(C_d));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that cooperative attribute value can be set successfully.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphKernelNodeSetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphKernelNodeSetAttribute_Positive_Cooperative") {
   constexpr int N = 1024;
 
@@ -135,6 +166,34 @@ TEST_CASE("Unit_hipGraphKernelNodeSetAttribute_Positive_Cooperative") {
   HIP_CHECK(hipFree(C_d));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When node handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node is not a kernel node
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When attribute is not valid (-1)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When output pointer to the value is `nullptr`
+ *      - Platform specific (AMD)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When `accessPolicyWindow.num_bytes > accessPolicyMaxWindowSize`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When `accessPolicyWindow.hitRatio < 0`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When `accessPolicyWindow.hitRatio > 1.0`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When `accessPolicyWindow.missProp == hipAccessPropertyPersisting`
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphKernelNodeSetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphKernelNodeSetAttribute_Negative_Parameters") {
   constexpr int N = 1024;
 

@@ -24,15 +24,12 @@ THE SOFTWARE.
 #include "user_object_common.hh"
 
 /**
- * Functional Test for API - hipUserObjectCreate
-1) Call hipUserObjectCreate once and release it by calling hipUserObjectRelease
-2) Call hipUserObjectCreate refCount as X and release it by calling
-   hipUserObjectRelease with same refCount.
-3) Call hipUserObjectCreate, retain it by calling hipUserObjectRetain
-   and release it by calling hipUserObjectRelease twice.
-4) Call hipUserObjectCreate with refCount as X, retain it by calling
-   hipUserObjectRetain with count as Y and release it by calling
-   hipUserObjectRelease with count as X+Y.
+ * @addtogroup hipUserObjectCreate hipUserObjectCreate
+ * @{
+ * @ingroup GraphTest
+ * `hipUserObjectCreate(hipUserObject_t* object_out, void* ptr, hipHostFn_t destroy,
+ * unsigned int initialRefcount, unsigned int flags)` -
+ * Create an instance of userObject to manage lifetime of a resource.
  */
 
 /* 1) Call hipUserObjectCreate once and release it by
@@ -44,6 +41,23 @@ static void hipUserObjectCreate_Functional_1(void* object, void destroyObj(void*
   HIP_CHECK(hipUserObjectRelease(hObject));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates user object from different types with ref count 1:
+ *    -# When object is int
+ *    -# When object is float
+ *    -# When object is a class instance
+ *    -# When structure is a structure instance
+ *  - Checks that user object is not `nullptr`.
+ *  - Releases user object with ref count 1.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipUserObjectCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipUserObjectCreate_Functional_1") {
   SECTION("Called with int Object") {
     int* object = new int();
@@ -78,6 +92,23 @@ static void hipUserObjectCreate_Functional_2(void* object, void destroyObj(void*
   HIP_CHECK(hipUserObjectRelease(hObject, refCount));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates user object from different types with ref count greater than 1:
+ *    -# When object is int
+ *    -# When object is float
+ *    -# When object is a class instance
+ *    -# When structure is a structure instance
+ *  - Checks that user object is not `nullptr`.
+ *  - Releases user object with ref count greater than 1.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipUserObjectCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipUserObjectCreate_Functional_2") {
   SECTION("Called with int Object") {
     int* object = new int();
@@ -112,6 +143,24 @@ static void hipUserObjectCreate_Functional_3(void* object, void destroyObj(void*
   HIP_CHECK(hipUserObjectRelease(hObject));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates user object from different types with ref count 1:
+ *    -# When object is int
+ *    -# When object is float
+ *    -# When object is a class instance
+ *    -# When structure is a structure instance
+ *  - Checks that user object is not `nullptr`.
+ *  - Retains user object once.
+ *  - Releases user object twice with ref count 1.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipUserObjectCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipUserObjectCreate_Functional_3") {
   SECTION("Called with int Object") {
     int* object = new int();
@@ -149,6 +198,24 @@ static void hipUserObjectCreate_Functional_4(void* object, void destroyObj(void*
   HIP_CHECK(hipUserObjectRelease(hObject, refCount + refCountRetain));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates user object from different types with ref count 5:
+ *    -# When object is int
+ *    -# When object is float
+ *    -# When object is a class instance
+ *    -# When structure is a structure instance
+ *  - Checks that user object is not `nullptr`.
+ *  - Retains user object with ref count 8.
+ *  - Releases user object with ref count 13.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipUserObjectCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipUserObjectCreate_Functional_4") {
   SECTION("Called with int Object") {
     int* object = new int();
@@ -173,13 +240,27 @@ TEST_CASE("Unit_hipUserObjectCreate_Functional_4") {
 }
 
 /**
- * Negative Test for API - hipUserObjectCreate
- 1) Pass User Object as nullptr
- 2) Pass object as nullptr
- 3) Pass Callback function as nullptr
- 4) Pass initialRefcount as 0
- 5) Pass initialRefcount as INT_MAX
- 6) Pass flag other than hipUserObjectNoDestructorSync
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid argument:
+ *    -# When output pointer to the user object is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When object is `nullptr`
+ *      - Expected output: return `hipSuccess`
+ *    -# When destroy callback function handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When ref count is zero
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When ref count is INT_MAX
+ *      - Expected output: return `hipSuccess`
+ *    -# When flag is not valid
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipUserObjectCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipUserObjectCreate_Negative") {
   int* object = new int();
@@ -215,6 +296,24 @@ TEST_CASE("Unit_hipUserObjectCreate_Negative") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates new int object.
+ *    - Expected output: return `hipSuccess`
+ *  - Creates user object with 2 references.
+ *    - Expected output: return `hipSuccess`
+ *  - Releases more user objects (4) than created (2).
+ *    - Expected output: return `hipSuccess`
+ *  - Retains reference to a removed user object.
+ *    - Expected output: return `hipSuccess`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipUserObjectCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipUserObj_Negative_Test") {
   int* object = new int();
   REQUIRE(object != nullptr);

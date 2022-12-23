@@ -17,32 +17,12 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
-Testcase Scenarios :
- 1) Set a different type of event using hipGraphEventRecordNodeSetEvent and
-    validate using hipGraphEventRecordNodeGetEvent.
- 2) Add different kinds of nodes to graph and add dependencies to nodes.
-    Create an event record node at the end with Default flag. Set a different
-    type of event using hipGraphEventRecordNodeSetEvent.  Instantiate and
-    Launch graph. Wait for the event to complete. Verify the results.
- 3) Negative Scenarios
-    - Input node parameter is nullptr.
-    - Input event parameter is nullptr.
-    - Empty node is passed as input node.
-    - Memset node is passed as input node.
-    - Event wait node is passed as input node.
-    - Input node is an uninitialized node.
-    - Input event is an uninitialized event.
-*/
-
 #include <hip_test_checkers.hh>
 #include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
 
 
-/**
- * Local Function: Set Get test
- */
+// Local Function: Set Get test
 static void validateEventRecordNodeSetEvent(unsigned flag) {
   hipGraph_t graph;
   HIP_CHECK(hipGraphCreate(&graph, 0));
@@ -63,9 +43,7 @@ static void validateEventRecordNodeSetEvent(unsigned flag) {
   HIP_CHECK(hipEventDestroy(event2));
 }
 
-/**
- * Local Function
- */
+// Local Function
 static void setEventWaitNode() {
   hipGraph_t graph;
   HIP_CHECK(hipGraphCreate(&graph, 0));
@@ -84,7 +62,20 @@ static void setEventWaitNode() {
 }
 
 /**
- * Scenario 2: Validate Change of event property in event record node.
+ * Test Description
+ * ------------------------
+ *  - Add different kinds of nodes to graph and add dependencies to nodes.
+ *  - Create an event record node at the end with Default flag.
+ *  - Set a different type of event.
+ *  - Instantiate and launch graph.
+ *  - Wait for the event to complete.
+ *  - Verify the results.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphEventRecordNodeSetEvent.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphEventRecordNodeSetEvent_SetEventProperty") {
   hipGraph_t graph;
@@ -153,7 +144,18 @@ TEST_CASE("Unit_hipGraphEventRecordNodeSetEvent_SetEventProperty") {
 }
 
 /**
- * Scenario 1: Validate Set Get test for all Event flags
+ * Test Description
+ * ------------------------
+ *  - Set a different type of event and validate using get.
+ *    -# When flag is `hipEventDefault`
+ *    -# When flag is `hipEventBlockingSync`
+ *    -# When flag is `hipEventDisableTiming`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphEventRecordNodeSetEvent.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphEventRecordNodeSetEvent_SetGet") {
   SECTION("Flag = hipEventDefault") {
@@ -170,7 +172,29 @@ TEST_CASE("Unit_hipGraphEventRecordNodeSetEvent_SetGet") {
 }
 
 /**
- * Scenario 3: Negative Tests
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When node handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When event handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When input node is empty node
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When input node is memset node
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When input node is wait node
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When input node is not initialized
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When event is not initialized
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphEventRecordNodeSetEvent.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphEventRecordNodeSetEvent_Negative") {
   hipGraph_t graph;

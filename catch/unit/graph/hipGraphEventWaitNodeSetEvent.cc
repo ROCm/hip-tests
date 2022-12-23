@@ -17,34 +17,19 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
-Testcase Scenarios :
- 1) Set a different type of event using hipGraphEventWaitNodeSetEvent and
-    validate using hipGraphEventWaitNodeGetEvent.
- 2) Create a graph1 with memset (Value 1) node, event record node (event A)
-    and memset (Value 2) node and event record node (event B). Create a
-    graph2 with Event Wait (event A ) node and memcpyd2h. Instantiate
-    graph1 on stream1 and graph2 on stream2. Set the Event Wait node event
-    to B using hipGraphEventWaitNodeSetEvent. Launch graphs. Wait for the
-    event to complete. Verify the results.
- 3) Negative Scenarios
-    - Input node parameter is passed as nullptr.
-    - Input event parameter is passed as nullptr.
-    - Input node is an empty node.
-    - Input node is a memset node.
-    - Input node is a event record node.
-    - Input node is an uninitialized node.
-    - Input event is an uninitialized node.
-*/
-
 #include <hip_test_checkers.hh>
 #include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
 
-
 /**
- * Local Function
+ * @addtogroup hipGraphEventWaitNodeSetEvent hipGraphEventWaitNodeSetEvent
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphEventWaitNodeSetEvent(hipGraphNode_t node, hipEvent_t event)` -
+ * Sets an event wait node's event.
  */
+
+// Local Function
 static void validateEventWaitNodeSetEvent(unsigned flag) {
   hipGraph_t graph;
   HIP_CHECK(hipGraphCreate(&graph, 0));
@@ -65,9 +50,7 @@ static void validateEventWaitNodeSetEvent(unsigned flag) {
   HIP_CHECK(hipEventDestroy(event2));
 }
 
-/**
- * Local Function
- */
+// Local function
 static void setEventRecordNode() {
   hipGraph_t graph;
   HIP_CHECK(hipGraphCreate(&graph, 0));
@@ -86,7 +69,21 @@ static void setEventRecordNode() {
 }
 
 /**
- * Scenario 2
+ * Test Description
+ * ------------------------
+ *  - Create a graph1 with memset node, event record node
+ *    and memset node and event record node.
+ *  - Create a graph2 with Event Wait node and memcpyd2h.
+ *  - Instantiate graph1 on stream1 and graph2 on stream2.
+ *  - Set the Event Wait node event to graph2.
+ *  - Launch graphs and wait for the event to complete.
+ *  - Verify the results.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphEventWaitNodeSetEvent.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphEventWaitNodeSetEvent_SetProp") {
   constexpr size_t N = 512;
@@ -215,8 +212,20 @@ TEST_CASE("Unit_hipGraphEventWaitNodeSetEvent_SetProp") {
   HIP_CHECK(hipStreamDestroy(streamForGraph1));
   HIP_CHECK(hipStreamDestroy(streamForGraph2));
 }
+
 /**
- * Scenario 1
+ * Test Description
+ * ------------------------
+ *  - Validate that the event returned matches with the event that is set previously.
+ *    -# When flag is `hipEventDefault`
+ *    -# When flag is `hipEventBlockingSync`
+ *    -# When flag is `hipEventDisableTiming`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphEventWaitNodeSetEvent.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphEventWaitNodeSetEvent_SetGet") {
   SECTION("Flag = hipEventDefault") {
@@ -233,7 +242,29 @@ TEST_CASE("Unit_hipGraphEventWaitNodeSetEvent_SetGet") {
 }
 
 /**
- * Scenario 3
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When node handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When output pointer to the event is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When input node is empty node
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When input node is memset node
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When input node is a record node
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When input node is not initialized node
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When event is not initialized
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphEventWaitNodeSetEvent.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphEventWaitNodeSetEvent_Negative") {
   hipGraph_t graph;

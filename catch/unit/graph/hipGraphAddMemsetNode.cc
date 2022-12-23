@@ -36,21 +36,25 @@ THE SOFTWARE.
  * @ingroup GraphTest
  * `hipGraphAddMemsetNode(hipGraphNode_t *pGraphNode, hipGraph_t graph, const hipGraphNode_t
  * *pDependencies, size_t numDependencies, const hipMemsetParams *pMemsetParams)` -
- * Creates a memset node and adds it to a graph
+ * Creates a memset node and adds it to a graph.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipGraph_BasicFunctional
  */
 
 /**
  * Test Description
  * ------------------------
- *    - Verify that all elements of destination memory are set to the correct value.
- * The test is repeated for all valid element sizes(1, 2, 4), and several allocations of different
- * height and width, both on host and device.
+ *  - Verify that all elements of destination memory are set to the correct value.
+ *  - The test is repeated for all valid element sizes(1, 2, 4), and several allocations of different
+ *    height and width.
+ *  - The test is repeated both on host and device.
  * Test source
  * ------------------------
- *    - unit/graph/hipGraphAddMemsetNode.cc
+ *  - unit/graph/hipGraphAddMemsetNode.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_hipGraphAddMemsetNode_Positive_Basic", "", uint8_t, uint16_t, uint32_t) {
   const auto f = [](hipMemsetParams* params) {
@@ -78,27 +82,46 @@ TEMPLATE_TEST_CASE("Unit_hipGraphAddMemsetNode_Positive_Basic", "", uint8_t, uin
 /**
  * Test Description
  * ------------------------
- *    - Verify API behaviour with invalid arguments:
- *        -# pGraphNode is nullptr
- *        -# graph is nullptr
- *        -# pDependencies is nullptr when numDependencies is not zero
- *        -# A node in pDependencies originates from a different graph
- *        -# numDependencies is invalid
- *        -# A node is duplicated in pDependencies
- *        -# pMemsetParams is nullptr
- *        -# pMemsetParams::dst is nullptr
- *        -# pMemsetParams::elementSize is different from 1, 2, and 4
- *        -# pMemsetParams::width is zero
- *        -# pMemsetParams::width is larger than the allocated memory region
- *        -# pMemsetParams::height is zero
- *        -# pMemsetParams::pitch is less than width when height is more than 1
- *        -# pMemsetParams::pitch * pMemsetParams::height is larger than the allocated memory region
+ *  - Verify API behaviour with invalid arguments:
+ *    -# When pGraphNode is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When graph is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pDependencies is `nullptr` and numDependencies is not zero
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When a node in pDependencies originates from a different graph
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When numNodes is invalid
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When a node is duplicated in pDependencies
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pMemsetParams is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pMemsetParams dst data member is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pMemsetParams elementSize data member is different from 1, 2, and 4
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pMemsetParams width data member is zero
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pMemsetParams width data member is larger than the allocated memory region
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pMemsetParams height data member is zero
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pMemsetParams pitch data memebr is less than width when height is more than 1
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pMemsetParams pitch * pMemsetParams height is larger than the allocated memory region
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------
- *    - unit/graph/hipGraphAddMemsetNode.cc
+ *  - unit/graph/hipGraphAddMemsetNode.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddMemsetNode_Negative_Parameters") {
   using namespace std::placeholders;

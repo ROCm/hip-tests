@@ -39,17 +39,18 @@ THE SOFTWARE.
 /**
  * Test Description
  * ------------------------
- *    - Verify that node parameters get updated correctly by creating a node with valid but
- * incorrect parameters, and the setting them to the correct values after which the graph is
- * executed and the results of the memcpy verified.
- * The test is run for all possible memcpy directions, with both the corresponding memcpy
- * kind and hipMemcpyDefault, as well as half page and full page allocation sizes.
+ *  - Verify that node parameters get updated correctly by creating a node with valid but
+ *    incorrect parameters
+ *  - Sets them to the correct values after which the graph is executed and the
+ *    results of the memcpy verified.
+ *  - The test is run for all possible memcpy directions, with both the corresponding memcpy
+ *    kind and hipMemcpyDefault, as well as half page and full page allocation sizes.
  * Test source
  * ------------------------
- *    - unit/graph/hipGraphMemcpyNodeSetParams.cc
+ *  - unit/graph/hipGraphMemcpyNodeSetParams.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphMemcpyNodeSetParams_Positive_Basic") {
   constexpr bool async = false;
@@ -108,19 +109,40 @@ TEST_CASE("Unit_hipGraphMemcpyNodeSetParams_Positive_Basic") {
 /**
  * Test Description
  * ------------------------
- *    - Verify API behaviour with invalid arguments:
- *        -# node is nullptr
- *        -# graph is nullptr
- *        -# pDependencies is nullptr when numDependencies is not zero
- *        -# A node in pDependencies originates from a different graph
- *        -# numDependencies is invalid
- *        -# A node is duplicated in pDependencies
- *        -# dst is nullptr
- *        -# src is nullptr
- *        -# kind is an invalid enum value
- *        -# count is zero
- *        -# count is larger than dst allocation size
- *        -# count is larger than src allocation size
+ *  - Verify API behaviour with invalid arguments:
+ *    -# When node handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When destination params pointer data member is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When source params pointer data member is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When destination pointer pitch data member is less than width
+ *      - Expected output: return `hipErrorInvalidPitchValue`
+ *    -# When source pointer pitch data member is less than width
+ *      - Expected output: return `hipErrorInvalidPitchValue`
+ *    -# When destination pointer pitch data member is larger than pitch max
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When source pointer pitch data member is larger than pitch max
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When extent.width + dst_pos.x > dst_ptr.pitch
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When extent.width + src_pos.x > src_ptr.pitch
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When dst_pos.y out of bounds
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When src_pos.y out of bounds
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When dst_pos.z out of bounds
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When src_pos.z out of bounds
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When memcpy kind is not valid
+ *      - Expected output: return `hipErrorInvalidMemcpyDirection`
+ *  - Repeat previously listed sections for following memcpy directions
+ *      -# Host to Device
+ *      -# Device to Host
+ *      -# Device to Device
+ *      -# Host to Host
  * Test source
  * ------------------------
  *    - unit/graph/hipGraphAddMemcpyNode.cc

@@ -31,7 +31,10 @@ THE SOFTWARE.
  * @{
  * @ingroup GraphTest
  * `hipGraphGetNodes(hipGraph_t graph, hipGraphNode_t *nodes, size_t *numNodes)` -
- * returns graph nodes
+ * Returns graph nodes.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipGraph_BasicFunctional
  */
 
 namespace {
@@ -41,18 +44,18 @@ inline constexpr size_t kNumOfNodes = 7;
 /**
  * Test Description
  * ------------------------
- *    - Functional test to validate API for different number of nodes:
- *        -# Validate number of nodes
- *        -# Validate node list when numNodes = num of nodes
- *        -# Validate node list when numNodes < num of nodes
- *        -# Validate node list when numNodes > num of nodes
- *        -# Validate numNodes is 0 when no nodes in graph
+ *  - Functional test to validate API for different number of nodes:
+ *    -# Validate number of nodes
+ *    -# Validate node list when numNodes = num of nodes
+ *    -# Validate node list when numNodes < num of nodes
+ *    -# Validate node list when numNodes > num of nodes
+ *    -# Validate numNodes is 0 when no nodes in graph
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipGraphGetNodes.cc
+ *  - catch\unit\graph\hipGraphGetNodes.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphGetNodes_Positive_Functional") {
   using namespace std::placeholders;
@@ -129,13 +132,13 @@ TEST_CASE("Unit_hipGraphGetNodes_Positive_Functional") {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify nodes of created graph are matching the captured operations
+ *  - Test to verify nodes of created graph are matching the captured operations.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipGraphGetNodes.cc
+ *  - catch\unit\graph\hipGraphGetNodes.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphGetNodes_Positive_CapturedStream") {
   hipGraph_t graph{nullptr};
@@ -226,10 +229,13 @@ TEST_CASE("Unit_hipGraphGetNodes_Positive_CapturedStream") {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify API behavior with invalid arguments:
- *        -# Null Graph
- *        -# Graph is uninitialized
- *        -# numNodes as nullptr
+ *  - Test to verify API behavior with invalid arguments:
+ *    -# When Graph is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When Graph is uninitialized
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When numNodes is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------
  *    - catch\unit\graph\hipGraphGetNodes.cc

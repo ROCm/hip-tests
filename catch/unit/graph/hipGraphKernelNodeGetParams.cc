@@ -19,24 +19,39 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
-Test Case Scenarios :
-Negative -
-1) Pass node as nullptr and verify api returns error code.
-2) Pass pNodeParams as nullptr and verify api returns error code.
-Functional -
-1) Create a graph, add kernel node to graph with desired kernel node params.
-   Verify api fetches the node params mentioned while adding kernel node.
-2) Set kernel node params with hipGraphKernelNodeSetParams,
-   now get the params and verify both are same.
-*/
-
 #include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
 
+/**
+ * @addtogroup hipGraphKernelNodeGetParams hipGraphKernelNodeGetParams
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphKernelNodeGetParams(hipGraphNode_t node, hipKernelNodeParams* pNodeParams)` -
+ * Gets kernel node's parameters.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipGraphKernelNodeGetSetParams_Functional
+ */
+
 #define THREADS_PER_BLOCK 512
 
-/* Test verifies hipGraphKernelNodeGetParams API Negative scenarios.
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When node handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When output pointer to the kernel params is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node is not kernel node
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphKernelNodeGetParams.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphKernelNodeGetParams_Negative") {
   constexpr int N = 1024;
@@ -104,7 +119,23 @@ static bool node_compare(hipKernelNodeParams* kNode1, hipKernelNodeParams* kNode
   return true;
 }
 
-/* Test verifies hipGraphKernelNodeGetParams API Functional scenarios.
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates API funcitonality in different scenarios:
+ *    -# Verifying returned kernel params
+ *      - Create new graph node with desired params.
+ *      - Get params and compare them with the desired params.
+ *    -# Set kernel params, get them and verify
+ *      - Create new desired params.
+ *      - Set new params to the existing graph.
+ *      - Get params and compare them with the desired params.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphKernelNodeGetParams.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphKernelNodeGetParams_Functional") {
   constexpr int N = 1024;

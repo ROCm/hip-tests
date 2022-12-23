@@ -25,7 +25,11 @@ THE SOFTWARE.
  * @{
  * @ingroup GraphTest
  * `hipGraphLaunch(hipGraphExec_t graphExec, hipStream_t stream)` -
- * Launches an executable graph in a stream
+ * Launches an executable graph in a stream.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipGraph_BasicFunctional
+ *  - @ref Unit_hipGraph_SimpleGraphWithKernel
  */
 
 static void HostFunctionSetToZero(void* arg) {
@@ -71,21 +75,20 @@ static int HipGraphLaunch_Positive_Simple(hipStream_t stream) {
   HIP_CHECK(hipGraphExecDestroy(graph_exec));
 }
 
-
 /**
  * Test Description
  * ------------------------
- *    - Basic positive test for hipGraphLaunch
- *        -# stream as a created stream
- *        -# with stream as hipStreamPerThread
+ *  - Validates several basic scenarios:
+ *    -# When graph is launched with a regular, created stream
+ *    -# When graph is launched with a per thread stream
  * Test source
  * ------------------------
- *    - unit/graph/hipGraphLaunch.cc
+ *  - unit/graph/hipGraphLaunch.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipGraphUpload_Positive") {
+TEST_CASE("Unit_hipGraphLaunch_Positive") {
   SECTION("stream as a created stream") {
     hipStream_t stream;
     HIP_CHECK(hipStreamCreate(&stream));
@@ -101,19 +104,23 @@ TEST_CASE("Unit_hipGraphUpload_Positive") {
 /**
  * Test Description
  * ------------------------
- *    - Negative parameter test for hipGraphLaunch
- *        -# graphExec is nullptr and stream is a created stream
- *        -# graphExec is nullptr and stream is hipStreamPerThread
- *        -# graphExec is an empty object
- *        -# graphExec is destroyed before calling hipGraphLaunch
+ *  - Validates handling of invalid arguments:
+ *    -# When graph handle is `nullptr` and stream is a created stream
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When graph handle is `nullptr` and stream is per thread
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When graph handle is an empty object
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When graph handle is destroyed before calling launch
+ *      - Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------
- *    - unit/graph/hipGraphLaunch.cc
+ *  - unit/graph/hipGraphLaunch.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("hipGraphUpload_Negative_Parameters") {
+TEST_CASE("hipGraphLaunch_Negative_Parameters") {
   SECTION("graphExec is nullptr and stream is a created stream") {
     hipStream_t stream;
     hipError_t ret;

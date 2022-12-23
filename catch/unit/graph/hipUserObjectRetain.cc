@@ -25,10 +25,33 @@ THE SOFTWARE.
 #include "user_object_common.hh"
 
 /**
- * Negative Test for API - hipUserObjectRetain
- 1) Pass User Object as nullptr
- 2) Pass initialRefcount as 0
- 3) Pass initialRefcount as INT_MAX
+ * @addtogroup hipUserObjectRetain hipUserObjectRetain
+ * @{
+ * @ingroup GraphTest
+ * `hipUserObjectRetain(hipUserObject_t object, unsigned int count __dparm(1))` -
+ * Retain number of references to resource.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipUserObjectCreate_Functional_3
+ *  - @ref Unit_hipUserObjectCreate_Functional_4
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When user object handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When ref count is zero
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When ref count is INT_MAX
+ *      - Expected output: return `hipSuccess`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipUserObjectRetain.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipUserObjectRetain_Negative") {
   int* object = new int();

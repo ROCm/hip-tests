@@ -25,20 +25,24 @@ THE SOFTWARE.
  * @{
  * @ingroup GraphTest
  * `hipGraphDestroy(hipGraph_t graph)` -
- * Destroys a graph
+ * Destroys a graph.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipGraph_BasicFunctional
  */
 
 /**
  * Test Description
  * ------------------------
- *    - Basic positive test for hipGraphDestroy
- *    - Create an emtpy graph and then destroy it
+ *  - Creates an empty graph.
+ *  - Checks that it is not `nullptr`.
+ *  - Destroys the graph successfully.
  * Test source
  * ------------------------
- *    - unit/graph/hipGraphDestroy.cc
+ *  - unit/graph/hipGraphDestroy.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphDestroy_Positive_Basic") {
   hipGraph_t graph = nullptr;
@@ -52,14 +56,15 @@ TEST_CASE("Unit_hipGraphDestroy_Positive_Basic") {
 /**
  * Test Description
  * ------------------------
- *    - Basic negative parameter test for hipGraphDestroy
- *        -# Expected hipErrorInvalidValue when graph is invalid
+ *  - Validates handling of invalid arguments:
+ *    -# When graph handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------
- *    - unit/graph/hipGraphDestroy.cc
+ *  - unit/graph/hipGraphDestroy.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphDestroy_Negative_Parameters") {
   HIP_CHECK_ERROR(hipGraphDestroy(static_cast<hipGraph_t>(nullptr)), hipErrorInvalidValue);

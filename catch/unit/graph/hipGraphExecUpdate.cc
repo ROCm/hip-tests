@@ -17,27 +17,38 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
-Testcase Scenarios :
-Functional-
-1) Make a clone of the created graph and update the executable-graph from a clone or same graph
-again. 2) Update the executable-graph from a graph and make sure they are taking effect. Negative-
-1) When Pass hGraphExec as nullptr and verify api returns error code.
-2) When Pass hGraph as nullptr and verify api returns error code.
-3) When Pass hErrorNode_out as nullptr and verify api returns error code.
-4) When Pass updateResult_out as nullptr and verify api returns error code.
-5) When the a graphExec was updated with with different type of node and verify api returns error
-code. 6) When a node is deleted in hGraph but not its pair from hGraphExec and verify api returns
-error code. 7) When a node is deleted in hGraphExec but not its pair from hGraph and verify api
-returns error code. 8) When grpah dependencies differ but graph have same node and verify api
-returns error code.
-*/
-
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 #include <hip_test_kernels.hh>
 
-/* Test verifies hipGraphExecUpdate API Negative nullptr check scenarios.
+/**
+ * @addtogroup hipGraphExecUpdate hipGraphExecUpdate
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphExecUpdate(hipGraphExec_t hGraphExec, hipGraph_t hGraph,
+ * hipGraphNode_t* hErrorNode_out, hipGraphExecUpdateResult* updateResult_out)` -
+ * Check whether an executable graph can be updated with a graph and perform the update if
+ * possible.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When executable graph handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When graph handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pointer to the graph node, which caused and update error, is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When update result variable is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphExecUpdate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecUpdate_Negative_Basic") {
   hipError_t ret;
@@ -66,6 +77,20 @@ TEST_CASE("Unit_hipGraphExecUpdate_Negative_Basic") {
 
 /* Test verifies hipGraphExecUpdate API Negative scenarios.
    When the a graphExec was updated with with different type of node
+ */
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates negative scenario where the executable graph was updated
+ *    with a different type of node.
+ *    - Expected output: return `hipErrorGraphExecUpdateFailure`
+ *       and result variable is `hipGraphExecUpdateErrorNodeTypeChanged`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphExecUpdate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecUpdate_Negative_TypeChange") {
   constexpr size_t N = 1024;
@@ -124,6 +149,24 @@ TEST_CASE("Unit_hipGraphExecUpdate_Negative_TypeChange") {
 
 /* Test verifies hipGraphExecUpdate API Negative scenarios.
    When the count of nodes differ in hGraphExec and hGraph
+ */
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates negative scenario where the count of nodes in
+ *    the executable graph differs from the count of nodes in graph.
+ *    - When a node is deleted from graph but not from its pair executable graph
+ *      -# Expected output: return `hipErrorGraphExecUpdateFailure`
+ *    - When a node is deleted from executable graph but not from its pair graph
+ *      -# Expected output: return `hipErrorGraphExecUpdateFailure`
+ *    - When the dependent nodes of a pair differ
+ *      -# Expected output: return `hipErrorGraphExecUpdateFailure`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphExecUpdate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecUpdate_Negative_CountDiffer") {
   constexpr size_t N = 1024;
@@ -219,11 +262,19 @@ TEST_CASE("Unit_hipGraphExecUpdate_Negative_CountDiffer") {
   free(hData);
 }
 
-/* Functional Scenario -
-1) Make a clone of the created graph and update the executable-graph from a clone graph.
-2) Update the executable-graph from a graph and make sure they are taking effect.
-*/
-
+/**
+ * Test Description
+ * ------------------------
+ *  - Makes a clone of the created graph.
+ *  - Updates the executable graph for a cloned graph.
+ *  - Updated the executable graph from a graph and make sure they are taking effect.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphExecUpdate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphExecUpdate_Functional") {
   constexpr size_t N = 1024;
   constexpr size_t Nbytes = N * sizeof(int);

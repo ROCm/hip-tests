@@ -28,7 +28,7 @@ THE SOFTWARE.
  * @{
  * @ingroup GraphTest
  * `hipStreamGetCaptureInfo(hipStream_t stream, hipStreamCaptureStatus
- * *pCaptureStatus, unsigned long long *pId)` - get capture status of a stream
+ * *pCaptureStatus, unsigned long long *pId)` - Get capture status of a stream.
  */
 
 void checkStreamCaptureInfo(hipStreamCaptureMode mode, hipStream_t stream) {
@@ -85,16 +85,15 @@ void checkStreamCaptureInfo(hipStreamCaptureMode mode, hipStream_t stream) {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify that hipStreamCaptureStatusActive is returned during
- * stream capture. When capture is ended, status is changed to
- * hipStreamCaptureStatusNone and error is not reported when some arguments are
- * not passed
+ *  - Test to verify that hipStreamCaptureStatusActive is returned during stream capture.
+ *  - When capture is ended, status is changed to `hipStreamCaptureStatusNone`.
+ *  - Error is not reported when some arguments are not passed.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamGetCaptureInfo.cc
+ *  - catch\unit\graph\hipStreamGetCaptureInfo.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamGetCaptureInfo_Positive_Functional") {
   const auto stream_type = GENERATE(Streams::perThread, Streams::created);
@@ -110,14 +109,14 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_Positive_Functional") {
 /**
  * Test Description
  * ------------------------
- *    - Test starts stream capture on multiple streams and verifies uniqueness
- * of identifiers returned
+ *  - Test starts stream capture on multiple streams.
+ *  - Verifies uniqueness of identifiers returned.
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamGetCaptureInfo.cc
+ *  - catch\unit\graph\hipStreamGetCaptureInfo.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamGetCaptureInfo_Positive_UniqueID") {
   constexpr int numStreams = 100;
@@ -154,16 +153,21 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_Positive_UniqueID") {
 /**
  * Test Description
  * ------------------------
- *    - Test to verify API behavior with invalid arguments:
- *        -# Capture status is nullptr
- *        -# Capture status checked on legacy/null stream
- *        -# Stream is uninitialized
+ *  - Test to verify API behavior with invalid arguments:
+ *    -# When capture status is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When capture status checked on legacy/null stream
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorStreamCaptureImplicit`
+ *    -# When tream is uninitialized
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorContextIsDestroyed`
  * Test source
  * ------------------------
- *    - catch\unit\graph\hipStreamGetCaptureInfo.cc
+ *  - catch\unit\graph\hipStreamGetCaptureInfo.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamGetCaptureInfo_Negative_Parameters") {
   hipStreamCaptureStatus cStatus;

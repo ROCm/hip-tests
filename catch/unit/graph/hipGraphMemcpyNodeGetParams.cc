@@ -29,7 +29,7 @@ THE SOFTWARE.
  * @{
  * @ingroup GraphTest
  * `hipGraphMemcpyNodeGetParams(hipGraphNode_t node, hipMemcpy3DParms *pNodeParams)` -
- * 	Gets a memcpy node's parameters
+ * Gets a memcpy node's parameters.
  * ________________________
  * Test cases from other APIs:
  *  - @ref Unit_hipGraphMemcpyNodeSetParams_Positive_Basic
@@ -38,16 +38,20 @@ THE SOFTWARE.
 /**
  * Test Description
  * ------------------------
- *    - Verify API behaviour with invalid arguments:
- *      -# node is nullptr
- *      -# pNodeParams is nullptr
- *      -# node is destroyed
+ *  - Verify API behaviour with invalid arguments:
+ *    -# When node is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pNodeParams is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node is destroyed
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------
- *    - unit/graph/hipGraphMemcpyNodeGetParams.cc
+ *  - unit/graph/hipGraphMemcpyNodeGetParams.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphMemcpyNodeGetParams_Negative_Parameters") {
   constexpr hipExtent extent{128 * sizeof(int), 128, 8};

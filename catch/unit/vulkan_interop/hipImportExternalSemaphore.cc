@@ -21,8 +21,39 @@ THE SOFTWARE.
 
 #include "vulkan_test.hh"
 
+/**
+ * @addtogroup hipImportExternalSemaphore hipImportExternalSemaphore
+ * @{
+ * @ingroup MemoryTest
+ * `hipImportExternalSemaphore(hipExternalSemaphore_t* extSem_out,
+ * const hipExternalSemaphoreHandleDesc* semHandleDesc)` -
+ * Imports an external semaphore.
+ */
+
 constexpr bool enable_validation = false;
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When pointer to external semaphore is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pointer to the semaphore descriptor is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When flags within descriptor are zero
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When type within descriptor is not valid (-1)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When handle within descriptor is `nullptr`
+ *      - Host specific (WINDOWS)
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/vulkan_interop/hipImportExternalSemaphore.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipImportExternalSemaphore_Vulkan_Negative_Parameters") {
   VulkanTest vkt(enable_validation);
   const auto semaphore = vkt.CreateExternalSemaphore(VK_SEMAPHORE_TYPE_BINARY);

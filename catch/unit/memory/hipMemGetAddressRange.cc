@@ -16,17 +16,35 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/*
-Testcase Scenarios :
-Unit_hipMemGetAddressRange_Positive - Test hipMemGetAddressRange api for various memory allocation
-types and offsets Unit_hipMemGetAddressRange_Negative - Test unsuccessful execution of
-hipMemGetAddressRange api when parameters are invalid
-*/
+
 #include <hip_test_common.hh>
 #include <hip/hip_runtime_api.h>
 #include <utils.hh>
 #include <resource_guards.hh>
 
+/**
+ * @addtogroup hipMemGetAddressRange hipMemGetAddressRange
+ * @{
+ * @ingroup PeerToPeerTest
+ * `hipMemGetAddressRange(hipDeviceptr_t* pbase, size_t* psize, hipDeviceptr_t dptr)` -
+ * Get information on memory allocations.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of various memory allocation types and offsets.
+ *  - Following memory allocation types are considered:
+ *    -# Host address range
+ *    -# Device address range
+ *    -# Pitch address range
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemGetAddressRange.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemGetAddressRange_Positive") {
   hipDeviceptr_t base_ptr;
   size_t mem_size = 0;
@@ -67,6 +85,21 @@ TEST_CASE("Unit_hipMemGetAddressRange_Positive") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When device pointer is not valid
+ *      - Expected output: return `hipErrorNotFound`
+ *    -# When offset is greater than allocated size
+ *      - Expected output: return `hipErrorNotFound`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemGetAddressRange.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemGetAddressRange_Negative") {
   hipDeviceptr_t base_ptr;
   size_t mem_size = 0;

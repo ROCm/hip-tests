@@ -16,22 +16,38 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/*
-Testcase Scenarios :
-Unit_hipMemcpyPeerAsync_Positive_Default - Test basic P2P async memcpy between
-two devices with hipMemcpyPeerAsync api
-Unit_hipMemcpyPeerAsync_Positive_Synchronization_Behavior - Test synchronization
-behavior for hipMemcpyPeerAsync api Unit_hipMemcpyPeerAsync_Positive_ZeroSize -
-Test that no data is copied when sizeBytes is set to 0
-Unit_hipMemcpyPeerAsync_Negative_Parameters - Test unsuccessful execution of
-hipMemcpyPeerAsync api when parameters are invalid
-*/
+
 #include <hip/hip_runtime_api.h>
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
 #include <utils.hh>
 
+/**
+ * @addtogroup hipMemcpyPeerAsync hipMemcpyPeerAsync
+ * @{
+ * @ingroup PeerToPeerTest
+ * `hipMemcpyPeerAsync(void* dst, int dstDeviceId, const void* src, int srcDevice,
+ * size_t sizeBytes, hipStream_t stream __dparm(0))` -
+ * Copies memory from one device to memory on another device.
+ */
 
+/**
+ * Test Description
+ * ------------------------
+ *  - For each pair of devices:
+ *    -# Allocate memory on both devices.
+ *    -# Launch kernel on one device.
+ *    -# Copy the results on the other device asynchronously.
+ *    -# Compare results.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyPeerAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports peer to peer access
+ *  - Multi-device
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyPeerAsync_Positive_Default") {
   const auto device_count = HipTest::getDeviceCount();
   if (device_count < 2) {
@@ -86,6 +102,19 @@ TEST_CASE("Unit_hipMemcpyPeerAsync_Positive_Default") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validate synchronization behaviour of the API.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyPeerAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports peer to peer access
+ *  - Multi-device
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyPeerAsync_Positive_Synchronization_Behavior") {
   HIP_CHECK(hipDeviceSynchronize());
 
@@ -124,6 +153,19 @@ TEST_CASE("Unit_hipMemcpyPeerAsync_Positive_Synchronization_Behavior") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validate that no data is coped when size is set to zero.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyPeerAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports peer to peer access
+ *  - Multi-device
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyPeerAsync_Positive_ZeroSize") {
   const auto device_count = HipTest::getDeviceCount();
   if (device_count < 2) {
@@ -178,6 +220,31 @@ TEST_CASE("Unit_hipMemcpyPeerAsync_Positive_ZeroSize") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When destination pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When source pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When copying more memory than allocated
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When destination device ID is not valid, -1 or out of bounds
+ *      - Expected output: return `hipErrorInvalidDevice`
+ *    -# When source device ID is not valid, -1 or out of bounds
+ *      - Expected output: return `hipErrorInvalidDevice`
+ *    -# When stream is not valid
+ *      - Expected output: return `hipErrorContextIsDestroyed`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyPeerAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports peer to peer access
+ *  - Multi-device
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyPeerAsync_Negative_Parameters") {
   const auto device_count = HipTest::getDeviceCount();
   if (device_count < 2) {

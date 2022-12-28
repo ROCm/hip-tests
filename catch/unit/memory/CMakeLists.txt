@@ -179,21 +179,12 @@ set(TEST_SRC
     hipMemsetAsync.cc
     hipMemAdvise.cc
     hipMemRangeGetAttributes.cc
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
     hipFreeAsync.cc
-=======
     hipMallocFromPoolAsync.cc
->>>>>>> 01ce39ade7e2e3f09e2c12fb3026af0897863a5f
-=======
     hipMemPoolCreate.cc
     hipMemPoolDestroy.cc
     hipMemPoolTrimTo.cc
->>>>>>> eb551d4e8f35a555cdbc03a6cf3bc07cd07ded15
-=======
     hipMemPoolImportExport.cc
->>>>>>> 2c58a3d63dbe96cf24b0d20b87f8efc5a97220ec
     hipGetSymbolSizeAddress.cc
 )
 endif()

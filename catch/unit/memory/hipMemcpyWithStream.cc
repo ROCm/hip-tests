@@ -25,8 +25,59 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 #include <utils.hh>
 
+/**
+ * @addtogroup hipMemcpyWithStream hipMemcpyWithStream
+ * @{
+ * @ingroup MemoryTest
+ * `hipMemcpyWithStream(void* dst, const void* src, size_t sizeBytes,
+ * hipMemcpyKind kind, hipStream_t stream)` -
+ * Copy data from src to dst over specified stream.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validate basic device to host behaviour with Device to Host and Default kind.
+ *  - Following copy scenarios are considered:
+ *    -# Device to Host
+ *    -# Device to Host with default kind
+ *    -# Host to Device
+ *    -# Host to Device with default kind
+ *    -# Host to Host
+ *    -# Host to Host with default kind
+ *    -# Device to Device
+ *      - Peer access enabled
+ *      - Peer access disabled
+ *    -# Device to Device with default kind
+ *      - Peer access enabled
+ *      - Peer access disabled
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyWithStream.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpy_Positive_Basic") { MemcpyWithDirectionCommonTests<false>(hipMemcpy); }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that the API synchronizes regarding to:
+ *    -# Copying from pageable or pinned host memory to device memory
+ *    -# Copying from device memory to pageable or pinned host memory
+ *  - Validates that the API is asynchronous regarding to:
+ *    -# Copying from device memory to device memory
+ *      - Platform specific (NVIDIA)
+ *    -# Copying from pageable or pinned host memory to pageable or pinned
+ *       host memory
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyWithStream.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpy_Positive_Synchronization_Behavior") {
   using namespace std::placeholders;
   HIP_CHECK(hipDeviceSynchronize());
@@ -68,6 +119,29 @@ TEST_CASE("Unit_hipMemcpy_Positive_Synchronization_Behavior") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When the destination pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the source pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When memcpy kind is not valid (-1)
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidMemcpyDirection`
+ *  - Following scenarios are performed for the following memcpy kinds:
+ *    -# Host to Device
+ *    -# Device to Host
+ *    -# Host to Host
+ *    -# Device to Device
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyWithStream.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpy_Negative_Parameters") {
   using namespace std::placeholders;
 

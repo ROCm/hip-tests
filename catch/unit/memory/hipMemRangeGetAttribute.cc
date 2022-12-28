@@ -25,6 +25,27 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 #include <utils.hh>
 
+/**
+ * @addtogroup hipMemRangeGetAttribute hipMemRangeGetAttribute
+ * @{
+ * @ingroup MemoryMTest
+ * `hipMemRangeGetAttribute(void* data, size_t data_size,
+ * hipMemRangeAttribute attribute, const void* dev_ptr, size_t count)` -
+ * Query an attribute of a given memory range in HIP.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Verify fetching of read mostly attribute.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemRangeGetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_ReadMostly_Basic") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeManagedMemory)) {
     HipTest::HIP_SKIP_TEST("Managed memory not supported");
@@ -46,6 +67,18 @@ TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_ReadMostly_Basic") {
   REQUIRE(data == 1);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Verify partial fetching of read mostly attribute.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemRangeGetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_ReadMostly_Partial_Range") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeManagedMemory)) {
     HipTest::HIP_SKIP_TEST("Managed memory not supported");
@@ -68,6 +101,18 @@ TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_ReadMostly_Partial_Range") {
   REQUIRE(data == 1);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Verify fetching of preferred location attribute.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemRangeGetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_PreferredLocation_Basic") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeManagedMemory)) {
     HipTest::HIP_SKIP_TEST("Managed memory not supported");
@@ -89,6 +134,18 @@ TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_PreferredLocation_Basic") {
   REQUIRE(data == 0);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Verify fetching of read mostly attribute when the CPU is preferred location.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemRangeGetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_PreferredLocation_CPU") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeManagedMemory)) {
     HipTest::HIP_SKIP_TEST("Managed memory not supported");
@@ -107,6 +164,18 @@ TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_PreferredLocation_CPU") {
   REQUIRE(data == hipCpuDeviceId);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Verify partial fetching of read mostly attribute when the CPU is preferred location.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemRangeGetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_PreferredLocation_Partial_Range") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeManagedMemory)) {
     HipTest::HIP_SKIP_TEST("Managed memory not supported");
@@ -129,6 +198,18 @@ TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_PreferredLocation_Partial_Range
   REQUIRE(data == 0);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Verify fetching of last prefetched location attribute.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemRangeGetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_LastPrefetchLocation_Basic") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeManagedMemory)) {
     HipTest::HIP_SKIP_TEST("Managed memory not supported");
@@ -150,6 +231,18 @@ TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_LastPrefetchLocation_Basic") {
   REQUIRE(data == 0);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Verify fetching of last prefetched location attribute when the CPU is last prefetch location.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemRangeGetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_LastPrefetchLocation_CPU") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeManagedMemory)) {
     HipTest::HIP_SKIP_TEST("Managed memory not supported");
@@ -167,6 +260,18 @@ TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_LastPrefetchLocation_CPU") {
   REQUIRE(data == hipCpuDeviceId);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Verify partial fetching of last prefetch location attribute.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemRangeGetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_LastPrefetchLocation_Partial_Range") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeManagedMemory)) {
     HipTest::HIP_SKIP_TEST("Managed memory not supported");
@@ -189,6 +294,18 @@ TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_LastPrefetchLocation_Partial_Ra
   REQUIRE(data == 0);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Verify fetching of accessed by attribute.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemRangeGetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_AccessedBy_Basic") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeManagedMemory)) {
     HipTest::HIP_SKIP_TEST("Managed memory not supported");
@@ -220,6 +337,18 @@ TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_AccessedBy_Basic") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Verify partial fetching of last prefetched location attribute.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemRangeGetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_AccessedBy_Partial_Range") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeManagedMemory)) {
     HipTest::HIP_SKIP_TEST("Managed memory not supported");
@@ -252,6 +381,19 @@ TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_AccessedBy_Partial_Range") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Verify fetching of accessed by attribute on all devices.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemRangeGetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - Multi-device
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_AccessedBy_MultiDevice") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeManagedMemory)) {
     HipTest::HIP_SKIP_TEST("Managed memory not supported");
@@ -287,6 +429,38 @@ TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_AccessedBy_MultiDevice") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When data pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the data size is zero
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the data size is not equal to four, with read mostly attribute set
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the data size is not equal to four, with preferred location attribute set
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the data size is not equal to four, with last prefetch location attribute set
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the data size is not a multiple of four, with acessed by attribute set
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the attribute is not valid
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the device pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the device pointer points to the non-managed memory
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the range size is zero
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemRangeGetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemRangeGetAttribute_Negative_Parameters") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeManagedMemory)) {
     HipTest::HIP_SKIP_TEST("Managed memory not supported");

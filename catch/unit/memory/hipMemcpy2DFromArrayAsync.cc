@@ -16,17 +16,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/*
-Testcase Scenarios :
-Unit_hipMemcpy2DFromArrayAsync_Positive_Default - Test basic async memcpy
-between 2D array and host/device with hipMemcpy2DFromArrayAsync api
-Unit_hipMemcpy2DFromArrayAsync_Positive_Synchronization_Behavior - Test
-synchronization behavior for hipMemcpy2DFromArrayAsync api
-Unit_hipMemcpy2DFromArrayAsync_Positive_ZeroWidthHeight - Test that no data is
-copied when width/height is set to 0
-Unit_hipMemcpy2DFromArrayAsync_Negative_Parameters - Test unsuccessful execution
-of hipMemcpy2DFromArrayAsync api when parameters are invalid
-*/
+
 #include "array_memcpy_tests_common.hh"
 
 #include <hip/hip_runtime_api.h>
@@ -34,6 +24,39 @@ of hipMemcpy2DFromArrayAsync api when parameters are invalid
 #include <resource_guards.hh>
 #include <utils.hh>
 
+/**
+ * @addtogroup hipMemcpy2DFromArrayAsync hipMemcpy2DFromArrayAsync
+ * @{
+ * @ingroup MemoryTest
+ * `hipMemcpy2DFromArrayAsync( void* dst, size_t dpitch, hipArray_const_t src, size_t wOffset,
+ * size_t hOffset, size_t width, size_t height, hipMemcpyKind kind, hipStream_t stream __dparm(0))` -
+ * Copies data between host and device asynchronously.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates basic behaviour for copying array to the 2D memory
+ *    between host and device, asynchronously.
+ *  - The test is run for a various width/height sizes, host allocation types
+ *    and flag combinations:
+ *      -# Array on the device to host
+ *      -# Array to host with default kind
+ *      -# Array to device
+ *        - Peer access disabled
+ *        - Peer access enabled
+ *        - Platform specific (NVIDIA)
+ *      -# Array to device with default kind
+ *        - Peer access disabled
+ *        - Peer access enabled
+ *        - Platform specific (NVIDIA)
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy2DFromArrayAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpy2DFromArrayAsync_Positive_Default") {
   using namespace std::placeholders;
 
@@ -90,6 +113,21 @@ TEST_CASE("Unit_hipMemcpy2DFromArrayAsync_Positive_Default") {
 #endif
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that API is asynchronous regarding to host when copying
+ *    from device memory to device memory.
+ *  - Validates following memcpy directions:
+ *    -# Array to host
+ *    -# Array to device
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy2DFromArrayAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpy2DFromArrayAsync_Positive_Synchronization_Behavior") {
   using namespace std::placeholders;
   HIP_CHECK(hipDeviceSynchronize());
@@ -118,6 +156,28 @@ TEST_CASE("Unit_hipMemcpy2DFromArrayAsync_Positive_Synchronization_Behavior") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validate that nothing will be copied if width or height are set to zero.
+ *  - Following scenarios are considered:
+ *    -# When copying array to host
+ *      - Heigth is 0
+ *      - Width is 0
+ *    -# When copying from array to device
+ *      - Height is 0
+ *      - Width is 0
+ *  - Different streams are utilized
+ *    -# Default (null) stream
+ *    -# Per thread stream
+ *    -# Created (non-null) stream
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy2DFromArrayAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpy2DFromArrayAsync_Positive_ZeroWidthHeight") {
   using namespace std::placeholders;
 
@@ -156,6 +216,35 @@ TEST_CASE("Unit_hipMemcpy2DFromArrayAsync_Positive_ZeroWidthHeight") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When destination pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidHandle`
+ *    -# When source pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When source pitch is less than width
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidPitchValue`
+ *    -# When width/height increased by offset overflows
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When width/height overflows
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When memcpy direction is not valid
+ *      - Expected output: return `hipErrorInvalidMemcpyDirection`
+ *    -# When stream is not valid
+ *      - Expected output: return `hipErrorContextIsDestroyed`
+ *  - Following scenarios are repeated for:
+ *    -# Array to host
+ *    -# Array to device
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy2DFromArrayAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpy2DFromArrayAsync_Negative_Parameters") {
   using namespace std::placeholders;
 

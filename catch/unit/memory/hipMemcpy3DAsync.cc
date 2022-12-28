@@ -28,6 +28,33 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 #include <utils.hh>
 
+/**
+ * @addtogroup hipMemcpy3DAsync hipMemcpy3DAsync
+ * @{
+ * @ingroup MemoryTest
+ * `hipMemcpy3DAsync(const struct hipMemcpy3DParms* p, hipStream_t stream __dparm(0))` -
+ * Copies data between host and device asynchronously.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Verifies basic test cases for copying 3D memory between
+ *    device and host asynchronously.
+ *  - Validates following memcpy directions:
+ *    -# Device to host
+ *    -# Device to device
+ *      - Peer access disabled
+ *      - Peer access enabled
+ *    -# Host to device
+ *    -# Host to host
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy3DAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpy3DAsync_Positive_Basic") {
   constexpr bool async = true;
 
@@ -51,6 +78,26 @@ TEST_CASE("Unit_hipMemcpy3DAsync_Positive_Basic") {
   SECTION("Host to Host") { Memcpy3DHostToHostShell<async>(Memcpy3DWrapper<async>, stream); }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that API synchronizes regarding to host when copying from
+ *    device memory to the pageable or pinned host memory.
+ *  - Validates following memcpy directions:
+ *    -# Host to device
+ *    -# Device to pageable host
+ *      - Platform specific (NVIDIA)
+ *    -# Device to pinned host
+ *    -# Device to device
+ *    -# Host to host
+ *      - Platform specific (NVIDIA)
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy3DAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpy3DAsync_Positive_Synchronization_Behavior") {
   constexpr bool async = true;
 
@@ -75,11 +122,45 @@ TEST_CASE("Unit_hipMemcpy3DAsync_Positive_Synchronization_Behavior") {
 #endif
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that nothing will be copied if width, height or depth are set to zero.
+ *  - Validates following memcpy directions:
+ *    -# Device to host
+ *    -# Device to device
+ *    -# Host to device
+ *    -# Host to host
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy3DAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpy3DAsync_Positive_Parameters") {
   constexpr bool async = true;
   Memcpy3DZeroWidthHeightDepth<async>(Memcpy3DWrapper<async>);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that an array is successfully copied.
+ *  - Validates following memcpy directions:
+ *    -# Device to host
+ *    -# Host to host
+ *    -# Device to device
+ *      - Plaform specific (NVIDIA)
+ *    -# Host to device
+ *      - Plaform specific (NVIDIA)
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy3DAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpy3DAsync_Positive_Array") {
   constexpr bool async = true;
   SECTION("Array from/to Host") { Memcpy3DArrayHostShell<async>(Memcpy3DWrapper<async>); }
@@ -88,6 +169,58 @@ TEST_CASE("Unit_hipMemcpy3DAsync_Positive_Array") {
 #endif
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When destination pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When source pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When destination pitch is less than width
+ *      - Expected output: return `hipErrorInvalidPitchValue`
+ *    -# When source pitch is less than width
+ *      - Expected output: return `hipErrorInvalidPitchValue`
+ *    -# When destination pitch is larger than maximum pitch
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When source pitch is larger than maximum pitch
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When extent.width + dst_pos.x > dst_ptr.pitch
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When extent.width + src_pos.x > src_ptr.pitch
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When dst_pos.y out of bounds
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When src_pos.y out of bounds
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When dst_pos.z out of bounds
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When src_pos.z out of bounds
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When memcpy kind is not valid (-1)
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When stream is not valid
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorContextIsDestroyed`
+ *  - All cases are executed for following memcpy directions:
+ *    -# Host to device
+ *    -# Device to host
+ *    -# Host to host
+ *    -# Device to device
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy3DAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpy3DAsync_Negative_Parameters") {
   constexpr bool async = true;
   constexpr hipExtent extent{128 * sizeof(int), 128, 8};

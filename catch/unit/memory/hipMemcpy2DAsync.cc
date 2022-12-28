@@ -27,6 +27,38 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 #include <utils.hh>
 
+/**
+ * @addtogroup hipMemcpy2DAsync hipMemcpy2DAsync
+ * @{
+ * @ingroup MemoryTest
+ * `hipMemcpy2DAsync(void* dst, size_t dpitch, const void* src,
+ * size_t spitch, size_t width, size_t height, hipMemcpyKind kind,
+ * hipStream_t stream __dparm(0))` -
+ * Copies data between host and device.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates basic scenario of 2D asynchronous copying.
+ *  - Uses following types of streams:
+ *    -# Default (null stream)
+ *    -# Per thread
+ *    -# Created (non-null stream)
+ *  - Validates following memcpy directions:
+ *    -# Device to host
+ *    -# Device to device
+ *      - Peer access disabled
+ *      - Peer access enabled
+ *    -# Host to device
+ *    -# Host to host
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy2DAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpy2DAsync_Positive_Basic") {
   using namespace std::placeholders;
 
@@ -63,6 +95,26 @@ TEST_CASE("Unit_hipMemcpy2DAsync_Positive_Basic") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that API synchronizes regarding to host when copying
+ *    from device memory to pageable or pinned host memory.
+ *  - Validates following memcpy directions:
+ *    -# Host to device
+ *    -# Device to pageable host
+ *      - Platform specific (NVIDIA)
+ *    -# Device to pinned host
+ *    -# Device to device
+ *    -# Host to host
+ *      - Platform specific (NVIDIA)
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy2DAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpy2DAsync_Positive_Synchronization_Behavior") {
   using namespace std::placeholders;
 
@@ -98,12 +150,62 @@ TEST_CASE("Unit_hipMemcpy2DAsync_Positive_Synchronization_Behavior") {
 #endif
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that nothing will be copied if width or height are set to zero.
+ *  - Validates following memcpy directions:
+ *    -# Device to host
+ *    -# Device to device
+ *    -# Host to device
+ *    -# Host to host
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy2DAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpy2DAsync_Positive_Parameters") {
   using namespace std::placeholders;
   constexpr bool async = true;
   Memcpy2DZeroWidthHeight<async>(std::bind(hipMemcpy2DAsync, _1, _2, _3, _4, _5, _6, _7, nullptr));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When destination pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When source pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When destination pitch is less than width
+ *      - Expected output: return `hipErrorInvalidPitchValue`
+ *    -# When source pitch is less than width
+ *      - Expected output: return `hipErrorInvalidPitchValue`
+ *    -# When destination pitch is larger than maximum pitch
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When source pitch is larger than maximum pitch
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When memcpy kind is not valid (-1)
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When stream is not valid
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorContextIsDestroyed`
+ *  - All cases are executed for following memcpy directions:
+ *    -# Host to device
+ *    -# Device to host
+ *    -# Host to host
+ *    -# Device to device
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy2DAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpy2DAsync_Negative_Parameters") {
   constexpr size_t cols = 128;
   constexpr size_t rows = 128;

@@ -25,6 +25,28 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 #include <utils.hh>
 
+/**
+ * @addtogroup hipMemRangeGetAttributes hipMemRangeGetAttributes
+ * @{
+ * @ingroup MemoryMTest
+ * `hipMemRangeGetAttributes(void** data, size_t* data_sizes,
+ * hipMemRangeAttribute* attributes, size_t num_attributes,
+ * const void* dev_ptr, size_t count)` -
+ * Query attributes of a given memory range in HIP.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Verify fetching of multiple attributes at once.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemRangeGetAttributes.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemRangeGetAttributes_Positive_Basic") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeManagedMemory)) {
     HipTest::HIP_SKIP_TEST("Managed memory not supported");
@@ -63,6 +85,38 @@ TEST_CASE("Unit_hipMemRangeGetAttributes_Positive_Basic") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Test case description:
+ *    -# When the data array is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the data array contains invalid `nullptr` pointers
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the size array is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the size array contains invalid values
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the attributes array is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the attributes array contains invalid attributes
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When number of attributes is zero
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When device pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When device pointer points to the non-managed memory
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When count is zero
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemRangeGetAttributes.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemRangeGetAttributes_Negative_Parameters") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeManagedMemory)) {
     HipTest::HIP_SKIP_TEST("Managed memory not supported");

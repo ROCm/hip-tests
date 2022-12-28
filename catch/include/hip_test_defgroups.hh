@@ -35,3 +35,221 @@ THE SOFTWARE.
  * This section describes the graph management types & functions of HIP runtime API.
  * @}
  */
+
+/**
+ * @defgroup MemoryTest Memory Management
+ * @{
+ * This section describes tests for the memory management functions of HIP runtime API.
+ */
+
+/**
+ * @addtogroup hipMemset hipMemset
+ * @{
+ * @ingroup MemoryTest
+ */
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates the case when zero value is set.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemsetFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipMemsetFunctional_ZeroValue_hipMemset") {}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates the case when small size is set.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemsetFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipMemsetFunctional_SmallSize_hipMemset") {}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates the case when zero size is set.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemsetFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipMemsetFunctional_ZeroSize_hipMemset") {}
+/**
+ * End doxygen group hipMemset.
+ * @}
+ */
+
+/**
+ * @addtogroup hipMemsetD32 hipMemsetD32
+ * @{
+ * @ingroup MemoryTest
+ */
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates the case when zero value is set.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemsetFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipMemsetFunctional_ZeroValue_hipMemsetD32") {}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates the case when small size is set.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemsetFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipMemsetFunctional_SmallSize_hipMemsetD32") {}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates the case when zero size is set.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemsetFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipMemsetFunctional_ZeroSize_hipMemsetD32") {}
+/**
+ * End doxygen group hipMemsetD32.
+ * @}
+ */
+
+/**
+ * @addtogroup hipMemsetD16 hipMemsetD16
+ * @{
+ * @ingroup MemoryTest
+ */
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates the case when zero value is set.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemsetFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipMemsetFunctional_ZeroValue_hipMemsetD16") {}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates the case when small size is set.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemsetFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipMemsetFunctional_SmallSize_hipMemsetD16") {}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates the case when zero size is set.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemsetFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipMemsetFunctional_ZeroSize_hipMemsetD16") {}
+/**
+ * End doxygen group hipMemsetD16.
+ * @}
+ */
+
+/**
+ * @addtogroup hipMemsetD8 hipMemsetD8
+ * @{
+ * @ingroup MemoryTest
+ */
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates the case when zero value is set.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemsetFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipMemsetFunctional_ZeroValue_hipMemsetD8") {}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates the case when small size is set.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemsetFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipMemsetFunctional_SmallSize_hipMemsetD8") {}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates the case when zero size is set.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemsetFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipMemsetFunctional_ZeroSize_hipMemsetD8") {}
+/**
+ * End doxygen group hipMemsetD8.
+ * @}
+ */
+
+/**
+ * End doxygen group MemoryTest.
+ * @}
+ */
+
+/**
+ * @defgroup MemoryMTest Managed Memory
+ * @{
+ * This section describes tests for the managed memory management functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup PeerToPeerTest PeerToPeer Device Memory Access
+ * @{
+ *  @warning PeerToPeer support is experimental.
+ *  This section describes tests for the PeerToPeer device memory access functions of HIP runtime API.
+ * @}
+ */

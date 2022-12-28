@@ -26,6 +26,30 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 #include <utils.hh>
 
+/**
+ * @addtogroup hipStreamAttachMemAsync hipStreamAttachMemAsync
+ * @{
+ * @ingroup MemoryMTest
+ * `hipStreamAttachMemAsync(hipStream_t stream, void* dev_ptr,
+ * size_t length __dparm(0), unsigned int flags __dparm(hipMemAttachSingle))` -
+ * Attach memory to a stream asynchronously in HIP.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Verify basic case using managed memory.
+ *  - Allocate managed memory chunk.
+ *  - Attach stream.
+ *  - Perform stream synchronization.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipStreamAttachMemAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipStreamAttachMemAsync_Positive_Basic") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeManagedMemory)) {
     HipTest::HIP_SKIP_TEST("Managed memory is not supported");
@@ -40,6 +64,22 @@ TEST_CASE("Unit_hipStreamAttachMemAsync_Positive_Basic") {
   HIP_CHECK(hipStreamSynchronize(stream.stream()));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Vefify basic case using pageable memory.
+ *  - Allocate pageale memory chunk.
+ *  - Attach stream.
+ *  - Perform stream synchronization.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipStreamAttachMemAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - Device supports pageable memory access
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipStreamAttachMemAsync_Positive_Pageable") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeManagedMemory)) {
     HipTest::HIP_SKIP_TEST("Managed memory is not supported");
@@ -61,6 +101,23 @@ TEST_CASE("Unit_hipStreamAttachMemAsync_Positive_Pageable") {
 // CUDA docs:
 // If the cudaMemAttachGlobal flag is specified, the memory can be accessed by any stream on any
 // device.
+/**
+ * Test Description
+ * ------------------------
+ *  - Verify behaviour of attach global attribute.
+ *  - Allocate managed memory chunk.
+ *  - Attach stream.
+ *  - Launch kernel.
+ *  - Perform stream synchronization.
+ *  - Verify results.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipStreamAttachMemAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipStreamAttachMemAsync_Positive_AttachGlobal") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeManagedMemory)) {
     HipTest::HIP_SKIP_TEST("Managed memory is not supported");
@@ -103,6 +160,24 @@ TEST_CASE("Unit_hipStreamAttachMemAsync_Positive_AttachGlobal") {
 // If the cudaMemAttachHost flag is specified, the program makes a guarantee that it won't access
 // the memory on the device from any stream on a device that has a zero value for the device
 // attribute cudaDevAttrConcurrentManagedAccess.
+/**
+ * Test Description
+ * ------------------------
+ *  - Verify attach host attribute behaviour when concurrent managed
+ *    access is not supported.
+ *  - Allocate managed memory chunk.
+ *  - Attach stream.
+ *  - Launch kernel.
+ *  - Perform stream synchronization.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipStreamAttachMemAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - Device does not support concurrent managed access
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipStreamAttachMemAsync_Positive_AttachHost") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeManagedMemory)) {
     HipTest::HIP_SKIP_TEST("Managed memory is not supported");
@@ -134,6 +209,24 @@ TEST_CASE("Unit_hipStreamAttachMemAsync_Positive_AttachHost") {
 // If the cudaMemAttachSingle flag is specified and stream is associated with a device that has a
 // zero value for the device attribute cudaDevAttrConcurrentManagedAccess, the program makes a
 // guarantee that it will only access the memory on the device from stream.
+/**
+ * Test Description
+ * ------------------------
+ *  - Verify attach single attribute behaviour when concurrent managed
+ *    access is not supported.
+ *  - Allocate managed memory chunk.
+ *  - Attach stream.
+ *  - Launch kernel.
+ *  - Perform stream synchronization.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipStreamAttachMemAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - Device does not support concurrent managed access
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipStreamAttachMemAsync_Positive_AttachSingle") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeManagedMemory)) {
     HipTest::HIP_SKIP_TEST("Managed memory is not supported");
@@ -171,6 +264,34 @@ TEST_CASE("Unit_hipStreamAttachMemAsync_Positive_AttachSingle") {
   REQUIRE(*managed_single.ptr() == 128);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When the stream is not valid
+ *      - Expected output: return `hipErrorContextIsDestroyed`
+ *    -# When pointer to memory `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When length is not zero nor entire allocation size
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When flags are not valid
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When attach single to `nullptr` stream
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pageable memory access is not supported
+ *       and device pointer points to the pageable memory
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pageable memory access is supported and
+ *       length for pageable memory is zero
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipStreamAttachMemAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipStreamAttachMemAsync_Negative_Parameters") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeManagedMemory)) {
     HipTest::HIP_SKIP_TEST("Managed memory is not supported");

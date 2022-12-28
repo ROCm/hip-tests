@@ -25,11 +25,42 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 #include <utils.hh>
 
+/**
+ * @addtogroup hipMemcpyDtoHAsync hipMemcpyDtoHAsync
+ * @{
+ * @ingroup MemoryTest
+ * `hipMemcpyDtoHAsync(void* dst, hipDeviceptr_t src, size_t sizeBytes, hipStream_t stream)` -
+ * Copy data from Device to Host asynchronously.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipMemcpy_MultiThread-AllAPIs
+ *  - @ref Unit_hipMemcpy_Negative
+ *  - @ref Unit_hipMemcpy_NullCheck
+ *  - @ref Unit_hipMemcpy_HalfMemCopy
+ */
+
 static hipStream_t InvalidStream() {
   StreamGuard sg(Streams::created);
   return sg.stream();
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates basic behaviour:
+ *    -# Allocate array on host.
+ *    -# Copy memory from Host to Device.
+ *    -# Synchronize on stream.
+ *    -# Launch kernel.
+ *    -# Copy memory from Device to Host.
+ *    -# Validate results.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyAsync_derivatives.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyDtoHAsync_Positive_Basic") {
   const auto stream_type = GENERATE(Streams::nullstream, Streams::perThread, Streams::created);
   const StreamGuard stream_guard(stream_type);
@@ -40,6 +71,18 @@ TEST_CASE("Unit_hipMemcpyDtoHAsync_Positive_Basic") {
   MemcpyDeviceToHostShell<true>(f, stream_guard.stream());
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validate that API synchronizes regarding to host when copying from
+ *    device to pageable and pinned host memory.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyAsync_derivatives.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyDtoHAsync_Positive_Synchronization_Behavior") {
   HIP_CHECK(hipDeviceSynchronize());
 
@@ -60,6 +103,23 @@ TEST_CASE("Unit_hipMemcpyDtoHAsync_Positive_Synchronization_Behavior") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When the destination pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the source pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When stream is not valid
+ *      - Expected output: return `hipErrorContextIsDestroyed`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyAsync_derivatives.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyDtoHAsync_Negative_Parameters") {
   using namespace std::placeholders;
   LinearAllocGuard<int> device_alloc(LinearAllocs::hipMalloc, kPageSize);
@@ -79,6 +139,43 @@ TEST_CASE("Unit_hipMemcpyDtoHAsync_Negative_Parameters") {
   }
 }
 
+/**
+ * End doxygen group hipMemcpyDtoHAsync.
+ * @}
+ */
+
+/**
+ * @addtogroup hipMemcpyHtoDAsync hipMemcpyHtoDAsync
+ * @{
+ * @ingroup MemoryTest
+ * `hipMemcpyHtoDAsync(hipDeviceptr_t dst, void* src,
+ * size_t sizeBytes, hipStream_t stream)` -
+ * Copy data from Host to Device asynchronously.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipMemcpy_MultiThread-AllAPIs
+ *  - @ref Unit_hipMemcpy_Negative
+ *  - @ref Unit_hipMemcpy_NullCheck
+ *  - @ref Unit_hipMemcpy_HalfMemCopy
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates basic behaviour:
+ *    -# Allocate array on host.
+ *    -# Copy memory from Host to Device.
+ *    -# Synchronize on stream.
+ *    -# Launch kernel.
+ *    -# Copy memory from Device to Host.
+ *    -# Validate results.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyAsync_derivatives.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyHtoDAsync_Positive_Basic") {
   const auto stream_type = GENERATE(Streams::nullstream, Streams::perThread, Streams::created);
   const StreamGuard stream_guard(stream_type);
@@ -89,6 +186,19 @@ TEST_CASE("Unit_hipMemcpyHtoDAsync_Positive_Basic") {
   MemcpyHostToDeviceShell<true>(f, stream_guard.stream());
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that the API is asynchronous regarding to:
+ *    -# Copying from pageable or pinned host memory to device memory
+ *      - Platform specific (NVIDIA)
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyAsync_derivatives.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyHtoDAsync_Positive_Synchronization_Behavior") {
   // This behavior differs on NVIDIA and AMD, on AMD the hipMemcpy calls is synchronous with
   // respect to the host
@@ -105,6 +215,23 @@ TEST_CASE("Unit_hipMemcpyHtoDAsync_Positive_Synchronization_Behavior") {
       false);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When the destination pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the source pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When stream is not valid
+ *      - Expected output: return `hipErrorContextIsDestroyed`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyAsync_derivatives.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyHtoDAsync_Negative_Parameters") {
   using namespace std::placeholders;
   LinearAllocGuard<int> device_alloc(LinearAllocs::hipMalloc, kPageSize);
@@ -123,6 +250,45 @@ TEST_CASE("Unit_hipMemcpyHtoDAsync_Negative_Parameters") {
   }
 }
 
+/**
+ * End doxygen group hipMemcpyHtoDAsync.
+ * @}
+ */
+
+/**
+ * @addtogroup hipMemcpyDtoDAsync hipMemcpyDtoDAsync
+ * @{
+ * @ingroup MemoryTest
+ * `hipMemcpyDtoDAsync(hipDeviceptr_t dst, hipDeviceptr_t src,
+ * size_t sizeBytes, hipStream_t stream)` -
+ * Copy data from Device to Device asynchronously.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipMemcpy_MultiThread-AllAPIs
+ *  - @ref Unit_hipMemcpy_Negative
+ *  - @ref Unit_hipMemcpy_NullCheck
+ *  - @ref Unit_hipMemcpy_HalfMemCopy
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates basic behaviour:
+ *    -# Allocate array on host.
+ *    -# Allocate another array on host.
+ *    -# Copy memory from Host to Device.
+ *    -# Synchronize on stream.
+ *    -# Validate results.
+ *  - Cheks two possible scenarios:
+ *    -# Peer access enabled
+ *    -# Peer access disabled
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyAsync_derivatives.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyDtoDAsync_Positive_Basic") {
   const auto stream_type = GENERATE(Streams::nullstream, Streams::perThread, Streams::created);
   const StreamGuard stream_guard(stream_type);
@@ -145,6 +311,18 @@ TEST_CASE("Unit_hipMemcpyDtoDAsync_Positive_Basic") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that API is asynchronous regaring to host when copying from device
+ *    memory to device memory.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyAsync_derivatives.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyDtoDAsync_Positive_Synchronization_Behavior") {
   MemcpyDtoDSyncBehavior(
       [](void* dst, void* src, size_t count) {
@@ -154,6 +332,23 @@ TEST_CASE("Unit_hipMemcpyDtoDAsync_Positive_Synchronization_Behavior") {
       false);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When the destination pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the source pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When stream is not valid
+ *      - Expected output: return `hipErrorContextIsDestroyed`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyAsync_derivatives.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyDtoDAsync_Negative_Parameters") {
   using namespace std::placeholders;
   LinearAllocGuard<int> src_alloc(LinearAllocs::hipMalloc, kPageSize);

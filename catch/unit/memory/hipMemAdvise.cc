@@ -24,6 +24,15 @@ THE SOFTWARE.
 #include <utils.hh>
 #include <resource_guards.hh>
 
+/**
+ * @addtogroup hipMemAdvise hipMemAdvise
+ * @{
+ * @ingroup MemoryMTest
+ * `hipMemAdvise(const void* dev_ptr, size_t count,
+ * hipMemoryAdvise advice, int device)` -
+ * Advise about the usage of a given memory range to HIP.
+ */
+
 static inline hipMemoryAdvise GetUnsetMemAdvice(const hipMemoryAdvise advice) {
   switch (advice) {
     case hipMemAdviseSetAccessedBy:
@@ -65,6 +74,22 @@ std::vector<int> GetDevicesWithAdviseSupport() {
   return supported_devices;
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validate that all advice flags are properly set and unset.
+ *  - The test is run for every supported device and advise:
+ *    -# ReadMostly
+ *    -# AccessedBy
+ *    -# PreferredLocation
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemAdvise.cc
+ * Test requirements
+ * ------------------------
+ *  - At least one device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemAdvise_Set_Unset_Basic") {
   auto supported_devices = GetDevicesWithAdviseSupport();
   if (supported_devices.empty()) {
@@ -95,6 +120,20 @@ TEST_CASE("Unit_hipMemAdvise_Set_Unset_Basic") {
   SECTION("hipMemAdviseSetPreferredLocation") { SetUnset(hipMemAdviseSetPreferredLocation); }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validate that setting any advice will not invalidate previously
+ *    set advice.
+ *  - The test is run for every supported device.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemAdvise.cc
+ * Test requirements
+ * ------------------------
+ *  - At least one device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemAdvise_No_Flag_Interference") {
   auto supported_devices = GetDevicesWithAdviseSupport();
   if (supported_devices.empty()) {
@@ -123,6 +162,19 @@ TEST_CASE("Unit_hipMemAdvise_No_Flag_Interference") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validate that the memory correctly rounds down and rounds up non-aligned
+ *    address and address + count respectively.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemAdvise.cc
+ * Test requirements
+ * ------------------------
+ *  - At least one device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemAdvise_Rounding") {
   auto supported_devices = GetDevicesWithAdviseSupport();
   if (supported_devices.empty()) {
@@ -154,6 +206,19 @@ TEST_CASE("Unit_hipMemAdvise_Rounding") {
   REQUIRE((rounded_up == 3 * kPageSize ? device : hipInvalidDeviceId) == attribute);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validate that some flags to not cause a prefetch.
+ *  - This test is run for every supported device.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemAdvise.cc
+ * Test requirements
+ * ------------------------
+ *  - At least one device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemAdvise_Flags_Do_Not_Cause_Prefetch") {
   auto supported_devices = GetDevicesWithAdviseSupport();
   if (supported_devices.empty()) {
@@ -180,6 +245,20 @@ TEST_CASE("Unit_hipMemAdvise_Flags_Do_Not_Cause_Prefetch") {
 #endif
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that memory for which advice has been applice remains
+ *    read/write accessible to all supported devices.
+ *  - The test is run for every supported device.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemAdvise.cc
+ * Test requirements
+ * ------------------------
+ *  - At least one device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemAdvise_Read_Write_After_Advise") {
   auto supported_devices = GetDevicesWithAdviseSupport();
   if (supported_devices.empty()) {
@@ -224,6 +303,20 @@ TEST_CASE("Unit_hipMemAdvise_Read_Write_After_Advise") {
 #endif
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that prefetching after advise leads to prefetch to correct location
+ *    and advice not being disturbed.
+ *  - Test is run for every supported device.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemAdvise.cc
+ * Test requirements
+ * ------------------------
+ *  - At least one device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemAdvise_Prefetch_After_Advise") {
   auto supported_devices = GetDevicesWithAdviseSupport();
   if (supported_devices.empty()) {
@@ -255,6 +348,20 @@ TEST_CASE("Unit_hipMemAdvise_Prefetch_After_Advise") {
   REQUIRE((advice == hipMemAdviseSetReadMostly ? 1 : device) == attribute);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validate that setting accessed by on a memory region for multiple devices
+ *    works as expected.
+ *  - The test is run for every supported device.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemAdvise.cc
+ * Test requirements
+ * ------------------------
+ *  - At least one device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemAdvise_AccessedBy_All_Devices") {
   auto supported_devices = GetDevicesWithAdviseSupport();
   if (supported_devices.empty()) {
@@ -273,6 +380,32 @@ TEST_CASE("Unit_hipMemAdvise_AccessedBy_All_Devices") {
   REQUIRE_THAT(accessed_by, Catch::Matchers::Equals(supported_devices));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When the advice is not valid (-1)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the size in bytes is zero
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the size in bytes is larger than allocation size
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the pointer to memory is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the pointer to memory points to non-managed memory
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the device ID is not valid
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidDevice` when advice is `ReadMostly`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemAdvise.cc
+ * Test requirements
+ * ------------------------
+ *  - At least one device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemAdvise_Negative_Parameters") {
   auto supported_devices = GetDevicesWithAdviseSupport();
   if (supported_devices.empty()) {

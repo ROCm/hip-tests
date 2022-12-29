@@ -21,6 +21,8 @@ THE SOFTWARE.
 */
 
 #pragma once
+#define CATCH_CONFIG_ENABLE_BENCHMARKING
+
 #include "hip_test_context.hh"
 #include <catch.hpp>
 #include <atomic>

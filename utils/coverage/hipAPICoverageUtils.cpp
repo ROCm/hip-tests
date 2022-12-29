@@ -280,5 +280,5 @@ std::vector<std::string> extractTestModuleFiles(std::string& tests_root_director
 
 std::string findAbsolutePathOfFile(std::string file_path)
 {
-    return std::filesystem::canonical(std::filesystem::absolute(file_path));
+  return std::filesystem::canonical(std::filesystem::absolute(file_path));
 }

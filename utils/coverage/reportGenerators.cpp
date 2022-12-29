@@ -164,7 +164,7 @@ void generateHTMLReportFiles(std::vector<HipAPI>& hip_apis, std::vector<HipAPIGr
 
   coverage_report << five_tabs << "<tr>";
   coverage_report << six_tabs << "<td></td>";
-  coverage_report << six_tabs << "<td class=\"headerValue\">" << hip_rtc_header_file << "</td>";
+  coverage_report << six_tabs << "<td></td>";
   coverage_report << six_tabs << "<td class=\"headerItem\">Total number of test cases:</td>";
   coverage_report << six_tabs << "<td class=\"headerCovTableEntry\">" << basic_stats.total_number_of_test_cases << "</td>";
   coverage_report << six_tabs << "<td></td>";

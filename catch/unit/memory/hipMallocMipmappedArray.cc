@@ -765,6 +765,24 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NumLevels") {
 }
 
 /**
+ * End doxygen group hipMallocMipmappedArray.
+ * @}
+ */
+
+/**
+ * @addtogroup hipGetMipmappedArrayLevel hipGetMipmappedArrayLevel
+ * @{
+ * @ingroup MemoryTest
+ * `hipGetMipmappedArrayLevel(hipArray_t *levelArray,
+ * hipMipmappedArray_const_t mipmappedArray, unsigned int level)` -
+ * Gets a mipmap level of a HIP mipmapped array.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipMallocMipmappedArray_happy
+ *  - @ref Unit_hipMallocMipmappedArray_MaxTexture
+ */
+
+/**
  * Test Description
  * ------------------------
  *  - Validates handling of invalid arguments:

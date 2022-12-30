@@ -32,6 +32,10 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 
 class Timer {
+ public:
+  Timer(const Timer&) = delete;
+  Timer& operator=(const Timer&) = delete;
+
  protected:
   Timer(float& time, hipStream_t stream) : time_(time), stream_(stream) {}
 
@@ -94,6 +98,12 @@ class CpuTimer : public Timer {
 
 template <typename Derived> class Benchmark {
  public:
+  Benchmark(size_t iterations = 100, size_t warmups = 10)
+      : iterations_(iterations), warmups_(warmups) {}
+
+  Benchmark(const Benchmark&) = delete;
+  Benchmark& operator=(const Benchmark&) = delete;
+
   void Configure(std::optional<size_t> iterations, std::optional<size_t> warmups) {
     if (iterations) iterations_ = iterations.value();
     if (warmups) warmups_ = warmups.value();
@@ -138,9 +148,10 @@ template <typename Derived> class Benchmark {
   ssize_t current() const { return current_; }
 
  private:
-  float time_ = .0;
-  size_t iterations_ = 100u, warmups_ = 10u;
-  ssize_t current_ = -1;
+  float time_;
+  size_t iterations_;
+  size_t warmups_;
+  ssize_t current_;
 };
 
 constexpr bool TIMER_TYPE_CPU = false;

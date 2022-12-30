@@ -24,22 +24,35 @@ THE SOFTWARE.
 #include <performance_common.hh>
 #include <resource_guards.hh>
 
-TEST_CASE("Performance_Example_Event") {
+class ExampleBenchmark : public Benchmark<ExampleBenchmark> {
+ public:
+  void operator()(void* dst) {
+    const int value = 42;
+    const size_t kSize = 4_MB;
+
+    TIMED_SECTION(TIMER_TYPE_EVENT) {  // event based timing
+      HIP_CHECK(hipMemset(dst, value, kSize));
+    }
+
+    HIP_CHECK(hipMemset(dst, 0, kSize));  // not timed
+
+    TIMED_SECTION(TIMER_TYPE_CPU) {  // cpu based timing
+      HIP_CHECK(hipMemset(dst, value, kSize));
+    }
+
+    // accessing properties
+    // std::cout << "Time recorded up until now: " << time() << std::endl;
+    // std::cout << "Number of iterations: " << iterations() << std::endl;
+    // std::cout << "Number of warmup iterations: " << warmups() << std::endl;
+    // std::cout << "Current iteration: " << current() << std::endl;
+  }
+};
+
+TEST_CASE("Performance_Example") {
+  ExampleBenchmark benchmark;
+  benchmark.Configure(1000 /* iterations */, 100 /* warmups */);
+
   LinearAllocGuard<void> dst(LinearAllocs::hipMalloc, 4_MB);
 
-  auto user_code = [](void* dst) { HIP_CHECK(hipMemset(dst, 42, 4_MB)); };
-  EventBenchmark benchmark(std::move(user_code));
-
-  benchmark.Configure(1000, 100);  // 1000 iterations, 100 warmup iterations
-  std::cout << benchmark.Run(dst.ptr()) << " ms" << std::endl;
-}
-
-TEST_CASE("Performance_Example_Cpu") {
-  LinearAllocGuard<void> dst(LinearAllocs::hipMalloc, 4_MB);
-
-  auto user_code = [](void* dst) { HIP_CHECK(hipMemset(dst, 42, 4_MB)); };
-  CpuBenchmark benchmark(std::move(user_code));
-
-  benchmark.Configure(1000, 100);  // 1000 iterations, 100 warmup iterations
   std::cout << benchmark.Run(dst.ptr()) << " ms" << std::endl;
 }

@@ -22,108 +22,132 @@ THE SOFTWARE.
 
 #pragma once
 
+#include <algorithm>
+#include <chrono>
+#include <memory>
+#include <optional>
+#include <type_traits>
+#include <vector>
+
 #include <hip_test_common.hh>
 
-template <typename UserCode, typename Derived> class Benchmark {
- public:
-  Benchmark(const UserCode& user_code) : user_code_{user_code} {}
+class Timer {
+ protected:
+  Timer(float& time, hipStream_t stream) : time_(time), stream_(stream) {}
 
-  Benchmark(const Benchmark&) = delete;
-  Benchmark& operator=(const Benchmark&) = delete;
+  void Record(float time) { time_ += time; }
 
-  void Configure(std::optional<size_t> iterations, std::optional<size_t> warmup) {
-    if (iterations) iterations_ = iterations.value();
-    if (warmup) warmup_ = warmup.value();
-  }
-
-  template <typename... Args> float Run(Args... args) {
-    std::vector<float> samples;
-    samples.reserve(iterations_);
-
-    for (size_t i = 0u; i < warmup_; ++i) {
-      user_code_(args...);
-    }
-
-    for (size_t i = 0u; i < iterations_; ++i) {
-      auto&& derived = static_cast<Derived&>(*this);
-
-      derived.Prologue();
-      user_code_(args...);
-      derived.Epilogue();
-
-      samples.push_back(derived.Sample());
-    }
-
-    return std::reduce(cbegin(samples), cend(samples)) / samples.size();
-  }
+  hipStream_t GetStream() const { return stream_; }
 
  private:
-  UserCode user_code_;
-
-  size_t iterations_ = 100;
-  size_t warmup_ = 10;
+  float& time_;
+  hipStream_t stream_;
 };
 
-template <typename UserCode>
-class EventBenchmark : public Benchmark<UserCode, EventBenchmark<UserCode>> {
+class EventTimer : public Timer {
  public:
-  EventBenchmark(const UserCode& user_code, hipStream_t stream = nullptr)
-      : Benchmark<UserCode, EventBenchmark<UserCode>>(user_code), stream_(stream) {
+  EventTimer(float& time, hipStream_t stream = nullptr) : Timer(time, stream) {
     HIP_CHECK(hipEventCreate(&start_));
     HIP_CHECK(hipEventCreate(&stop_));
+    HIP_CHECK(hipEventRecord(start_, GetStream()));
   }
 
-  ~EventBenchmark() {
-    HIP_CHECK(hipEventDestroy(start_));
-    HIP_CHECK(hipEventDestroy(stop_));
+  ~EventTimer() {
+    hipError_t error;  // to avoid compiler warnings
+
+    error = hipEventRecord(stop_, GetStream());
+    error = hipEventSynchronize(stop_);
+
+    float ms;
+    error = hipEventElapsedTime(&ms, start_, stop_);
+    Record(ms);
+
+    error = hipEventDestroy(start_);
+    error = hipEventDestroy(stop_);
   }
 
  private:
   hipEvent_t start_;
   hipEvent_t stop_;
-  hipStream_t stream_;
-
-  friend class Benchmark<UserCode, EventBenchmark<UserCode>>;
-
-  void Prologue() { HIP_CHECK(hipEventRecord(start_, stream_)); }
-
-  void Epilogue() {
-    HIP_CHECK(hipEventRecord(stop_, stream_));
-    HIP_CHECK(hipEventSynchronize(stop_));
-  }
-
-  float Sample() {
-    float ms;
-    HIP_CHECK(hipEventElapsedTime(&ms, start_, stop_));
-    return ms;
-  }
 };
 
-template <typename UserCode>
-class CpuBenchmark : public Benchmark<UserCode, CpuBenchmark<UserCode>> {
+class CpuTimer : public Timer {
  public:
-  CpuBenchmark(const UserCode& user_code, hipStream_t stream = nullptr)
-      : Benchmark<UserCode, CpuBenchmark<UserCode>>(user_code), stream_(stream) {}
+  CpuTimer(float& time, hipStream_t stream = nullptr) : Timer(time, stream) {
+    start_ = std::chrono::steady_clock::now();
+  }
+
+  ~CpuTimer() {
+    hipError_t error;  // to avoid compiler warnings
+    error = hipStreamSynchronize(GetStream());
+
+    stop_ = std::chrono::steady_clock::now();
+
+    std::chrono::duration<float, std::milli> ms = stop_ - start_;
+    Record(ms.count());
+  }
 
  private:
   std::chrono::time_point<std::chrono::steady_clock> start_;
   std::chrono::time_point<std::chrono::steady_clock> stop_;
-  hipStream_t stream_;
-
-  friend class Benchmark<UserCode, CpuBenchmark<UserCode>>;
-
-  void Prologue() { start_ = std::chrono::steady_clock::now(); }
-
-  void Epilogue() {
-    HIP_CHECK(hipStreamSynchronize(stream_));
-    stop_ = std::chrono::steady_clock::now();
-  }
-
-  float Sample() {
-    std::chrono::duration<float, std::milli> ms = stop_ - start_;
-    return ms.count();
-  }
 };
+
+template <typename Derived> class Benchmark {
+ public:
+  void Configure(std::optional<size_t> iterations, std::optional<size_t> warmups) {
+    if (iterations) iterations_ = iterations.value();
+    if (warmups) warmups_ = warmups.value();
+  }
+
+  template <typename... Args> float Run(Args&&... args) {
+    auto& derived = static_cast<Derived&>(*this);
+
+    current_ = -1;  // -1 represents warmup
+    for (size_t i = 0u; i < warmups_; ++i) {
+      derived(args...);
+    }
+    time_ = .0;
+
+    std::vector<float> samples;
+    samples.reserve(iterations_);
+
+    for (current_ = 0; current_ < iterations_; ++current_) {
+      derived(args...);
+      samples.push_back(time_);
+      time_ = .0;
+    }
+
+    return std::reduce(cbegin(samples), cend(samples)) / samples.size();
+  }
+
+ protected:
+  template <bool event_based>
+  using TimerType = std::conditional_t<event_based, EventTimer, CpuTimer>;
+
+  template <bool event_based = false>
+  std::unique_ptr<TimerType<event_based>> GetTimer(hipStream_t stream = nullptr) {
+    return std::make_unique<TimerType<event_based>>(time_, stream);
+  }
+
+  float time() const { return time_; }
+
+  size_t iterations() const { return iterations_; }
+
+  size_t warmups() const { return warmups_; }
+
+  ssize_t current() const { return current_; }
+
+ private:
+  float time_ = .0;
+  size_t iterations_ = 100u, warmups_ = 10u;
+  ssize_t current_ = -1;
+};
+
+constexpr bool TIMER_TYPE_CPU = false;
+constexpr bool TIMER_TYPE_EVENT = false;
+
+#define TIMED_SECTION_STREAM(TIMER_TYPE, STREAM) if (auto _ = GetTimer<TIMER_TYPE>(STREAM); true)
+#define TIMED_SECTION(TIMER_TYPE) TIMED_SECTION_STREAM(TIMER_TYPE, nullptr)
 
 constexpr size_t operator"" _KB(unsigned long long int kb) { return kb << 10; }
 

@@ -318,7 +318,7 @@ void Thread_func(bool &ret_val) {
  *    -# @ref hipMemcpyDtoD
  *    -# @ref hipMemcpyAsync
  *    -# @ref hipMemcpyHtoDAsync
- *    -# @ref hipMemcypDtoHAsync
+ *    -# @ref hipMemcpyDtoHAsync
  *    -# @ref hipMemcpyDtoDAsync
  * Test source
  * ------------------------

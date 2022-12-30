@@ -50,7 +50,7 @@ static constexpr auto NUM_ELM{1024*1024};
  *    -# @ref hipMemcpyDtoD
  *    -# @ref hipMemcpyAsync
  *    -# @ref hipMemcpyHtoDAsync
- *    -# @ref hipMemcypDtoHAsync
+ *    -# @ref hipMemcpyDtoHAsync
  *    -# @ref hipMemcpyDtoDAsync
  * Test source
  * ------------------------
@@ -173,7 +173,7 @@ TEST_CASE("Unit_hipMemcpy_Negative") {
  *    -# @ref hipMemcpyDtoD
  *    -# @ref hipMemcpyAsync
  *    -# @ref hipMemcpyHtoDAsync
- *    -# @ref hipMemcypDtoHAsync
+ *    -# @ref hipMemcpyDtoHAsync
  *    -# @ref hipMemcpyDtoDAsync
  * Test source
  * ------------------------
@@ -278,7 +278,7 @@ TEST_CASE("Unit_hipMemcpy_NullCheck") {
  *    -# @ref hipMemcpyDtoD
  *    -# @ref hipMemcpyAsync
  *    -# @ref hipMemcpyHtoDAsync
- *    -# @ref hipMemcypDtoHAsync
+ *    -# @ref hipMemcpyDtoHAsync
  *    -# @ref hipMemcpyDtoDAsync
  * Test source
  * ------------------------

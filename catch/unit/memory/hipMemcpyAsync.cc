@@ -34,7 +34,7 @@ THE SOFTWARE.
  * Copy data from src to dst asynchronously.
  * ________________________
  * Test cases from other modules:
- *  - @ref Unit_hipMemcpy_MultiThread-AllAPIs
+ *  - @ref Unit_hipMemcpy_MultiThread_AllAPIs
  */
 
 /**

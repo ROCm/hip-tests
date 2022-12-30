@@ -33,7 +33,7 @@ THE SOFTWARE.
  * Copy data from Device to Host asynchronously.
  * ________________________
  * Test cases from other modules:
- *  - @ref Unit_hipMemcpy_MultiThread-AllAPIs
+ *  - @ref Unit_hipMemcpy_MultiThread_AllAPIs
  *  - @ref Unit_hipMemcpy_Negative
  *  - @ref Unit_hipMemcpy_NullCheck
  *  - @ref Unit_hipMemcpy_HalfMemCopy
@@ -153,7 +153,7 @@ TEST_CASE("Unit_hipMemcpyDtoHAsync_Negative_Parameters") {
  * Copy data from Host to Device asynchronously.
  * ________________________
  * Test cases from other modules:
- *  - @ref Unit_hipMemcpy_MultiThread-AllAPIs
+ *  - @ref Unit_hipMemcpy_MultiThread_AllAPIs
  *  - @ref Unit_hipMemcpy_Negative
  *  - @ref Unit_hipMemcpy_NullCheck
  *  - @ref Unit_hipMemcpy_HalfMemCopy
@@ -264,7 +264,7 @@ TEST_CASE("Unit_hipMemcpyHtoDAsync_Negative_Parameters") {
  * Copy data from Device to Device asynchronously.
  * ________________________
  * Test cases from other modules:
- *  - @ref Unit_hipMemcpy_MultiThread-AllAPIs
+ *  - @ref Unit_hipMemcpy_MultiThread_AllAPIs
  *  - @ref Unit_hipMemcpy_Negative
  *  - @ref Unit_hipMemcpy_NullCheck
  *  - @ref Unit_hipMemcpy_HalfMemCopy

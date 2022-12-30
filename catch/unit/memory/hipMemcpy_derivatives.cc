@@ -33,7 +33,7 @@ THE SOFTWARE.
  * Copy data from Device to Host.
  * ________________________
  * Test cases from other modules:
- *  - @ref Unit_hipMemcpy_MultiThread-AllAPIs
+ *  - @ref Unit_hipMemcpy_MultiThread_AllAPIs
  *  - @ref Unit_hipMemcpy_Negative
  *  - @ref Unit_hipMemcpy_NullCheck
  *  - @ref Unit_hipMemcpy_HalfMemCopy
@@ -121,7 +121,7 @@ TEST_CASE("Unit_hipMemcpyDtoH_Negative_Parameters") {
  * Copy data from Host to Device.
  * ________________________
  * Test cases from other modules:
- *  - @ref Unit_hipMemcpy_MultiThread-AllAPIs
+ *  - @ref Unit_hipMemcpy_MultiThread_AllAPIs
  *  - @ref Unit_hipMemcpy_Negative
  *  - @ref Unit_hipMemcpy_NullCheck
  *  - @ref Unit_hipMemcpy_HalfMemCopy
@@ -209,7 +209,7 @@ TEST_CASE("Unit_hipMemcpyHtoD_Negative_Parameters") {
  * Copy data from Device to Device.
  * ________________________
  * Test cases from other modules:
- *  - @ref Unit_hipMemcpy_MultiThread-AllAPIs
+ *  - @ref Unit_hipMemcpy_MultiThread_AllAPIs
  *  - @ref Unit_hipMemcpy_Negative
  *  - @ref Unit_hipMemcpy_NullCheck
  *  - @ref Unit_hipMemcpy_HalfMemCopy

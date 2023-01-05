@@ -81,6 +81,7 @@ set(TEST_SRC
   hipGraphExecChildGraphNodeSetParams.cc
   hipStreamGetCaptureInfo_v2.cc
   hipUserObjectCreate.cc
+  hipGraphDebugDotPrint.cc
   hipGraphCloneComplx.cc
 )
 

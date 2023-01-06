@@ -24,7 +24,6 @@ Functional -
  Memcpy nodes are added and assigned to default device.
 2) Allocate memory on default device(Dev 0), Perform memcpy operation for 1D arrays on Peer device(Dev 1) and
  verify the results.
-
 Negative -
 1) Pass pGraphNode as nullptr and check if api returns error.
 2) When graph is un-initialized argument(skipping graph creation), api should return error code.
@@ -196,5 +195,48 @@ TEST_CASE("Unit_hipGraphAddMemcpyNode1D_Negative") {
   }
   HIP_CHECK(hipFree(A_d));
   HIP_CHECK(hipFree(A_h));
+  HIP_CHECK(hipGraphDestroy(graph));
+}
+
+TEST_CASE("Unit_hipGraphAddMemcpyNode1D_Negative_Basic") {
+  constexpr size_t N = 1024;
+  constexpr size_t Nbytes = N * sizeof(int);
+  int *A_d, *B_d, *C_d, *A_h, *B_h, *C_h;
+
+  hipGraphNode_t memcpy_A, memcpy_B, memcpy_C;
+  hipError_t ret;
+  hipGraph_t graph;
+
+  HipTest::initArrays(&A_d, &B_d, &C_d, &A_h, &B_h, &C_h, N, false);
+
+  HIP_CHECK(hipGraphCreate(&graph, 0));
+  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpy_A, graph, nullptr, 0, A_d, A_h,
+                                    Nbytes, hipMemcpyHostToDevice));
+
+  //  Pass memcpy direction as hipMemcpyDeviceToHost and
+  //  source pointer as host and destination pointer as device pointer
+  ret = hipGraphAddMemcpyNode1D(&memcpy_B, graph, nullptr, 0, B_d, B_h,
+                                Nbytes, hipMemcpyDeviceToHost);
+  REQUIRE(hipErrorInvalidValue == ret);
+
+  //  Pass memcpy direction as hipMemcpyHostToDevice and
+  //  source pointer as device and destination pointer as host pointer
+  ret = hipGraphAddMemcpyNode1D(&memcpy_C, graph, nullptr, 0, C_h, C_d,
+                                Nbytes, hipMemcpyHostToDevice);
+  REQUIRE(hipErrorInvalidValue == ret);
+
+  //  Pass memcpy direction as hipMemcpyDeviceToDevice and
+  //  pass source pointer as device and destination pointer as host pointer
+  ret = hipGraphAddMemcpyNode1D(&memcpy_C, graph, nullptr, 0, C_h, C_d,
+                                Nbytes, hipMemcpyDeviceToDevice);
+  REQUIRE(hipErrorInvalidValue == ret);
+
+  //  Pass memcpy direction as hipMemcpyDeviceToDevice and
+  //  pass source pointer as host and destination pointer as device pointer
+  ret = hipGraphAddMemcpyNode1D(&memcpy_C, graph, nullptr, 0, C_d, C_h,
+                                Nbytes, hipMemcpyDeviceToDevice);
+  REQUIRE(hipErrorInvalidValue == ret);
+
+  HipTest::freeArrays(A_d, B_d, C_d, A_h, B_h, C_h, false);
   HIP_CHECK(hipGraphDestroy(graph));
 }

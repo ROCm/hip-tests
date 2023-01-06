@@ -41,6 +41,21 @@ __global__ void Kernel(float* hostRes, int clkRate) {
   }
 }
 
+__global__ void Kernel_gfx11(float* hostRes, int clkRate) {
+#if HT_AMD
+  int tid = threadIdx.x + blockIdx.x * blockDim.x;
+  hostRes[tid] = tid + 1;
+  __threadfence_system();
+  // expecting that the data is getting flushed to host here!
+  uint64_t start = wall_clock64()/clkRate, cur;
+  if (clkRate > 1) {
+    do { cur = wall_clock64()/clkRate-start;}while (cur < wait_sec);
+  } else {
+    do { cur = wall_clock64()/start;}while (cur < wait_sec);
+  }
+#endif
+}
+
 TEST_CASE("Unit_hipHostMalloc_CoherentAccess") {
   int blocks = 2;
   float* hostRes;
@@ -49,9 +64,14 @@ TEST_CASE("Unit_hipHostMalloc_CoherentAccess") {
   hostRes[0] = 0;
   hostRes[1] = 0;
   int clkRate;
-  HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
+  if (IsGfx11()) {
+    HIPCHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeWallClockRate, 0));
+  } else {
+    HIPCHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
+  }
   std::cout << clkRate << std::endl;
-  hipLaunchKernelGGL(HIP_KERNEL_NAME(Kernel), dim3(1), dim3(blocks),
+  auto Kernel_used = IsGfx11() ? Kernel_gfx11 : Kernel;
+  hipLaunchKernelGGL(HIP_KERNEL_NAME(Kernel_used), dim3(1), dim3(blocks),
                      0, 0, hostRes, clkRate);
   HIP_CHECK(hipGetLastError());
   int eleCounter = 0;

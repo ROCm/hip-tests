@@ -19,6 +19,8 @@ void TestContext::detectOS() {
 void TestContext::detectPlatform() {
 #if (HT_AMD == 1)
   amd = true;
+#elif (HT_SPIRV == 1)
+  spirv = true;
 #elif (HT_NVIDIA == 1)
   nvidia = true;
 #endif
@@ -160,7 +162,13 @@ std::string& TestContext::getCommonJsonFile() {
 
 
 void TestContext::getConfigFiles() {
-  config_.platform = (amd ? "amd" : (nvidia ? "nvidia" : "unknown"));
+  if(config_.platform == "amd") {
+    amd = true;
+  } else if(config_.platform == "nvidia") {
+    nvidia = true;
+  } else if(config_.platform == "spirv") {
+    spirv = true;
+  }
   config_.os = (p_windows ? "windows" : (p_linux ? "linux" : "unknown"));
 
   if (config_.os == "unknown" || config_.platform == "unknown") {
@@ -210,6 +218,7 @@ bool TestContext::isLinux() const { return p_linux; }
 
 bool TestContext::isNvidia() const { return nvidia; }
 bool TestContext::isAmd() const { return amd; }
+bool TestContext::isSpirv() const { return spirv; }
 
 void TestContext::parseOptions(int argc, char** argv) {
   // Test name is at [1] position

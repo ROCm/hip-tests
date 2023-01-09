@@ -254,7 +254,7 @@ static inline int RAND_R(unsigned* rand_seed) {
 
 inline bool isImageSupported() {
   int imageSupport = 1;
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
   int device;
   HIP_CHECK(hipGetDevice(&device));
   HIPCHECK(hipDeviceGetAttribute(&imageSupport, hipDeviceAttributeImageSupport, device));

@@ -24,6 +24,8 @@ set(TEST_SRC
     hipMemcpyAtoH.cc
     hipMemcpyDtoD.cc
     hipMemcpyDtoDAsync.cc
+    hipMemcpyDtoH.cc
+    hipMemcpyDtoHAsync.cc
 )
 
 hip_add_exe_to_target(NAME MemcpyPerformance

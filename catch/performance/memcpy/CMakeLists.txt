@@ -18,4 +18,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-add_subdirectory(memcpy)
+set(TEST_SRC
+    hipMemcpy.cc
+    hipMemcpyAsync.cc
+)
+
+hip_add_exe_to_target(NAME MemcpyPerformance
+                      TEST_SRC ${TEST_SRC}
+                      TEST_TARGET_NAME build_tests
+                      COMPILE_OPTIONS -std=c++17)

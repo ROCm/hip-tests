@@ -20,7 +20,6 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <performance_common.hh>
 #include <resource_guards.hh>
-#include <utils.hh>
 
 class MemcpyBenchmark : public Benchmark<MemcpyBenchmark> {
  public:

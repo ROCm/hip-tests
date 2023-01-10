@@ -43,7 +43,7 @@ void verifyResults(T* ptr, T expectedResult, int numTiles) {
 
 template <typename T>
 void compareResults(T* cpu, T* gpu, int size) {
-  for (unsigned int i = 0; i < size / sizeof(int); i++) {
+  for (unsigned int i = 0; i < size / sizeof(T); i++) {
     if (cpu[i] != gpu[i]) {
       INFO("Results do not match at index " << i);
       REQUIRE(cpu[i] == gpu[i]);

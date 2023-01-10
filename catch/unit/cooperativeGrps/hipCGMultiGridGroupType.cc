@@ -153,7 +153,7 @@ void kernel_cg_multi_grid_group_type_via_public_api(int* grid_rank_dev,
   // Eech thread assign 1 to their respective location
   sync_dev[gIdx] = 1;
   // Grid level sync
-  sync(cg::this_grid());
+  cg::sync(cg::this_grid());
   // Thread 0 from work-group 0 of current grid (gpu) does grid level reduction
   if (blockIdx.x == 0 && threadIdx.x == 0) {
     for (uint i = 1; i < gridDim.x * blockDim.x; ++i) {
@@ -162,7 +162,7 @@ void kernel_cg_multi_grid_group_type_via_public_api(int* grid_rank_dev,
     sync_result[cg::this_multi_grid().grid_rank() + 1] = sync_dev[0];
   }
   // multi-grid level sync via public api
-  sync(mg);
+  cg::sync(mg);
   // grid (gpu) 0 does final reduction across all grids (gpus)
   if (cg::this_multi_grid().grid_rank() == 0 && blockIdx.x == 0 && threadIdx.x == 0) {
     sync_result[0] = 0;
@@ -455,8 +455,8 @@ TEST_CASE("Unit_hipCGMultiGridGroupType_Basic") {
 
 TEST_CASE("Unit_hipCGMultiGridGroupType_Barrier") {
   int num_devices = 0;
-  uint32_t loops = 2;
-  uint32_t warps = 10;
+  uint32_t loops = GENERATE(1, 2, 3, 4);
+  uint32_t warps = GENERATE(4, 8, 16, 32);
   uint32_t block_size = 1;
 
   HIP_CHECK(hipGetDeviceCount(&num_devices));

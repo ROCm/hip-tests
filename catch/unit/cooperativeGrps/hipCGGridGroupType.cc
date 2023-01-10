@@ -111,7 +111,7 @@ void kernel_cg_grid_group_type_via_public_api(int *size_dev,
     gm[0] = 10;
   else if (blockIdx.x == 1 && threadIdx.x == 0)
     gm[1] = 20;
-  sync(gg);
+  cg::sync(gg);
   sync_dev[gIdx] = gm[1] * gm[0];
 }
 
@@ -330,8 +330,8 @@ TEST_CASE("Unit_hipCGGridGroupType_DataSharing") {
     return;
   }
 
-  int loops = 2;
-  int width = 4096;
+  int loops = GENERATE(1, 2, 3, 4);
+  int width = GENERATE(512, 1024, 2048, 4096);
 
   // Launch enough waves to fill up all of the GPU
   int warp_size = device_properties.warpSize;
@@ -409,8 +409,8 @@ TEST_CASE("Unit_hipCGGridGroupType_Barrier") {
     return;
   }
 
-  uint32_t loops = 2;
-  uint32_t warps = 10;
+  uint32_t loops = GENERATE(1, 2, 3, 4);
+  uint32_t warps = GENERATE(4, 8, 16, 32);
   uint32_t block_size = 1;
     
   // Test whether the requested size will fit on the GPU
@@ -457,6 +457,7 @@ TEST_CASE("Unit_hipCGGridGroupType_Barrier") {
                            hipMemcpyDeviceToHost));
 
   verify_barrier_buffer(loops, requested_blocks, host_buffer);
+
   HIP_CHECK(hipFree(kernel_buffer));
   HIP_CHECK(hipFree(kernel_atomic));
   free(host_buffer);

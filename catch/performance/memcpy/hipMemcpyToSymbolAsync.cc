@@ -21,35 +21,51 @@ THE SOFTWARE.
 #include <performance_common.hh>
 #include <resource_guards.hh>
 
-class MemcpyHtoDAsyncBenchmark : public Benchmark<MemcpyHtoDAsyncBenchmark> {
+__device__ int devSymbol[1_MB];
+
+class MemcpyToSymbolAsyncBenchmark : public Benchmark<MemcpyToSymbolAsyncBenchmark> {
  public:
-  void operator()(LinearAllocs host_allocation_type, LinearAllocs device_allocation_type, size_t size) {
+  void operator()(const void* source, size_t size=1, size_t offset=0) {
     const StreamGuard stream_guard(Streams::nullstream);
     const hipStream_t stream = stream_guard.stream();
 
-    LinearAllocGuard<int> device_allocation(device_allocation_type, size);
-    LinearAllocGuard<int> host_allocation(host_allocation_type, size);
-
     TIMED_SECTION(TIMER_TYPE_EVENT) {
-      HIP_CHECK(hipMemcpyHtoDAsync(device_allocation.ptr(), host_allocation.ptr(), size, stream));
+      HIP_CHECK(hipMemcpyToSymbolAsync(HIP_SYMBOL(devSymbol), source, size, offset,
+                hipMemcpyHostToDevice, stream));
     }
 
     HIP_CHECK(hipStreamSynchronize(stream));
   }
 };
 
-static void RunBenchmark(LinearAllocs host_allocation_type, LinearAllocs device_allocation_type, size_t size) {
-  MemcpyHtoDAsyncBenchmark benchmark;
-  benchmark.Configure(1000, 100);
-  auto time = benchmark.Run(host_allocation_type, device_allocation_type, size);
+static void RunBenchmark(const void* source, size_t size=1, size_t offset=0) {
+  MemcpyToSymbolAsyncBenchmark benchmark;
+  benchmark.Configure(100, 1000);
+  auto time = benchmark.Run(source, size, offset);
   std::cout << time << " ms" << std::endl;
 }
 
-TEST_CASE("Performance_hipMemcpyHtoDAsync") {
+TEST_CASE("Performance_hipMemcpyToSymbolAsync_SingularValue") {
   std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
-  const auto allocation_size = GENERATE(4_KB, 4_MB, 16_MB);
-  const auto device_allocation_type = LinearAllocs::hipMalloc;
-  const auto host_allocation_type = GENERATE(LinearAllocs::malloc, LinearAllocs::hipHostMalloc);
+  int set{42};
+  RunBenchmark(&set);
+}
 
-  RunBenchmark(host_allocation_type, device_allocation_type, allocation_size);
+TEST_CASE("Performance_hipMemcpyToSymbolAsync_ArrayValue") {
+  std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
+  size_t size = GENERATE(1_KB, 4_KB, 1_MB);
+  int array[size];
+  std::fill_n(array, size, 42);
+
+  RunBenchmark(array, sizeof(int) * size);
+}
+
+TEST_CASE("Performance_hipMemcpyToSymbolAsync_WithOffset") {
+  std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
+  size_t size = GENERATE(1_KB, 4_KB, 1_MB);
+  int array[size];
+  std::fill_n(array, size, 42);
+
+  size_t offset = GENERATE_REF(0, size / 2);
+  RunBenchmark(array + offset, sizeof(int) * (size - offset), offset * sizeof(int));
 }

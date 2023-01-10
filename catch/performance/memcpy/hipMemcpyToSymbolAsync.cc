@@ -26,7 +26,7 @@ __device__ int devSymbol[1_MB];
 class MemcpyToSymbolAsyncBenchmark : public Benchmark<MemcpyToSymbolAsyncBenchmark> {
  public:
   void operator()(const void* source, size_t size=1, size_t offset=0) {
-    const StreamGuard stream_guard(Streams::nullstream);
+    const StreamGuard stream_guard(Streams::created);
     const hipStream_t stream = stream_guard.stream();
 
     TIMED_SECTION(TIMER_TYPE_EVENT) {

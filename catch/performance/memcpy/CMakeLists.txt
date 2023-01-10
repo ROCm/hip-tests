@@ -21,6 +21,7 @@
 set(TEST_SRC
     hipMemcpy.cc
     hipMemcpyAsync.cc
+    hipMemcpyWithStream.cc
     hipMemcpyAtoH.cc
     hipMemcpyHtoA.cc
     hipMemcpyDtoD.cc

@@ -29,7 +29,7 @@ class MemcpyDtoDAsyncBenchmark : public Benchmark<MemcpyDtoDAsyncBenchmark> {
       return;
     }
 
-    const StreamGuard stream_guard(Streams::nullstream);
+    const StreamGuard stream_guard(Streams::created);
     const hipStream_t stream = stream_guard.stream();
 
     int src_device = 0;

@@ -24,7 +24,7 @@ THE SOFTWARE.
 class MemcpyHtoDAsyncBenchmark : public Benchmark<MemcpyHtoDAsyncBenchmark> {
  public:
   void operator()(LinearAllocs host_allocation_type, LinearAllocs device_allocation_type, size_t size) {
-    const StreamGuard stream_guard(Streams::nullstream);
+    const StreamGuard stream_guard(Streams::created);
     const hipStream_t stream = stream_guard.stream();
 
     LinearAllocGuard<int> device_allocation(device_allocation_type, size);

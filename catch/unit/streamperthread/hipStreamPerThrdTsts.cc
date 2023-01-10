@@ -95,6 +95,39 @@ __global__ void StreamPerThrd1(int *A, int Pk_Clk) {
   *A = 1;
 }
 
+__global__ void StreamPerThrd_gfx11(int *Ad, int *Ad1, size_t n, int Pk_Clk,
+                              int Wait, int WaitEvnt  = 0) {
+#if HT_AMD
+  size_t index = blockIdx.x * blockDim.x + threadIdx.x;
+  if (index < n) {
+    Ad[index] = Ad[index] + 10;
+  }
+  if (Wait) {
+    int64_t GpuFrq = (Pk_Clk * 1000);
+    int64_t StrtTck = wall_clock64();
+    if (index == 0) {
+      // The following while loop checks the value in ptr for around 4 seconds
+      while ((wall_clock64() - StrtTck) <= (6 * GpuFrq)) {
+      }
+      if (WaitEvnt == 1) {
+        *Ad1 = 1;
+      }
+    }
+  }
+#endif
+}
+
+__global__ void StreamPerThrd1_gfx11(int *A, int Pk_Clk) {
+#if HT_AMD
+  int64_t GpuFrq = (Pk_Clk * 1000);
+  int64_t StrtTck = wall_clock64();
+  // The following while loop checks the value in ptr for around 3-4 seconds
+  while ((wall_clock64() - StrtTck) <= (3 * GpuFrq)) {
+  }
+  *A = 1;
+#endif
+}
+
 __global__ void MiniKernel(int *A) {
   if (*A == 0) {
     *A = 2;  //  Fail condition
@@ -189,12 +222,18 @@ static void EventSync() {
   HIP_CHECK(hipEventCreate(&start));
   HIP_CHECK(hipEventCreate(&end));
   HIP_CHECK(hipMemcpy(Ad, Ah, NumElms * sizeof(int), hipMemcpyHostToDevice));
-  HIP_CHECK(hipDeviceGetAttribute(&peak_clk, hipDeviceAttributeClockRate, 0));
   dim3 dimBlock(blockSize, 1, 1);
   dim3 dimGrid((NumElms + blockSize -1)/blockSize, 1, 1);
   HIP_CHECK(hipEventRecord(start, hipStreamPerThread));
-  StreamPerThrd<<<dimGrid, dimBlock, 0, hipStreamPerThread>>>(Ad, NULL, NumElms,
+  if (IsGfx11()) {
+    HIP_CHECK(hipDeviceGetAttribute(&peak_clk, hipDeviceAttributeWallClockRate, 0));
+    StreamPerThrd_gfx11<<<dimGrid, dimBlock, 0, hipStreamPerThread>>>(Ad, NULL, NumElms,
+                                                                peak_clk, 0);
+  } else {
+    HIP_CHECK(hipDeviceGetAttribute(&peak_clk, hipDeviceAttributeClockRate, 0));
+    StreamPerThrd<<<dimGrid, dimBlock, 0, hipStreamPerThread>>>(Ad, NULL, NumElms,
                                                               peak_clk, 0);
+  }
   HIP_CHECK(hipEventRecord(end, hipStreamPerThread));
   HIP_CHECK(hipEventSynchronize(end));
   HIP_CHECK(hipMemcpy(Ah, Ad, NumElms * sizeof(int), hipMemcpyDeviceToHost));
@@ -226,12 +265,18 @@ TEST_CASE("Unit_hipStreamPerThreadTst_StrmQuery") {
     Ah[i] = CONST_NUM;
   }
   HIP_CHECK(hipMemcpy(Ad, Ah, NumElms * sizeof(int), hipMemcpyHostToDevice));
-  HIP_CHECK(hipDeviceGetAttribute(&peak_clk, hipDeviceAttributeClockRate, 0));
   dim3 dimBlock(blockSize, 1, 1);
   dim3 dimGrid((NumElms + blockSize -1)/blockSize, 1, 1);
   SECTION("Test working of hipStreamQuery") {
-    StreamPerThrd<<<dimGrid, dimBlock, 0, hipStreamPerThread>>>(Ad, NULL,
+    if (IsGfx11()) {
+      HIP_CHECK(hipDeviceGetAttribute(&peak_clk, hipDeviceAttributeWallClockRate, 0));
+      StreamPerThrd_gfx11<<<dimGrid, dimBlock, 0, hipStreamPerThread>>>(Ad, NULL,
+                          NumElms, peak_clk, 1);
+    } else {
+      HIP_CHECK(hipDeviceGetAttribute(&peak_clk, hipDeviceAttributeClockRate, 0));
+      StreamPerThrd<<<dimGrid, dimBlock, 0, hipStreamPerThread>>>(Ad, NULL,
                     NumElms, peak_clk, 1);
+    }
     err = hipStreamQuery(hipStreamPerThread);
     if (err != hipErrorNotReady) {
       WARN("hipStreamQuery on hipStreamPerThread didnt return expected error!");
@@ -245,7 +290,11 @@ TEST_CASE("Unit_hipStreamPerThreadTst_StrmQuery") {
     HIP_CHECK(hipHostMalloc(&Hptr, sizeof(int)));
     *Hptr = 0;
     HIP_CHECK(hipHostGetDevicePointer(reinterpret_cast<void**>(&A_d), Hptr, 0));
-    StreamPerThrd1<<<1, 1, 0, hipStreamPerThread>>>(A_d, peak_clk);
+    if (IsGfx11()) {
+      StreamPerThrd1_gfx11<<<1, 1, 0, hipStreamPerThread>>>(A_d, peak_clk);
+    } else {
+      StreamPerThrd1<<<1, 1, 0, hipStreamPerThread>>>(A_d, peak_clk);
+    }
     HIP_CHECK(hipStreamAddCallback(hipStreamPerThread, CallBackFunctn, A_d, 0));
     HIP_CHECK(hipStreamSynchronize(hipStreamPerThread));
     HIP_CHECK(hipHostFree(Hptr));
@@ -277,11 +326,17 @@ TEST_CASE("Unit_hipStreamPerThread_MangdMem") {
                 hipStreamPerThread));
     }
     int peak_clk;
-    HIP_CHECK(hipDeviceGetAttribute(&peak_clk, hipDeviceAttributeClockRate, 0));
     dim3 dimBlock(blockSize, 1, 1);
     dim3 dimGrid((NumElms + blockSize -1)/blockSize, 1, 1);
-    StreamPerThrd<<<dimGrid, dimBlock, 0, hipStreamPerThread>>>(Hmm, NULL,
+    if (IsGfx11()) {
+      HIP_CHECK(hipDeviceGetAttribute(&peak_clk, hipDeviceAttributeWallClockRate, 0));
+      StreamPerThrd_gfx11<<<dimGrid, dimBlock, 0, hipStreamPerThread>>>(Hmm, NULL,
+                      NumElms, peak_clk, 0);
+    } else {
+      HIP_CHECK(hipDeviceGetAttribute(&peak_clk, hipDeviceAttributeClockRate, 0));
+      StreamPerThrd<<<dimGrid, dimBlock, 0, hipStreamPerThread>>>(Hmm, NULL,
                     NumElms, peak_clk, 0);
+    }
     HIP_CHECK(hipStreamSynchronize(hipStreamPerThread));
     // Validating the result
     int MisMatch = 0;
@@ -313,11 +368,17 @@ TEST_CASE("Unit_hipStreamPerThread_ChildProc") {
       Ah[i] = CONST_NUM;
     }
     HIP_CHECK(hipMemcpy(Ad, Ah, NumElms * sizeof(int), hipMemcpyHostToDevice));
-    HIP_CHECK(hipDeviceGetAttribute(&peak_clk, hipDeviceAttributeClockRate, 0));
     dim3 dimBlock(blockSize, 1, 1);
     dim3 dimGrid((NumElms + blockSize -1)/blockSize, 1, 1);
-    StreamPerThrd<<<dimGrid, dimBlock, 0, hipStreamPerThread>>>(Ad, NULL,
+    if (IsGfx11()) {
+      HIP_CHECK(hipDeviceGetAttribute(&peak_clk, hipDeviceAttributeWallClockRate, 0));
+      StreamPerThrd_gfx11<<<dimGrid, dimBlock, 0, hipStreamPerThread>>>(Ad, NULL,
+                      NumElms, peak_clk, 0);
+    } else{
+      HIP_CHECK(hipDeviceGetAttribute(&peak_clk, hipDeviceAttributeClockRate, 0));
+      StreamPerThrd<<<dimGrid, dimBlock, 0, hipStreamPerThread>>>(Ad, NULL,
                     NumElms, peak_clk, 0);
+    }
     HIP_CHECK(hipStreamSynchronize(hipStreamPerThread));
     HIP_CHECK(hipMemcpy(Ah, Ad, NumElms * sizeof(int), hipMemcpyDeviceToHost));
     int MisMatch = 0;
@@ -380,13 +441,17 @@ TEST_CASE("Unit_hipStreamPerThread_StrmWaitEvt") {
   HIP_CHECK(hipMalloc(&Ad1, sizeof(int)));
   HIP_CHECK(hipMemset(Ad1, 0, sizeof(int)));
   int peak_clk;
-  HIP_CHECK(hipDeviceGetAttribute(&peak_clk, hipDeviceAttributeClockRate, 0));
   dim3 dimBlock(blockSize, 1, 1);
   dim3 dimGrid((NumElms + blockSize -1)/blockSize, 1, 1);
   hipEvent_t e1;
   HIPCHECK(hipEventCreate(&e1));
-  StreamPerThrd<<<dimGrid, dimBlock, 0, Strm>>>(Ad, Ad1, NumElms,
-  peak_clk, 1, 1);
+  if (IsGfx11()) {
+    HIP_CHECK(hipDeviceGetAttribute(&peak_clk, hipDeviceAttributeWallClockRate, 0));
+    StreamPerThrd_gfx11<<<dimGrid, dimBlock, 0, Strm>>>(Ad, Ad1, NumElms, peak_clk, 1, 1);
+  } else {
+    HIP_CHECK(hipDeviceGetAttribute(&peak_clk, hipDeviceAttributeClockRate, 0));
+    StreamPerThrd<<<dimGrid, dimBlock, 0, Strm>>>(Ad, Ad1, NumElms, peak_clk, 1, 1);
+  }
   HIP_CHECK(hipEventRecord(e1, Strm));
   HIP_CHECK(hipStreamWaitEvent(hipStreamPerThread, e1, 0 /*flags*/));
   MiniKernel<<<1, 1, 0, hipStreamPerThread>>>(Ad1);

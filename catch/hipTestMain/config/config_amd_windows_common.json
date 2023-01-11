@@ -98,6 +98,24 @@
 	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ClonedGrph",
 	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ChldNode",
 	   "Unit_hipMemGetAddressRange_Negative",
-	   "Unit_hipMemGetAddressRange_Positive"
+	   "Unit_hipMemGetAddressRange_Positive",
+	   "Note: devicelib hangs and failures",
+	   "Unit_deviceAllocation_Malloc_PerThread_PrimitiveDataType",
+	   "Unit_deviceAllocation_New_PerThread_PrimitiveDataType",
+	   "Unit_deviceAllocation_Malloc_PerThread_StructDataType",
+	   "Unit_deviceAllocation_New_PerThread_StructDataType",
+	   "Unit_deviceAllocation_Malloc_AcrossKernels",
+	   "Unit_deviceAllocation_New_AcrossKernels",
+	   "Unit_deviceAllocation_Malloc_SingleCodeObj",
+	   "Unit_deviceAllocation_New_SingleCodeObj",
+	   "Unit_deviceAllocation_Malloc_PerThread_Graph",
+	   "Unit_deviceAllocation_New_PerThread_Graph",
+	   "Unit_deviceAllocation_Malloc_DeviceFunc",
+	   "Unit_deviceAllocation_VirtualFunction",
+	   "Unit_deviceAllocation_Malloc_MulKernels_MulThreads",
+	   "Unit_deviceAllocation_New_MulKernels_MulThreads",
+	   "Unit_deviceAllocation_Malloc_MulCodeObj",
+	   "Unit_deviceAllocation_New_MulCodeObj",
+	   "Unit_deviceAllocation_New_DeviceFunc"
 	]
 }

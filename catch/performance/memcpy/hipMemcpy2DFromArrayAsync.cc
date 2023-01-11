@@ -21,18 +21,21 @@ THE SOFTWARE.
 #include <performance_common.hh>
 #include <resource_guards.hh>
 
-class Memcpy2DToArrayBenchmark : public Benchmark<Memcpy2DToArrayBenchmark> {
+class Memcpy2DFromArrayAsyncBenchmark : public Benchmark<Memcpy2DFromArrayAsyncBenchmark> {
  public:
   void operator()(size_t width, size_t height, hipMemcpyKind kind, bool enable_peer_access){
+    const StreamGuard stream_guard(Streams::created);
+    const hipStream_t stream = stream_guard.stream();
+
     if (kind == hipMemcpyHostToDevice) {
       size_t allocation_size = width * height * sizeof(int);
       LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, allocation_size);
       ArrayAllocGuard<int> array_allocation(make_hipExtent(width, height, 0), hipArrayDefault);
 
       TIMED_SECTION(TIMER_TYPE_EVENT) {
-        HIP_CHECK(hipMemcpy2DToArray(array_allocation.ptr(), 0, 0, host_allocation.ptr(),
-                  width * sizeof(int), width * sizeof(int), height,
-                  hipMemcpyHostToDevice));
+        HIP_CHECK(hipMemcpy2DFromArrayAsync(host_allocation.ptr(), width * sizeof(int),
+                  array_allocation.ptr(), 0, 0, width * sizeof(int), height,
+                  hipMemcpyHostToDevice, stream));
       }
     } else {
       // hipMemcpyDeviceToDevice
@@ -54,22 +57,24 @@ class Memcpy2DToArrayBenchmark : public Benchmark<Memcpy2DToArrayBenchmark> {
 
       HIP_CHECK(hipSetDevice(src_device));
       TIMED_SECTION(TIMER_TYPE_EVENT) {
-        HIP_CHECK(hipMemcpy2DToArray(array_allocation.ptr(), 0, 0, device_allocation.ptr(),
-                  device_allocation.pitch(), device_allocation.width(), device_allocation.height(),
-                  hipMemcpyDeviceToDevice));
+        HIP_CHECK(hipMemcpy2DFromArrayAsync(device_allocation.ptr(), device_allocation.pitch(),
+                  array_allocation.ptr(), 0, 0, device_allocation.width(),
+                  device_allocation.height(), hipMemcpyHostToDevice, stream));
       }
     }
+
+    HIP_CHECK(hipStreamSynchronize(stream));
   }
 };
 
 static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind, bool enable_peer_access=false) {
-  Memcpy2DToArrayBenchmark benchmark;
+  Memcpy2DFromArrayAsyncBenchmark benchmark;
   benchmark.Configure(1000, 100);
   auto time = benchmark.Run(width, height, kind, enable_peer_access);
   std::cout << time << " ms" << std::endl;
 }
 
-TEST_CASE("Performance_hipMemcpy2DToArray_HostToDevice") {
+TEST_CASE("Performance_hipMemcpy2DFromArrayAsync_HostToDevice") {
   std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
   const auto width = GENERATE(2_KB, 4_KB, 8_KB);
   const auto height = width / 2;
@@ -77,7 +82,7 @@ TEST_CASE("Performance_hipMemcpy2DToArray_HostToDevice") {
   RunBenchmark(width, height, hipMemcpyHostToDevice);
 }
 
-TEST_CASE("Performance_hipMemcpy2DToArray_DeviceToDevice_DisablePeerAccess") {
+TEST_CASE("Performance_hipMemcpy2DFromArrayAsync_DeviceToDevice_DisablePeerAccess") {
   std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
   if (HipTest::getDeviceCount() < 2) {
     HipTest::HIP_SKIP_TEST("This test requires 2 GPUs. Skipping.");
@@ -89,7 +94,7 @@ TEST_CASE("Performance_hipMemcpy2DToArray_DeviceToDevice_DisablePeerAccess") {
   RunBenchmark(width, height, hipMemcpyDeviceToDevice);
 }
 
-TEST_CASE("Performance_hipMemcpy2DToArray_DeviceToDevice_EnablePeerAccess") {
+TEST_CASE("Performance_hipMemcpy2DFromArrayAsync_DeviceToDevice_EnablePeerAccess") {
   std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
   if (HipTest::getDeviceCount() < 2) {
     HipTest::HIP_SKIP_TEST("This test requires 2 GPUs. Skipping.");

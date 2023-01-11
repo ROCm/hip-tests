@@ -38,6 +38,8 @@ set(TEST_SRC
     hipMemcpy2DAsync.cc
     hipMemcpy2DToArray.cc
     hipMemcpy2DToArrayAsync.cc
+    hipMemcpy2DFromArray.cc
+    hipMemcpy2DFromArrayAsync.cc
 )
 
 hip_add_exe_to_target(NAME MemcpyPerformance

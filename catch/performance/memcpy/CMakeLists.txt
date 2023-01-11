@@ -34,6 +34,8 @@ set(TEST_SRC
     hipMemcpyToSymbolAsync.cc
     hipMemcpyFromSymbol.cc
     hipMemcpyFromSymbolAsync.cc
+    hipMemcpy2D.cc
+    hipMemcpy2DAsync.cc
 )
 
 hip_add_exe_to_target(NAME MemcpyPerformance

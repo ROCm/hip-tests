@@ -23,67 +23,48 @@ THE SOFTWARE.
 
 class MemcpyWithStreamBenchmark : public Benchmark<MemcpyWithStreamBenchmark> {
  public:
-  void operator()(LinearAllocs dst_allocation_type, LinearAllocs src_allocation_type, size_t size, hipMemcpyKind kind) {
-    const StreamGuard stream_guard(Streams::created);
-    const hipStream_t stream = stream_guard.stream();
-
-    LinearAllocGuard<int> src_allocation(src_allocation_type, size);
-    LinearAllocGuard<int> dst_allocation(dst_allocation_type, size);
-
-    TIMED_SECTION(TIMER_TYPE_EVENT) {
-      HIP_CHECK(hipMemcpyWithStream(dst_allocation.ptr(), src_allocation.ptr(), size, kind, stream));
-    }
-
-    HIP_CHECK(hipStreamSynchronize(stream));
-  }
-};
-
-class MemcpyWithStreamDeviceBenchmark : public Benchmark<MemcpyWithStreamDeviceBenchmark> {
- public:
   void operator()(LinearAllocs dst_allocation_type, LinearAllocs src_allocation_type, size_t size,
-                  hipMemcpyKind kind, bool enable_peer_access=false) {
-    if (HipTest::getDeviceCount() < 2) {
-      HipTest::HIP_SKIP_TEST("This test requires 2 GPUs. Skipping.");
-      return;
-    }
-
+                  hipMemcpyKind kind, bool enable_peer_access) {
     const StreamGuard stream_guard(Streams::created);
     const hipStream_t stream = stream_guard.stream();
 
-    int src_device = 0;
-    int dst_device = 1;
+    if (kind != hipMemcpyDeviceToDevice) {
+      LinearAllocGuard<int> src_allocation(src_allocation_type, size);
+      LinearAllocGuard<int> dst_allocation(dst_allocation_type, size);
 
-    if (enable_peer_access) {
-      int can_access_peer = 0;
-      HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, src_device, dst_device));
-      if (!can_access_peer) {
-        INFO("Peer access cannot be enabled between devices " << src_device << " and " << dst_device);
-        REQUIRE(can_access_peer);
+      TIMED_SECTION(TIMER_TYPE_EVENT) {
+        HIP_CHECK(hipMemcpyWithStream(dst_allocation.ptr(), src_allocation.ptr(), size, kind, stream));
       }
-      HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));
-    }
-    LinearAllocGuard<int> src_allocation(LinearAllocs::hipMalloc, size);
-    HIP_CHECK(hipSetDevice(dst_device));
-    LinearAllocGuard<int> dst_allocation(LinearAllocs::hipMalloc, size);
+    } else {
+      int src_device = 0;
+      int dst_device = 1;
 
-    HIP_CHECK(hipSetDevice(src_device));
-    TIMED_SECTION(TIMER_TYPE_EVENT) {
-      HIP_CHECK(hipMemcpyWithStream(dst_allocation.ptr(), src_allocation.ptr(), size, kind, stream));
+      if (enable_peer_access) {
+        int can_access_peer = 0;
+        HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, src_device, dst_device));
+        if (!can_access_peer) {
+          INFO("Peer access cannot be enabled between devices " << src_device << " and " << dst_device);
+          REQUIRE(can_access_peer);
+        }
+        HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));
+      }
+      LinearAllocGuard<int> src_allocation(LinearAllocs::hipMalloc, size);
+      HIP_CHECK(hipSetDevice(dst_device));
+      LinearAllocGuard<int> dst_allocation(LinearAllocs::hipMalloc, size);
+
+      HIP_CHECK(hipSetDevice(src_device));
+      TIMED_SECTION(TIMER_TYPE_EVENT) {
+        HIP_CHECK(hipMemcpyWithStream(dst_allocation.ptr(), src_allocation.ptr(), size, kind, stream));
+      }
     }
+
     HIP_CHECK(hipStreamSynchronize(stream));
   }
 };
 
-static void RunBenchmark(LinearAllocs dst_allocation_type, LinearAllocs src_allocation_type, size_t size, hipMemcpyKind kind) {
+static void RunBenchmark(LinearAllocs dst_allocation_type, LinearAllocs src_allocation_type, size_t size,
+    hipMemcpyKind kind, bool enable_peer_access=false) {
   MemcpyWithStreamBenchmark benchmark;
-  benchmark.Configure(1000, 100);
-  auto time = benchmark.Run(dst_allocation_type, src_allocation_type, size, kind);
-  std::cout << time << " ms" << std::endl;
-}
-
-static void RunDeviceBenchmark(LinearAllocs dst_allocation_type, LinearAllocs src_allocation_type, size_t size,
-                         hipMemcpyKind kind, bool enable_peer_access=false) {
-  MemcpyWithStreamDeviceBenchmark benchmark;
   benchmark.Configure(1000, 100);
   auto time = benchmark.Run(dst_allocation_type, src_allocation_type, size, kind, enable_peer_access);
   std::cout << time << " ms" << std::endl;
@@ -116,20 +97,28 @@ TEST_CASE("Performance_hipMemcpyWithStream_HostToHost") {
   RunBenchmark(dst_allocation_type, src_allocation_type, allocation_size, hipMemcpyHostToHost);
 }
 
-TEST_CASE("Performance_hipMemcpyWithStream_DeviceToDevice_EnablePeerAccess") {
-  std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
-  const auto allocation_size = GENERATE(4_KB, 4_MB, 16_MB);
-  const auto src_allocation_type = LinearAllocs::hipMalloc;
-  const auto dst_allocation_type = LinearAllocs::hipMalloc;
-
-  RunDeviceBenchmark(dst_allocation_type, src_allocation_type, allocation_size, hipMemcpyDeviceToDevice, true);
-}
-
 TEST_CASE("Performance_hipMemcpyWithStream_DeviceToDevice_DisablePeerAccess") {
   std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
+  if (HipTest::getDeviceCount() < 2) {
+    HipTest::HIP_SKIP_TEST("This test requires 2 GPUs. Skipping.");
+    return;
+  }
   const auto allocation_size = GENERATE(4_KB, 4_MB, 16_MB);
   const auto src_allocation_type = LinearAllocs::hipMalloc;
   const auto dst_allocation_type = LinearAllocs::hipMalloc;
 
-  RunDeviceBenchmark(dst_allocation_type, src_allocation_type, allocation_size, hipMemcpyDeviceToDevice);
+  RunBenchmark(dst_allocation_type, src_allocation_type, allocation_size, hipMemcpyDeviceToDevice);
+}
+
+TEST_CASE("Performance_hipMemcpyWithStream_DeviceToDevice_EnablePeerAccess") {
+  std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
+  if (HipTest::getDeviceCount() < 2) {
+    HipTest::HIP_SKIP_TEST("This test requires 2 GPUs. Skipping.");
+    return;
+  }
+  const auto allocation_size = GENERATE(4_KB, 4_MB, 16_MB);
+  const auto src_allocation_type = LinearAllocs::hipMalloc;
+  const auto dst_allocation_type = LinearAllocs::hipMalloc;
+
+  RunBenchmark(dst_allocation_type, src_allocation_type, allocation_size, hipMemcpyDeviceToDevice, true);
 }

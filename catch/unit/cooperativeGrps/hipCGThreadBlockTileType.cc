@@ -63,7 +63,8 @@ __device__ int reduction_kernel(cg::thread_group g, int* x, int val) {
 }
 
 template <unsigned int tile_size>
-__global__ void kernel_cg_group_partition_static(int* result, bool is_global_mem, int* global_mem) {
+__global__ void kernel_cg_group_partition_static(int* result,
+                                                  bool is_global_mem, int* global_mem) {
   cg::thread_block thread_block_CG_ty = cg::this_thread_block();
 
   int* workspace = NULL;
@@ -72,18 +73,17 @@ __global__ void kernel_cg_group_partition_static(int* result, bool is_global_mem
     workspace = global_mem;
   } else {
     // Declare a shared memory
-    extern __shared__ int sharedMem[];
-    workspace = sharedMem;
+    extern __shared__ int shared_mem[];
+    workspace = shared_mem;
   }
 
   int input, output_sum;
 
-  // we pass its own thread rank as inputs
+  // input to reduction, for each thread, is its' rank in the group
   input = thread_block_CG_ty.thread_rank();
 
   output_sum = reduction_kernel(thread_block_CG_ty, workspace, input);
 
-  // Choose a leader thread to print the results
   if (thread_block_CG_ty.thread_rank() == 0) {
     printf("\n\n\n Sum of all ranks 0..%d in threadBlockCooperativeGroup is %d\n\n",
            (int)thread_block_CG_ty.size() - 1, output_sum);
@@ -100,56 +100,55 @@ __global__ void kernel_cg_group_partition_static(int* result, bool is_global_mem
 
   output_sum = reduction_kernel(tiled_part, workspace + workspace_offset, input);
 
-  if (thread_block_CG_ty.thread_rank() == 0) {
+  if (tiled_part.thread_rank() == 0) {
     printf("   Sum of all ranks %d..%d in this tiled_part group is %d.\n",
-        input, input + tiled_part.size() - 1, output_sum);
+        input, input + static_cast<int>(tiled_part.size()) - 1, output_sum);
     result[input / (tile_size)] = output_sum;
   }
   return;
 }
 
 __global__ void kernel_cg_group_partition_dynamic(unsigned int tile_size, int* result,
-                                                  bool isGlobalMem, int* globalMem) {
-  cg::thread_block threadBlockCGTy = cg::this_thread_block();
-  int threadBlockGroupSize = threadBlockCGTy.size();
+                                                  bool is_global_mem, int* global_mem) {
+  cg::thread_block thread_block_CG_ty = cg::this_thread_block();
 
   int* workspace = NULL;
 
-  if (isGlobalMem) {
-    workspace = globalMem;
+  if (is_global_mem) {
+    workspace = global_mem;
   } else {
     // Declare a shared memory
-    extern __shared__ int sharedMem[];
-    workspace = sharedMem;
+    extern __shared__ int shared_mem[];
+    workspace = shared_mem;
   }
 
-  int input, outputSum;
+  int input, output_sum;
 
   // input to reduction, for each thread, is its' rank in the group
-  input = threadBlockCGTy.thread_rank();
+  input = thread_block_CG_ty.thread_rank();
 
-  outputSum = reduction_kernel(threadBlockCGTy, workspace, input);
+  output_sum = reduction_kernel(thread_block_CG_ty, workspace, input);
 
-  if (threadBlockCGTy.thread_rank() == 0) {
+  if (thread_block_CG_ty.thread_rank() == 0) {
     printf("\n\n\n Sum of all ranks 0..%d in threadBlockCooperativeGroup is %d\n\n",
-           (int)threadBlockCGTy.size() - 1, outputSum);
+           (int)thread_block_CG_ty.size() - 1, output_sum);
     printf(" Creating %d groups, of tile size %d threads:\n\n",
-           (int)threadBlockCGTy.size() / tile_size, tile_size);
+           (int)thread_block_CG_ty.size() / tile_size, tile_size);
   }
 
-  threadBlockCGTy.sync();
+  thread_block_CG_ty.sync();
 
-  cg::thread_group tiledPartition = cg::tiled_partition(threadBlockCGTy, tile_size);
+  cg::thread_group tiled_part = cg::tiled_partition(thread_block_CG_ty, tile_size);
 
   // This offset allows each group to have its own unique area in the workspace array
-  int workspaceOffset = threadBlockCGTy.thread_rank() - tiledPartition.thread_rank();
+  int workspace_offset = thread_block_CG_ty.thread_rank() - tiled_part.thread_rank();
 
-  outputSum = reduction_kernel(tiledPartition, workspace + workspaceOffset, input);
+  output_sum = reduction_kernel(tiled_part, workspace + workspace_offset, input);
 
-  if (tiledPartition.thread_rank() == 0) {
-    printf("   Sum of all ranks %d..%d in this tiledPartition group is %d.\n",
-        input, input + static_cast<int>(tiledPartition.size()) - 1, outputSum);
-    result[input / (tile_size)] = outputSum;
+  if (tiled_part.thread_rank() == 0) {
+    printf("   Sum of all ranks %d..%d in this tiled_part group is %d.\n",
+        input, input + static_cast<int>(tiled_part.size()) - 1, output_sum);
+    result[input / (tile_size)] = output_sum;
   }
   return;
 }
@@ -243,7 +242,7 @@ static void test_group_partition(unsigned int tile_size, bool use_global_mem) {
   common_group_partition(kernel_cg_group_partition_dynamic, tile_size, params, num_params, use_global_mem);
 }
 
-TEST_CASE("Unit_hipCGTiledGroupType") {
+TEST_CASE("Unit_hipCGThreadBlockTileType") {
   // Use default device for validating the test
   int device;
   hipDeviceProp_t device_properties;

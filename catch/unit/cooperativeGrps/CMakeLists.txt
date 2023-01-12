@@ -7,6 +7,7 @@ set(TEST_SRC
   hipCGThreadBlockTileTypeShfl.cc
   hipLaunchCooperativeKernel.cc
   hipLaunchCooperativeKernelMultiDevice.cc
+  hipCGCoalescedGroupType.cc
 
 )
 if(HIP_PLATFORM STREQUAL "nvidia")

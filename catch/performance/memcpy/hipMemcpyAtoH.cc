@@ -38,8 +38,8 @@ class MemcpyAtoHBenchmark : public Benchmark<MemcpyAtoHBenchmark> {
 
 static void RunBenchmark(LinearAllocs host_allocation_type, size_t width) {
   MemcpyAtoHBenchmark benchmark;
-  benchmark.Configure(100, 1000);
-  auto time = benchmark.Run(host_allocation_type, width, true);
+  benchmark.Configure(100, 1000, true);
+  auto time = benchmark.Run(host_allocation_type, width);
   std::cout << time << " ms" << std::endl;
 }
 

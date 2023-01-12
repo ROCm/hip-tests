@@ -60,8 +60,8 @@ class MemcpyDtoDAsyncBenchmark : public Benchmark<MemcpyDtoDAsyncBenchmark> {
 
 static void RunBenchmark(bool enable_peer_access, size_t size) {
   MemcpyDtoDAsyncBenchmark benchmark;
-  benchmark.Configure(100, 1000);
-  auto time = benchmark.Run(enable_peer_access, size, true);
+  benchmark.Configure(100, 1000, true);
+  auto time = benchmark.Run(enable_peer_access, size);
   std::cout << time << " ms" << std::endl;
 }
 

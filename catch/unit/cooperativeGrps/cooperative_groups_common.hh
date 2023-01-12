@@ -32,21 +32,29 @@ THE SOFTWARE.
 constexpr int MaxGPUs = 8;
 
 template <typename T>
-void verifyResults(T* ptr, T expectedResult, int numTiles) {
-  for (int i = 0; i < numTiles; i++) {
-    if (ptr[i] != expectedResult) {
-      INFO(" Results do not match! ");
-      REQUIRE(ptr[i] == expectedResult);
-    }
-  }
-}
-
-template <typename T>
 void compareResults(T* cpu, T* gpu, int size) {
   for (unsigned int i = 0; i < size / sizeof(T); i++) {
     if (cpu[i] != gpu[i]) {
       INFO("Results do not match at index " << i);
       REQUIRE(cpu[i] == gpu[i]);
+    }
+  }
+}
+
+
+// Search if the sum exists in the expected results array
+template <typename T>
+void verifyResults(T* hPtr, T* dPtr, int size) {
+  int i = 0, j = 0;
+  for (i = 0; i < size; i++) {
+    for (j = 0; j < size; j++) {
+      if (hPtr[i] == dPtr[j]) {
+        break;
+      }
+    }
+    if (j == size) {
+      INFO("Result verification failed!");
+      REQUIRE(j != size);
     }
   }
 }

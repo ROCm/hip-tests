@@ -23,6 +23,8 @@ THE SOFTWARE.
 #include <hip/hip_cooperative_groups.h>
 #include <cstdlib>
 
+#include "cooperative_groups_common.hh"
+
 namespace cg = cooperative_groups;
 
 /* Parallel reduce kernel.
@@ -151,22 +153,6 @@ __global__ void kernel_cg_group_partition_dynamic(unsigned int tile_size, int* r
     result[input / (tile_size)] = output_sum;
   }
   return;
-}
-
-// Search if the sum exists in the expected results array
-void verifyResults(int* hPtr, int* dPtr, int size) {
-  int i = 0, j = 0;
-  for (i = 0; i < size; i++) {
-    for (j = 0; j < size; j++) {
-      if (hPtr[i] == dPtr[j]) {
-        break;
-      }
-    }
-    if (j == size) {
-      INFO("Result verification failed!");
-      REQUIRE(j != size);
-    }
-  }
 }
 
 template <typename F>

@@ -8,6 +8,8 @@ set(TEST_SRC
   hipLaunchCooperativeKernel.cc
   hipLaunchCooperativeKernelMultiDevice.cc
   hipCGCoalescedGroupType.cc
+  hipCGCoalescedGroupTypeShfl_down.cc
+  hipCGCoalescedGroupTypeShfl_up.cc
 
 )
 if(HIP_PLATFORM STREQUAL "nvidia")

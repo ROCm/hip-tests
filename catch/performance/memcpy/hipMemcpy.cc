@@ -60,7 +60,7 @@ class MemcpyBenchmark : public Benchmark<MemcpyBenchmark> {
 static void RunBenchmark(LinearAllocs dst_allocation_type, LinearAllocs src_allocation_type, size_t size,
     hipMemcpyKind kind, bool enable_peer_access=false) {
   MemcpyBenchmark benchmark;
-  benchmark.Configure(1000, 100);
+  benchmark.Configure(1000, 100, true);
   auto time = benchmark.Run(dst_allocation_type, src_allocation_type, size, kind, enable_peer_access);
   std::cout << time << " ms" << std::endl;
 }

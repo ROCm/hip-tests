@@ -104,9 +104,10 @@ template <typename Derived> class Benchmark {
   Benchmark(const Benchmark&) = delete;
   Benchmark& operator=(const Benchmark&) = delete;
 
-  void Configure(std::optional<size_t> iterations, std::optional<size_t> warmups) {
+  void Configure(std::optional<size_t> iterations, std::optional<size_t> warmups, bool progress_bar=false) {
     if (iterations) iterations_ = iterations.value();
     if (warmups) warmups_ = warmups.value();
+    progress_bar_ = progress_bar;
   }
 
   template <typename... Args> float Run(Args&&... args) {
@@ -114,18 +115,26 @@ template <typename Derived> class Benchmark {
 
     current_ = -1;  // -1 represents warmup
     for (size_t i = 0u; i < warmups_; ++i) {
+      if (progress_bar_) {
+        std::cout << "\rwarmup: [" << static_cast<int>(100.f*(i+1)/warmups_) << "%]" << std::flush;
+      }
       derived(args...);
     }
+    if (progress_bar_) std::cout << std::endl;
     time_ = .0;
 
     std::vector<float> samples;
     samples.reserve(iterations_);
 
     for (current_ = 0; current_ < iterations_; ++current_) {
+      if (progress_bar_) {
+        std::cout << "\rmeasurement: [" << static_cast<int>(100.f*(current_+1)/iterations_) << "%]" << std::flush;
+      }
       derived(args...);
       samples.push_back(time_);
       time_ = .0;
     }
+    if (progress_bar_) std::cout << std::endl;
 
     return std::reduce(cbegin(samples), cend(samples)) / samples.size();
   }
@@ -152,6 +161,7 @@ template <typename Derived> class Benchmark {
   size_t iterations_;
   size_t warmups_;
   ssize_t current_;
+  bool progress_bar_;
 };
 
 constexpr bool TIMER_TYPE_CPU = false;

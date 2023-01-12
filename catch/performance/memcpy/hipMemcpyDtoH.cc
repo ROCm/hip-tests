@@ -35,7 +35,7 @@ class MemcpyDtoHBenchmark : public Benchmark<MemcpyDtoHBenchmark> {
 
 static void RunBenchmark(LinearAllocs host_allocation_type, LinearAllocs device_allocation_type, size_t size) {
   MemcpyDtoHBenchmark benchmark;
-  benchmark.Configure(1000, 100);
+  benchmark.Configure(1000, 100, true);
   auto time = benchmark.Run(host_allocation_type, device_allocation_type, size);
   std::cout << time << " ms" << std::endl;
 }

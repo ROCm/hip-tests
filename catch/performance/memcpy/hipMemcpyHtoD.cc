@@ -35,7 +35,7 @@ class MemcpyHtoDBenchmark : public Benchmark<MemcpyHtoDBenchmark> {
 
 static void RunBenchmark(LinearAllocs host_allocation_type, LinearAllocs device_allocation_type, size_t size) {
   MemcpyHtoDBenchmark benchmark;
-  benchmark.Configure(1000, 100);
+  benchmark.Configure(1000, 100, true);
   auto time = benchmark.Run(host_allocation_type, device_allocation_type, size);
   std::cout << time << " ms" << std::endl;
 }

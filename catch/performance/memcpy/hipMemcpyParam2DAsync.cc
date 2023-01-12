@@ -157,7 +157,7 @@ class MemcpyParam2DBenchmark : public Benchmark<MemcpyParam2DBenchmark> {
 
 static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind, bool enable_peer_access=false) {
   MemcpyParam2DBenchmark benchmark;
-  benchmark.Configure(1000, 100);
+  benchmark.Configure(1000, 100, true);
   auto time = benchmark.Run(width, height, kind, enable_peer_access);
   std::cout << time << " ms" << std::endl;
 }

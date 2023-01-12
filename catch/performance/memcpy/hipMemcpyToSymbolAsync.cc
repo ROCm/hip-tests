@@ -41,7 +41,7 @@ class MemcpyToSymbolAsyncBenchmark : public Benchmark<MemcpyToSymbolAsyncBenchma
 static void RunBenchmark(const void* source, size_t size=1, size_t offset=0) {
   MemcpyToSymbolAsyncBenchmark benchmark;
   benchmark.Configure(100, 1000);
-  auto time = benchmark.Run(source, size, offset);
+  auto time = benchmark.Run(source, size, offset, true);
   std::cout << time << " ms" << std::endl;
 }
 

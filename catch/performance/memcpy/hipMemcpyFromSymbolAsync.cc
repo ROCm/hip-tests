@@ -44,7 +44,7 @@ static void RunBenchmark(const void* source, void* result, size_t size=1, size_t
   section_name << "size(" << size << ")";
   section_name << "/offset(" << offset << ")";
   benchmark.AddSectionName(section_name.str());
-  benchmark.Configure(100, 1000, true);
+  benchmark.Configure(1000, 100, true);
   benchmark.Run(source, result, size, offset);
 }
 

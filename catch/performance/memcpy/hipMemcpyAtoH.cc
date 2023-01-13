@@ -19,7 +19,6 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 #include <performance_common.hh>
-#include <resource_guards.hh>
 
 class MemcpyAtoHBenchmark : public Benchmark<MemcpyAtoHBenchmark> {
  public:
@@ -38,15 +37,16 @@ class MemcpyAtoHBenchmark : public Benchmark<MemcpyAtoHBenchmark> {
 
 static void RunBenchmark(LinearAllocs host_allocation_type, size_t width) {
   MemcpyAtoHBenchmark benchmark;
+  std::stringstream section_name{};
+  section_name << "size(" << width << ")";
+  section_name << "/" << GetAllocationSectionName(host_allocation_type);
+  benchmark.AddSectionName(section_name.str());
   benchmark.Configure(100, 1000, true);
-  auto time = benchmark.Run(host_allocation_type, width);
-  std::cout << time << " ms" << std::endl;
+  benchmark.Run(host_allocation_type, width);
 }
 
 TEST_CASE("Performance_hipMemcpyAtoH") {
-  std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
   const auto allocation_size = GENERATE(512, 1024, 4096);
   const auto host_allocation_type = GENERATE(LinearAllocs::malloc, LinearAllocs::hipHostMalloc);
-
   RunBenchmark(host_allocation_type, allocation_size);
 }

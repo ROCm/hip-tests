@@ -19,7 +19,6 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 #include <performance_common.hh>
-#include <resource_guards.hh>
 
 class MemcpyWithStreamBenchmark : public Benchmark<MemcpyWithStreamBenchmark> {
  public:
@@ -65,40 +64,37 @@ class MemcpyWithStreamBenchmark : public Benchmark<MemcpyWithStreamBenchmark> {
 static void RunBenchmark(LinearAllocs dst_allocation_type, LinearAllocs src_allocation_type, size_t size,
     hipMemcpyKind kind, bool enable_peer_access=false) {
   MemcpyWithStreamBenchmark benchmark;
+  std::stringstream section_name{};
+  section_name << "size(" << size << ")";
+  section_name << "/" << GetAllocationSectionName(src_allocation_type);
+  section_name << "/" << GetAllocationSectionName(dst_allocation_type);
+  benchmark.AddSectionName(section_name.str());
   benchmark.Configure(1000, 100, true);
-  auto time = benchmark.Run(dst_allocation_type, src_allocation_type, size, kind, enable_peer_access);
-  std::cout << time << " ms" << std::endl;
+  benchmark.Run(dst_allocation_type, src_allocation_type, size, kind, enable_peer_access);
 }
 
 TEST_CASE("Performance_hipMemcpyWithStream_DeviceToHost") {
-  std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
   const auto allocation_size = GENERATE(4_KB, 4_MB, 16_MB);
   const auto src_allocation_type = LinearAllocs::hipMalloc;
   const auto dst_allocation_type = GENERATE(LinearAllocs::malloc, LinearAllocs::hipHostMalloc);
-
   RunBenchmark(dst_allocation_type, src_allocation_type, allocation_size, hipMemcpyDeviceToHost);
 }
 
 TEST_CASE("Performance_hipMemcpyWithStream_HostToDevice") {
-  std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
   const auto allocation_size = GENERATE(4_KB, 4_MB, 16_MB);
   const auto src_allocation_type = GENERATE(LinearAllocs::malloc, LinearAllocs::hipHostMalloc);
   const auto dst_allocation_type = LinearAllocs::hipMalloc;
-
   RunBenchmark(dst_allocation_type, src_allocation_type, allocation_size, hipMemcpyHostToDevice);
 }
 
 TEST_CASE("Performance_hipMemcpyWithStream_HostToHost") {
-  std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
   const auto allocation_size = GENERATE(4_KB, 4_MB, 16_MB);
   const auto src_allocation_type = GENERATE(LinearAllocs::malloc, LinearAllocs::hipHostMalloc);
   const auto dst_allocation_type = GENERATE(LinearAllocs::malloc, LinearAllocs::hipHostMalloc);
-
   RunBenchmark(dst_allocation_type, src_allocation_type, allocation_size, hipMemcpyHostToHost);
 }
 
 TEST_CASE("Performance_hipMemcpyWithStream_DeviceToDevice_DisablePeerAccess") {
-  std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
   if (HipTest::getDeviceCount() < 2) {
     HipTest::HIP_SKIP_TEST("This test requires 2 GPUs. Skipping.");
     return;
@@ -106,12 +102,10 @@ TEST_CASE("Performance_hipMemcpyWithStream_DeviceToDevice_DisablePeerAccess") {
   const auto allocation_size = GENERATE(4_KB, 4_MB, 16_MB);
   const auto src_allocation_type = LinearAllocs::hipMalloc;
   const auto dst_allocation_type = LinearAllocs::hipMalloc;
-
   RunBenchmark(dst_allocation_type, src_allocation_type, allocation_size, hipMemcpyDeviceToDevice);
 }
 
 TEST_CASE("Performance_hipMemcpyWithStream_DeviceToDevice_EnablePeerAccess") {
-  std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
   if (HipTest::getDeviceCount() < 2) {
     HipTest::HIP_SKIP_TEST("This test requires 2 GPUs. Skipping.");
     return;
@@ -119,6 +113,5 @@ TEST_CASE("Performance_hipMemcpyWithStream_DeviceToDevice_EnablePeerAccess") {
   const auto allocation_size = GENERATE(4_KB, 4_MB, 16_MB);
   const auto src_allocation_type = LinearAllocs::hipMalloc;
   const auto dst_allocation_type = LinearAllocs::hipMalloc;
-
   RunBenchmark(dst_allocation_type, src_allocation_type, allocation_size, hipMemcpyDeviceToDevice, true);
 }

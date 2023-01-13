@@ -19,7 +19,6 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 #include <performance_common.hh>
-#include <resource_guards.hh>
 
 class Memcpy2DFromArrayAsyncBenchmark : public Benchmark<Memcpy2DFromArrayAsyncBenchmark> {
  public:
@@ -37,6 +36,7 @@ class Memcpy2DFromArrayAsyncBenchmark : public Benchmark<Memcpy2DFromArrayAsyncB
                   array_allocation.ptr(), 0, 0, width * sizeof(int), height,
                   hipMemcpyHostToDevice, stream));
       }
+      HIP_CHECK(hipStreamSynchronize(stream));
     } else {
       // hipMemcpyDeviceToDevice
       int src_device = 0;
@@ -61,47 +61,39 @@ class Memcpy2DFromArrayAsyncBenchmark : public Benchmark<Memcpy2DFromArrayAsyncB
                   array_allocation.ptr(), 0, 0, device_allocation.width(),
                   device_allocation.height(), hipMemcpyHostToDevice, stream));
       }
+      HIP_CHECK(hipStreamSynchronize(stream));
     }
-
-    HIP_CHECK(hipStreamSynchronize(stream));
   }
 };
 
 static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind, bool enable_peer_access=false) {
   Memcpy2DFromArrayAsyncBenchmark benchmark;
+  std::stringstream section_name{};
+  section_name << "size(" << width << ", " << height << ")";
+  benchmark.AddSectionName(section_name.str());
   benchmark.Configure(1000, 100, true);
-  auto time = benchmark.Run(width, height, kind, enable_peer_access);
-  std::cout << time << " ms" << std::endl;
+  benchmark.Run(width, height, kind, enable_peer_access);
 }
 
 TEST_CASE("Performance_hipMemcpy2DFromArrayAsync_HostToDevice") {
-  std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
-  const auto width = GENERATE(2_KB, 4_KB, 8_KB);
-  const auto height = width / 2;
-
-  RunBenchmark(width, height, hipMemcpyHostToDevice);
+  const auto width = GENERATE(4_KB, 4_MB, 16_MB);
+  RunBenchmark(width, 32, hipMemcpyHostToDevice);
 }
 
 TEST_CASE("Performance_hipMemcpy2DFromArrayAsync_DeviceToDevice_DisablePeerAccess") {
-  std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
   if (HipTest::getDeviceCount() < 2) {
     HipTest::HIP_SKIP_TEST("This test requires 2 GPUs. Skipping.");
     return;
   }
-  const auto width = GENERATE(2_KB, 4_KB, 8_KB);
-  const auto height = width / 2;
-
-  RunBenchmark(width, height, hipMemcpyDeviceToDevice);
+  const auto width = GENERATE(4_KB, 4_MB, 16_MB);
+  RunBenchmark(width, 32, hipMemcpyDeviceToDevice);
 }
 
 TEST_CASE("Performance_hipMemcpy2DFromArrayAsync_DeviceToDevice_EnablePeerAccess") {
-  std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
   if (HipTest::getDeviceCount() < 2) {
     HipTest::HIP_SKIP_TEST("This test requires 2 GPUs. Skipping.");
     return;
   }
-  const auto width = GENERATE(2_KB, 4_KB, 8_KB);
-  const auto height = width / 2;
-
-  RunBenchmark(width, height, hipMemcpyDeviceToDevice, true);
+  const auto width = GENERATE(4_KB, 4_MB, 16_MB);
+  RunBenchmark(width, 32, hipMemcpyDeviceToDevice, true);
 }

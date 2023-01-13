@@ -19,7 +19,6 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 #include <performance_common.hh>
-#include <resource_guards.hh>
 
 class MemcpyDtoHAsyncBenchmark : public Benchmark<MemcpyDtoHAsyncBenchmark> {
  public:
@@ -33,23 +32,23 @@ class MemcpyDtoHAsyncBenchmark : public Benchmark<MemcpyDtoHAsyncBenchmark> {
     TIMED_SECTION(TIMER_TYPE_EVENT) {
       HIP_CHECK(hipMemcpyDtoHAsync(host_allocation.ptr(), device_allocation.ptr(), size, stream));
     }
-
     HIP_CHECK(hipStreamSynchronize(stream));
   }
 };
 
 static void RunBenchmark(LinearAllocs host_allocation_type, LinearAllocs device_allocation_type, size_t size) {
   MemcpyDtoHAsyncBenchmark benchmark;
+  std::stringstream section_name{};
+  section_name << "size(" << size << ")";
+  section_name << "/" << GetAllocationSectionName(host_allocation_type);
+  benchmark.AddSectionName(section_name.str());
   benchmark.Configure(1000, 100, true);
-  auto time = benchmark.Run(host_allocation_type, device_allocation_type, size);
-  std::cout << time << " ms" << std::endl;
+  benchmark.Run(host_allocation_type, device_allocation_type, size);
 }
 
 TEST_CASE("Performance_hipMemcpyDtoHAsync") {
-  std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
   const auto allocation_size = GENERATE(4_KB, 4_MB, 16_MB);
   const auto device_allocation_type = LinearAllocs::hipMalloc;
   const auto host_allocation_type = GENERATE(LinearAllocs::malloc, LinearAllocs::hipHostMalloc);
-
   RunBenchmark(host_allocation_type, device_allocation_type, allocation_size);
 }

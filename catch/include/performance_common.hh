@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <vector>
 
 #include <hip_test_common.hh>
+#include <resource_guards.hh>
 
 class Timer {
  public:
@@ -99,7 +100,9 @@ class CpuTimer : public Timer {
 template <typename Derived> class Benchmark {
  public:
   Benchmark(size_t iterations = 100, size_t warmups = 10)
-      : iterations_(iterations), warmups_(warmups) {}
+      : iterations_(iterations), warmups_(warmups) {
+    benchmark_name_ = Catch::getResultCapture().getCurrentTestName();
+  }
 
   Benchmark(const Benchmark&) = delete;
   Benchmark& operator=(const Benchmark&) = delete;
@@ -110,17 +113,21 @@ template <typename Derived> class Benchmark {
     progress_bar_ = progress_bar;
   }
 
-  template <typename... Args> float Run(Args&&... args) {
+  void AddSectionName(const std::string& name) {
+    benchmark_name_ += "/" + name;
+  }
+
+  template <typename... Args> void Run(Args&&... args) {
+    std::cout << std::setw(110) << std::left << benchmark_name_;
     auto& derived = static_cast<Derived&>(*this);
 
     current_ = -1;  // -1 represents warmup
     for (size_t i = 0u; i < warmups_; ++i) {
       if (progress_bar_) {
-        std::cout << "\rwarmup: [" << static_cast<int>(100.f*(i+1)/warmups_) << "%]" << std::flush;
+        std::cout << "\r" << std::setw(110) << std::left << benchmark_name_ << "\t|\t" << "warmup: [" << static_cast<int>(100.f*(i+1)/warmups_) << "%]" << std::flush;
       }
       derived(args...);
     }
-    if (progress_bar_) std::cout << std::endl;
     time_ = .0;
 
     std::vector<float> samples;
@@ -128,15 +135,16 @@ template <typename Derived> class Benchmark {
 
     for (current_ = 0; current_ < iterations_; ++current_) {
       if (progress_bar_) {
-        std::cout << "\rmeasurement: [" << static_cast<int>(100.f*(current_+1)/iterations_) << "%]" << std::flush;
+        std::cout << "\r" << std::setw(110) << std::left << benchmark_name_ << "\t|\t" << "measurement: [" << static_cast<int>(100.f*(current_+1)/iterations_) << "%]" << std::flush;
       }
       derived(args...);
       samples.push_back(time_);
       time_ = .0;
     }
-    if (progress_bar_) std::cout << std::endl;
 
-    return std::reduce(cbegin(samples), cend(samples)) / samples.size();
+    const auto average_time = std::reduce(cbegin(samples), cend(samples)) / samples.size();
+    std::cout << "\r" << std::setw(110) << std::left << benchmark_name_;
+    std::cout << "\t|\t" << "Average time: " << average_time << " ms" << std::endl;
   }
 
  protected:
@@ -162,6 +170,7 @@ template <typename Derived> class Benchmark {
   size_t warmups_;
   ssize_t current_;
   bool progress_bar_;
+  std::string benchmark_name_;
 };
 
 constexpr bool TIMER_TYPE_CPU = false;
@@ -175,3 +184,14 @@ constexpr size_t operator"" _KB(unsigned long long int kb) { return kb << 10; }
 constexpr size_t operator"" _MB(unsigned long long int mb) { return mb << 20; }
 
 constexpr size_t operator"" _GB(unsigned long long int gb) { return gb << 30; }
+
+static std::string GetAllocationSectionName(LinearAllocs allocation_type) {
+  switch (allocation_type) {
+    case LinearAllocs::malloc:
+      return "host pageable";
+    case LinearAllocs::hipHostMalloc:
+      return "host pinned";
+    default:
+      return "device malloc";
+  }
+}

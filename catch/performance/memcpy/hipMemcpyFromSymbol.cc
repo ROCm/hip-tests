@@ -19,7 +19,6 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 #include <performance_common.hh>
-#include <resource_guards.hh>
 
 __device__ int devSymbol[1_MB];
 
@@ -35,20 +34,21 @@ class MemcpyFromSymbolBenchmark : public Benchmark<MemcpyFromSymbolBenchmark> {
 
 static void RunBenchmark(const void* source, void* result, size_t size=1, size_t offset=0) {
   MemcpyFromSymbolBenchmark benchmark;
+  std::stringstream section_name{};
+  section_name << "size(" << size << ")";
+  section_name << "/offset(" << offset << ")";
+  benchmark.AddSectionName(section_name.str());
   benchmark.Configure(100, 1000, true);
-  auto time = benchmark.Run(source, result, size, offset);
-  std::cout << time << " ms" << std::endl;
+  benchmark.Run(source, result, size, offset);
 }
 
 TEST_CASE("Performance_hipMemcpyFromSymbol_SingularValue") {
-  std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
   int set{42};
   int result{0};
   RunBenchmark(&set, &result);
 }
 
 TEST_CASE("Performance_hipMemcpyFromSymbol_ArrayValue") {
-  std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
   size_t size = GENERATE(1_KB, 4_KB, 512_KB);
   int array[size];
   std::fill_n(array, size, 42);
@@ -59,7 +59,6 @@ TEST_CASE("Performance_hipMemcpyFromSymbol_ArrayValue") {
 }
 
 TEST_CASE("Performance_hipMemcpyFromSymbol_WithOffset") {
-  std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
   size_t size = GENERATE(1_KB, 4_KB, 512_KB);
   int array[size];
   std::fill_n(array, size, 42);

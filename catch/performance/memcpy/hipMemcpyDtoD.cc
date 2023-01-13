@@ -19,16 +19,10 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 #include <performance_common.hh>
-#include <resource_guards.hh>
 
 class MemcpyDtoDBenchmark : public Benchmark<MemcpyDtoDBenchmark> {
  public:
-  void operator()(bool enable_peer_access, size_t size) {
-    if (HipTest::getDeviceCount() < 2) {
-      HipTest::HIP_SKIP_TEST("This test requires 2 GPUs. Skipping.");
-      return;
-    }
-
+  void operator()(size_t size, bool enable_peer_access) {
     int src_device = 0;
     int dst_device = 1;
 
@@ -53,23 +47,29 @@ class MemcpyDtoDBenchmark : public Benchmark<MemcpyDtoDBenchmark> {
   }
 };
 
-static void RunBenchmark(bool enable_peer_access, size_t size) {
+static void RunBenchmark(size_t size, bool enable_peer_access=false) {
   MemcpyDtoDBenchmark benchmark;
+  std::stringstream section_name{};
+  section_name << "size(" << size << ")";
+  benchmark.AddSectionName(section_name.str());
   benchmark.Configure(100, 1000, true);
-  auto time = benchmark.Run(enable_peer_access, size);
-  std::cout << time << " ms" << std::endl;
+  benchmark.Run(size, enable_peer_access);
 }
 
 TEST_CASE("Performance_hipMemcpyDtoD_PeerAccessEnabled") {
-  std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
+  if (HipTest::getDeviceCount() < 2) {
+    HipTest::HIP_SKIP_TEST("This test requires 2 GPUs. Skipping.");
+    return;
+  }
   const auto allocation_size = GENERATE(4_KB, 4_MB, 16_MB);
-
-  RunBenchmark(true, allocation_size);
+  RunBenchmark(allocation_size, true);
 }
 
 TEST_CASE("Performance_hipMemcpyDtoD_PeerAccessDisabled") {
-  std::cout << Catch::getResultCapture().getCurrentTestName() << std::endl;
+  if (HipTest::getDeviceCount() < 2) {
+    HipTest::HIP_SKIP_TEST("This test requires 2 GPUs. Skipping.");
+    return;
+  }
   const auto allocation_size = GENERATE(4_KB, 4_MB, 16_MB);
-
-  RunBenchmark(false, allocation_size);
+  RunBenchmark(allocation_size);
 }

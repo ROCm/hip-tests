@@ -31,7 +31,7 @@ class Memcpy2DFromArrayAsyncBenchmark : public Benchmark<Memcpy2DFromArrayAsyncB
       LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, allocation_size);
       ArrayAllocGuard<int> array_allocation(make_hipExtent(width, height, 0), hipArrayDefault);
 
-      TIMED_SECTION(kTimerTypeEvent) {
+      TIMED_SECTION(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpy2DFromArrayAsync(host_allocation.ptr(), width * sizeof(int),
                   array_allocation.ptr(), 0, 0, width * sizeof(int), height,
                   hipMemcpyHostToDevice, stream));
@@ -56,7 +56,7 @@ class Memcpy2DFromArrayAsyncBenchmark : public Benchmark<Memcpy2DFromArrayAsyncB
       ArrayAllocGuard<int> array_allocation(make_hipExtent(width, height, 0), hipArrayDefault);
 
       HIP_CHECK(hipSetDevice(src_device));
-      TIMED_SECTION(kTimerTypeEvent) {
+      TIMED_SECTION(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpy2DFromArrayAsync(device_allocation.ptr(), device_allocation.pitch(),
                   array_allocation.ptr(), 0, 0, device_allocation.width(),
                   device_allocation.height(), hipMemcpyHostToDevice, stream));

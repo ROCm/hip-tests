@@ -31,7 +31,7 @@ class MemcpyAsyncBenchmark : public Benchmark<MemcpyAsyncBenchmark> {
       LinearAllocGuard<int> src_allocation(src_allocation_type, size);
       LinearAllocGuard<int> dst_allocation(dst_allocation_type, size);
 
-      TIMED_SECTION(kTimerTypeEvent) {
+      TIMED_SECTION(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpyAsync(dst_allocation.ptr(), src_allocation.ptr(), size, kind, stream));
       }
       HIP_CHECK(hipStreamSynchronize(stream));
@@ -53,7 +53,7 @@ class MemcpyAsyncBenchmark : public Benchmark<MemcpyAsyncBenchmark> {
       LinearAllocGuard<int> dst_allocation(LinearAllocs::hipMalloc, size);
 
       HIP_CHECK(hipSetDevice(src_device));
-      TIMED_SECTION(kTimerTypeEvent) {
+      TIMED_SECTION(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpyAsync(dst_allocation.ptr(), src_allocation.ptr(), size, kind, stream));
       }
       HIP_CHECK(hipStreamSynchronize(stream));

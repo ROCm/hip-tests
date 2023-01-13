@@ -30,7 +30,7 @@ class Memset2DAsyncBenchmark : public Benchmark<Memset2DAsyncBenchmark> {
     LinearAllocGuard2D<char> dst(width, height);
     StreamGuard stream(Streams::created);
 
-    TIMED_SECTION_STREAM(TIMER_TYPE_EVENT, stream.stream()) {
+    TIMED_SECTION_STREAM(kTimerTypeEvent, stream.stream()) {
       HIP_CHECK(hipMemset2DAsync(dst.ptr(), dst.pitch(), 17, width, height, stream.stream()));
     }
   }
@@ -39,8 +39,7 @@ class Memset2DAsyncBenchmark : public Benchmark<Memset2DAsyncBenchmark> {
 static void RunBenchmark(size_t width, size_t height) {
   Memset2DAsyncBenchmark benchmark;
   benchmark.Configure(1e3, 1e2);
-  auto time = benchmark.Run(width, height);
-  std::cout << time << " ms" << std::endl;
+  benchmark.Run(width, height);
 }
 
 TEST_CASE("Performance_hipMemset2DAsync") {

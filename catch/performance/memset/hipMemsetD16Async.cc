@@ -30,7 +30,7 @@ class MemsetD16AsyncBenchmark : public Benchmark<MemsetD16AsyncBenchmark> {
     LinearAllocGuard<void> dst(allocation_type, size);
     StreamGuard stream(Streams::created);
 
-    TIMED_SECTION_STREAM(TIMER_TYPE_EVENT, stream.stream()) {
+    TIMED_SECTION_STREAM(kTimerTypeEvent, stream.stream()) {
       HIP_CHECK(hipMemsetD16Async(dst.ptr(), 311, size, stream.stream()));
     }
   }
@@ -39,8 +39,7 @@ class MemsetD16AsyncBenchmark : public Benchmark<MemsetD16AsyncBenchmark> {
 static void RunBenchmark(LinearAllocs allocation_type, size_t size) {
   MemsetD16AsyncBenchmark benchmark;
   benchmark.Configure(1e3, 1e2);
-  auto time = benchmark.Run(allocation_type, size);
-  std::cout << time << " ms" << std::endl;
+  benchmark.Run(allocation_type, size);
 }
 
 TEST_CASE("Performance_hipMemsetD16Async_Device") {

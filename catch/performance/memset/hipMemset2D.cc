@@ -29,7 +29,7 @@ class Memset2DBenchmark : public Benchmark<Memset2DBenchmark> {
   void operator()(size_t width, size_t height) {
     LinearAllocGuard2D<char> dst(width, height);
 
-    TIMED_SECTION(TIMER_TYPE_EVENT) {
+    TIMED_SECTION(kTimerTypeEvent) {
       HIP_CHECK(hipMemset2D(dst.ptr(), dst.pitch(), 17, width, height));
     }
   }
@@ -38,8 +38,7 @@ class Memset2DBenchmark : public Benchmark<Memset2DBenchmark> {
 static void RunBenchmark(size_t width, size_t height) {
   Memset2DBenchmark benchmark;
   benchmark.Configure(1e3, 1e2);
-  auto time = benchmark.Run(width, height);
-  std::cout << time << " ms" << std::endl;
+  benchmark.Run(width, height);
 }
 
 TEST_CASE("Performance_hipMemset2D") {

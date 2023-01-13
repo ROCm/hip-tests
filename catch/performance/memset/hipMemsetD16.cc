@@ -29,15 +29,14 @@ class MemsetD16Benchmark : public Benchmark<MemsetD16Benchmark> {
   void operator()(LinearAllocs allocation_type, size_t size) {
     LinearAllocGuard<void> dst(allocation_type, size);
 
-    TIMED_SECTION(TIMER_TYPE_EVENT) { HIP_CHECK(hipMemsetD16(dst.ptr(), 311, size)); }
+    TIMED_SECTION(kTimerTypeEvent) { HIP_CHECK(hipMemsetD16(dst.ptr(), 311, size)); }
   }
 };
 
 static void RunBenchmark(LinearAllocs allocation_type, size_t size) {
   MemsetD16Benchmark benchmark;
   benchmark.Configure(1e3, 1e2);
-  auto time = benchmark.Run(allocation_type, size);
-  std::cout << time << " ms" << std::endl;
+  benchmark.Run(allocation_type, size);
 }
 
 TEST_CASE("Performance_hipMemsetD16_Device") {

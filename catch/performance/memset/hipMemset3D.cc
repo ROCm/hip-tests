@@ -29,15 +29,14 @@ class Memset3DBenchmark : public Benchmark<Memset3DBenchmark> {
   void operator()(size_t width, size_t height, size_t depth) {
     LinearAllocGuard3D<char> dst(width, height, depth);
 
-    TIMED_SECTION(TIMER_TYPE_EVENT) { HIP_CHECK(hipMemset3D(dst.pitched_ptr(), 17, dst.extent())); }
+    TIMED_SECTION(kTimerTypeEvent) { HIP_CHECK(hipMemset3D(dst.pitched_ptr(), 17, dst.extent())); }
   }
 };
 
 static void RunBenchmark(size_t width, size_t height, size_t depth) {
   Memset3DBenchmark benchmark;
   benchmark.Configure(1e3, 1e2);
-  auto time = benchmark.Run(width, height, depth);
-  std::cout << time << " ms" << std::endl;
+  benchmark.Run(width, height, depth);
 }
 
 TEST_CASE("Performance_hipMemset3D") {

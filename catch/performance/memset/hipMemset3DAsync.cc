@@ -30,7 +30,7 @@ class Memset3DAsyncBenchmark : public Benchmark<Memset3DAsyncBenchmark> {
     LinearAllocGuard3D<char> dst(width, height, depth);
     StreamGuard stream(Streams::created);
 
-    TIMED_SECTION_STREAM(TIMER_TYPE_EVENT, stream.stream()) {
+    TIMED_SECTION_STREAM(kTimerTypeEvent, stream.stream()) {
       HIP_CHECK(hipMemset3DAsync(dst.pitched_ptr(), 17, dst.extent(), stream.stream()));
     }
   }
@@ -39,8 +39,7 @@ class Memset3DAsyncBenchmark : public Benchmark<Memset3DAsyncBenchmark> {
 static void RunBenchmark(size_t width, size_t height, size_t depth) {
   Memset3DAsyncBenchmark benchmark;
   benchmark.Configure(1e3, 1e2);
-  auto time = benchmark.Run(width, height, depth);
-  std::cout << time << " ms" << std::endl;
+  benchmark.Run(width, height, depth);
 }
 
 TEST_CASE("Performance_hipMemset3DAsync") {

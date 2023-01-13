@@ -97,7 +97,7 @@ class MemcpyParam2DBenchmark : public Benchmark<MemcpyParam2DBenchmark> {
                            device_allocation.ptr(), device_allocation.pitch(),
                            device_allocation.width(), device_allocation.height(),
                            kind);
-      TIMED_SECTION(kTimerTypeEvent, stream) {
+      TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpyParam2DAsync(&params, stream));
       }
       HIP_CHECK(hipStreamSynchronize(stream));
@@ -110,7 +110,7 @@ class MemcpyParam2DBenchmark : public Benchmark<MemcpyParam2DBenchmark> {
                            host_allocation.ptr(), host_pitch,
                            device_allocation.width(), device_allocation.height(),
                            kind);
-      TIMED_SECTION(kTimerTypeEvent, stream) {
+      TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpyParam2DAsync(&params, stream));
       }
       HIP_CHECK(hipStreamSynchronize(stream));
@@ -121,7 +121,7 @@ class MemcpyParam2DBenchmark : public Benchmark<MemcpyParam2DBenchmark> {
       hip_Memcpy2D params = CreateMemcpy2DParam(dst_allocation.ptr(), width * sizeof(int),
                            src_allocation.ptr(), src_pitch, width * sizeof(int), height,
                            kind);
-      TIMED_SECTION(kTimerTypeEvent, stream) {
+      TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpyParam2DAsync(&params, stream));
       }
       HIP_CHECK(hipStreamSynchronize(stream));
@@ -148,7 +148,7 @@ class MemcpyParam2DBenchmark : public Benchmark<MemcpyParam2DBenchmark> {
                            src_allocation.ptr(), src_allocation.pitch(),
                            dst_allocation.width(), dst_allocation.height(),
                            kind);
-      TIMED_SECTION(kTimerTypeEvent, stream) {
+      TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpyParam2DAsync(&params, stream));
       }
       HIP_CHECK(hipStreamSynchronize(stream));

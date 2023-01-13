@@ -28,7 +28,7 @@ class MemcpyToSymbolAsyncBenchmark : public Benchmark<MemcpyToSymbolAsyncBenchma
     const StreamGuard stream_guard(Streams::created);
     const hipStream_t stream = stream_guard.stream();
 
-    TIMED_SECTION(kTimerTypeEvent, stream) {
+    TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
       HIP_CHECK(hipMemcpyToSymbolAsync(HIP_SYMBOL(devSymbol), source, size, offset,
                 hipMemcpyHostToDevice, stream));
     }

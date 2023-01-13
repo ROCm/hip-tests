@@ -30,7 +30,7 @@ class MemcpyFromSymbolAsyncBenchmark : public Benchmark<MemcpyFromSymbolAsyncBen
 
     HIP_CHECK(hipMemcpyToSymbolAsync(HIP_SYMBOL(devSymbol), source, size, offset,
               hipMemcpyHostToDevice, stream));
-    TIMED_SECTION(kTimerTypeEvent, stream) {
+    TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
       HIP_CHECK(hipMemcpyFromSymbolAsync(result, HIP_SYMBOL(devSymbol), size, offset,
                 hipMemcpyDeviceToHost, stream));
     }

@@ -49,7 +49,7 @@ class Memcpy3DAsyncBenchmark : public Benchmark<Memcpy3DAsyncBenchmark> {
                                                     make_hipPos(0, 0, 0), device_allocation.pitched_ptr(),
                                                     make_hipPos(0, 0, 0),
                                                     device_allocation.extent(), kind);
-      TIMED_SECTION(kTimerTypeEvent, stream) {
+      TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpy3D(&params));
       }
       HIP_CHECK(hipStreamSynchronize(stream));
@@ -63,7 +63,7 @@ class Memcpy3DAsyncBenchmark : public Benchmark<Memcpy3DAsyncBenchmark> {
                                                     make_hipPitchedPtr(host_allocation.ptr(), host_pitch,
                                                                        device_allocation.width(), device_allocation.height()),
                                                     make_hipPos(0, 0, 0), device_allocation.extent(), kind);
-      TIMED_SECTION(kTimerTypeEvent, stream) {
+      TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpy3D(&params));
       }
       HIP_CHECK(hipStreamSynchronize(stream));
@@ -79,7 +79,7 @@ class Memcpy3DAsyncBenchmark : public Benchmark<Memcpy3DAsyncBenchmark> {
                                                     make_hipPos(0, 0, 0),
                                                     make_hipPitchedPtr(src_allocation.ptr(), host_pitch, extent.width, extent.height),
                                                     make_hipPos(0, 0, 0), extent, kind);
-      TIMED_SECTION(kTimerTypeEvent, stream) {
+      TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpy3D(&params));
       }
       HIP_CHECK(hipStreamSynchronize(stream));
@@ -106,7 +106,7 @@ class Memcpy3DAsyncBenchmark : public Benchmark<Memcpy3DAsyncBenchmark> {
                                                     make_hipPos(0, 0, 0),
                                                     src_allocation.pitched_ptr(),
                                                     make_hipPos(0, 0, 0), dst_allocation.extent(), kind);
-      TIMED_SECTION(kTimerTypeEvent, stream) {
+      TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpy3D(&params));
       }
       HIP_CHECK(hipStreamSynchronize(stream));

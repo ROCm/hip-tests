@@ -29,7 +29,7 @@ class Memcpy2DAsyncBenchmark : public Benchmark<Memcpy2DAsyncBenchmark> {
     if (kind == hipMemcpyDeviceToHost) {
       LinearAllocGuard2D<int> device_allocation(width, height);
       LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, device_allocation.width() * height);
-      TIMED_SECTION(kTimerTypeEvent, stream) {
+      TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpy2DAsync(host_allocation.ptr(), device_allocation.width(), device_allocation.ptr(),
                   device_allocation.pitch(), device_allocation.width(), device_allocation.height(),
                   hipMemcpyDeviceToHost, stream));
@@ -38,7 +38,7 @@ class Memcpy2DAsyncBenchmark : public Benchmark<Memcpy2DAsyncBenchmark> {
     } else if (kind == hipMemcpyHostToDevice) {
       LinearAllocGuard2D<int> device_allocation(width, height);
       LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, device_allocation.width() * height);
-      TIMED_SECTION(kTimerTypeEvent, stream) {
+      TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpy2DAsync(device_allocation.ptr(), device_allocation.pitch(), host_allocation.ptr(),
                   device_allocation.width(), device_allocation.width(), device_allocation.height(),
                   hipMemcpyHostToDevice, stream));
@@ -47,7 +47,7 @@ class Memcpy2DAsyncBenchmark : public Benchmark<Memcpy2DAsyncBenchmark> {
     } else if (kind == hipMemcpyHostToHost) {
       LinearAllocGuard<int> src_allocation(LinearAllocs::hipHostMalloc, width * sizeof(int) * height);
       LinearAllocGuard<int> dst_allocation(LinearAllocs::hipHostMalloc, width * sizeof(int) * height);
-      TIMED_SECTION(kTimerTypeEvent, stream) {
+      TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpy2DAsync(dst_allocation.ptr(), width * sizeof(int), src_allocation.ptr(),
                   width * sizeof(int), width * sizeof(int), height, hipMemcpyHostToHost, stream));
       }
@@ -71,7 +71,7 @@ class Memcpy2DAsyncBenchmark : public Benchmark<Memcpy2DAsyncBenchmark> {
       LinearAllocGuard2D<int> dst_allocation(width, height);
 
       HIP_CHECK(hipSetDevice(src_device));
-      TIMED_SECTION(kTimerTypeEvent, stream) {
+      TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpy2DAsync(dst_allocation.ptr(), dst_allocation.pitch(),
                   src_allocation.ptr(), src_allocation.pitch(), dst_allocation.width(),
                   dst_allocation.height(), hipMemcpyDeviceToDevice, stream));

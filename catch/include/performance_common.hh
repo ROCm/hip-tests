@@ -25,7 +25,6 @@ THE SOFTWARE.
 #include <algorithm>
 #include <chrono>
 #include <memory>
-#include <optional>
 #include <type_traits>
 #include <vector>
 
@@ -100,31 +99,38 @@ class CpuTimer : public Timer {
 template <typename Derived> class Benchmark {
  public:
   Benchmark(size_t iterations = 100, size_t warmups = 10)
-      : iterations_(iterations), warmups_(warmups) {
+      : iterations_(iterations), warmups_(warmups), progress_bar_(false), display_output_(true) {
     benchmark_name_ = Catch::getResultCapture().getCurrentTestName();
   }
 
   Benchmark(const Benchmark&) = delete;
   Benchmark& operator=(const Benchmark&) = delete;
 
-  void Configure(std::optional<size_t> iterations, std::optional<size_t> warmups, bool progress_bar=false) {
-    if (iterations) iterations_ = iterations.value();
-    if (warmups) warmups_ = warmups.value();
+  void Configure(size_t iterations = 100, size_t warmups = 10, bool progress_bar = false) {
+    iterations_ = iterations;
+    warmups_ = warmups;
     progress_bar_ = progress_bar;
   }
 
-  void AddSectionName(const std::string& name) {
-    benchmark_name_ += "/" + name;
+  void AddSectionName(const std::string& section_name) {
+    benchmark_name_ += "/" + section_name;
   }
 
-  template <typename... Args> void Run(Args&&... args) {
-    std::cout << std::setw(110) << std::left << benchmark_name_;
+  void SetDisplayOutput(bool display_output) {
+    display_output_ = display_output;
+  }
+
+  template <typename... Args> float Run(Args&&... args) {
+    if (display_output_) {
+      std::cout << std::setw(110) << std::left << benchmark_name_;
+    }
     auto& derived = static_cast<Derived&>(*this);
 
     current_ = -1;  // -1 represents warmup
     for (size_t i = 0u; i < warmups_; ++i) {
-      if (progress_bar_) {
-        std::cout << "\r" << std::setw(110) << std::left << benchmark_name_ << "\t|\t" << "warmup: [" << static_cast<int>(100.f*(i+1)/warmups_) << "%]" << std::flush;
+      if (progress_bar_ && display_output_) {
+        std::cout << "\r" << std::setw(110) << std::left << benchmark_name_ << "\t|\t" << "warmup: [" 
+            << static_cast<int>(100.f*(i+1)/warmups_) << "%]" << std::flush;
       }
       derived(args...);
     }
@@ -134,17 +140,22 @@ template <typename Derived> class Benchmark {
     samples.reserve(iterations_);
 
     for (current_ = 0; current_ < iterations_; ++current_) {
-      if (progress_bar_) {
-        std::cout << "\r" << std::setw(110) << std::left << benchmark_name_ << "\t|\t" << "measurement: [" << static_cast<int>(100.f*(current_+1)/iterations_) << "%]" << std::flush;
+      if (progress_bar_ && display_output_) {
+        std::cout << "\r" << std::setw(110) << std::left << benchmark_name_ << "\t|\t" << "measurement: ["
+            << static_cast<int>(100.f*(current_+1)/iterations_) << "%]" << std::flush;
       }
       derived(args...);
       samples.push_back(time_);
       time_ = .0;
     }
 
-    const auto average_time = std::reduce(cbegin(samples), cend(samples)) / samples.size();
-    std::cout << "\r" << std::setw(110) << std::left << benchmark_name_;
-    std::cout << "\t|\t" << "Average time: " << average_time << " ms" << std::endl;
+    float average_time = std::reduce(cbegin(samples), cend(samples)) / samples.size();
+
+    if (display_output_) {
+      std::cout << "\r" << std::setw(110) << std::left << benchmark_name_;
+      std::cout << "\t|\t" << "Average time: " << average_time << " ms" << std::endl;
+    }
+    return average_time;
   }
 
  protected:
@@ -169,12 +180,13 @@ template <typename Derived> class Benchmark {
   size_t iterations_;
   size_t warmups_;
   ssize_t current_;
+  bool display_output_;
   bool progress_bar_;
   std::string benchmark_name_;
 };
 
-constexpr bool TIMER_TYPE_CPU = false;
-constexpr bool TIMER_TYPE_EVENT = false;
+constexpr bool kTimerTypeCpu = false;
+constexpr bool kTimerTypeEvent = true;
 
 #define TIMED_SECTION_STREAM(TIMER_TYPE, STREAM) if (auto _ = GetTimer<TIMER_TYPE>(STREAM); true)
 #define TIMED_SECTION(TIMER_TYPE) TIMED_SECTION_STREAM(TIMER_TYPE, nullptr)

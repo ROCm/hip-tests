@@ -122,7 +122,7 @@ template <typename Derived> class Benchmark {
 
   template <typename... Args> float Run(Args&&... args) {
     if (display_output_) {
-      std::cout << std::setw(110) << std::left << benchmark_name_;
+      std::cout << std::setw(110) << std::left << benchmark_name_ << std::flush;
     }
     auto& derived = static_cast<Derived&>(*this);
 

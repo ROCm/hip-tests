@@ -30,13 +30,13 @@ class ExampleBenchmark : public Benchmark<ExampleBenchmark> {
     const int value = 42;
     const size_t kSize = 4_MB;
 
-    TIMED_SECTION(TIMER_TYPE_EVENT) {  // event based timing
+    TIMED_SECTION(kTimerTypeEvent) {  // event based timing
       HIP_CHECK(hipMemset(dst, value, kSize));
     }
 
     HIP_CHECK(hipMemset(dst, 0, kSize));  // not timed
 
-    TIMED_SECTION(TIMER_TYPE_CPU) {  // cpu based timing
+    TIMED_SECTION(kTimerTypeCpu) {  // cpu based timing
       HIP_CHECK(hipMemset(dst, value, kSize));
     }
 
@@ -50,9 +50,9 @@ class ExampleBenchmark : public Benchmark<ExampleBenchmark> {
 
 TEST_CASE("Performance_Example") {
   ExampleBenchmark benchmark;
-  benchmark.Configure(1000 /* iterations */, 100 /* warmups */);
+  benchmark.Configure(50000 /* iterations */, 10000 /* warmups */, true /* progress bar */);
 
   LinearAllocGuard<void> dst(LinearAllocs::hipMalloc, 4_MB);
 
-  std::cout << benchmark.Run(dst.ptr()) << " ms" << std::endl;
+  benchmark.Run(dst.ptr());
 }

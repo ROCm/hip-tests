@@ -29,7 +29,7 @@ class MemcpyAtoHBenchmark : public Benchmark<MemcpyAtoHBenchmark> {
     LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, allocation_size);
     ArrayAllocGuard<int> array_allocation(make_hipExtent(width, 0, 0), flag);
 
-    TIMED_SECTION(TIMER_TYPE_EVENT) {
+    TIMED_SECTION(kTimerTypeEvent) {
       HIP_CHECK(hipMemcpyAtoH(host_allocation.ptr(), array_allocation.ptr(), 0, allocation_size));
     }
   }

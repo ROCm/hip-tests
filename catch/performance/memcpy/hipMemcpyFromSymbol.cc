@@ -26,7 +26,7 @@ class MemcpyFromSymbolBenchmark : public Benchmark<MemcpyFromSymbolBenchmark> {
  public:
   void operator()(const void* source, void* result, size_t size=1, size_t offset=0) {
     HIP_CHECK(hipMemcpyToSymbol(HIP_SYMBOL(devSymbol), source, size, offset));
-    TIMED_SECTION(TIMER_TYPE_EVENT) {
+    TIMED_SECTION(kTimerTypeEvent) {
       HIP_CHECK(hipMemcpyFromSymbol(result, HIP_SYMBOL(devSymbol), size, offset));
     }
   }

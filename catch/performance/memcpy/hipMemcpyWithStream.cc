@@ -31,7 +31,7 @@ class MemcpyWithStreamBenchmark : public Benchmark<MemcpyWithStreamBenchmark> {
       LinearAllocGuard<int> src_allocation(src_allocation_type, size);
       LinearAllocGuard<int> dst_allocation(dst_allocation_type, size);
 
-      TIMED_SECTION(TIMER_TYPE_EVENT) {
+      TIMED_SECTION(kTimerTypeEvent) {
         HIP_CHECK(hipMemcpyWithStream(dst_allocation.ptr(), src_allocation.ptr(), size, kind, stream));
       }
     } else {
@@ -52,7 +52,7 @@ class MemcpyWithStreamBenchmark : public Benchmark<MemcpyWithStreamBenchmark> {
       LinearAllocGuard<int> dst_allocation(LinearAllocs::hipMalloc, size);
 
       HIP_CHECK(hipSetDevice(src_device));
-      TIMED_SECTION(TIMER_TYPE_EVENT) {
+      TIMED_SECTION(kTimerTypeEvent) {
         HIP_CHECK(hipMemcpyWithStream(dst_allocation.ptr(), src_allocation.ptr(), size, kind, stream));
       }
     }

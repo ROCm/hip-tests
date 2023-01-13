@@ -26,7 +26,7 @@ class MemcpyDtoHBenchmark : public Benchmark<MemcpyDtoHBenchmark> {
     LinearAllocGuard<int> device_allocation(device_allocation_type, size);
     LinearAllocGuard<int> host_allocation(host_allocation_type, size);
 
-    TIMED_SECTION(TIMER_TYPE_EVENT) {
+    TIMED_SECTION(kTimerTypeEvent) {
       HIP_CHECK(hipMemcpyDtoH(host_allocation.ptr(), device_allocation.ptr(), size));
     }
   }

@@ -41,7 +41,7 @@ class MemcpyDtoDBenchmark : public Benchmark<MemcpyDtoDBenchmark> {
     LinearAllocGuard<int> dst_allocation(LinearAllocs::hipMalloc, size);
 
     HIP_CHECK(hipSetDevice(src_device));
-    TIMED_SECTION(TIMER_TYPE_EVENT) {
+    TIMED_SECTION(kTimerTypeEvent) {
       HIP_CHECK(hipMemcpyDtoD(dst_allocation.ptr(), src_allocation.ptr(), size))
     }
   }

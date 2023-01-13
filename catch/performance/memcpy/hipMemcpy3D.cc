@@ -44,7 +44,7 @@ class Memcpy3DBenchmark : public Benchmark<Memcpy3DBenchmark> {
                                                     make_hipPos(0, 0, 0), device_allocation.pitched_ptr(),
                                                     make_hipPos(0, 0, 0),
                                                     device_allocation.extent(), kind);
-      TIMED_SECTION(TIMER_TYPE_EVENT) {
+      TIMED_SECTION(kTimerTypeEvent) {
         HIP_CHECK(hipMemcpy3D(&params));
       }
     } else if (kind == hipMemcpyHostToDevice) {
@@ -56,7 +56,7 @@ class Memcpy3DBenchmark : public Benchmark<Memcpy3DBenchmark> {
                                                     make_hipPitchedPtr(host_allocation.ptr(), device_allocation.pitch(),
                                                                        device_allocation.width(), device_allocation.height()),
                                                     make_hipPos(0, 0, 0), device_allocation.extent(), kind);
-      TIMED_SECTION(TIMER_TYPE_EVENT) {
+      TIMED_SECTION(kTimerTypeEvent) {
         HIP_CHECK(hipMemcpy3D(&params));
       }
     } else if (kind == hipMemcpyHostToHost) {
@@ -69,7 +69,7 @@ class Memcpy3DBenchmark : public Benchmark<Memcpy3DBenchmark> {
                                                     make_hipPos(0, 0, 0),
                                                     make_hipPitchedPtr(src_allocation.ptr(), extent.width, extent.width, extent.height),
                                                     make_hipPos(0, 0, 0), extent, kind);
-      TIMED_SECTION(TIMER_TYPE_EVENT) {
+      TIMED_SECTION(kTimerTypeEvent) {
         HIP_CHECK(hipMemcpy3D(&params));
       }
     } else {
@@ -95,7 +95,7 @@ class Memcpy3DBenchmark : public Benchmark<Memcpy3DBenchmark> {
                                                     make_hipPos(0, 0, 0),
                                                     src_allocation.pitched_ptr(),
                                                     make_hipPos(0, 0, 0), dst_allocation.extent(), kind);
-      TIMED_SECTION(TIMER_TYPE_EVENT) {
+      TIMED_SECTION(kTimerTypeEvent) {
         HIP_CHECK(hipMemcpy3D(&params));
       }
     }

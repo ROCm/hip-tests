@@ -26,7 +26,7 @@ class Memcpy2DBenchmark : public Benchmark<Memcpy2DBenchmark> {
     if (kind == hipMemcpyDeviceToHost) {
       LinearAllocGuard2D<int> device_allocation(width, height);
       LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, device_allocation.width() * height);
-      TIMED_SECTION(TIMER_TYPE_EVENT) {
+      TIMED_SECTION(kTimerTypeEvent) {
         HIP_CHECK(hipMemcpy2D(host_allocation.ptr(), device_allocation.width(), device_allocation.ptr(),
                   device_allocation.pitch(), device_allocation.width(), device_allocation.height(),
                   hipMemcpyDeviceToHost));
@@ -34,7 +34,7 @@ class Memcpy2DBenchmark : public Benchmark<Memcpy2DBenchmark> {
     } else if (kind == hipMemcpyHostToDevice) {
       LinearAllocGuard2D<int> device_allocation(width, height);
       LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, device_allocation.width() * height);
-      TIMED_SECTION(TIMER_TYPE_EVENT) {
+      TIMED_SECTION(kTimerTypeEvent) {
         HIP_CHECK(hipMemcpy2D(device_allocation.ptr(), device_allocation.pitch(), host_allocation.ptr(),
                   device_allocation.width(), device_allocation.width(), device_allocation.height(),
                   hipMemcpyHostToDevice));
@@ -42,7 +42,7 @@ class Memcpy2DBenchmark : public Benchmark<Memcpy2DBenchmark> {
     } else if (kind == hipMemcpyHostToHost) {
       LinearAllocGuard<int> src_allocation(LinearAllocs::hipHostMalloc, width * sizeof(int) * height);
       LinearAllocGuard<int> dst_allocation(LinearAllocs::hipHostMalloc, width * sizeof(int) * height);
-      TIMED_SECTION(TIMER_TYPE_EVENT) {
+      TIMED_SECTION(kTimerTypeEvent) {
         HIP_CHECK(hipMemcpy2D(dst_allocation.ptr(), width * sizeof(int), src_allocation.ptr(),
                   width * sizeof(int), width * sizeof(int), height, hipMemcpyHostToHost));
       }
@@ -65,7 +65,7 @@ class Memcpy2DBenchmark : public Benchmark<Memcpy2DBenchmark> {
       LinearAllocGuard2D<int> dst_allocation(width, height);
 
       HIP_CHECK(hipSetDevice(src_device));
-      TIMED_SECTION(TIMER_TYPE_EVENT) {
+      TIMED_SECTION(kTimerTypeEvent) {
         HIP_CHECK(hipMemcpy2D(dst_allocation.ptr(), dst_allocation.pitch(),
                   src_allocation.ptr(), src_allocation.pitch(), dst_allocation.width(),
                   dst_allocation.height(), hipMemcpyDeviceToDevice));

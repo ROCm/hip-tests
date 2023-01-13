@@ -44,7 +44,7 @@ class MemcpyDtoDAsyncBenchmark : public Benchmark<MemcpyDtoDAsyncBenchmark> {
     LinearAllocGuard<int> dst_allocation(LinearAllocs::hipMalloc, size);
 
     HIP_CHECK(hipSetDevice(src_device));
-    TIMED_SECTION(TIMER_TYPE_EVENT) {
+    TIMED_SECTION(kTimerTypeEvent) {
       HIP_CHECK(hipMemcpyDtoDAsync(dst_allocation.ptr(), src_allocation.ptr(), size, stream))
     }
     HIP_CHECK(hipStreamSynchronize(stream));

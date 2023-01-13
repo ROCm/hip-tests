@@ -94,7 +94,7 @@ class MemcpyParam2DBenchmark : public Benchmark<MemcpyParam2DBenchmark> {
                            device_allocation.ptr(), device_allocation.pitch(),
                            device_allocation.width(), device_allocation.height(),
                            kind);
-      TIMED_SECTION(TIMER_TYPE_EVENT) {
+      TIMED_SECTION(kTimerTypeEvent) {
         HIP_CHECK(hipMemcpyParam2D(&params));
       }
     } else if (kind == hipMemcpyHostToDevice) {
@@ -106,7 +106,7 @@ class MemcpyParam2DBenchmark : public Benchmark<MemcpyParam2DBenchmark> {
                            host_allocation.ptr(), host_pitch,
                            device_allocation.width(), device_allocation.height(),
                            kind);
-      TIMED_SECTION(TIMER_TYPE_EVENT) {
+      TIMED_SECTION(kTimerTypeEvent) {
         HIP_CHECK(hipMemcpyParam2D(&params));
       }
     } else if (kind == hipMemcpyHostToHost) {
@@ -116,7 +116,7 @@ class MemcpyParam2DBenchmark : public Benchmark<MemcpyParam2DBenchmark> {
       hip_Memcpy2D params = CreateMemcpy2DParam(dst_allocation.ptr(), width * sizeof(int),
                            src_allocation.ptr(), src_pitch, width * sizeof(int), height,
                            kind);
-      TIMED_SECTION(TIMER_TYPE_EVENT) {
+      TIMED_SECTION(kTimerTypeEvent) {
         HIP_CHECK(hipMemcpyParam2D(&params));
       }
     } else {
@@ -142,7 +142,7 @@ class MemcpyParam2DBenchmark : public Benchmark<MemcpyParam2DBenchmark> {
                            src_allocation.ptr(), src_allocation.pitch(),
                            dst_allocation.width(), dst_allocation.height(),
                            kind);
-      TIMED_SECTION(TIMER_TYPE_EVENT) {
+      TIMED_SECTION(kTimerTypeEvent) {
         HIP_CHECK(hipMemcpyParam2D(&params));
       }
     }

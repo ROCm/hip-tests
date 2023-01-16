@@ -37,7 +37,6 @@ class Memcpy3DBenchmark : public Benchmark<Memcpy3DBenchmark> {
       }
     } else if (kind == hipMemcpyHostToDevice) {
       LinearAllocGuard3D<int> device_allocation(extent);
-      const size_t host_pitch = device_allocation.pitch();
       LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, device_allocation.pitch() * 
                                             device_allocation.height() * device_allocation.depth());
       hipMemcpy3DParms params = CreateMemcpy3DParam(device_allocation.pitched_ptr(), make_hipPos(0, 0, 0),

@@ -83,6 +83,9 @@ set(TEST_SRC
   hipUserObjectCreate.cc
   hipGraphDebugDotPrint.cc
   hipGraphCloneComplx.cc
+  hipGraphCreate.cc
+  hipGraphDestroy.cc
+  hipGraphExecDestroy.cc
   hipGraphUpload.cc
 )
 

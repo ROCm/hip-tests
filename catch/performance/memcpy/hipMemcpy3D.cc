@@ -17,11 +17,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
 #include <performance_common.hh>
+#include "memcpy_performance_common.hh"
 
-static hipMemcpy3DParms CreateMemcpy3DParam(hipPitchedPtr dst_ptr, hipPos dst_pos, hipPitchedPtr src_ptr,
-                                            hipPos src_pos, hipExtent extent, hipMemcpyKind kind) {
+static hipMemcpy3DParms CreateMemcpy3DParam(hipPitchedPtr dst_ptr, hipPos dst_pos,
+                                            hipPitchedPtr src_ptr, hipPos src_pos,
+                                            hipExtent extent, hipMemcpyKind kind) {
   hipMemcpy3DParms params = {0};
   params.dstPtr = dst_ptr;
   params.dstPos = dst_pos;
@@ -40,10 +41,10 @@ class Memcpy3DBenchmark : public Benchmark<Memcpy3DBenchmark> {
       LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, device_allocation.width() * 
                                             device_allocation.height() * device_allocation.depth());
       hipMemcpy3DParms params = CreateMemcpy3DParam(make_hipPitchedPtr(host_allocation.ptr(), device_allocation.width(), 
-                                                    device_allocation.width(), device_allocation.height()),
-                                                    make_hipPos(0, 0, 0), device_allocation.pitched_ptr(),
-                                                    make_hipPos(0, 0, 0),
-                                                    device_allocation.extent(), kind);
+                                                                       device_allocation.width(), device_allocation.height()),
+                                                                       make_hipPos(0, 0, 0), device_allocation.pitched_ptr(),
+                                                                       make_hipPos(0, 0, 0),
+                                                                       device_allocation.extent(), kind);
       TIMED_SECTION(kTimerTypeEvent) {
         HIP_CHECK(hipMemcpy3D(&params));
       }

@@ -17,70 +17,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
 #include <performance_common.hh>
-
-static hip_Memcpy2D CreateMemcpy2DParam(void* dst, size_t dpitch, void* src, size_t spitch, size_t width, size_t height, hipMemcpyKind kind, hipStream_t stream=nullptr) {
-  hip_Memcpy2D params = {0};
-  const hipExtent src_offset = {0};
-  const hipExtent dst_offset = {0};
-  params.dstPitch = dpitch;
-  switch (kind) {
-    case hipMemcpyDeviceToHost:
-    case hipMemcpyHostToHost:
-      #if HT_AMD
-        params.dstMemoryType = hipMemoryTypeHost;
-      #else
-        params.dstMemoryType = CU_MEMORYTYPE_HOST;
-      #endif
-      params.dstHost = dst;
-      break;
-    case hipMemcpyDeviceToDevice:
-    case hipMemcpyHostToDevice:
-      #if HT_AMD
-        params.dstMemoryType = hipMemoryTypeDevice;
-      #else
-        params.dstMemoryType = CU_MEMORYTYPE_DEVICE;
-      #endif
-      params.dstDevice = reinterpret_cast<hipDeviceptr_t>(dst);
-      break;
-    default:
-      REQUIRE(false);
-  }
-
-  params.srcPitch = dpitch;
-  switch (kind) {
-    case hipMemcpyDeviceToHost:
-    case hipMemcpyHostToHost:
-      #if HT_AMD
-        params.srcMemoryType = hipMemoryTypeHost;
-      #else
-        params.srcMemoryType = CU_MEMORYTYPE_HOST;
-      #endif
-      params.srcHost = src;
-      break;
-    case hipMemcpyDeviceToDevice:
-    case hipMemcpyHostToDevice:
-      #if HT_AMD
-        params.srcMemoryType = hipMemoryTypeDevice;
-      #else
-        params.srcMemoryType = CU_MEMORYTYPE_DEVICE;
-      #endif
-      params.srcDevice = reinterpret_cast<hipDeviceptr_t>(src);
-      break;
-    default:
-      REQUIRE(false);
-  }
-
-  params.WidthInBytes = width;
-  params.Height = height;
-  params.srcXInBytes = src_offset.width;
-  params.srcY = src_offset.height;
-  params.dstXInBytes = dst_offset.width;
-  params.dstY = dst_offset.height;
-
-  return params;
-}
+#include "memcpy_performance_common.hh"
 
 class MemcpyParam2DBenchmark : public Benchmark<MemcpyParam2DBenchmark> {
  public:
@@ -90,37 +28,32 @@ class MemcpyParam2DBenchmark : public Benchmark<MemcpyParam2DBenchmark> {
   
     if (kind == hipMemcpyDeviceToHost) {
       LinearAllocGuard2D<int> device_allocation(width, height);
-      const size_t host_pitch = GENERATE_REF(device_allocation.width(),
-                    device_allocation.width() + device_allocation.height() / 2);
-      LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, host_pitch * height);
-      hip_Memcpy2D params = CreateMemcpy2DParam(host_allocation.ptr(), host_pitch,
-                           device_allocation.ptr(), device_allocation.pitch(),
-                           device_allocation.width(), device_allocation.height(),
-                           kind);
+      LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, device_allocation.width() * height);
+      hip_Memcpy2D params = CreateMemcpy2DParam(host_allocation.ptr(), device_allocation.width(),
+                                                device_allocation.ptr(), device_allocation.pitch(),
+                                                device_allocation.width(), device_allocation.height(),
+                                                kind);
       TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpyParam2DAsync(&params, stream));
       }
       HIP_CHECK(hipStreamSynchronize(stream));
     } else if (kind == hipMemcpyHostToDevice) {
       LinearAllocGuard2D<int> device_allocation(width, height);
-      const size_t host_pitch = GENERATE_REF(device_allocation.width(),
-                    device_allocation.width() + device_allocation.height() / 2);
-      LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, host_pitch * height);
+      LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, device_allocation.width() * height);
       hip_Memcpy2D params = CreateMemcpy2DParam(device_allocation.ptr(), device_allocation.pitch(),
-                           host_allocation.ptr(), host_pitch,
-                           device_allocation.width(), device_allocation.height(),
-                           kind);
+                                                host_allocation.ptr(), device_allocation.width(),
+                                                device_allocation.width(), device_allocation.height(),
+                                                kind);
       TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpyParam2DAsync(&params, stream));
       }
       HIP_CHECK(hipStreamSynchronize(stream));
     } else if (kind == hipMemcpyHostToHost) {
-      const size_t src_pitch = GENERATE_REF(width * sizeof(int), width * sizeof(int) + height / 2); 
-      LinearAllocGuard<int> src_allocation(LinearAllocs::hipHostMalloc, src_pitch * height);
+      LinearAllocGuard<int> src_allocation(LinearAllocs::hipHostMalloc, width * sizeof(int) * height);
       LinearAllocGuard<int> dst_allocation(LinearAllocs::hipHostMalloc, width * sizeof(int) * height);
       hip_Memcpy2D params = CreateMemcpy2DParam(dst_allocation.ptr(), width * sizeof(int),
-                           src_allocation.ptr(), src_pitch, width * sizeof(int), height,
-                           kind);
+                                                src_allocation.ptr(), width * sizeof(int),
+                                                width * sizeof(int), height, kind);
       TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpyParam2DAsync(&params, stream));
       }
@@ -145,9 +78,9 @@ class MemcpyParam2DBenchmark : public Benchmark<MemcpyParam2DBenchmark> {
 
       HIP_CHECK(hipSetDevice(src_device));
       hip_Memcpy2D params = CreateMemcpy2DParam(dst_allocation.ptr(), dst_allocation.pitch(),
-                           src_allocation.ptr(), src_allocation.pitch(),
-                           dst_allocation.width(), dst_allocation.height(),
-                           kind);
+                                                src_allocation.ptr(), src_allocation.pitch(),
+                                                dst_allocation.width(), dst_allocation.height(),
+                                                kind);
       TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpyParam2DAsync(&params, stream));
       }
@@ -156,7 +89,8 @@ class MemcpyParam2DBenchmark : public Benchmark<MemcpyParam2DBenchmark> {
   }
 };
 
-static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind, bool enable_peer_access=false) {
+static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind,
+                         bool enable_peer_access=false) {
   MemcpyParam2DBenchmark benchmark;
   std::stringstream section_name{};
   section_name << "size(" << width << ", " << height << ")";

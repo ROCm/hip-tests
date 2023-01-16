@@ -17,8 +17,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
 #include <performance_common.hh>
+#include "memcpy_performance_common.hh"
 
 class Memcpy2DFromArrayAsyncBenchmark : public Benchmark<Memcpy2DFromArrayAsyncBenchmark> {
  public:
@@ -33,8 +33,8 @@ class Memcpy2DFromArrayAsyncBenchmark : public Benchmark<Memcpy2DFromArrayAsyncB
 
       TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpy2DFromArrayAsync(host_allocation.ptr(), width * sizeof(int),
-                  array_allocation.ptr(), 0, 0, width * sizeof(int), height,
-                  hipMemcpyHostToDevice, stream));
+                                            array_allocation.ptr(), 0, 0, width * sizeof(int),
+                                            height, hipMemcpyHostToDevice, stream));
       }
       HIP_CHECK(hipStreamSynchronize(stream));
     } else {
@@ -58,15 +58,17 @@ class Memcpy2DFromArrayAsyncBenchmark : public Benchmark<Memcpy2DFromArrayAsyncB
       HIP_CHECK(hipSetDevice(src_device));
       TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpy2DFromArrayAsync(device_allocation.ptr(), device_allocation.pitch(),
-                  array_allocation.ptr(), 0, 0, device_allocation.width(),
-                  device_allocation.height(), hipMemcpyHostToDevice, stream));
+                                            array_allocation.ptr(), 0, 0,
+                                            device_allocation.width(), device_allocation.height(),
+                                            hipMemcpyHostToDevice, stream));
       }
       HIP_CHECK(hipStreamSynchronize(stream));
     }
   }
 };
 
-static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind, bool enable_peer_access=false) {
+static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind,
+                         bool enable_peer_access=false) {
   Memcpy2DFromArrayAsyncBenchmark benchmark;
   std::stringstream section_name{};
   section_name << "size(" << width << ", " << height << ")";

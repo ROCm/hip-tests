@@ -17,8 +17,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
 #include <performance_common.hh>
+#include "memcpy_performance_common.hh"
 
 class MemcpyDtoDBenchmark : public Benchmark<MemcpyDtoDBenchmark> {
  public:
@@ -42,7 +42,7 @@ class MemcpyDtoDBenchmark : public Benchmark<MemcpyDtoDBenchmark> {
 
     HIP_CHECK(hipSetDevice(src_device));
     TIMED_SECTION(kTimerTypeEvent) {
-      HIP_CHECK(hipMemcpyDtoD(dst_allocation.ptr(), src_allocation.ptr(), size))
+      HIP_CHECK(hipMemcpyDtoD(dst_allocation.ptr(), src_allocation.ptr(), size));
     }
   }
 };

@@ -17,8 +17,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
 #include <performance_common.hh>
+#include "memcpy_performance_common.hh"
 
 class MemcpyDtoDAsyncBenchmark : public Benchmark<MemcpyDtoDAsyncBenchmark> {
  public:
@@ -45,7 +45,7 @@ class MemcpyDtoDAsyncBenchmark : public Benchmark<MemcpyDtoDAsyncBenchmark> {
 
     HIP_CHECK(hipSetDevice(src_device));
     TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
-      HIP_CHECK(hipMemcpyDtoDAsync(dst_allocation.ptr(), src_allocation.ptr(), size, stream))
+      HIP_CHECK(hipMemcpyDtoDAsync(dst_allocation.ptr(), src_allocation.ptr(), size, stream));
     }
     HIP_CHECK(hipStreamSynchronize(stream));
   }

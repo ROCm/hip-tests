@@ -17,8 +17,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
 #include <performance_common.hh>
+#include "memcpy_performance_common.hh"
 
 class Memcpy2DToArrayBenchmark : public Benchmark<Memcpy2DToArrayBenchmark> {
  public:
@@ -30,8 +30,8 @@ class Memcpy2DToArrayBenchmark : public Benchmark<Memcpy2DToArrayBenchmark> {
 
       TIMED_SECTION(kTimerTypeEvent) {
         HIP_CHECK(hipMemcpy2DToArray(array_allocation.ptr(), 0, 0, host_allocation.ptr(),
-                  width * sizeof(int), width * sizeof(int), height,
-                  hipMemcpyHostToDevice));
+                                     width * sizeof(int), width * sizeof(int), height,
+                                     hipMemcpyHostToDevice));
       }
     } else {
       // hipMemcpyDeviceToDevice
@@ -53,15 +53,17 @@ class Memcpy2DToArrayBenchmark : public Benchmark<Memcpy2DToArrayBenchmark> {
 
       HIP_CHECK(hipSetDevice(src_device));
       TIMED_SECTION(kTimerTypeEvent) {
-        HIP_CHECK(hipMemcpy2DToArray(array_allocation.ptr(), 0, 0, device_allocation.ptr(),
-                  device_allocation.pitch(), device_allocation.width(), device_allocation.height(),
-                  hipMemcpyDeviceToDevice));
+        HIP_CHECK(hipMemcpy2DToArray(array_allocation.ptr(), 0, 0,
+                                     device_allocation.ptr(), device_allocation.pitch(),
+                                     device_allocation.width(), device_allocation.height(),
+                                     hipMemcpyDeviceToDevice));
       }
     }
   }
 };
 
-static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind, bool enable_peer_access=false) {
+static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind,
+                         bool enable_peer_access=false) {
   Memcpy2DToArrayBenchmark benchmark;
   std::stringstream section_name{};
   section_name << "size(" << width << ", " << height << ")";

@@ -17,8 +17,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
 #include <performance_common.hh>
+#include "memcpy_performance_common.hh"
 
 class Memcpy2DFromArrayBenchmark : public Benchmark<Memcpy2DFromArrayBenchmark> {
  public:
@@ -60,7 +60,8 @@ class Memcpy2DFromArrayBenchmark : public Benchmark<Memcpy2DFromArrayBenchmark> 
   }
 };
 
-static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind, bool enable_peer_access=false) {
+static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind,
+                         bool enable_peer_access=false) {
   Memcpy2DFromArrayBenchmark benchmark;
   std::stringstream section_name{};
   section_name << "size(" << width << ", " << height << ")";

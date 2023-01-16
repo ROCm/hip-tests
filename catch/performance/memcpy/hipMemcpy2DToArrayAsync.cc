@@ -17,8 +17,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
 #include <performance_common.hh>
+#include "memcpy_performance_common.hh"
 
 class Memcpy2DToArrayAsyncBenchmark : public Benchmark<Memcpy2DToArrayAsyncBenchmark> {
  public:
@@ -33,8 +33,8 @@ class Memcpy2DToArrayAsyncBenchmark : public Benchmark<Memcpy2DToArrayAsyncBench
 
       TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpy2DToArrayAsync(array_allocation.ptr(), 0, 0, host_allocation.ptr(),
-                  width * sizeof(int), width * sizeof(int), height,
-                  hipMemcpyHostToDevice, stream));
+                                          width * sizeof(int), width * sizeof(int), height,
+                                          hipMemcpyHostToDevice, stream));
       }
       HIP_CHECK(hipStreamSynchronize(stream));
     } else {
@@ -57,16 +57,18 @@ class Memcpy2DToArrayAsyncBenchmark : public Benchmark<Memcpy2DToArrayAsyncBench
 
       HIP_CHECK(hipSetDevice(src_device));
       TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
-        HIP_CHECK(hipMemcpy2DToArrayAsync(array_allocation.ptr(), 0, 0, device_allocation.ptr(),
-                  device_allocation.pitch(), device_allocation.width(), device_allocation.height(),
-                  hipMemcpyDeviceToDevice, stream));
+        HIP_CHECK(hipMemcpy2DToArrayAsync(array_allocation.ptr(), 0, 0,
+                                          device_allocation.ptr(), device_allocation.pitch(),
+                                          device_allocation.width(), device_allocation.height(),
+                                          hipMemcpyDeviceToDevice, stream));
       }
       HIP_CHECK(hipStreamSynchronize(stream));
     }
   }
 };
 
-static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind, bool enable_peer_access=false) {
+static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind,
+                         bool enable_peer_access=false) {
   Memcpy2DToArrayAsyncBenchmark benchmark;
   std::stringstream section_name{};
   section_name << "size(" << width << ", " << height << ")";

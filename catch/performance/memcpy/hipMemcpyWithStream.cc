@@ -17,8 +17,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
 #include <performance_common.hh>
+#include "memcpy_performance_common.hh"
 
 class MemcpyWithStreamBenchmark : public Benchmark<MemcpyWithStreamBenchmark> {
  public:
@@ -61,8 +61,8 @@ class MemcpyWithStreamBenchmark : public Benchmark<MemcpyWithStreamBenchmark> {
   }
 };
 
-static void RunBenchmark(LinearAllocs dst_allocation_type, LinearAllocs src_allocation_type, size_t size,
-    hipMemcpyKind kind, bool enable_peer_access=false) {
+static void RunBenchmark(LinearAllocs dst_allocation_type, LinearAllocs src_allocation_type,
+                         size_t size, hipMemcpyKind kind, bool enable_peer_access=false) {
   MemcpyWithStreamBenchmark benchmark;
   std::stringstream section_name{};
   section_name << "size(" << size << ")";

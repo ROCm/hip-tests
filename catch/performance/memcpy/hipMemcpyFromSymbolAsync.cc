@@ -17,8 +17,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
 #include <performance_common.hh>
+#include "memcpy_performance_common.hh"
 
 __device__ int devSymbol[1_MB];
 
@@ -29,10 +29,10 @@ class MemcpyFromSymbolAsyncBenchmark : public Benchmark<MemcpyFromSymbolAsyncBen
     const hipStream_t stream = stream_guard.stream();
 
     HIP_CHECK(hipMemcpyToSymbolAsync(HIP_SYMBOL(devSymbol), source, size, offset,
-              hipMemcpyHostToDevice, stream));
+                                     hipMemcpyHostToDevice, stream));
     TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
       HIP_CHECK(hipMemcpyFromSymbolAsync(result, HIP_SYMBOL(devSymbol), size, offset,
-                hipMemcpyDeviceToHost, stream));
+                                         hipMemcpyDeviceToHost, stream));
     }
     HIP_CHECK(hipStreamSynchronize(stream));
   }

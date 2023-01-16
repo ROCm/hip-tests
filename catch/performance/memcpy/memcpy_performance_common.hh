@@ -94,3 +94,16 @@ static hip_Memcpy2D CreateMemcpy2DParam(void* dst, size_t dpitch, void* src, siz
 
   return params;
 }
+
+static hipMemcpy3DParms CreateMemcpy3DParam(hipPitchedPtr dst_ptr, hipPos dst_pos,
+                                            hipPitchedPtr src_ptr, hipPos src_pos,
+                                            hipExtent extent, hipMemcpyKind kind) {
+  hipMemcpy3DParms params = {0};
+  params.dstPtr = dst_ptr;
+  params.dstPos = dst_pos;
+  params.srcPtr = src_ptr;
+  params.srcPos = src_pos;
+  params.extent = extent;
+  params.kind = kind;
+  return params;
+}

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -296,5 +296,98 @@ TEST_CASE("Unit_hipMemGetInfo_Functional_MultiDevice_Scenario5") {
     wait(NULL);
   }
 }
-#endif
 
+#if HT_AMD
+static bool testHiddenFreeMemFromChild() {
+  bool result = true;
+  int testResult = 0, result_dummy = 0;
+  int fd_c2p[2], fd_p2c[2];
+  pipe(fd_c2p);
+  pipe(fd_p2c);
+  pid_t cPid;
+  cPid = fork();
+  if (cPid == 0) {  // child
+    size_t free = 0, total = 0, min_size = 0;
+    close(fd_c2p[ReadEnd]);
+    close(fd_p2c[WriteEnd]);
+    int64_t size_tohide = (FREE_MEM_TO_HIDE/(1024*1024));  // in MB
+    // set environment variable from shell
+    unsetenv("HIP_HIDDEN_FREE_MEM");
+    setenv("HIP_HIDDEN_FREE_MEM", std::to_string(size_tohide).c_str(), 1);
+    // allocate memory in device
+    char* d_ptr{nullptr};
+    HIP_CHECK(hipMalloc(&d_ptr, SIZE_TO_ALLOCATE));
+    HIP_CHECK(hipMemGetInfo(&free, &total));
+    min_size = (FREE_MEM_TO_HIDE + SIZE_TO_ALLOCATE);
+    if ((total - free) >= min_size) {
+      testResult = 1;
+    }
+    // Write to and signal parent
+    write(fd_c2p[WriteEnd], &testResult, sizeof(testResult));
+    close(fd_c2p[WriteEnd]);
+    // Wait for signal from parent
+    read(fd_p2c[ReadEnd], &result_dummy, sizeof(result_dummy));
+    close(fd_p2c[ReadEnd]);
+    exit(0);
+  } else if (cPid > 0) {  // parent
+    close(fd_c2p[WriteEnd]);
+    close(fd_p2c[ReadEnd]);
+    // wait for result from child
+    read(fd_c2p[ReadEnd], &testResult, sizeof(testResult));
+    close(fd_c2p[ReadEnd]);
+    if (testResult) {
+      result &= true;
+    } else {
+      result &= false;
+    }
+    size_t free = 0, total = 0, min_size = SIZE_TO_ALLOCATE;
+    HIP_CHECK(hipMemGetInfo(&free, &total));
+    if ((total - free) >= min_size) {
+      result &= true;
+    } else {
+      result &= false;
+    }
+    // Write to and signal child
+    write(fd_p2c[WriteEnd], &result_dummy, sizeof(result_dummy));
+    close(fd_p2c[WriteEnd]);
+    wait(NULL);
+  } else {
+    WARN("fork() failed");
+    HIP_ASSERT(false);
+  }
+
+  return result;
+}
+
+/**
+ * Scenario: Fork() a child process. In child, get free and total memory.
+ * Set the HIP_HIDDEN_FREE_MEM to 4GB. Allocate 2 GB of device memory.
+ * Get the free and total memory. Free memory available should be
+ * (actual free - 6 GB). Signal parent process. Wait for signal from child
+ * in parent. Get free and total memory. Free memory available should be
+ * actual (actual free - 4 GB).
+ */
+TEST_CASE("Unit_hipMemGetInfo_SetHiddenFreeMemFromChild") {
+  REQUIRE(true == testHiddenFreeMemFromChild());
+}
+
+/**
+ * Scenario: Set the HIP_HIDDEN_FREE_MEM to 4GB. Invoke hipMemGetInfo to
+ * verify that 4GB free memory is hidden for all available GPUs.
+ */
+TEST_CASE("Unit_hipMemGetInfo_VerifyHiddenFreeMemForAllGpu") {
+  int numDevices = 0;
+  int64_t size_tohide = (FREE_MEM_TO_HIDE/(1024*1024));  // in MB
+  // set environment variable from shell
+  unsetenv("HIP_HIDDEN_FREE_MEM");
+  setenv("HIP_HIDDEN_FREE_MEM", std::to_string(size_tohide).c_str(), 1);
+  HIP_CHECK(hipGetDeviceCount(&numDevices));
+  for (int dev = 0; dev < numDevices; dev++) {
+    HIP_CHECK(hipSetDevice(dev));
+    size_t free = 0, total = 0;
+    HIP_CHECK(hipMemGetInfo(&free, &total));
+    REQUIRE((total - free) >= FREE_MEM_TO_HIDE);
+  }
+}
+#endif
+#endif

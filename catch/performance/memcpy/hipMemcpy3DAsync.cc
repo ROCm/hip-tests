@@ -20,18 +20,6 @@ THE SOFTWARE.
 #include <performance_common.hh>
 #include "memcpy_performance_common.hh"
 
-static hipMemcpy3DParms CreateMemcpy3DParam(hipPitchedPtr dst_ptr, hipPos dst_pos, hipPitchedPtr src_ptr,
-                                            hipPos src_pos, hipExtent extent, hipMemcpyKind kind) {
-  hipMemcpy3DParms params = {0};
-  params.dstPtr = dst_ptr;
-  params.dstPos = dst_pos;
-  params.srcPtr = src_ptr;
-  params.srcPos = src_pos;
-  params.extent = extent;
-  params.kind = kind;
-  return params;
-}
-
 class Memcpy3DAsyncBenchmark : public Benchmark<Memcpy3DAsyncBenchmark> {
  public:
   void operator()(const hipExtent extent, hipMemcpyKind kind, bool enable_peer_access) {

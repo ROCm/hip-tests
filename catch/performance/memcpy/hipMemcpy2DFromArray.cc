@@ -45,6 +45,8 @@ class Memcpy2DFromArrayBenchmark : public Benchmark<Memcpy2DFromArrayBenchmark> 
           REQUIRE(can_access_peer);
         }
         HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));
+      } else {
+        dst_device = 0;
       }
       LinearAllocGuard2D<int> device_allocation(width, height);
       HIP_CHECK(hipSetDevice(dst_device));
@@ -76,10 +78,6 @@ TEST_CASE("Performance_hipMemcpy2DFromArray_HostToDevice") {
 }
 
 TEST_CASE("Performance_hipMemcpy2DFromArray_DeviceToDevice_DisablePeerAccess") {
-  if (HipTest::getDeviceCount() < 2) {
-    HipTest::HIP_SKIP_TEST("This test requires 2 GPUs. Skipping.");
-    return;
-  }
   const auto width = GENERATE(4_KB, 8_KB, 16_KB);
   RunBenchmark(width, 32, hipMemcpyDeviceToDevice);
 }

@@ -82,6 +82,8 @@ class Memcpy3DAsyncBenchmark : public Benchmark<Memcpy3DAsyncBenchmark> {
           REQUIRE(can_access_peer);
         }
         HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));
+      } else {
+        dst_device = 0;
       }
       LinearAllocGuard3D<int> src_allocation(extent);
       HIP_CHECK(hipSetDevice(dst_device));
@@ -125,10 +127,6 @@ TEST_CASE("Performance_hipMemcpy3DAsync_HostToHost") {
 }
 
 TEST_CASE("Performance_hipMemcpy3DAsync_DeviceToDevice_DisablePeerAccess") {
-  if (HipTest::getDeviceCount() < 2) {
-    HipTest::HIP_SKIP_TEST("This test requires 2 GPUs. Skipping.");
-    return;
-  }
   const auto width = GENERATE(4_KB, 4_MB, 16_MB);
   RunBenchmark(make_hipExtent(width, 16, 4), hipMemcpyDeviceToDevice);
 }

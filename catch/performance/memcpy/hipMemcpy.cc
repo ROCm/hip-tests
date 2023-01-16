@@ -43,6 +43,8 @@ class MemcpyBenchmark : public Benchmark<MemcpyBenchmark> {
           REQUIRE(can_access_peer);
         }
         HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));
+      } else {
+        dst_device = 0;
       }
       LinearAllocGuard<int> src_allocation(LinearAllocs::hipMalloc, size);
       HIP_CHECK(hipSetDevice(dst_device));
@@ -101,10 +103,6 @@ TEST_CASE("Performance_hipMemcpy_DeviceToDevice_EnablePeerAccess") {
 }
 
 TEST_CASE("Performance_hipMemcpy_DeviceToDevice_DisablePeerAccess") {
-  if (HipTest::getDeviceCount() < 2) {
-    HipTest::HIP_SKIP_TEST("This test requires 2 GPUs. Skipping.");
-    return;
-  }
   const auto allocation_size = GENERATE(4_KB, 4_MB, 16_MB);
   const auto src_allocation_type = LinearAllocs::hipMalloc;
   const auto dst_allocation_type = LinearAllocs::hipMalloc;

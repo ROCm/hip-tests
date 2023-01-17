@@ -25,6 +25,7 @@ set(TEST_SRC
     memset.cc
     malloc.cc
     hipMemcpy2DToArray.cc
+    hipMemcpy2DToArray_old.cc
     hipMemcpy2DToArrayAsync.cc
     hipMemcpy2DToArrayAsync_old.cc
     hipMemcpy3D.cc
@@ -34,10 +35,13 @@ set(TEST_SRC
     hipMemcpy2D.cc
     hipMemcpy2DAsync.cc
     hipMemcpy2DFromArray.cc
+    hipMemcpy2DFromArray_old.cc
     hipMemcpy2DFromArrayAsync.cc
     hipMemcpy2DFromArrayAsync_old.cc
     hipMemcpyAtoH.cc
+    hipMemcpyAtoH_old.cc
     hipMemcpyHtoA.cc
+    hipMemcpyHtoA_old.cc
     hipMemcpyAllApiNegative.cc
     hipMemcpy_MultiThread.cc
     hipHostRegister.cc
@@ -112,6 +116,7 @@ set(TEST_SRC
     memset.cc
     malloc.cc
     hipMemcpy2DToArray.cc
+    hipMemcpy2DToArray_old.cc
     hipMemcpy2DToArrayAsync.cc
     hipMemcpy2DToArrayAsync_old.cc
     hipMemcpy3D.cc
@@ -121,10 +126,13 @@ set(TEST_SRC
     hipMemcpy2D.cc
     hipMemcpy2DAsync.cc
     hipMemcpy2DFromArray.cc
+    hipMemcpy2DFromArray_old.cc
     hipMemcpy2DFromArrayAsync.cc
     hipMemcpy2DFromArrayAsync_old.cc
     hipMemcpyAtoH.cc
+    hipMemcpyAtoH_old.cc
     hipMemcpyHtoA.cc
+    hipMemcpyHtoA_old.cc
     hipMemcpyAllApiNegative.cc
     hipMemcpy_MultiThread.cc
     hipHostRegister.cc

@@ -45,7 +45,9 @@ class MemcpyDtoDAsyncBenchmark : public Benchmark<MemcpyDtoDAsyncBenchmark> {
 
     HIP_CHECK(hipSetDevice(src_device));
     TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
-      HIP_CHECK(hipMemcpyDtoDAsync(dst_allocation.ptr(), src_allocation.ptr(), size, stream));
+      HIP_CHECK(hipMemcpyDtoDAsync(reinterpret_cast<hipDeviceptr_t>(dst_allocation.ptr()),
+                                   reinterpret_cast<hipDeviceptr_t>(src_allocation.ptr()),
+                                   size, stream));
     }
     HIP_CHECK(hipStreamSynchronize(stream));
   }

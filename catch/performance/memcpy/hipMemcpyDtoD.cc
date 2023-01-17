@@ -42,7 +42,9 @@ class MemcpyDtoDBenchmark : public Benchmark<MemcpyDtoDBenchmark> {
 
     HIP_CHECK(hipSetDevice(src_device));
     TIMED_SECTION(kTimerTypeEvent) {
-      HIP_CHECK(hipMemcpyDtoD(dst_allocation.ptr(), src_allocation.ptr(), size));
+      HIP_CHECK(hipMemcpyDtoD(reinterpret_cast<hipDeviceptr_t>(dst_allocation.ptr()),
+                              reinterpret_cast<hipDeviceptr_t>(src_allocation.ptr()),
+                              size));
     }
   }
 };

@@ -27,7 +27,8 @@ class MemcpyHtoDBenchmark : public Benchmark<MemcpyHtoDBenchmark> {
     LinearAllocGuard<int> host_allocation(host_allocation_type, size);
 
     TIMED_SECTION(kTimerTypeEvent) {
-      HIP_CHECK(hipMemcpyHtoD(device_allocation.ptr(), host_allocation.ptr(), size));
+      HIP_CHECK(hipMemcpyHtoD(reinterpret_cast<hipDeviceptr_t>(device_allocation.ptr()),
+                              host_allocation.ptr(), size));
     }
   }
 };

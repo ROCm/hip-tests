@@ -30,7 +30,9 @@ class MemcpyDtoHAsyncBenchmark : public Benchmark<MemcpyDtoHAsyncBenchmark> {
     LinearAllocGuard<int> host_allocation(host_allocation_type, size);
 
     TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
-      HIP_CHECK(hipMemcpyDtoHAsync(host_allocation.ptr(), device_allocation.ptr(), size, stream));
+      HIP_CHECK(hipMemcpyDtoHAsync(host_allocation.ptr(),
+                                   reinterpret_cast<hipDeviceptr_t>(device_allocation.ptr()),
+                                   size, stream));
     }
     HIP_CHECK(hipStreamSynchronize(stream));
   }

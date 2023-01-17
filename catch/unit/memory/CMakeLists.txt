@@ -67,6 +67,7 @@ set(TEST_SRC
     hipMemcpyPeer_old.cc
     hipMemcpyPeerAsync.cc
     hipMemcpyPeerAsync_old.cc
+    hipMemcpyWithStream_old.cc
     hipMemcpyWithStream.cc
     hipMemcpyWithStreamMultiThread.cc
     hipMemsetAsyncAndKernel.cc
@@ -76,7 +77,9 @@ set(TEST_SRC
     hipMemcpyDtoD.cc
     hipMemcpyDtoDAsync.cc
     hipHostMalloc.cc
+    hipMemcpy_old.cc
     hipMemcpy.cc
+    hipMemcpy_derivatives.cc
     hipMemcpyAsync.cc
     hipMemsetFunctional.cc
     hipMallocPitch.cc
@@ -147,6 +150,7 @@ set(TEST_SRC
     hipMemcpyPeer_old.cc
     hipMemcpyPeerAsync.cc
     hipMemcpyPeerAsync_old.cc
+    hipMemcpyWithStream_old.cc
     hipMemcpyWithStream.cc
     hipMemcpyWithStreamMultiThread.cc
     hipMemsetAsyncAndKernel.cc
@@ -156,7 +160,9 @@ set(TEST_SRC
     hipMemcpyDtoD.cc
     hipMemcpyDtoDAsync.cc
     hipHostMalloc.cc
+    hipMemcpy_old.cc
     hipMemcpy.cc
+    hipMemcpy_derivatives.cc
     hipMemcpyAsync.cc
     hipMemsetFunctional.cc
     hipMallocPitch.cc

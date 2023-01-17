@@ -128,7 +128,11 @@ __global__ void Iota(T* const out, size_t pitch, size_t w, size_t h, size_t d) {
 inline void LaunchDelayKernel(const std::chrono::milliseconds interval, const hipStream_t stream) {
   int ticks_per_ms = 0;
   // Clock rate is in kHz => number of clock ticks in a millisecond
-  HIP_CHECK(hipDeviceGetAttribute(&ticks_per_ms, hipDeviceAttributeClockRate, 0));
+  if (IsGfx11()) {
+    HIPCHECK(hipDeviceGetAttribute(&ticks_per_ms, hipDeviceAttributeWallClockRate, 0));
+  } else {
+    HIPCHECK(hipDeviceGetAttribute(&ticks_per_ms, hipDeviceAttributeClockRate, 0));
+  }
   Delay<<<1, 1, 0, stream>>>(interval.count(), ticks_per_ms);
   HIP_CHECK(hipGetLastError());
 }

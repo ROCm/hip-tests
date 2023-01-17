@@ -160,10 +160,12 @@ TEST_CASE("Unit_hipMemcpy2DToArrayAsync_Negative_Parameters") {
 
   const unsigned int flag = hipArrayDefault;
 
+#if HT_NVIDIA
   constexpr auto InvalidStream = [] {
     StreamGuard sg(Streams::created);
     return sg.stream();
   };
+#endif
 
   ArrayAllocGuard<int> array_alloc(make_hipExtent(width, height, 0), flag);
   LinearAllocGuard2D<int> device_alloc(width, height);

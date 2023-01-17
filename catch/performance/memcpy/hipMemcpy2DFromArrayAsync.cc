@@ -26,7 +26,7 @@ class Memcpy2DFromArrayAsyncBenchmark : public Benchmark<Memcpy2DFromArrayAsyncB
     const StreamGuard stream_guard(Streams::created);
     const hipStream_t stream = stream_guard.stream();
 
-    if (kind == hipMemcpyHostToDevice) {
+    if (kind == hipMemcpyDeviceToHost) {
       size_t allocation_size = width * height * sizeof(int);
       LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, allocation_size);
       ArrayAllocGuard<int> array_allocation(make_hipExtent(width, height, 0), hipArrayDefault);
@@ -34,7 +34,7 @@ class Memcpy2DFromArrayAsyncBenchmark : public Benchmark<Memcpy2DFromArrayAsyncB
       TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
         HIP_CHECK(hipMemcpy2DFromArrayAsync(host_allocation.ptr(), width * sizeof(int),
                                             array_allocation.ptr(), 0, 0, width * sizeof(int),
-                                            height, hipMemcpyHostToDevice, stream));
+                                            height, hipMemcpyDeviceToHost, stream));
       }
       HIP_CHECK(hipStreamSynchronize(stream));
     } else {
@@ -62,7 +62,7 @@ class Memcpy2DFromArrayAsyncBenchmark : public Benchmark<Memcpy2DFromArrayAsyncB
         HIP_CHECK(hipMemcpy2DFromArrayAsync(device_allocation.ptr(), device_allocation.pitch(),
                                             array_allocation.ptr(), 0, 0,
                                             device_allocation.width(), device_allocation.height(),
-                                            hipMemcpyHostToDevice, stream));
+                                            hipMemcpyDeviceToDevice, stream));
       }
       HIP_CHECK(hipStreamSynchronize(stream));
     }
@@ -79,9 +79,9 @@ static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind,
   benchmark.Run(width, height, kind, enable_peer_access);
 }
 
-TEST_CASE("Performance_hipMemcpy2DFromArrayAsync_HostToDevice") {
+TEST_CASE("Performance_hipMemcpy2DFromArrayAsync_DeviceToHost") {
   const auto width = GENERATE(4_KB, 8_KB, 16_KB);
-  RunBenchmark(width, 32, hipMemcpyHostToDevice);
+  RunBenchmark(width, 32, hipMemcpyDeviceToHost);
 }
 
 TEST_CASE("Performance_hipMemcpy2DFromArrayAsync_DeviceToDevice_DisablePeerAccess") {

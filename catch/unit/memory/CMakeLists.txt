@@ -70,7 +70,9 @@ set(TEST_SRC
     hipPtrGetAttribute.cc
     hipMemPoolApi.cc
     hipMemcpyPeer.cc
+    hipMemcpyPeer_old.cc
     hipMemcpyPeerAsync.cc
+    hipMemcpyPeerAsync_old.cc
     hipMemcpyWithStream_old.cc
     hipMemcpyWithStream.cc
     hipMemcpyWithStreamMultiThread.cc
@@ -109,6 +111,7 @@ set(TEST_SRC
     hipMemsetAsync.cc
     hipMemAdvise.cc
     hipMemRangeGetAttributes.cc
+    hipMemGetAddressRange.cc
 )
 else()
 set(TEST_SRC
@@ -158,7 +161,9 @@ set(TEST_SRC
     hipPtrGetAttribute.cc
     hipMemPoolApi.cc
     hipMemcpyPeer.cc
+    hipMemcpyPeer_old.cc
     hipMemcpyPeerAsync.cc
+    hipMemcpyPeerAsync_old.cc
     hipMemcpyWithStream_old.cc
     hipMemcpyWithStream.cc
     hipMemcpyWithStreamMultiThread.cc
@@ -194,6 +199,7 @@ set(TEST_SRC
     hipMemAdvise.cc
     hipMemRangeGetAttributes.cc
     hipGetSymbolSizeAddress.cc
+    hipMemGetAddressRange.cc
 )
 endif()
 

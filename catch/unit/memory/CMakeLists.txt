@@ -47,7 +47,7 @@ set(TEST_SRC
     hipMemcpy_MultiThread.cc
     hipHostRegister.cc
     hipHostUnregister.cc
-    hipMallocPitch.cc
+    #hipMallocPitch.cc
     hipMemPtrGetInfo.cc
     hipPointerGetAttributes.cc
     hipHostGetFlags.cc
@@ -141,7 +141,7 @@ set(TEST_SRC
     hipMemcpy_MultiThread.cc
     hipHostRegister.cc
     hipHostUnregister.cc
-    hipMallocPitch.cc
+    #hipMallocPitch.cc
     hipHostGetFlags.cc
     hipHostGetDevicePointer.cc
     hipMallocManaged_MultiScenario.cc

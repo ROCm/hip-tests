@@ -20,6 +20,12 @@ THE SOFTWARE.
 #include <performance_common.hh>
 #include "memcpy_performance_common.hh"
 
+/**
+ * @addtogroup memcpy memcpy
+ * @{
+ * @ingroup PerformanceTest
+ */
+
 class MemcpyHtoDBenchmark : public Benchmark<MemcpyHtoDBenchmark> {
  public:
   void operator()(LinearAllocs host_allocation_type, LinearAllocs device_allocation_type, size_t size) {
@@ -43,6 +49,24 @@ static void RunBenchmark(LinearAllocs host_allocation_type, LinearAllocs device_
   benchmark.Run(host_allocation_type, device_allocation_type, size);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpyHtoD` from Host to Device:
+ *    -# Allocation size
+ *      - Small: 4 KB
+ *      - Medium: 4 MB
+ *      - Large: 16 MB
+ *    -# Allocation type
+ *      - Source: host pinned and pageable
+ *      - Destination: device malloc
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpyHtoD.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpyHtoD") {
   const auto allocation_size = GENERATE(4_KB, 4_MB, 16_MB);
   const auto device_allocation_type = LinearAllocs::hipMalloc;

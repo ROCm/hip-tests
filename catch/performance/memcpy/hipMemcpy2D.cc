@@ -20,6 +20,12 @@ THE SOFTWARE.
 #include <performance_common.hh>
 #include "memcpy_performance_common.hh"
 
+/**
+ * @addtogroup memcpy memcpy
+ * @{
+ * @ingroup PerformanceTest
+ */
+
 class Memcpy2DBenchmark : public Benchmark<Memcpy2DBenchmark> {
  public:
   void operator()(size_t width, size_t height, hipMemcpyKind kind, bool enable_peer_access) {
@@ -93,26 +99,103 @@ static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind,
   benchmark.Run(width, height, kind, enable_peer_access);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpy2D` from Device to Host:
+ *    -# Allocation size
+ *      - Small: 4 KB x 32 B
+ *      - Medium: 4 MB x 32 B
+ *      - Large: 16 MB x 32 B
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpy2D.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpy2D_DeviceToHost") {
   const auto width = GENERATE(4_KB, 4_MB, 16_MB);
   RunBenchmark(width, 32, hipMemcpyDeviceToHost);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpy2D` from Host to Device:
+ *    -# Allocation size
+ *      - Small: 4 KB x 32 B
+ *      - Medium: 4 MB x 32 B
+ *      - Large: 16 MB x 32 B
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpy2D.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpy2D_HostToDevice") {
   const auto width = GENERATE(4_KB, 4_MB, 16_MB);
   RunBenchmark(width, 32, hipMemcpyHostToDevice);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpy2D` from Host to Host:
+ *    -# Allocation size
+ *      - Small: 4 KB x 32 B
+ *      - Medium: 4 MB x 32 B
+ *      - Large: 16 MB x 32 B
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpy2D.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpy2D_HostToHost") {
   const auto width = GENERATE(4_KB, 4_MB, 16_MB);
   RunBenchmark(width, 32, hipMemcpyHostToHost);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpy2D` from Device to Device with peer access disabled:
+ *    -# Allocation size
+ *      - Small: 4 KB x 32 B
+ *      - Medium: 4 MB x 32 B
+ *      - Large: 16 MB x 32 B
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpy2D.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpy2D_DeviceToDevice_DisablePeerAccess") {
   const auto width = GENERATE(4_KB, 4_MB, 16_MB);
   RunBenchmark(width, 32, hipMemcpyDeviceToDevice);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpy2D` from Device to Device with peer access enabled:
+ *    -# Allocation size
+ *      - Small: 4 KB x 32 B
+ *      - Medium: 4 MB x 32 B
+ *      - Large: 16 MB x 32 B
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpy2D.cc
+ * Test requirements
+ * ------------------------
+ *  - Multi-device
+ *  - Device supports Peer-to-Peer access
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpy2D_DeviceToDevice_EnablePeerAccess") {
   if (HipTest::getDeviceCount() < 2) {
     HipTest::HIP_SKIP_TEST("This test requires 2 GPUs. Skipping.");

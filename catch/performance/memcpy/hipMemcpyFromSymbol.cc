@@ -20,6 +20,12 @@ THE SOFTWARE.
 #include <performance_common.hh>
 #include "memcpy_performance_common.hh"
 
+/**
+ * @addtogroup memcpy memcpy
+ * @{
+ * @ingroup PerformanceTest
+ */
+
 __device__ int devSymbol[1_MB];
 
 class MemcpyFromSymbolBenchmark : public Benchmark<MemcpyFromSymbolBenchmark> {
@@ -42,12 +48,39 @@ static void RunBenchmark(const void* source, void* result, size_t size=1, size_t
   benchmark.Run(source, result, size, offset);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpyFromSymbol` from Device to Host.
+ *  - Utilizes sigular integer values.
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpyFromSymbol.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpyFromSymbol_SingularValue") {
   int set{42};
   int result{0};
   RunBenchmark(&set, &result);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpyFromSymbol` from Device to Host.
+ *  - Utilizes array integers:
+ *    - Small: 1 KB
+ *    - Medium: 4 KB
+ *    - Large: 512 KB
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpyFromSymbol.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpyFromSymbol_ArrayValue") {
   size_t size = GENERATE(1_KB, 4_KB, 512_KB);
   int array[size];
@@ -58,6 +91,22 @@ TEST_CASE("Performance_hipMemcpyFromSymbol_ArrayValue") {
   RunBenchmark(array, result, sizeof(int) * size);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpyFromSymbol` from Device to Host.
+ *  - Utilizes array integers with offsets:
+ *    - Small: 1 KB
+ *    - Medium: 4 KB
+ *    - Large: 512 KB
+ *  - Offset: 0 and size/2
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpyFromSymbol.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpyFromSymbol_WithOffset") {
   size_t size = GENERATE(1_KB, 4_KB, 512_KB);
   int array[size];

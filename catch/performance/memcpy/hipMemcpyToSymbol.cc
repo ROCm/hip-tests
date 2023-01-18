@@ -20,6 +20,12 @@ THE SOFTWARE.
 #include <performance_common.hh>
 #include "memcpy_performance_common.hh"
 
+/**
+ * @addtogroup memcpy memcpy
+ * @{
+ * @ingroup PerformanceTest
+ */
+
 __device__ int devSymbol[1_MB];
 
 class MemcpyToSymbolBenchmark : public Benchmark<MemcpyToSymbolBenchmark> {
@@ -41,11 +47,38 @@ static void RunBenchmark(const void* source, size_t size=1, size_t offset=0) {
   benchmark.Run(source, size, offset);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpyToSymbol` from Host to Device.
+ *  - Utilizes sigular integer values.
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpyToSymbol.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpyToSymbol_SingularValue") {
   int set{42};
   RunBenchmark(&set);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpyToSymbol` from Host to Device.
+ *  - Utilizes array integers:
+ *    - Small: 1 KB
+ *    - Medium: 4 KB
+ *    - Large: 1 MB
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpyToSymbol.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpyToSymbol_ArrayValue") {
   size_t size = GENERATE(1_KB, 4_KB, 1_MB);
   int array[size];
@@ -54,6 +87,22 @@ TEST_CASE("Performance_hipMemcpyToSymbol_ArrayValue") {
   RunBenchmark(array, sizeof(int) * size);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpyToSymbol` from Host to Device.
+ *  - Utilizes array integers with offsets:
+ *    - Small: 1 KB
+ *    - Medium: 4 KB
+ *    - Large: 1 MB
+ *  - Offset: 0 and size/2
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpyToSymbol.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpyToSymbol_WithOffset") {
   size_t size = GENERATE(1_KB, 4_KB, 1_MB);
   int array[size];

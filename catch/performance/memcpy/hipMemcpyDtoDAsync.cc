@@ -20,6 +20,12 @@ THE SOFTWARE.
 #include <performance_common.hh>
 #include "memcpy_performance_common.hh"
 
+/**
+ * @addtogroup memcpy memcpy
+ * @{
+ * @ingroup PerformanceTest
+ */
+
 class MemcpyDtoDAsyncBenchmark : public Benchmark<MemcpyDtoDAsyncBenchmark> {
  public:
   void operator()(size_t size, bool enable_peer_access) {
@@ -37,6 +43,8 @@ class MemcpyDtoDAsyncBenchmark : public Benchmark<MemcpyDtoDAsyncBenchmark> {
         REQUIRE(can_access_peer);
       }
       HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));
+    } else {
+      dst_device = 0;
     }
 
     LinearAllocGuard<int> src_allocation(LinearAllocs::hipMalloc, size);
@@ -62,6 +70,26 @@ static void RunBenchmark(size_t size, bool enable_peer_access=false) {
   benchmark.Run(size, enable_peer_access);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpyDtoDAsync` from Device to Device with peer access enabled:
+ *    -# Allocation size
+ *      - Small: 4 KB
+ *      - Medium: 4 MB
+ *      - Large: 16 MB
+ *    -# Allocation type
+ *      - Source: device malloc
+ *      - Destination: device malloc
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpyDtoDAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - Multi-device
+ *  - Device supports Peer-to-Peer access
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpyDtoDAsync_PeerAccessEnabled") {
   if (HipTest::getDeviceCount() < 2) {
     HipTest::HIP_SKIP_TEST("This test requires 2 GPUs. Skipping.");
@@ -71,11 +99,25 @@ TEST_CASE("Performance_hipMemcpyDtoDAsync_PeerAccessEnabled") {
   RunBenchmark(allocation_size, true);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpyDtoD` from Device to Device with peer access disabled:
+ *    -# Allocation size
+ *      - Small: 4 KB
+ *      - Medium: 4 MB
+ *      - Large: 16 MB
+ *    -# Allocation type
+ *      - Source: device malloc
+ *      - Destination: device malloc
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpyDtoDAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpyDtoDAsync_PeerAccessDisabled") {
-  if (HipTest::getDeviceCount() < 2) {
-    HipTest::HIP_SKIP_TEST("This test requires 2 GPUs. Skipping.");
-    return;
-  }
   const auto allocation_size = GENERATE(4_KB, 4_MB, 16_MB);
   RunBenchmark(allocation_size);
 }

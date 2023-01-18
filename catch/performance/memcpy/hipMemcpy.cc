@@ -20,6 +20,13 @@ THE SOFTWARE.
 #include <performance_common.hh>
 #include "memcpy_performance_common.hh"
 
+/**
+ * @addtogroup memcpy memcpy
+ * @{
+ * @ingroup PerformanceTest
+ * Contains performance tests for all memcpy HIP APIs.
+ */
+
 class MemcpyBenchmark : public Benchmark<MemcpyBenchmark> {
  public:
   void operator()(LinearAllocs dst_allocation_type, LinearAllocs src_allocation_type, size_t size,
@@ -70,6 +77,24 @@ static void RunBenchmark(LinearAllocs dst_allocation_type, LinearAllocs src_allo
   benchmark.Run(dst_allocation_type, src_allocation_type, size, kind, enable_peer_access);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpy` from Device to Host:
+ *    -# Allocation size
+ *      - Small: 4 KB
+ *      - Medium: 4 MB
+ *      - Large: 16 MB
+ *    -# Allocation type
+ *      - Source: device malloc
+ *      - Destination: host pinned and pageable
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpy.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpy_DeviceToHost") {
   const auto allocation_size = GENERATE(4_KB, 4_MB, 16_MB);
   const auto src_allocation_type = LinearAllocs::hipMalloc;
@@ -77,6 +102,24 @@ TEST_CASE("Performance_hipMemcpy_DeviceToHost") {
   RunBenchmark(dst_allocation_type, src_allocation_type, allocation_size, hipMemcpyDeviceToHost);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpy` from Host to Device:
+ *    -# Allocation size
+ *      - Small: 4 KB
+ *      - Medium: 4 MB
+ *      - Large: 16 MB
+ *    -# Allocation type
+ *      - Source: host pinned and pageable
+ *      - Destination: device malloc
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpy.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpy_HostToDevice") {
   const auto allocation_size = GENERATE(4_KB, 4_MB, 16_MB);
   const auto src_allocation_type = GENERATE(LinearAllocs::malloc, LinearAllocs::hipHostMalloc);
@@ -84,6 +127,24 @@ TEST_CASE("Performance_hipMemcpy_HostToDevice") {
   RunBenchmark(dst_allocation_type, src_allocation_type, allocation_size, hipMemcpyHostToDevice);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpy` from Host to Host:
+ *    -# Allocation size
+ *      - Small: 4 KB
+ *      - Medium: 4 MB
+ *      - Large: 16 MB
+ *    -# Allocation type
+ *      - Source: host pinned and pageable
+ *      - Destination: host pinned and pageable
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpy.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpy_HostToHost") {
   const auto allocation_size = GENERATE(4_KB, 4_MB, 16_MB);
   const auto src_allocation_type = GENERATE(LinearAllocs::malloc, LinearAllocs::hipHostMalloc);
@@ -91,6 +152,26 @@ TEST_CASE("Performance_hipMemcpy_HostToHost") {
   RunBenchmark(dst_allocation_type, src_allocation_type, allocation_size, hipMemcpyHostToHost);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpy` from Device to Device with peer access enabled:
+ *    -# Allocation size
+ *      - Small: 4 KB
+ *      - Medium: 4 MB
+ *      - Large: 16 MB
+ *    -# Allocation type
+ *      - Source: device malloc
+ *      - Destination: device malloc
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpy.cc
+ * Test requirements
+ * ------------------------
+ *  - Multi-device
+ *  - Device supports Peer-to-Peer access
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpy_DeviceToDevice_EnablePeerAccess") {
   if (HipTest::getDeviceCount() < 2) {
     HipTest::HIP_SKIP_TEST("This test requires 2 GPUs. Skipping.");
@@ -102,6 +183,24 @@ TEST_CASE("Performance_hipMemcpy_DeviceToDevice_EnablePeerAccess") {
   RunBenchmark(dst_allocation_type, src_allocation_type, allocation_size, hipMemcpyDeviceToDevice, true);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpy` from Device to Device with peer access disabled:
+ *    -# Allocation size
+ *      - Small: 4 KB
+ *      - Medium: 4 MB
+ *      - Large: 16 MB
+ *    -# Allocation type
+ *      - Source: device malloc
+ *      - Destination: device malloc
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpy.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpy_DeviceToDevice_DisablePeerAccess") {
   const auto allocation_size = GENERATE(4_KB, 4_MB, 16_MB);
   const auto src_allocation_type = LinearAllocs::hipMalloc;

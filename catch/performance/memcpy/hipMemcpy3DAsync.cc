@@ -20,6 +20,12 @@ THE SOFTWARE.
 #include <performance_common.hh>
 #include "memcpy_performance_common.hh"
 
+/**
+ * @addtogroup memcpy memcpy
+ * @{
+ * @ingroup PerformanceTest
+ */
+
 class Memcpy3DAsyncBenchmark : public Benchmark<Memcpy3DAsyncBenchmark> {
  public:
   void operator()(const hipExtent extent, hipMemcpyKind kind, bool enable_peer_access) {
@@ -111,26 +117,101 @@ static void RunBenchmark(const hipExtent extent, hipMemcpyKind kind, bool enable
   benchmark.Run(extent, kind, enable_peer_access);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpy3DAsync` from Device to Host:
+ *    -# Allocation size
+ *      - Small: 4 KB x 16 B x 4 B
+ *      - Medium: 4 MB x 16 B x 4 B
+ *      - Large: 16 MB x 16 B x 4 B
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpy3DAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpy3DAsync_DeviceToHost") {
   const auto width = GENERATE(4_KB, 4_MB, 16_MB);
   RunBenchmark(make_hipExtent(width, 16, 4), hipMemcpyDeviceToHost);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpy3DAsync` from Host to Device:
+ *    -# Allocation size
+ *      - Small: 4 KB x 16 B x 4 B
+ *      - Medium: 4 MB x 16 B x 4 B
+ *      - Large: 16 MB x 16 B x 4 B
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpy3DAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpy3DAsync_HostToDevice") {
   const auto width = GENERATE(4_KB, 4_MB, 16_MB);
   RunBenchmark(make_hipExtent(width, 16, 4), hipMemcpyHostToDevice);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpy3DAsync` from Host to Host:
+ *    -# Allocation size
+ *      - Small: 4 KB x 16 B x 4 B
+ *      - Medium: 4 MB x 16 B x 4 B
+ *      - Large: 16 MB x 16 B x 4 B
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpy3DAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpy3DAsync_HostToHost") {
   const auto width = GENERATE(4_KB, 4_MB, 16_MB);
   RunBenchmark(make_hipExtent(width, 16, 4), hipMemcpyHostToHost);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpy3DAsync` from Device to Device with peer access disabled:
+ *    -# Allocation size
+ *      - Small: 4 KB x 16 B x 4 B
+ *      - Medium: 4 MB x 16 B x 4 B
+ *      - Large: 16 MB x 16 B x 4 B
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpy3DAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpy3DAsync_DeviceToDevice_DisablePeerAccess") {
   const auto width = GENERATE(4_KB, 4_MB, 16_MB);
   RunBenchmark(make_hipExtent(width, 16, 4), hipMemcpyDeviceToDevice);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemcpy3DAsync` from Device to Device with peer access enabled:
+ *    -# Allocation size
+ *      - Small: 4 KB x 16 B x 4 B
+ *      - Medium: 4 MB x 16 B x 4 B
+ *      - Large: 16 MB x 16 B x 4 B
+ * Test source
+ * ------------------------
+ *  - unit/memcpy/hipMemcpy3DAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemcpy3DAsync_DeviceToDevice_EnablePeerAccess") {
   if (HipTest::getDeviceCount() < 2) {
     HipTest::HIP_SKIP_TEST("This test requires 2 GPUs. Skipping.");

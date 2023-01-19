@@ -333,21 +333,6 @@ function(hip_add_exe_to_target_compile_time_detection)
   catch_discover_tests("${_EXE_NAME_LIST}" "${_NAME}" PROPERTIES  SKIP_REGULAR_EXPRESSION "HIP_SKIP_THIS_TEST")
 endfunction()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ###############################################################################
 # current staging
 # function to be called by all tests

@@ -114,7 +114,7 @@ static void RunBenchmark(const hipExtent extent, hipMemcpyKind kind, bool enable
  *      - Large: 16 MB x 16 B x 4 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy3D.cc
+ *  - performance/memcpy/hipMemcpy3D.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -134,7 +134,7 @@ TEST_CASE("Performance_hipMemcpy3D_DeviceToHost") {
  *      - Large: 16 MB x 16 B x 4 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy3D.cc
+ *  - performance/memcpy/hipMemcpy3D.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -154,7 +154,7 @@ TEST_CASE("Performance_hipMemcpy3D_HostToDevice") {
  *      - Large: 16 MB x 16 B x 4 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy3D.cc
+ *  - performance/memcpy/hipMemcpy3D.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -174,7 +174,7 @@ TEST_CASE("Performance_hipMemcpy3D_HostToHost") {
  *      - Large: 16 MB x 16 B x 4 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy3D.cc
+ *  - performance/memcpy/hipMemcpy3D.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -194,7 +194,7 @@ TEST_CASE("Performance_hipMemcpy3D_DeviceToDevice_DisablePeerAccess") {
  *      - Large: 16 MB x 16 B x 4 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy3D.cc
+ *  - performance/memcpy/hipMemcpy3D.cc
  * Test requirements
  * ------------------------
  *  - Multi-device

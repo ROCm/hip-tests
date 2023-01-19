@@ -76,7 +76,7 @@ static void RunBenchmark(size_t size, bool enable_peer_access=false) {
  *      - Destination: device malloc
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpyDtoD.cc
+ *  - performance/memcpy/hipMemcpyDtoD.cc
  * Test requirements
  * ------------------------
  *  - Multi-device
@@ -105,7 +105,7 @@ TEST_CASE("Performance_hipMemcpyDtoD_PeerAccessEnabled") {
  *      - Destination: device malloc
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpyDtoD.cc
+ *  - performance/memcpy/hipMemcpyDtoD.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2

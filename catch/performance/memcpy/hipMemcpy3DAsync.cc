@@ -125,7 +125,7 @@ static void RunBenchmark(const hipExtent extent, hipMemcpyKind kind, bool enable
  *      - Large: 16 MB x 16 B x 4 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy3DAsync.cc
+ *  - performance/memcpy/hipMemcpy3DAsync.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -145,7 +145,7 @@ TEST_CASE("Performance_hipMemcpy3DAsync_DeviceToHost") {
  *      - Large: 16 MB x 16 B x 4 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy3DAsync.cc
+ *  - performance/memcpy/hipMemcpy3DAsync.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -165,7 +165,7 @@ TEST_CASE("Performance_hipMemcpy3DAsync_HostToDevice") {
  *      - Large: 16 MB x 16 B x 4 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy3DAsync.cc
+ *  - performance/memcpy/hipMemcpy3DAsync.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -185,7 +185,7 @@ TEST_CASE("Performance_hipMemcpy3DAsync_HostToHost") {
  *      - Large: 16 MB x 16 B x 4 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy3DAsync.cc
+ *  - performance/memcpy/hipMemcpy3DAsync.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -205,7 +205,7 @@ TEST_CASE("Performance_hipMemcpy3DAsync_DeviceToDevice_DisablePeerAccess") {
  *      - Large: 16 MB x 16 B x 4 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy3DAsync.cc
+ *  - performance/memcpy/hipMemcpy3DAsync.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2

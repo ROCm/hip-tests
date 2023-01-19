@@ -111,7 +111,7 @@ static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind, bool e
  *      - Large: 16 MB x 32 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy2DAsync.cc
+ *  - performance/memcpy/hipMemcpy2DAsync.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -131,7 +131,7 @@ TEST_CASE("Performance_hipMemcpy2DAsync_DeviceToHost") {
  *      - Large: 16 MB x 32 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy2DAsync.cc
+ *  - performance/memcpy/hipMemcpy2DAsync.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -151,7 +151,7 @@ TEST_CASE("Performance_hipMemcpy2DAsync_HostToDevice") {
  *      - Large: 16 MB x 32 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy2DAsync.cc
+ *  - performance/memcpy/hipMemcpy2DAsync.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -171,7 +171,7 @@ TEST_CASE("Performance_hipMemcpy2DAsync_HostToHost") {
  *      - Large: 16 MB x 32 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy2DAsync.cc
+ *  - performance/memcpy/hipMemcpy2DAsync.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -191,7 +191,7 @@ TEST_CASE("Performance_hipMemcpy2DAsync_DeviceToDevice_DisablePeerAccess") {
  *      - Large: 16 MB x 32 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy2DAsync.cc
+ *  - performance/memcpy/hipMemcpy2DAsync.cc
  * Test requirements
  * ------------------------
  *  - Multi-device

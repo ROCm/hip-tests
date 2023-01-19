@@ -106,7 +106,7 @@ static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind,
  *      - Large: 16 MB x 32 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy2D.cc
+ *  - performance/memcpy/hipMemcpy2D.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -126,7 +126,7 @@ TEST_CASE("Performance_hipMemcpy2D_DeviceToHost") {
  *      - Large: 16 MB x 32 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy2D.cc
+ *  - performance/memcpy/hipMemcpy2D.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -146,7 +146,7 @@ TEST_CASE("Performance_hipMemcpy2D_HostToDevice") {
  *      - Large: 16 MB x 32 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy2D.cc
+ *  - performance/memcpy/hipMemcpy2D.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -166,7 +166,7 @@ TEST_CASE("Performance_hipMemcpy2D_HostToHost") {
  *      - Large: 16 MB x 32 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy2D.cc
+ *  - performance/memcpy/hipMemcpy2D.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -186,7 +186,7 @@ TEST_CASE("Performance_hipMemcpy2D_DeviceToDevice_DisablePeerAccess") {
  *      - Large: 16 MB x 32 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy2D.cc
+ *  - performance/memcpy/hipMemcpy2D.cc
  * Test requirements
  * ------------------------
  *  - Multi-device

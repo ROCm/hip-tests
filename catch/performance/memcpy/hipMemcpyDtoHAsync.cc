@@ -64,7 +64,7 @@ static void RunBenchmark(LinearAllocs host_allocation_type, LinearAllocs device_
  *      - Destination: host pinned and pageable
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpyDtoHAsync.cc
+ *  - performance/memcpy/hipMemcpyDtoHAsync.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2

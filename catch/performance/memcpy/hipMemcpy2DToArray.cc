@@ -87,7 +87,7 @@ static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind,
  *      - Large: 16 KB x 32 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy2DToArray.cc
+ *  - performance/memcpy/hipMemcpy2DToArray.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -107,7 +107,7 @@ TEST_CASE("Performance_hipMemcpy2DToArray_HostToDevice") {
  *      - Large: 16 KB x 32 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy2DToArray.cc
+ *  - performance/memcpy/hipMemcpy2DToArray.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -127,7 +127,7 @@ TEST_CASE("Performance_hipMemcpy2DToArray_DeviceToDevice_DisablePeerAccess") {
  *      - Large: 16 KB x 32 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy2DToArray.cc
+ *  - performance/memcpy/hipMemcpy2DToArray.cc
  * Test requirements
  * ------------------------
  *  - Multi-device

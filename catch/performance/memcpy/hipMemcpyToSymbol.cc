@@ -51,7 +51,7 @@ static void RunBenchmark(const void* source, size_t size=1, size_t offset=0) {
  *  - Utilizes sigular integer values.
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpyToSymbol.cc
+ *  - performance/memcpy/hipMemcpyToSymbol.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -71,7 +71,7 @@ TEST_CASE("Performance_hipMemcpyToSymbol_SingularValue") {
  *    - Large: 1 MB
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpyToSymbol.cc
+ *  - performance/memcpy/hipMemcpyToSymbol.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -95,7 +95,7 @@ TEST_CASE("Performance_hipMemcpyToSymbol_ArrayValue") {
  *  - Offset: 0 and size/2
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpyToSymbol.cc
+ *  - performance/memcpy/hipMemcpyToSymbol.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2

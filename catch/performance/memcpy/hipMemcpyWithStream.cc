@@ -91,7 +91,7 @@ static void RunBenchmark(LinearAllocs dst_allocation_type, LinearAllocs src_allo
  *      - Destination: host pinned and pageable
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpyWithStream.cc
+ *  - performance/memcpy/hipMemcpyWithStream.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -116,7 +116,7 @@ TEST_CASE("Performance_hipMemcpyWithStream_DeviceToHost") {
  *      - Destination: device malloc
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpyWithStream.cc
+ *  - performance/memcpy/hipMemcpyWithStream.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -141,7 +141,7 @@ TEST_CASE("Performance_hipMemcpyWithStream_HostToDevice") {
  *      - Destination: host pinned and pageable
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpyWithStream.cc
+ *  - performance/memcpy/hipMemcpyWithStream.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -166,7 +166,7 @@ TEST_CASE("Performance_hipMemcpyWithStream_HostToHost") {
  *      - Destination: device malloc
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpyWithStream.cc
+ *  - performance/memcpy/hipMemcpyWithStream.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -191,7 +191,7 @@ TEST_CASE("Performance_hipMemcpyWithStream_DeviceToDevice_DisablePeerAccess") {
  *      - Destination: device malloc
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpyWithStream.cc
+ *  - performance/memcpy/hipMemcpyWithStream.cc
  * Test requirements
  * ------------------------
  *  - Multi-device

@@ -59,7 +59,7 @@ static void RunBenchmark(LinearAllocs host_allocation_type, LinearAllocs device_
  *      - Destination: device malloc
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpyHtoD.cc
+ *  - performance/memcpy/hipMemcpyHtoD.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2

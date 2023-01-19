@@ -92,7 +92,7 @@ static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind,
  *      - Large: 16 KB x 32 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy2DFromArrayAsync.cc
+ *  - performance/memcpy/hipMemcpy2DFromArrayAsync.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -112,7 +112,7 @@ TEST_CASE("Performance_hipMemcpy2DFromArrayAsync_DeviceToHost") {
  *      - Large: 16 KB x 32 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy2DFromArrayAsync.cc
+ *  - performance/memcpy/hipMemcpy2DFromArrayAsync.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -132,7 +132,7 @@ TEST_CASE("Performance_hipMemcpy2DFromArrayAsync_DeviceToDevice_DisablePeerAcces
  *      - Large: 16 KB x 32 B
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpy2DFromArrayAsync.cc
+ *  - performance/memcpy/hipMemcpy2DFromArrayAsync.cc
  * Test requirements
  * ------------------------
  *  - Multi-device

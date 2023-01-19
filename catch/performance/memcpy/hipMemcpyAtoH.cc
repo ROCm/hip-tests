@@ -60,7 +60,7 @@ static void RunBenchmark(LinearAllocs host_allocation_type, size_t width) {
  *      - Host: host pinned and pageable
  * Test source
  * ------------------------
- *  - unit/memcpy/hipMemcpyAtoH.cc
+ *  - performance/memcpy/hipMemcpyAtoH.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2

@@ -29,18 +29,18 @@ THE SOFTWARE.
 __device__ int counter;
 
 __global__ void waitKernel(int cycles) {
-    int start = wall_clock64();
-    int stop{};
-    do {
-      stop = wall_clock64();
-    } while (stop - start < cycles);
+  int start = wall_clock64();
+  int stop{};
+  do {
+    stop = wall_clock64();
+  } while (stop - start < cycles);
   ++counter;
 }
 
 class WaitKernelLaunchBenchmark : public Benchmark<WaitKernelLaunchBenchmark> {
  public:
   void operator()(int cycles) {
-    TIMED_SECTION(kTimerTypeEvent) {
+    TIMED_SECTION(kTimerTypeCpu) {
       waitKernel<<<1, 1>>>(cycles);
       HIP_CHECK(hipDeviceSynchronize());
     }

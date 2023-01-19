@@ -32,7 +32,7 @@ __global__ void nullKernel() {}
 class NullKernelLaunchBenchmark : public Benchmark<NullKernelLaunchBenchmark> {
  public:
   void operator()() {
-    TIMED_SECTION(kTimerTypeEvent) {
+    TIMED_SECTION(kTimerTypeCpu) {
       nullKernel<<<1, 1>>>();
       HIP_CHECK(hipDeviceSynchronize());
     }

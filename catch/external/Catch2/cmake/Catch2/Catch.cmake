@@ -129,9 +129,6 @@ function(catch_discover_tests_compile_time_detection TARGET TEST_SET)
     "TEST_SPEC;EXTRA_ARGS;PROPERTIES"
     ${ARGN}
   )
-  message("--------------------------------1. Inside discover ${TARGET}")
-  message("--------------------------------2. Inside discover ${TEST_SET}")
-
 
   if(NOT _WORKING_DIRECTORY)
     set(_WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
@@ -333,7 +330,6 @@ function(hip_add_exe_to_target_compile_time_detection)
       break()
     endif()
   endforeach()
-  message("------------------------------------------------AJAY calling discovering tests - ${_EXE_NAME_LIST} ${_NAME}")
   catch_discover_tests("${_EXE_NAME_LIST}" "${_NAME}" PROPERTIES  SKIP_REGULAR_EXPRESSION "HIP_SKIP_THIS_TEST")
 endfunction()
 

@@ -17,19 +17,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
-#include <resource_guards.hh>
+#pragma once
 
-static std::string GetAllocationSectionName(LinearAllocs allocation_type) {
-  switch (allocation_type) {
-    case LinearAllocs::malloc:
-      return "host pageable";
-    case LinearAllocs::hipHostMalloc:
-      return "host pinned";
-    default:
-      return "device malloc";
-  }
-}
+#include <performance_common.hh>
 
 static hip_Memcpy2D CreateMemcpy2DParam(void* dst, size_t dpitch, void* src, size_t spitch,
                                         size_t width, size_t height, hipMemcpyKind kind,

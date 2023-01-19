@@ -100,7 +100,6 @@ static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind, bool e
   std::stringstream section_name{};
   section_name << "size(" << width << ", " << height << ")";
   benchmark.AddSectionName(section_name.str());
-  benchmark.Configure(1000, 100, true);
   benchmark.Run(width, height, kind, enable_peer_access);
 }
 

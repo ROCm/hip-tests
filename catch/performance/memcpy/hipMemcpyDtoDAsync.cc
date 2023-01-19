@@ -66,7 +66,6 @@ static void RunBenchmark(size_t size, bool enable_peer_access=false) {
   std::stringstream section_name{};
   section_name << "size(" << size << ")";
   benchmark.AddSectionName(section_name.str());
-  benchmark.Configure(1000, 100, true);
   benchmark.Run(size, enable_peer_access);
 }
 

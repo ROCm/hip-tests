@@ -77,7 +77,6 @@ static void RunBenchmark(LinearAllocs dst_allocation_type, LinearAllocs src_allo
   section_name << "/" << GetAllocationSectionName(src_allocation_type);
   section_name << "/" << GetAllocationSectionName(dst_allocation_type);
   benchmark.AddSectionName(section_name.str());
-  benchmark.Configure(1000, 100, true);
   benchmark.Run(dst_allocation_type, src_allocation_type, size, kind, enable_peer_access);
 }
 

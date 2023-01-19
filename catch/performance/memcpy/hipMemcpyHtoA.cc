@@ -47,7 +47,6 @@ static void RunBenchmark(LinearAllocs host_allocation_type, size_t width) {
   section_name << "size(" << width << ")";
   section_name << "/" << GetAllocationSectionName(host_allocation_type);
   benchmark.AddSectionName(section_name.str());
-  benchmark.Configure(1000, 100, true);
   benchmark.Run(host_allocation_type, width);
 }
 

@@ -113,7 +113,6 @@ static void RunBenchmark(const hipExtent extent, hipMemcpyKind kind, bool enable
   std::stringstream section_name{};
   section_name << "extent(" << extent.width << ", " << extent.height << ", " << extent.depth << ")";
   benchmark.AddSectionName(section_name.str());
-  benchmark.Configure(1000, 100, true);
   benchmark.Run(extent, kind, enable_peer_access);
 }
 

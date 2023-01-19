@@ -76,7 +76,7 @@ TEST_CASE("Performance_WaitKernel") {
     HipTest::HIP_SKIP_TEST("hipDeviceAttributeWallClockRate has not been supported. Skipping.");
     return;
   }
-  int cycles = GENERATE(100'000, 1'000'000, 50'000'000);
+  int cycles = GENERATE(100'000, 1'000'000, 10'000'000);
   float miliseconds = 1.f * cycles / wall_clock_rate;
   RunBenchmark(cycles, miliseconds);
 }

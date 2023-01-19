@@ -50,9 +50,10 @@ class ExampleBenchmark : public Benchmark<ExampleBenchmark> {
 
 TEST_CASE("Performance_Example") {
   ExampleBenchmark benchmark;
-  benchmark.Configure(50000 /* iterations */, 10000 /* warmups */, true /* progress bar */);
+
+  // to override cmd options
+  // benchmark.Configure(10000 /* iterations */, 1000 /* warmups */);
 
   LinearAllocGuard<void> dst(LinearAllocs::hipMalloc, 4_MB);
-
   benchmark.Run(dst.ptr());
 }

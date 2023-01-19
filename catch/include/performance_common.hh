@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <type_traits>
 #include <vector>
 
+#include <cmd_options.hh>
 #include <hip_test_common.hh>
 
 class Timer {
@@ -97,40 +98,33 @@ class CpuTimer : public Timer {
 
 template <typename Derived> class Benchmark {
  public:
-  Benchmark(size_t iterations = 100, size_t warmups = 10)
-      : iterations_(iterations), warmups_(warmups), progress_bar_(false), display_output_(true) {
+  Benchmark()
+      : iterations_(cmd_options.iterations),
+        warmups_(cmd_options.warmups),
+        display_output_(cmd_options.display),
+        progress_bar_(cmd_options.progress) {
     benchmark_name_ = Catch::getResultCapture().getCurrentTestName();
   }
 
   Benchmark(const Benchmark&) = delete;
   Benchmark& operator=(const Benchmark&) = delete;
 
-  void Configure(size_t iterations = 100, size_t warmups = 10, bool progress_bar = false) {
+  void Configure(size_t iterations, size_t warmups) {
     iterations_ = iterations;
     warmups_ = warmups;
-    progress_bar_ = progress_bar;
   }
 
-  void AddSectionName(const std::string& section_name) {
-    benchmark_name_ += "/" + section_name;
-  }
+  void AddSectionName(const std::string& section_name) { benchmark_name_ += "/" + section_name; }
 
-  void SetDisplayOutput(bool display_output) {
-    display_output_ = display_output;
-  }
+  template <typename... Args> std::tuple<float, float, float, float> Run(Args&&... args) {
+    AddSectionName(std::to_string(iterations_));
+    AddSectionName(std::to_string(warmups_));
 
-  template <typename... Args> float Run(Args&&... args) {
-    if (display_output_) {
-      std::cout << std::setw(110) << std::left << benchmark_name_ << std::flush;
-    }
     auto& derived = static_cast<Derived&>(*this);
 
     current_ = -1;  // -1 represents warmup
     for (size_t i = 0u; i < warmups_; ++i) {
-      if (progress_bar_ && display_output_) {
-        std::cout << "\r" << std::setw(110) << std::left << benchmark_name_ << "\t|\t" << "warmup: [" 
-            << static_cast<int>(100.f*(i+1)/warmups_) << "%]" << std::flush;
-      }
+      PrintProgress("warmup", static_cast<int>(100.f * (i + 1) / warmups_));
       derived(args...);
     }
     time_ = .0;
@@ -139,22 +133,26 @@ template <typename Derived> class Benchmark {
     samples.reserve(iterations_);
 
     for (current_ = 0; current_ < iterations_; ++current_) {
-      if (progress_bar_ && display_output_) {
-        std::cout << "\r" << std::setw(110) << std::left << benchmark_name_ << "\t|\t" << "measurement: ["
-            << static_cast<int>(100.f*(current_+1)/iterations_) << "%]" << std::flush;
-      }
+      PrintProgress("measurement", static_cast<int>(100.f * (current_ + 1) / iterations_));
       derived(args...);
       samples.push_back(time_);
       time_ = .0;
     }
 
-    float average_time = std::reduce(cbegin(samples), cend(samples)) / samples.size();
+    float sum = std::reduce(cbegin(samples), cend(samples));
+    float mean = sum / samples.size();
 
-    if (display_output_) {
-      std::cout << "\r" << std::setw(110) << std::left << benchmark_name_;
-      std::cout << "\t|\t" << "Average time: " << average_time << " ms" << std::endl;
-    }
-    return average_time;
+    float deviation =
+        std::reduce(cbegin(samples), cend(samples), .0,
+                    [mean](float sum, float next) { return sum + std::pow(next - mean, 2); });
+    deviation = sqrt(deviation / samples.size());
+
+    float best = *std::min_element(cbegin(samples), cend(samples));
+    float worst = *std::max_element(cbegin(samples), cend(samples));
+
+    PrintStats(mean, deviation, best, worst);
+
+    return {mean, deviation, best, worst};
   }
 
  protected:
@@ -175,13 +173,31 @@ template <typename Derived> class Benchmark {
   ssize_t current() const { return current_; }
 
  private:
+  std::string benchmark_name_;
   float time_;
   size_t iterations_;
   size_t warmups_;
   ssize_t current_;
   bool display_output_;
   bool progress_bar_;
-  std::string benchmark_name_;
+
+  void Print(const std::string& out = "") {
+    if (!display_output_) return;
+    std::cout << "\r" << std::setw(110) << std::left << benchmark_name_ << "\t|\t" << out
+              << std::flush;
+  }
+
+  void PrintProgress(const std::string& name, int progress) {
+    if (!(display_output_ && progress_bar_)) return;
+    Print(name + ": [" + std::to_string(progress) + "%]");
+  }
+
+  void PrintStats(float mean, float deviation, float best, float worst) {
+    if (!display_output_) return;
+    Print("Average time: " + std::to_string(mean) + " ms, Standard deviation: " +
+          std::to_string(deviation) + " ms, Fastest: " + std::to_string(best) +
+          " ms, Slowest: " + std::to_string(worst) + " ms\n");
+  }
 };
 
 constexpr bool kTimerTypeCpu = false;

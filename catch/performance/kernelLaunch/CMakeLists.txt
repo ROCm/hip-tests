@@ -18,5 +18,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-add_subdirectory(memcpy)
-add_subdirectory(kernelLaunch)
+set(TEST_SRC
+    nullKernel.cc
+    waitKernel.cc
+)
+
+hip_add_exe_to_target(NAME KernelLaunchPerformance
+                      TEST_SRC ${TEST_SRC}
+                      TEST_TARGET_NAME build_tests
+                      COMPILE_OPTIONS -std=c++17)

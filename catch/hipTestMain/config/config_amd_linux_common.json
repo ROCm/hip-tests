@@ -14,6 +14,10 @@
 	   "Unit_hipInit_Negative",
 	   "Unit_hipMemset_Negative_OutOfBoundsPtr",
 	   "Unit_hipDeviceReset_Positive_Basic",
-	   "Unit_hipDeviceReset_Positive_Threaded"
+	   "Unit_hipDeviceReset_Positive_Threaded",
+	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep",
+	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ClonedGrph",
+	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ChldNode",
+	   "Unit_hipMemGetAddressRange_Negative"
 	]
 }

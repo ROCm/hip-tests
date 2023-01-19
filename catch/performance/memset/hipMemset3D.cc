@@ -24,6 +24,12 @@ THE SOFTWARE.
 #include <performance_common.hh>
 #include <resource_guards.hh>
 
+/**
+ * @addtogroup memset memset
+ * @{
+ * @ingroup PerformanceTest
+ */
+
 class Memset3DBenchmark : public Benchmark<Memset3DBenchmark> {
  public:
   void operator()(size_t width, size_t height, size_t depth) {
@@ -35,10 +41,26 @@ class Memset3DBenchmark : public Benchmark<Memset3DBenchmark> {
 
 static void RunBenchmark(size_t width, size_t height, size_t depth) {
   Memset3DBenchmark benchmark;
-  benchmark.Configure(1e3, 1e2);
+  benchmark.AddSectionName("(" + std::to_string(width) + ", " + std::to_string(height) + ", " +
+                           std::to_string(depth) + ")");
   benchmark.Run(width, height, depth);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemset3D`:
+ *    -# Allocation size
+ *      - Small: 4 KB x 16 B x 4 B
+ *      - Medium: 4 MB x 16 B x 4 B
+ *      - Large: 16 MB x 16 B x 4 B
+ * Test source
+ * ------------------------
+ *  - performance/memset/hipMemset3D.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemset3D") {
   const auto width = GENERATE(4_KB, 4_MB, 16_MB);
   RunBenchmark(width, 16, 4);

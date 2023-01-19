@@ -24,6 +24,12 @@ THE SOFTWARE.
 #include <performance_common.hh>
 #include <resource_guards.hh>
 
+/**
+ * @addtogroup memset memset
+ * @{
+ * @ingroup PerformanceTest
+ */
+
 class MemsetBenchmark : public Benchmark<MemsetBenchmark> {
  public:
   void operator()(LinearAllocs allocation_type, size_t size) {
@@ -35,21 +41,33 @@ class MemsetBenchmark : public Benchmark<MemsetBenchmark> {
 
 static void RunBenchmark(LinearAllocs allocation_type, size_t size) {
   MemsetBenchmark benchmark;
-  benchmark.Configure(1e3, 1e2);
+  benchmark.AddSectionName(std::to_string(size));
+  benchmark.AddSectionName(GetAllocationSectionName(allocation_type));
   benchmark.Run(allocation_type, size);
 }
 
-TEST_CASE("Performance_hipMemset_Device") {
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemset`:
+ *    -# Allocation size
+ *      - Small: 4 KB
+ *      - Medium: 4 MB
+ *      - Large: 16 MB
+ *    -# Allocation type
+ *      - device
+ *      - host
+ *      - managed
+ * Test source
+ * ------------------------
+ *  - performance/memset/hipMemset.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Performance_hipMemset") {
   const auto size = GENERATE(4_KB, 4_MB, 16_MB);
-  RunBenchmark(LinearAllocs::hipMalloc, size);
-}
-
-TEST_CASE("Performance_hipMemset_Host") {
-  const auto size = GENERATE(4_KB, 4_MB, 16_MB);
-  RunBenchmark(LinearAllocs::hipHostMalloc, size);
-}
-
-TEST_CASE("Performance_hipMemset_Managed") {
-  const auto size = GENERATE(4_KB, 4_MB, 16_MB);
-  RunBenchmark(LinearAllocs::hipMallocManaged, size);
+  const auto allocation_type = GENERATE(LinearAllocs::hipMalloc, LinearAllocs::hipHostMalloc,
+                                        LinearAllocs::hipMallocManaged);
+  RunBenchmark(allocation_type, size);
 }

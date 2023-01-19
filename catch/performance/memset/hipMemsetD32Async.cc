@@ -24,6 +24,12 @@ THE SOFTWARE.
 #include <performance_common.hh>
 #include <resource_guards.hh>
 
+/**
+ * @addtogroup memset memset
+ * @{
+ * @ingroup PerformanceTest
+ */
+
 class MemsetD32AsyncBenchmark : public Benchmark<MemsetD32AsyncBenchmark> {
  public:
   void operator()(LinearAllocs allocation_type, size_t size) {
@@ -38,21 +44,33 @@ class MemsetD32AsyncBenchmark : public Benchmark<MemsetD32AsyncBenchmark> {
 
 static void RunBenchmark(LinearAllocs allocation_type, size_t size) {
   MemsetD32AsyncBenchmark benchmark;
-  benchmark.Configure(1e3, 1e2);
+  benchmark.AddSectionName(std::to_string(size));
+  benchmark.AddSectionName(GetAllocationSectionName(allocation_type));
   benchmark.Run(allocation_type, size);
 }
 
-TEST_CASE("Performance_hipMemsetD32Async_Device") {
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemsetD32Async`:
+ *    -# Allocation size
+ *      - Small: 4 KB
+ *      - Medium: 4 MB
+ *      - Large: 16 MB
+ *    -# Allocation type
+ *      - device
+ *      - host
+ *      - managed
+ * Test source
+ * ------------------------
+ *  - performance/memset/hipMemsetD32Async.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Performance_hipMemsetD32Async") {
   const auto size = GENERATE(4_KB, 4_MB, 16_MB);
-  RunBenchmark(LinearAllocs::hipMalloc, size);
-}
-
-TEST_CASE("Performance_hipMemsetD32Async_Host") {
-  const auto size = GENERATE(4_KB, 4_MB, 16_MB);
-  RunBenchmark(LinearAllocs::hipHostMalloc, size);
-}
-
-TEST_CASE("Performance_hipMemsetD32Async_Managed") {
-  const auto size = GENERATE(4_KB, 4_MB, 16_MB);
-  RunBenchmark(LinearAllocs::hipMallocManaged, size);
+  const auto allocation_type = GENERATE(LinearAllocs::hipMalloc, LinearAllocs::hipHostMalloc,
+                                        LinearAllocs::hipMallocManaged);
+  RunBenchmark(allocation_type, size);
 }

@@ -20,6 +20,13 @@ THE SOFTWARE.
 #include <performance_common.hh>
 #include <hip_test_common.hh>
 
+/**
+ * @addtogroup kernelLaunch kernel launch
+ * @{
+ * @ingroup PerformanceTest
+ * Contains performance tests for kernel launch overhead benchmarking.
+ */
+
 __global__ void nullKernel() {}
 
 class NullKernelLaunchBenchmark : public Benchmark<NullKernelLaunchBenchmark> {
@@ -37,6 +44,17 @@ static void RunBenchmark() {
   benchmark.Run();
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Calls an empty kernel with triple chevron annotation.
+ * Test source
+ * ------------------------
+ *  - unit/kernelLaunch/nullKernel.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_NullKernel") {
   RunBenchmark();
 }

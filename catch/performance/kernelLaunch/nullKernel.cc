@@ -50,7 +50,7 @@ static void RunBenchmark() {
  *  - Calls an empty kernel with triple chevron annotation.
  * Test source
  * ------------------------
- *  - unit/kernelLaunch/nullKernel.cc
+ *  - performance/kernelLaunch/nullKernel.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2

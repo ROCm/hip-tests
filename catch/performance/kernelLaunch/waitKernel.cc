@@ -63,7 +63,7 @@ static void RunBenchmark(int cycles, float wait_time_in_ms) {
  *      - Large: 50.000.000 ticks
  * Test source
  * ------------------------
- *  - unit/kernelLaunch/waitKernel.cc
+ *  - performance/kernelLaunch/waitKernel.cc
  * Test requirements
  * ------------------------
  *  - Device supports wall clock rate

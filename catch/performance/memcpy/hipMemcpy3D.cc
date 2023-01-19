@@ -99,9 +99,8 @@ class Memcpy3DBenchmark : public Benchmark<Memcpy3DBenchmark> {
 
 static void RunBenchmark(const hipExtent extent, hipMemcpyKind kind, bool enable_peer_access=false) {
   Memcpy3DBenchmark benchmark;
-  std::stringstream section_name{};
-  section_name << "extent(" << extent.width << ", " << extent.height << ", " << extent.depth << ")";
-  benchmark.AddSectionName(section_name.str());
+  benchmark.AddSectionName("(" + std::to_string(extent.width) + ", " + std::to_string(extent.height)
+                           + ", " + std::to_string(extent.depth) + ")");
   benchmark.Run(extent, kind, enable_peer_access);
 }
 

@@ -45,10 +45,8 @@ class MemcpyHtoDAsyncBenchmark : public Benchmark<MemcpyHtoDAsyncBenchmark> {
 
 static void RunBenchmark(LinearAllocs host_allocation_type, LinearAllocs device_allocation_type, size_t size) {
   MemcpyHtoDAsyncBenchmark benchmark;
-  std::stringstream section_name{};
-  section_name << "size(" << size << ")";
-  section_name << "/" << GetAllocationSectionName(host_allocation_type);
-  benchmark.AddSectionName(section_name.str());
+  benchmark.AddSectionName(std::to_string(size));
+  benchmark.AddSectionName(GetAllocationSectionName(host_allocation_type));
   benchmark.Run(host_allocation_type, device_allocation_type, size);
 }
 

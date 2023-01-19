@@ -59,9 +59,7 @@ class MemcpyDtoDBenchmark : public Benchmark<MemcpyDtoDBenchmark> {
 
 static void RunBenchmark(size_t size, bool enable_peer_access=false) {
   MemcpyDtoDBenchmark benchmark;
-  std::stringstream section_name{};
-  section_name << "size(" << size << ")";
-  benchmark.AddSectionName(section_name.str());
+  benchmark.AddSectionName(std::to_string(size));
   benchmark.Run(size, enable_peer_access);
 }
 

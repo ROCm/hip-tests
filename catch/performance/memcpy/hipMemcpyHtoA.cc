@@ -43,10 +43,8 @@ class MemcpyHtoABenchmark : public Benchmark<MemcpyHtoABenchmark> {
 
 static void RunBenchmark(LinearAllocs host_allocation_type, size_t width) {
   MemcpyHtoABenchmark benchmark;
-  std::stringstream section_name{};
-  section_name << "size(" << width << ")";
-  section_name << "/" << GetAllocationSectionName(host_allocation_type);
-  benchmark.AddSectionName(section_name.str());
+  benchmark.AddSectionName(std::to_string(width));
+  benchmark.AddSectionName(GetAllocationSectionName(host_allocation_type));
   benchmark.Run(host_allocation_type, width);
 }
 

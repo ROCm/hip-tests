@@ -78,9 +78,7 @@ class Memcpy2DToArrayAsyncBenchmark : public Benchmark<Memcpy2DToArrayAsyncBench
 static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind,
                          bool enable_peer_access=false) {
   Memcpy2DToArrayAsyncBenchmark benchmark;
-  std::stringstream section_name{};
-  section_name << "size(" << width << ", " << height << ")";
-  benchmark.AddSectionName(section_name.str());
+  benchmark.AddSectionName("(" + std::to_string(width) + ", " + std::to_string(height) + ")");
   benchmark.Run(width, height, kind, enable_peer_access);
 }
 

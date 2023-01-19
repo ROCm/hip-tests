@@ -68,11 +68,9 @@ class MemcpyBenchmark : public Benchmark<MemcpyBenchmark> {
 static void RunBenchmark(LinearAllocs dst_allocation_type, LinearAllocs src_allocation_type,
                          size_t size, hipMemcpyKind kind, bool enable_peer_access=false) {
   MemcpyBenchmark benchmark;
-  std::stringstream section_name{};
-  section_name << "size(" << size << ")";
-  section_name << "/" << GetAllocationSectionName(src_allocation_type);
-  section_name << "/" << GetAllocationSectionName(dst_allocation_type);
-  benchmark.AddSectionName(section_name.str());
+  benchmark.AddSectionName(std::to_string(size));
+  benchmark.AddSectionName(GetAllocationSectionName(src_allocation_type));
+  benchmark.AddSectionName(GetAllocationSectionName(dst_allocation_type));
   benchmark.Run(dst_allocation_type, src_allocation_type, size, kind, enable_peer_access);
 }
 

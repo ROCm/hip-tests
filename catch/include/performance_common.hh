@@ -30,6 +30,7 @@ THE SOFTWARE.
 
 #include <cmd_options.hh>
 #include <hip_test_common.hh>
+#include <resource_guards.hh>
 
 class Timer {
  public:
@@ -211,3 +212,18 @@ constexpr size_t operator"" _KB(unsigned long long int kb) { return kb << 10; }
 constexpr size_t operator"" _MB(unsigned long long int mb) { return mb << 20; }
 
 constexpr size_t operator"" _GB(unsigned long long int gb) { return gb << 30; }
+
+static std::string GetAllocationSectionName(LinearAllocs allocation_type) {
+  switch (allocation_type) {
+    case LinearAllocs::malloc:
+      return "host pageable";
+    case LinearAllocs::hipHostMalloc:
+      return "host pinned";
+    case LinearAllocs::hipMalloc:
+      return "device malloc";
+    case LinearAllocs::hipMallocManaged:
+      return "managed";
+    default:
+      return "unknown alloc type";
+  }
+}

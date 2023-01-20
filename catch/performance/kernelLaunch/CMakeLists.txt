@@ -21,7 +21,7 @@
 set(TEST_SRC
     nullKernel.cc
     waitKernel.cc
-    multipleWaitKernels.cc
+    additionalKernel.cc
 )
 
 hip_add_exe_to_target(NAME KernelLaunchPerformance

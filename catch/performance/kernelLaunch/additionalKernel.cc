@@ -28,7 +28,7 @@ THE SOFTWARE.
 
 __device__ int counter;
 
-__global__ void waitMultipleKernel(int cycles) {
+__global__ void additionalKernel(int cycles) {
   int start = wall_clock64();
   int stop{};
   do {
@@ -71,13 +71,13 @@ static void RunBenchmark(int cycles, float wait_time_in_ms) {
  *    -# Additional kernel call does not increase driver overhead.
  * Test source
  * ------------------------
- *  - performance/kernelLaunch/multipleWaitKernels.cc
+ *  - performance/kernelLaunch/additionalKernel.cc
  * Test requirements
  * ------------------------
  *  - Device supports wall clock rate
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Performance_MultipleWaitKernels") {
+TEST_CASE("Performance_AdditionalKernel") {
   int wall_clock_rate{0}; //in kilohertz
   HIP_CHECK(hipDeviceGetAttribute(&wall_clock_rate, hipDeviceAttributeWallClockRate, 0));
   if (!wall_clock_rate) {

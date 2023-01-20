@@ -40,11 +40,6 @@ __global__ void additionalKernel(int cycles) {
 class MultipleKernelsLaunchBenchmark : public Benchmark<MultipleKernelsLaunchBenchmark> {
  public:
   void operator()(int cycles) {
-    const StreamGuard stream_guard1{Streams::created};
-    const hipStream_t stream1 = stream_guard1.stream();
-    const StreamGuard stream_guard2{Streams::created};
-    const hipStream_t stream2 = stream_guard2.stream();
-
     TIMED_SECTION(kTimerTypeCpu) {
       waitMultipleKernel<<<1, 1, 0>>>(cycles);
       waitMultipleKernel<<<1, 1, 0>>>(cycles);

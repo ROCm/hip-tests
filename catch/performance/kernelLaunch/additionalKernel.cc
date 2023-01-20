@@ -41,8 +41,8 @@ class MultipleKernelsLaunchBenchmark : public Benchmark<MultipleKernelsLaunchBen
  public:
   void operator()(int cycles) {
     TIMED_SECTION(kTimerTypeCpu) {
-      additionalKernel<<<1, 1, 0>>>(cycles);
-      additionalKernel<<<1, 1, 0>>>(cycles);
+      additionalKernel<<<1, 1>>>(cycles);
+      additionalKernel<<<1, 1>>>(cycles);
       HIP_CHECK(hipDeviceSynchronize());
     }
   }

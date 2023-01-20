@@ -217,6 +217,8 @@ function(hip_add_exe_to_target)
   if(UNIX)
     set(_LINKER_LIBS ${_LINKER_LIBS} stdc++fs)
     set(_LINKER_LIBS ${_LINKER_LIBS} -ldl)
+    set(_LINKER_LIBS ${_LINKER_LIBS} pthread)
+    set(_LINKER_LIBS ${_LINKER_LIBS} rt)
   else()
     # res files are built resource files using rc files.
     # use llvm-rc exe to build the res files

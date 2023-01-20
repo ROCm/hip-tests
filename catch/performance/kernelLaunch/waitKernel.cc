@@ -50,7 +50,8 @@ class WaitKernelLaunchBenchmark : public Benchmark<WaitKernelLaunchBenchmark> {
 static void RunBenchmark(int cycles, float wait_time_in_ms) {
   WaitKernelLaunchBenchmark benchmark;
   benchmark.AddSectionName(std::to_string(wait_time_in_ms));
-  benchmark.Run(cycles);
+  auto result = benchmark.Run(cycles);
+  std::cout << "\tDriver overhead: " << std::get<0>(result) - wait_time_in_ms << " ms" << std::endl;
 }
 
 /**
@@ -76,7 +77,7 @@ TEST_CASE("Performance_WaitKernel") {
     HipTest::HIP_SKIP_TEST("hipDeviceAttributeWallClockRate has not been supported. Skipping.");
     return;
   }
-  int cycles = GENERATE(100'000, 1'000'000, 10'000'000);
+  int cycles = GENERATE_COPY(10 * wall_clock_rate, 50 * wall_clock_rate, 100 * wall_clock_rate);
   float miliseconds = 1.f * cycles / wall_clock_rate;
   RunBenchmark(cycles, miliseconds);
 }

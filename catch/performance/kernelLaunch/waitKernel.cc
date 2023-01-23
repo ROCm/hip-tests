@@ -17,25 +17,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <performance_common.hh>
-#include <hip_test_common.hh>
+#include "kernel_launch_perf_common.hh"
 
 /**
  * @addtogroup kernelLaunch kernel launch
  * @{
  * @ingroup PerformanceTest
  */
-
-__device__ int counter;
-
-__global__ void waitKernel(int cycles) {
-  int start = wall_clock64();
-  int stop{};
-  do {
-    stop = wall_clock64();
-  } while (stop - start < cycles);
-  ++counter;
-}
 
 class WaitKernelLaunchBenchmark : public Benchmark<WaitKernelLaunchBenchmark> {
  public:

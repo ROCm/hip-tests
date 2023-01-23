@@ -17,41 +17,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "kernel_launch_perf_common.hh"
+#pragma once
 
-/**
- * @addtogroup kernelLaunch kernel launch
- * @{
- * @ingroup PerformanceTest
- * Contains performance tests for kernel launch overhead benchmarking.
- */
+#include <performance_common.hh>
+#include <hip_test_common.hh>
 
-class NullKernelLaunchBenchmark : public Benchmark<NullKernelLaunchBenchmark> {
- public:
-  void operator()() {
-    TIMED_SECTION(kTimerTypeCpu) {
-      nullKernel<<<1, 1>>>();
-      HIP_CHECK(hipDeviceSynchronize());
-    }
-  }
-};
+static __device__ int counter;
 
-static void RunBenchmark() {
-  NullKernelLaunchBenchmark benchmark;
-  benchmark.Run();
-}
+static __global__ void nullKernel() {}
 
-/**
- * Test Description
- * ------------------------
- *  - Calls an empty kernel with triple chevron annotation.
- * Test source
- * ------------------------
- *  - performance/kernelLaunch/nullKernel.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Performance_NullKernel") {
-  RunBenchmark();
+static __global__ void waitKernel(int cycles) {
+  int start = wall_clock64();
+  int stop{};
+  do {
+    stop = wall_clock64();
+  } while (stop - start < cycles);
+  ++counter;
 }

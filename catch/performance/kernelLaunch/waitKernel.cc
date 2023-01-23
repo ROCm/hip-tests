@@ -47,9 +47,9 @@ static void RunBenchmark(int cycles, float wait_time_in_ms) {
  * ------------------------
  *  - Calls wait kernel with triple chevron annotation:
  *    -# Waiting for number of device ticks:
- *      - Small: 100.000 ticks
- *      - Medium: 1.000.000 ticks
- *      - Large: 50.000.000 ticks
+ *      - Small: 10 * wall clock rate
+ *      - Medium: 50 * wall clock rate
+ *      - Large: 100 * wall clock rate
  * Test source
  * ------------------------
  *  - performance/kernelLaunch/waitKernel.cc

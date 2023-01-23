@@ -48,9 +48,9 @@ static void RunBenchmark(int cycles, float wait_time_in_ms) {
  * ------------------------
  *  - Calls additional wait kernel after null kernel with triple chevron annotation
  *    -# Waiting for number of device ticks:
- *      - Small: 5 * wall clock rate
- *      - Medium: 25 * wall clock rate
- *      - Large: 50 * wall clock rate
+ *      - Small: 10 * wall clock rate
+ *      - Medium: 50 * wall clock rate
+ *      - Large: 100 * wall clock rate
  *    -# Additional kernel call does not increase driver overhead.
  * Test source
  * ------------------------
@@ -67,7 +67,7 @@ TEST_CASE("Performance_AdditionalKernel") {
     HipTest::HIP_SKIP_TEST("hipDeviceAttributeWallClockRate has not been supported. Skipping.");
     return;
   }
-  int cycles = GENERATE_COPY(5 * wall_clock_rate, 25 * wall_clock_rate, 50 * wall_clock_rate);
+  int cycles = GENERATE_COPY(10 * wall_clock_rate, 50 * wall_clock_rate, 100 * wall_clock_rate);
   float miliseconds = 1.f * cycles / wall_clock_rate;
   RunBenchmark(cycles, miliseconds);
 }

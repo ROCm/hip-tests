@@ -6,8 +6,7 @@ set(CMAKE_CXX_COMPILER_WORKS 1)
 
 project(hiptests)
 
-#forcing exe per file. 
-set(STANDALONE_TESTS 1)
+# flag to generate standalone exe per src file.
 message(STATUS "STANDALONE_TESTS : ${STANDALONE_TESTS}")
 
 # Check if platform and compiler are set
@@ -145,6 +144,11 @@ if (WIN32)
   execute_process(COMMAND ${LLVM_RC_PATH} ${CMAKE_CURRENT_BINARY_DIR}/catchProp.rc
                   OUTPUT_VARIABLE RC_OUTPUT)
   set(PROP_RC ${CMAKE_CURRENT_BINARY_DIR})
+  # When args to linker exceeds max chars.
+  # msbuild writes args to a rsp file.
+  # This is used to reference the obj file correctly
+  SET(CMAKE_C_RESPONSE_FILE_LINK_FLAG "")
+  SET(CMAKE_CXX_RESPONSE_FILE_LINK_FLAG "")
 endif()
 
 if(HIP_PLATFORM MATCHES "amd" AND HIP_COMPILER MATCHES "clang")

@@ -40,7 +40,7 @@ static void RunBenchmark(int cycles, float wait_time_in_ms) {
   MultipleKernelsLaunchBenchmark benchmark;
   benchmark.AddSectionName(std::to_string(wait_time_in_ms));
   auto result = benchmark.Run(cycles);
-  std::cout << "\tDriver overhead per launch: " << (std::get<0>(result) - wait_time_in_ms) / 2 << " ms" << std::endl;
+  std::cout << "\tDriver overhead: " << std::get<0>(result) - wait_time_in_ms << " ms" << std::endl;
 }
 
 /**

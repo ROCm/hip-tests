@@ -34,11 +34,10 @@ class HipEventQueryBenchmark : public Benchmark<HipEventQueryBenchmark> {
     HIP_CHECK(hipEventCreate(&event));
     HIP_CHECK(hipEventRecord(event));
 
-    
-    TIMED_SECTION(kTimerTypeCpu) { hipEventQuery(event); }
-    
-    HIP_CHECK(hipEventDestroy(event));
 
+    TIMED_SECTION(kTimerTypeCpu) { hipEventQuery(event); }
+
+    HIP_CHECK(hipEventDestroy(event));
   }
 };
 

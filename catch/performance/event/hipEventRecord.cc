@@ -32,9 +32,9 @@ class HipEventRecordBenchmark : public Benchmark<HipEventRecordBenchmark> {
   void operator()(hipStream_t stream) {
     hipEvent_t event;
     HIP_CHECK(hipEventCreate(&event));
-    
+
     TIMED_SECTION(kTimerTypeCpu) { HIP_CHECK(hipEventRecord(event, stream)); }
-    
+
     HIP_CHECK(hipEventDestroy(event));
   }
 };
@@ -42,7 +42,7 @@ class HipEventRecordBenchmark : public Benchmark<HipEventRecordBenchmark> {
 
 static void RunBenchmark(hipStream_t stream) {
   HipEventRecordBenchmark benchmark;
-  if(stream == NULL) {
+  if (stream == NULL) {
     benchmark.AddSectionName("Default stream");
   } else {
     benchmark.AddSectionName("Created stream");
@@ -65,12 +65,10 @@ static void RunBenchmark(hipStream_t stream) {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Performance_hipEventRecord") {
-
   RunBenchmark(NULL);
 
   hipStream_t stream;
   HIP_CHECK(hipStreamCreate(&stream));
   RunBenchmark(stream);
   HIP_CHECK(hipStreamDestroy(stream));
-    
 }

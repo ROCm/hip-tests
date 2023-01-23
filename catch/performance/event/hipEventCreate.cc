@@ -33,10 +33,9 @@ class HipEventDestroyBenchmark : public Benchmark<HipEventDestroyBenchmark> {
   void operator()() {
     hipEvent_t event;
     HIP_CHECK(hipEventCreate(&event));
-    
-    
+
+
     TIMED_SECTION(kTimerTypeCpu) { HIP_CHECK(hipEventDestroy(event)); }
-    
   }
 };
 
@@ -44,18 +43,16 @@ class HipEventCreateBenchmark : public Benchmark<HipEventCreateBenchmark> {
  public:
   void operator()() {
     hipEvent_t event;
-    
+
     TIMED_SECTION(kTimerTypeCpu) { HIP_CHECK(hipEventCreate(&event)); }
-    
+
     HIP_CHECK(hipEventDestroy(event));
   }
 };
 
 
-
-
 static std::string GetEventCreateFlagName(unsigned flag) {
-  switch(flag) {
+  switch (flag) {
     case hipEventDefault:
       return "hipEventDefault";
     case hipEventBlockingSync:
@@ -73,9 +70,9 @@ class HipEventCreateWithFlagsBenchmark : public Benchmark<HipEventCreateWithFlag
  public:
   void operator()(unsigned flag) {
     hipEvent_t event;
-    
-    TIMED_SECTION(kTimerTypeCpu) { hipEventCreateWithFlags(&event, flag); }
-    
+
+    TIMED_SECTION(kTimerTypeCpu) { HIP_CHECK(hipEventCreateWithFlags(&event, flag)); }
+
     HIP_CHECK(hipEventDestroy(event));
   }
 };
@@ -110,7 +107,7 @@ static void RunBenchmark(unsigned flag) {
  *      - hipEventDefault
  *      - hipEventBlockingSync
  *      - hipEventDisableTiming
- *      - hipEventInterprocess
+ *      - hipEventInterprocess (currently disabled)
  * Test source
  * ------------------------
  *  - performance/event/hipEventCreate.cc
@@ -119,7 +116,9 @@ static void RunBenchmark(unsigned flag) {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Performance_hipEventCreateWithFlags") {
-  const auto flag = GENERATE(hipEventDefault, hipEventBlockingSync, hipEventDisableTiming, hipEventInterprocess);
+  const auto flag = GENERATE(
+      hipEventDefault, hipEventBlockingSync,
+      hipEventDisableTiming /*, hipEventInterprocess  disabled untill fixed (EXWHTEC-25) */);
   RunBenchmark(flag);
 }
 

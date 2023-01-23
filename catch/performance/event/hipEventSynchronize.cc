@@ -33,18 +33,17 @@ class HipEventSynchronizeBenchmark : public Benchmark<HipEventSynchronizeBenchma
     hipEvent_t event;
     HIP_CHECK(hipEventCreateWithFlags(&event, flag));
     HIP_CHECK(hipEventRecord(event));
-    
+
     TIMED_SECTION(kTimerTypeCpu) { HIP_CHECK(hipEventSynchronize(event)); }
-    
+
     HIP_CHECK(hipEventDestroy(event));
   }
 };
 
 
 static void RunBenchmark(unsigned flag) {
-
   HipEventSynchronizeBenchmark benchmark;
-  if(flag == hipEventDefault) {
+  if (flag == hipEventDefault) {
     benchmark.AddSectionName("Default event");
   } else {
     benchmark.AddSectionName("Blocking sync event");

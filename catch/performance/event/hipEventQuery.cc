@@ -35,7 +35,7 @@ class HipEventQueryBenchmark : public Benchmark<HipEventQueryBenchmark> {
     HIP_CHECK(hipEventRecord(event));
 
     
-    TIMED_SECTION(kTimerTypeCpu) { hipEventQuerry(event); }
+    TIMED_SECTION(kTimerTypeCpu) { hipEventQuery(event); }
     
     HIP_CHECK(hipEventDestroy(event));
 
@@ -55,5 +55,5 @@ class HipEventQueryBenchmark : public Benchmark<HipEventQueryBenchmark> {
  */
 TEST_CASE("Performance_hipEventQuery") {
   HipEventQueryBenchmark benchmark;
-  benchmark.Run(stream);
+  benchmark.Run();
 }

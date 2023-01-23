@@ -47,7 +47,7 @@ class HipEventCreateBenchmark : public Benchmark<HipEventCreateBenchmark> {
     
     TIMED_SECTION(kTimerTypeCpu) { HIP_CHECK(hipEventCreate(&event)); }
     
-    HIP_CHECK(hipEventDestroy(event);
+    HIP_CHECK(hipEventDestroy(event));
   }
 };
 
@@ -66,17 +66,17 @@ static std::string GetEventCreateFlagName(unsigned flag) {
       return "hipEventInterprocess";
     default:
       return "flag combination";
+  }
 }
-
 
 class HipEventCreateWithFlagsBenchmark : public Benchmark<HipEventCreateWithFlagsBenchmark> {
  public:
   void operator()(unsigned flag) {
     hipEvent_t event;
     
-    TIMED_SECTION(kTimerTypeCpu) { HIP_CHECK(hipEventCreateWithFlags(&event, flag)); }
+    TIMED_SECTION(kTimerTypeCpu) { hipEventCreateWithFlags(&event, flag); }
     
-    HIP_CHECK(hipEventDestroy(event);
+    HIP_CHECK(hipEventDestroy(event));
   }
 };
 

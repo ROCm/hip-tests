@@ -49,7 +49,7 @@ static void RunBenchmark(unsigned flag) {
   } else {
     benchmark.AddSectionName("Blocking sync event");
   }
-  benchmark.Run(stream);
+  benchmark.Run(flag);
 }
 
 /**

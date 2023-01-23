@@ -40,8 +40,9 @@ class HipEventElapsedTimeBenchmark : public Benchmark<HipEventElapsedTimeBenchma
     HIP_CHECK(hipEventRecord(start));
     std::this_thread::sleep_for(std::chrono::milliseconds(5)); /* idle for 5 ms */
     HIP_CHECK(hipEventRecord(end));
+    hipStreamSynchronize(NULL);
     
-    TIMED_SECTION(kTimerTypeCpu) { HIP_CHECK(hipEventElapsedTime(&time, start, stop)); }
+    TIMED_SECTION(kTimerTypeCpu) { hipEventElapsedTime(&time, start, end); }
     
     HIP_CHECK(hipEventDestroy(start));
     HIP_CHECK(hipEventDestroy(end));
@@ -61,5 +62,5 @@ class HipEventElapsedTimeBenchmark : public Benchmark<HipEventElapsedTimeBenchma
  */
 TEST_CASE("Performance_hipEventElapsedTime") {
   HipEventElapsedTimeBenchmark benchmark;
-  benchmark.Run(stream);
+  benchmark.Run();
 }

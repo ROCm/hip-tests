@@ -23,7 +23,7 @@ set(TEST_SRC
     hipEventRecord.cc
     hipEventSynchronize.cc
     hipEventElapsedTime.cc
-    hipEventQuerry.cc
+    hipEventQuery.cc
 )
 
 hip_add_exe_to_target(NAME EventPerformance

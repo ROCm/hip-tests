@@ -35,3 +35,10 @@ THE SOFTWARE.
  * This section describes the graph management types & functions of HIP runtime API.
  * @}
  */
+
+/**
+ * @defgroup PerformanceTest Performance tests
+ * @{
+ * This section describes performance tests for the target API groups and use-cases.
+ * @}
+ */

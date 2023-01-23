@@ -46,11 +46,11 @@ static void RunBenchmark(int cycles, float wait_time_in_ms) {
 /**
  * Test Description
  * ------------------------
- *  - Calls multiple wait kernel with triple chevron annotation:
+ *  - Calls additional wait kernel after null kernel with triple chevron annotation
  *    -# Waiting for number of device ticks:
- *      - Small: 100.000 ticks
- *      - Medium: 1.000.000 ticks
- *      - Large: 50.000.000 ticks
+ *      - Small: 5 * wall clock rate
+ *      - Medium: 25 * wall clock rate
+ *      - Large: 50 * wall clock rate
  *    -# Additional kernel call does not increase driver overhead.
  * Test source
  * ------------------------

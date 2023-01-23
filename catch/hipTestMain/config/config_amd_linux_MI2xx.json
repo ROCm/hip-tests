@@ -7,7 +7,8 @@
 		"Unit_hipInit_Negative",
 		"Unit_BuiltinAtomicsRTC_fmaxCoherentGlobalMem",
 		"Unit_BuiltinAtomicsRTC__fminCoherentGlobalMem",
-		"Unit_BuiltInAtomicAdd_CoherentGlobalMemWithRtc"
+		"Unit_BuiltInAtomicAdd_CoherentGlobalMemWithRtc",
+		"Unit_hipMemGetAddressRange_Negative"
 	]
 
 }

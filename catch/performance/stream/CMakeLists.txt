@@ -27,6 +27,8 @@ set(TEST_SRC
     hipStreamAddCallback.cc
     hipStreamWaitValue.cc
     hipStreamWriteValue.cc
+    hipMallocAsync.cc
+    hipFreeAsync.cc
 )
 
 hip_add_exe_to_target(NAME StreamPerformance

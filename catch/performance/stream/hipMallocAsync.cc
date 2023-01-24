@@ -20,41 +20,28 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <performance_common.hh>
 
-class StreamWaitEventBenchmark : public Benchmark<StreamWaitEventBenchmark> {
+class MallocAsyncBenchmark : public Benchmark<MallocAsyncBenchmark> {
  public:
-  void operator()(Streams stream_type) {
-    const StreamGuard stream_guard{stream_type};
+  void operator()(const size_t array_size) {
+    const StreamGuard stream_guard{Streams::created};
     const hipStream_t stream = stream_guard.stream();
-    hipEvent_t wait_event{nullptr};
+    float* dev_ptr{nullptr};
 
-    HIP_CHECK(hipEventCreate(&wait_event));
-    REQUIRE(wait_event != nullptr);
-    HIP_CHECK(hipEventRecord(wait_event, stream));
-
-    TIMED_SECTION(kTimerTypeCpu) {
-      HIP_CHECK(hipStreamWaitEvent(stream, wait_event, 0));
-      HIP_CHECK(hipStreamSynchronize(stream));
+    TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
+      HIP_CHECK(hipMallocAsync(reinterpret_cast<void**>(&dev_ptr), array_size * sizeof(float), stream));
     }
-    HIP_CHECK(hipEventDestroy(wait_event));
+    HIP_CHECK(hipStreamSynchronize(stream));
+    HIP_CHECK(hipFree(dev_ptr));
   }
 };
 
-static void RunBenchmark(Streams stream_type) {
-  StreamWaitEventBenchmark benchmark{};
-  switch (stream_type) {
-    case Streams::nullstream:
-      benchmark.AddSectionName("null stream");
-      break;
-    case Streams::created:
-      benchmark.AddSectionName("created");
-      break;
-    default:
-      benchmark.AddSectionName("per thread stream");
-  }
-  benchmark.Run(stream_type);
+static void RunBenchmark(const size_t array_size) {
+  MallocAsyncBenchmark benchmark;
+  benchmark.AddSectionName(std::to_string(array_size));
+  benchmark.Run(array_size);
 }
 
-TEST_CASE("Performance_hipStreamWaitEvent") {
-  Streams stream_type = GENERATE(Streams::nullstream, Streams::created);
-  RunBenchmark(stream_type);
+TEST_CASE("Performance_hipMallocAsync") {
+  size_t array_size = GENERATE(4_KB, 5_MB, 16_MB);
+  RunBenchmark(array_size);
 }

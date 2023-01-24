@@ -244,7 +244,7 @@ TEST_CASE("Unit_hipMemPoolExportToShareableHandle_Negative_Parameters") {
  * Test Description
  * ------------------------
  *  - Validates handling of invalid arguments:
-  *    -# When pointer to shared handle is `nullptr`
+ *    -# When pointer to shared handle is `nullptr`
  *      - Expected output: return `hipErrorInvalidValue`
  *    -# When output pointer to memory pool is `nullptr`
  *      - Expected output: return `hipErrorInvalidValue`

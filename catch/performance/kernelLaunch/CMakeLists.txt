@@ -19,10 +19,17 @@
 # THE SOFTWARE.
 
 set(TEST_SRC
-    nullKernel.cc
-    waitKernel.cc
-    additionalKernel.cc
+    kernel_launch_common.cc
+    triple_chevron.cc
+    hipLaunchKernel.cc
+    hipLaunchCooperativeKernel.cc
 )
+
+if(HIP_PLATFORM MATCHES "amd")
+    set(TEST_SRC ${TEST_SRC}
+        hipExtLaunchKernel.cc
+    )
+endif()
 
 hip_add_exe_to_target(NAME KernelLaunchPerformance
                       TEST_SRC ${TEST_SRC}

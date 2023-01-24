@@ -1,13 +1,16 @@
 /*
 Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -17,44 +20,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <performance_common.hh>
-#include <hip_test_common.hh>
+#include "kernel_launch_common.hh"
 
-/**
- * @addtogroup kernelLaunch kernel launch
- * @{
- * @ingroup PerformanceTest
- * Contains performance tests for kernel launch overhead benchmarking.
- */
+__global__ void NullKernel() {}
 
-__global__ void nullKernel() {}
+__global__ void SmallKernel(SmallKernelArgs args) { }
 
-class NullKernelLaunchBenchmark : public Benchmark<NullKernelLaunchBenchmark> {
- public:
-  void operator()() {
-    TIMED_SECTION(kTimerTypeCpu) {
-      nullKernel<<<1, 1>>>();
-      HIP_CHECK(hipDeviceSynchronize());
-    }
-  }
-};
+__global__ void MediumKernel(MediumKernelArgs args) {}
 
-static void RunBenchmark() {
-  NullKernelLaunchBenchmark benchmark;
-  benchmark.Run();
-}
+__global__ void LargeKernel(LargeKernelArgs args) { }
 
-/**
- * Test Description
- * ------------------------
- *  - Calls an empty kernel with triple chevron annotation.
- * Test source
- * ------------------------
- *  - performance/kernelLaunch/nullKernel.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Performance_NullKernel") {
-  RunBenchmark();
-}
+SmallKernelArgs small_kernel_args;
+MediumKernelArgs medium_kernel_args;
+LargeKernelArgs large_kernel_args;

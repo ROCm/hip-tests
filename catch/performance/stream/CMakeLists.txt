@@ -29,6 +29,8 @@ set(TEST_SRC
     hipStreamWriteValue.cc
     hipMallocAsync.cc
     hipFreeAsync.cc
+    hipMemPoolCreate.cc
+    hipMemPoolDestroy.cc
 )
 
 hip_add_exe_to_target(NAME StreamPerformance

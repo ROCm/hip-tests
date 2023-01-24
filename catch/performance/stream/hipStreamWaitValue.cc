@@ -76,6 +76,14 @@ class StreamWaitValue64Benchmark : public Benchmark<StreamWaitValue64Benchmark> 
 
 template <typename WaitValueBenchmark>
 static void RunBenchmark(const size_t array_size, unsigned int flag) {
+  int wait_value_supported = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&wait_value_supported,
+                                  hipDeviceAttributeCanUseStreamWaitValue, 0));
+  if (!wait_value_supported) {
+    HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeCanUseStreamWaitValue "
+                           "attribute. Hence skipping the testing with Pass result.\n");
+    return;
+  }
   WaitValueBenchmark benchmark;
   benchmark.AddSectionName(std::to_string(array_size));
   benchmark.AddSectionName(GetFlagWaitSectionName(flag));

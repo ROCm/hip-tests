@@ -110,6 +110,8 @@ template <typename Derived> class Benchmark {
   Benchmark(const Benchmark&) = delete;
   Benchmark& operator=(const Benchmark&) = delete;
 
+  static constexpr ssize_t kWarmup = -1;
+
   void Configure(size_t iterations, size_t warmups) {
     iterations_ = iterations;
     warmups_ = warmups;
@@ -117,13 +119,16 @@ template <typename Derived> class Benchmark {
 
   void AddSectionName(const std::string& section_name) { benchmark_name_ += "/" + section_name; }
 
+  using ModifierSignature = std::function<float(float)>;
+  void RegisterModifier(const ModifierSignature& modifier) { modifier_ = modifier; }
+
   template <typename... Args> std::tuple<float, float, float, float> Run(Args&&... args) {
     AddSectionName(std::to_string(iterations_));
     AddSectionName(std::to_string(warmups_));
 
     auto& derived = static_cast<Derived&>(*this);
 
-    current_ = -1;  // -1 represents warmup
+    current_ = kWarmup;
     for (size_t i = 0u; i < warmups_; ++i) {
       PrintProgress("warmup", static_cast<int>(100.f * (i + 1) / warmups_));
       derived(args...);
@@ -136,6 +141,7 @@ template <typename Derived> class Benchmark {
     for (current_ = 0; current_ < iterations_; ++current_) {
       PrintProgress("measurement", static_cast<int>(100.f * (current_ + 1) / iterations_));
       derived(args...);
+      if (modifier_) time_ = modifier_(time_);
       samples.push_back(time_);
       time_ = .0;
     }
@@ -144,7 +150,7 @@ template <typename Derived> class Benchmark {
     float mean = sum / samples.size();
 
     float deviation =
-        std::reduce(cbegin(samples), cend(samples), .0,
+        std::accumulate(cbegin(samples), cend(samples), .0,
                     [mean](float sum, float next) { return sum + std::pow(next - mean, 2); });
     deviation = sqrt(deviation / samples.size());
 
@@ -182,6 +188,8 @@ template <typename Derived> class Benchmark {
   bool display_output_;
   bool progress_bar_;
 
+  ModifierSignature modifier_;
+
   void Print(const std::string& out = "") {
     if (!display_output_) return;
     std::cout << "\r" << std::setw(110) << std::left << benchmark_name_ << "\t|\t" << out
@@ -204,7 +212,8 @@ template <typename Derived> class Benchmark {
 constexpr bool kTimerTypeCpu = false;
 constexpr bool kTimerTypeEvent = true;
 
-#define TIMED_SECTION_STREAM(TIMER_TYPE, STREAM) if (auto _ = GetTimer<TIMER_TYPE>(STREAM); true)
+#define TIMED_SECTION_STREAM(TIMER_TYPE, STREAM)                                                   \
+  if (auto _ = this->template GetTimer<TIMER_TYPE>(STREAM); true)
 #define TIMED_SECTION(TIMER_TYPE) TIMED_SECTION_STREAM(TIMER_TYPE, nullptr)
 
 constexpr size_t operator"" _KB(unsigned long long int kb) { return kb << 10; }

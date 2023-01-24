@@ -6,6 +6,9 @@ set(CMAKE_CXX_COMPILER_WORKS 1)
 
 project(hiptests)
 
+#forcing exe per file. 
+set(STANDALONE_TESTS 1)
+message(STATUS "STANDALONE_TESTS : ${STANDALONE_TESTS}")
 
 # Check if platform and compiler are set
 if(HIP_PLATFORM STREQUAL "amd")
@@ -125,7 +128,12 @@ set(CATCH_BUILD_DIR catch_tests)
 file(COPY ./hipTestMain/config DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/hipTestMain)
 file(COPY ./external/Catch2/cmake/Catch2/CatchAddTests.cmake
      DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/script)
+file(COPY ./external/Catch2/cmake/Catch2/catch_include.cmake
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/script)
 set(ADD_SCRIPT_PATH ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/script/CatchAddTests.cmake)
+set(CATCH_INCLUDE_PATH ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/script/catch_include.cmake)
+
+
 
 if (WIN32)
   configure_file(catchProp_in_rc.in ${CMAKE_CURRENT_BINARY_DIR}/catchProp.rc @ONLY)

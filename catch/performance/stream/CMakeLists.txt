@@ -18,4 +18,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-add_subdirectory(stream)
+set(TEST_SRC
+    hipStreamWaitEvent.cc
+    hipStreamGetFlags.cc
+    hipStreamGetPriority.cc
+    hipExtStreamCreateWithCUMask.cc
+    hipExtStreamGetCUMask.cc
+    hipStreamAddCallback.cc
+    hipStreamWaitValue.cc
+    hipStreamWriteValue.cc
+)
+
+hip_add_exe_to_target(NAME StreamPerformance
+                      TEST_SRC ${TEST_SRC}
+                      TEST_TARGET_NAME build_tests
+                      COMPILE_OPTIONS -std=c++17)

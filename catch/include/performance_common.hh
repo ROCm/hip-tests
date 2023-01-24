@@ -144,7 +144,7 @@ template <typename Derived> class Benchmark {
     float mean = sum / samples.size();
 
     float deviation =
-        std::reduce(cbegin(samples), cend(samples), .0,
+        std::accumulate(cbegin(samples), cend(samples), .0,
                     [mean](float sum, float next) { return sum + std::pow(next - mean, 2); });
     deviation = sqrt(deviation / samples.size());
 

@@ -49,9 +49,8 @@ TEST_CASE("Performance_hipMemPoolGetAttribute") {
     return;
   }
   hipMemPoolAttr attribute = GENERATE(hipMemPoolAttrReleaseThreshold,
-                                      hipMemPoolAttrReservedMemCurrent,
-                                      hipMemPoolAttrReservedMemHigh,
-                                      hipMemPoolAttrUsedMemCurrent,
-                                      hipMemPoolAttrUsedMemHigh);
+                                      hipMemPoolReuseFollowEventDependencies,
+                                      hipMemPoolReuseAllowOpportunistic,
+                                      hipMemPoolReuseAllowInternalDependencies);
   RunBenchmark(attribute);
 }

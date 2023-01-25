@@ -19,38 +19,42 @@ THE SOFTWARE.
 
 #include "stream_performance_common.hh"
 
-class MemPoolSetAttributeBenchmark : public Benchmark<MemPoolSetAttributeBenchmark> {
+class MallocFromPoolAsyncBenchmark : public Benchmark<MallocFromPoolAsyncBenchmark> {
  public:
-  void operator()(const hipMemPoolAttr attribute) {
+  void operator()(const size_t array_size) {
+    const StreamGuard stream_guard{Streams::created};
+    const hipStream_t stream = stream_guard.stream();
+
     hipMemPool_t mem_pool{nullptr};
     hipMemPoolProps pool_props = CreateMemPoolProps(0);
     HIP_CHECK(hipMemPoolCreate(&mem_pool, &pool_props));
 
-    int value{0};
+    float* array_ptr{nullptr};
 
-    TIMED_SECTION(kTimerTypeCpu) {
-      HIP_CHECK(hipMemPoolSetAttribute(mem_pool, attribute, &value));
+    TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
+      HIP_CHECK(hipMallocFromPoolAsync(&array_ptr, array_size * sizeof(float), mem_pool, stream));
     }
 
+    REQUIRE(array_ptr != nullptr);
+
+    HIP_CHECK(hipFreeAsync(array_ptr, stream));
+    HIP_CHECK(hipStreamSynchronize(stream));
     HIP_CHECK(hipMemPoolDestroy(mem_pool));
   }
 };
 
-static void RunBenchmark(const hipMemPoolAttr attribute) {
-  MemPoolSetAttributeBenchmark benchmark;
-  benchmark.AddSectionName(GetMemPoolAttrSectionName(attribute));
-  benchmark.Run(attribute);
+static void RunBenchmark(const size_t array_size) {
+  MallocFromPoolAsyncBenchmark benchmark;
+  benchmark.AddSectionName(std::to_string(array_size));
+  benchmark.Run(array_size);
 }
 
-TEST_CASE("Performance_hipMemPoolSetAttribute") {
+TEST_CASE("Performance_hipMallocFromPoolAsync") {
   if (!AreMemPoolsSupported(0)) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeMemoryPoolsSupported "
                            "attribute. Hence skipping the testing with Pass result.\n");
     return;
   }
-  hipMemPoolAttr attribute = GENERATE(hipMemPoolAttrReleaseThreshold,
-                                      hipMemPoolReuseFollowEventDependencies,
-                                      hipMemPoolReuseAllowOpportunistic,
-                                      hipMemPoolReuseAllowInternalDependencies);
-  RunBenchmark(attribute);
+  size_t array_size = GENERATE(4_KB, 4_MB, 16_MB);
+  RunBenchmark(array_size);
 }

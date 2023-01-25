@@ -28,6 +28,7 @@ THE SOFTWARE.
  * @addtogroup memset memset
  * @{
  * @ingroup PerformanceTest
+ * Contains performance tests for all memset HIP APIs.
  */
 
 class MemsetBenchmark : public Benchmark<MemsetBenchmark> {

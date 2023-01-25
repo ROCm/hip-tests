@@ -35,7 +35,9 @@ class MemsetD32Benchmark : public Benchmark<MemsetD32Benchmark> {
   void operator()(LinearAllocs allocation_type, size_t size) {
     LinearAllocGuard<void> dst(allocation_type, size);
 
-    TIMED_SECTION(kTimerTypeEvent) { HIP_CHECK(hipMemsetD32(dst.ptr(), 123'456, size)); }
+    TIMED_SECTION(kTimerTypeEvent) {
+      HIP_CHECK(hipMemsetD32(reinterpret_cast<hipDeviceptr_t>(dst.ptr()), 123'456, size));
+    }
   }
 };
 

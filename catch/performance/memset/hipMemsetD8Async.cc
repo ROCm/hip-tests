@@ -37,7 +37,8 @@ class MemsetD8AsyncBenchmark : public Benchmark<MemsetD8AsyncBenchmark> {
     StreamGuard stream(Streams::created);
 
     TIMED_SECTION_STREAM(kTimerTypeEvent, stream.stream()) {
-      HIP_CHECK(hipMemsetD8Async(dst.ptr(), 17, size, stream.stream()));
+      HIP_CHECK(
+          hipMemsetD8Async(reinterpret_cast<hipDeviceptr_t>(dst.ptr()), 17, size, stream.stream()));
     }
   }
 };

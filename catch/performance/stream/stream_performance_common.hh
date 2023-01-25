@@ -50,13 +50,40 @@ static int AreMemPoolsSupported(int device_id) {
   return mem_pools_supported;
 }
 
-static constexpr hipMemPoolProps kPoolProps = {
-  hipMemAllocationTypePinned,
-  hipMemHandleTypeNone,
-  {
-    hipMemLocationTypeDevice,
-    0
-  },
-  nullptr,
-  {0}
-};
+static hipMemPoolProps CreateMemPoolProps(const int device_id) {
+  hipMemPoolProps kPoolProps = {
+    hipMemAllocationTypePinned,
+    hipMemHandleTypeNone,
+    {
+      hipMemLocationTypeDevice,
+      device_id
+    },
+    nullptr,
+    {0}
+  };
+
+  return kPoolProps;
+}
+
+static std::string GetMemPoolAttrSectionName(const hipMemPoolAttr attribute) {
+  switch (attribute) {
+    case hipMemPoolReuseFollowEventDependencies:
+      return "ReuseFollowEventDependencies";
+    case hipMemPoolReuseAllowOpportunistic:
+      return "ReuseAllowOpportunistic";
+    case hipMemPoolReuseAllowInternalDependencies:
+      return "ReuseAllowInternalDependencies";
+    case hipMemPoolAttrReleaseThreshold:
+      return "AttrReleaseThreshold";
+    case hipMemPoolAttrReservedMemCurrent:
+      return "AttrReservedMemCurrent";
+    case hipMemPoolAttrReservedMemHigh:
+      return "AttrReservedMemHigh";
+    case hipMemPoolAttrUsedMemCurrent:
+      return "AttrUsedMemCurrent";
+    case hipMemPoolAttrUsedMemHigh:
+      return "AttrUsedMemHigh";
+    default:
+      return "unknown attribute";
+  }
+}

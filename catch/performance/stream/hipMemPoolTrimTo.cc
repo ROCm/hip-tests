@@ -19,31 +19,33 @@ THE SOFTWARE.
 
 #include "stream_performance_common.hh"
 
-class MemPoolCreateBenchmark : public Benchmark<MemPoolCreateBenchmark> {
+class MemPoolTrimToBenchmark : public Benchmark<MemPoolTrimToBenchmark> {
  public:
-  void operator()() {
+  void operator()(const size_t min_bytes_to_hold) {
     hipMemPool_t mem_pool{nullptr};
     hipMemPoolProps pool_props = CreateMemPoolProps(0);
+    HIP_CHECK(hipMemPoolCreate(&mem_pool, &pool_props));
 
     TIMED_SECTION(kTimerTypeCpu) {
-      HIP_CHECK(hipMemPoolCreate(&mem_pool, &pool_props));
+      HIP_CHECK(hipMemPoolTrimTo(mem_pool, min_bytes_to_hold));
     }
 
-    REQUIRE(mem_pool != nullptr);
     HIP_CHECK(hipMemPoolDestroy(mem_pool));
   }
 };
 
-static void RunBenchmark() {
-  MemPoolCreateBenchmark benchmark;
-  benchmark.Run();
+static void RunBenchmark(const size_t min_bytes_to_hold) {
+  MemPoolTrimToBenchmark benchmark;
+  benchmark.AddSectionName(std::to_string(min_bytes_to_hold));
+  benchmark.Run(min_bytes_to_hold);
 }
 
-TEST_CASE("Performance_hipMemPoolCreate") {
+TEST_CASE("Performance_hipMemPoolTrimTo") {
   if (!AreMemPoolsSupported(0)) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeMemoryPoolsSupported "
                            "attribute. Hence skipping the testing with Pass result.\n");
     return;
   }
-  RunBenchmark();
+  size_t min_bytes_to_hold = GENERATE(4_KB, 4_MB, 16_MB);
+  RunBenchmark(min_bytes_to_hold);
 }

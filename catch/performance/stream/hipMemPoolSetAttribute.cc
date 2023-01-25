@@ -19,31 +19,39 @@ THE SOFTWARE.
 
 #include "stream_performance_common.hh"
 
-class MemPoolCreateBenchmark : public Benchmark<MemPoolCreateBenchmark> {
+class MemPoolSetAttributeBenchmark : public Benchmark<MemPoolSetAttributeBenchmark> {
  public:
-  void operator()() {
+  void operator()(const hipMemPoolAttr attribute) {
     hipMemPool_t mem_pool{nullptr};
     hipMemPoolProps pool_props = CreateMemPoolProps(0);
+    HIP_CHECK(hipMemPoolCreate(&mem_pool, &pool_props));
+
+    uint64_t value{0};
 
     TIMED_SECTION(kTimerTypeCpu) {
-      HIP_CHECK(hipMemPoolCreate(&mem_pool, &pool_props));
+      HIP_CHECK(hipMemPoolSetAttribute(mem_pool, attribute, &value));
     }
 
-    REQUIRE(mem_pool != nullptr);
     HIP_CHECK(hipMemPoolDestroy(mem_pool));
   }
 };
 
-static void RunBenchmark() {
-  MemPoolCreateBenchmark benchmark;
-  benchmark.Run();
+static void RunBenchmark(const hipMemPoolAttr attribute) {
+  MemPoolSetAttributeBenchmark benchmark;
+  benchmark.AddSectionName(GetMemPoolAttrSectionName(attribute));
+  benchmark.Run(attribute);
 }
 
-TEST_CASE("Performance_hipMemPoolCreate") {
+TEST_CASE("Performance_hipMemPoolSetAttribute") {
   if (!AreMemPoolsSupported(0)) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeMemoryPoolsSupported "
                            "attribute. Hence skipping the testing with Pass result.\n");
     return;
   }
-  RunBenchmark();
+  hipMemPoolAttr attribute = GENERATE(hipMemPoolAttrReleaseThreshold,
+                                      hipMemPoolAttrReservedMemCurrent,
+                                      hipMemPoolAttrReservedMemHigh,
+                                      hipMemPoolAttrUsedMemCurrent,
+                                      hipMemPoolAttrUsedMemHigh);
+  RunBenchmark(attribute);
 }

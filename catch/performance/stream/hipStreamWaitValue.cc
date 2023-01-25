@@ -17,22 +17,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
-#include <performance_common.hh>
-
-std::string GetFlagWaitSectionName(unsigned int flag) {
-  if (flag == hipStreamWaitValueGte) {
-    return "greater than";
-  } else if (flag == hipStreamWaitValueEq) {
-    return "equal";
-  } else if (flag == hipStreamWaitValueAnd) {
-    return "logical and";
-  } else if (flag == hipStreamWaitValueNor) {
-    return "logical nor";
-  } else {
-    return "unknown flag";
-  }
-}
+#include "stream_performance_common.hh"
 
 class StreamWaitValue32Benchmark : public Benchmark<StreamWaitValue32Benchmark> {
  public:
@@ -76,14 +61,6 @@ class StreamWaitValue64Benchmark : public Benchmark<StreamWaitValue64Benchmark> 
 
 template <typename WaitValueBenchmark>
 static void RunBenchmark(const size_t array_size, unsigned int flag) {
-  int wait_value_supported = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&wait_value_supported,
-                                  hipDeviceAttributeCanUseStreamWaitValue, 0));
-  if (!wait_value_supported) {
-    HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeCanUseStreamWaitValue "
-                           "attribute. Hence skipping the testing with Pass result.\n");
-    return;
-  }
   WaitValueBenchmark benchmark;
   benchmark.AddSectionName(std::to_string(array_size));
   benchmark.AddSectionName(GetFlagWaitSectionName(flag));
@@ -91,6 +68,11 @@ static void RunBenchmark(const size_t array_size, unsigned int flag) {
 }
 
 TEST_CASE("Performance_hipStreamWaitValue32") {
+  if (!IsStreamWaitValueSupported(0)) {
+    HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeCanUseStreamWaitValue "
+                           "attribute. Hence skipping the testing with Pass result.\n");
+    return;
+  }
   size_t array_size = GENERATE(4_KB, 4_MB, 16_MB);
   unsigned int flag = GENERATE(hipStreamWaitValueGte, hipStreamWaitValueEq,
                                hipStreamWaitValueAnd, hipStreamWaitValueNor);
@@ -98,6 +80,11 @@ TEST_CASE("Performance_hipStreamWaitValue32") {
 }
 
 TEST_CASE("Performance_hipStreamWaitValue64") {
+  if (!IsStreamWaitValueSupported(0)) {
+    HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeCanUseStreamWaitValue "
+                           "attribute. Hence skipping the testing with Pass result.\n");
+    return;
+  }
   size_t array_size = GENERATE(4_KB, 4_MB, 16_MB);
   unsigned int flag = GENERATE(hipStreamWaitValueGte, hipStreamWaitValueEq,
                                hipStreamWaitValueAnd, hipStreamWaitValueNor);

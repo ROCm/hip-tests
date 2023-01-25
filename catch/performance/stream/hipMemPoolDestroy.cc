@@ -17,19 +17,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
-#include <performance_common.hh>
-
-constexpr hipMemPoolProps kPoolProps = {
-  hipMemAllocationTypePinned,
-  hipMemHandleTypeNone,
-  {
-    hipMemLocationTypeDevice,
-    0
-  },
-  nullptr,
-  {0}
-};
+#include "stream_performance_common.hh"
 
 class MemPoolDestroyBenchmark : public Benchmark<MemPoolDestroyBenchmark> {
  public:
@@ -44,18 +32,15 @@ class MemPoolDestroyBenchmark : public Benchmark<MemPoolDestroyBenchmark> {
 };
 
 static void RunBenchmark() {
-  int mem_pools_supported = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&mem_pools_supported,
-                                  hipDeviceAttributeMemoryPoolsSupported, 0));
-  if (!mem_pools_supported) {
-    HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeMemoryPoolsSupported "
-                           "attribute. Hence skipping the testing with Pass result.\n");
-    return;
-  }
   MemPoolDestroyBenchmark benchmark;
   benchmark.Run();
 }
 
 TEST_CASE("Performance_hipMemPoolDestroy") {
+  if (!AreMemPoolsSupported(0)) {
+    HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeMemoryPoolsSupported "
+                           "attribute. Hence skipping the testing with Pass result.\n");
+    return;
+  }
   RunBenchmark();
 }

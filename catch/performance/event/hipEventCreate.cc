@@ -28,17 +28,6 @@ THE SOFTWARE.
  * Contains performance tests for all hipEvent related HIP APIs.
  */
 
-class HipEventDestroyBenchmark : public Benchmark<HipEventDestroyBenchmark> {
- public:
-  void operator()() {
-    hipEvent_t event;
-    HIP_CHECK(hipEventCreate(&event));
-
-
-    TIMED_SECTION(kTimerTypeCpu) { HIP_CHECK(hipEventDestroy(event)); }
-  }
-};
-
 class HipEventCreateBenchmark : public Benchmark<HipEventCreateBenchmark> {
  public:
   void operator()() {
@@ -50,37 +39,10 @@ class HipEventCreateBenchmark : public Benchmark<HipEventCreateBenchmark> {
   }
 };
 
-
-static std::string GetEventCreateFlagName(unsigned flag) {
-  switch (flag) {
-    case hipEventDefault:
-      return "hipEventDefault";
-    case hipEventBlockingSync:
-      return "hipEventBlockingSync";
-    case hipEventDisableTiming:
-      return "hipEventDisableTiming";
-    case hipEventInterprocess:
-      return "hipEventInterprocess";
-    default:
-      return "flag combination";
-  }
-}
-
-class HipEventCreateWithFlagsBenchmark : public Benchmark<HipEventCreateWithFlagsBenchmark> {
- public:
-  void operator()(unsigned flag) {
-    hipEvent_t event;
-
-    TIMED_SECTION(kTimerTypeCpu) { HIP_CHECK(hipEventCreateWithFlags(&event, flag)); }
-
-    HIP_CHECK(hipEventDestroy(event));
-  }
-};
-
 /**
  * Test Description
  * ------------------------
- *  - Executes `hipEventCreate`:
+ *  - Executes `hipEventCreate`
  * Test source
  * ------------------------
  *  - performance/event/hipEventCreate.cc
@@ -90,50 +52,5 @@ class HipEventCreateWithFlagsBenchmark : public Benchmark<HipEventCreateWithFlag
  */
 TEST_CASE("Performance_hipEventCreate") {
   HipEventCreateBenchmark benchmark;
-  benchmark.Run();
-}
-
-static void RunBenchmark(unsigned flag) {
-  HipEventCreateWithFlagsBenchmark benchmark;
-  benchmark.AddSectionName(GetEventCreateFlagName(flag));
-  benchmark.Run(flag);
-}
-
-/**
- * Test Description
- * ------------------------
- *  - Executes `hipEventCreateWithFlags` with all flags:
- *    -# Flags
- *      - hipEventDefault
- *      - hipEventBlockingSync
- *      - hipEventDisableTiming
- *      - hipEventInterprocess (currently disabled)
- * Test source
- * ------------------------
- *  - performance/event/hipEventCreate.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Performance_hipEventCreateWithFlags") {
-  const auto flag = GENERATE(
-      hipEventDefault, hipEventBlockingSync,
-      hipEventDisableTiming /*, hipEventInterprocess  disabled untill fixed (EXWHTEC-25) */);
-  RunBenchmark(flag);
-}
-
-/**
- * Test Description
- * ------------------------
- *  - Executes `hipEventDestroy`:
- * Test source
- * ------------------------
- *  - performance/event/hipEventCreate.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Performance_hipEventDestroy") {
-  HipEventDestroyBenchmark benchmark;
   benchmark.Run();
 }

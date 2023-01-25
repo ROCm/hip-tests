@@ -20,7 +20,9 @@
 
 set(TEST_SRC
     hipEventCreate.cc
+    hipEventCreateWithFlags.cc
     hipEventRecord.cc
+    hipEventDestroy.cc
     hipEventSynchronize.cc
     hipEventElapsedTime.cc
     hipEventQuery.cc

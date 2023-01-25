@@ -33,9 +33,9 @@ class HipEventQueryBenchmark : public Benchmark<HipEventQueryBenchmark> {
     hipEvent_t event;
     HIP_CHECK(hipEventCreate(&event));
     HIP_CHECK(hipEventRecord(event));
+    HIP_CHECK(hipEventSynchronize(event));
 
-
-    TIMED_SECTION(kTimerTypeCpu) { hipEventQuery(event); }
+    TIMED_SECTION(kTimerTypeCpu) { HIP_CHECK(hipEventQuery(event)); }
 
     HIP_CHECK(hipEventDestroy(event));
   }
@@ -44,10 +44,10 @@ class HipEventQueryBenchmark : public Benchmark<HipEventQueryBenchmark> {
 /**
  * Test Description
  * ------------------------
- *  - Executes `hipEventQuerry`
+ *  - Executes `hipEventQuery`
  * Test source
  * ------------------------
- *  - performance/event/hipEventQuerry.cc
+ *  - performance/event/hipEventQuery.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2

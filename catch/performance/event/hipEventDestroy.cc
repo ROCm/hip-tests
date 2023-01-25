@@ -27,44 +27,28 @@ THE SOFTWARE.
  * @ingroup PerformanceTest
  */
 
-class HipEventSynchronizeBenchmark : public Benchmark<HipEventSynchronizeBenchmark> {
+class HipEventDestroyBenchmark : public Benchmark<HipEventDestroyBenchmark> {
  public:
-  void operator()(unsigned flag) {
+  void operator()() {
     hipEvent_t event;
-    HIP_CHECK(hipEventCreateWithFlags(&event, flag));
-    HIP_CHECK(hipEventRecord(event));
+    HIP_CHECK(hipEventCreate(&event));
 
-    TIMED_SECTION(kTimerTypeCpu) { HIP_CHECK(hipEventSynchronize(event)); }
-
-    HIP_CHECK(hipEventDestroy(event));
+    TIMED_SECTION(kTimerTypeCpu) { HIP_CHECK(hipEventDestroy(event)); }
   }
 };
-
-static void RunBenchmark(unsigned flag) {
-  HipEventSynchronizeBenchmark benchmark;
-  if (flag == hipEventDefault) {
-    benchmark.AddSectionName("Default event");
-  } else {
-    benchmark.AddSectionName("Blocking sync event");
-  }
-  benchmark.Run(flag);
-}
 
 /**
  * Test Description
  * ------------------------
- *  - Executes `hipEventSynchronize`
- *    -# Checked on events created with flags:
- *      - hipEventDefault
- *      - hipEventBlockingSync
+ *  - Executes `hipEventDestroy`
  * Test source
  * ------------------------
- *  - performance/event/hipEventSynchronize.cc
+ *  - performance/event/hipEventCreate.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Performance_hipEventSynchronize") {
-  const auto flag = GENERATE(hipEventDefault, hipEventBlockingSync);
-  RunBenchmark(flag);
+TEST_CASE("Performance_hipEventDestroy") {
+  HipEventDestroyBenchmark benchmark;
+  benchmark.Run();
 }

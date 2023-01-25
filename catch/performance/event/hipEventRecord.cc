@@ -39,7 +39,6 @@ class HipEventRecordBenchmark : public Benchmark<HipEventRecordBenchmark> {
   }
 };
 
-
 static void RunBenchmark(hipStream_t stream) {
   HipEventRecordBenchmark benchmark;
   if (stream == NULL) {
@@ -65,10 +64,10 @@ static void RunBenchmark(hipStream_t stream) {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Performance_hipEventRecord") {
-  RunBenchmark(NULL);
+  SECTION("default stream") { RunBenchmark(nullptr); }
 
-  hipStream_t stream;
-  HIP_CHECK(hipStreamCreate(&stream));
-  RunBenchmark(stream);
-  HIP_CHECK(hipStreamDestroy(stream));
+  SECTION("created stream") {
+    StreamGuard stream(Streams::created);
+    RunBenchmark(stream.stream());
+  }
 }

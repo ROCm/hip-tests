@@ -27,44 +27,57 @@ THE SOFTWARE.
  * @ingroup PerformanceTest
  */
 
-class HipEventSynchronizeBenchmark : public Benchmark<HipEventSynchronizeBenchmark> {
+class HipEventCreateWithFlagsBenchmark : public Benchmark<HipEventCreateWithFlagsBenchmark> {
  public:
   void operator()(unsigned flag) {
     hipEvent_t event;
-    HIP_CHECK(hipEventCreateWithFlags(&event, flag));
-    HIP_CHECK(hipEventRecord(event));
 
-    TIMED_SECTION(kTimerTypeCpu) { HIP_CHECK(hipEventSynchronize(event)); }
+    TIMED_SECTION(kTimerTypeCpu) { HIP_CHECK(hipEventCreateWithFlags(&event, flag)); }
 
     HIP_CHECK(hipEventDestroy(event));
   }
 };
 
-static void RunBenchmark(unsigned flag) {
-  HipEventSynchronizeBenchmark benchmark;
-  if (flag == hipEventDefault) {
-    benchmark.AddSectionName("Default event");
-  } else {
-    benchmark.AddSectionName("Blocking sync event");
+static std::string GetEventCreateFlagName(unsigned flag) {
+  switch (flag) {
+    case hipEventDefault:
+      return "hipEventDefault";
+    case hipEventBlockingSync:
+      return "hipEventBlockingSync";
+    case hipEventDisableTiming:
+      return "hipEventDisableTiming";
+    case hipEventInterprocess:
+      return "hipEventInterprocess";
+    default:
+      return "flag combination";
   }
+}
+
+static void RunBenchmark(unsigned flag) {
+  HipEventCreateWithFlagsBenchmark benchmark;
+  benchmark.AddSectionName(GetEventCreateFlagName(flag));
   benchmark.Run(flag);
 }
 
 /**
  * Test Description
  * ------------------------
- *  - Executes `hipEventSynchronize`
- *    -# Checked on events created with flags:
+ *  - Executes `hipEventCreateWithFlags` with all flags:
+ *    -# Flags
  *      - hipEventDefault
  *      - hipEventBlockingSync
+ *      - hipEventDisableTiming
+ *      - hipEventInterprocess (currently disabled)
  * Test source
  * ------------------------
- *  - performance/event/hipEventSynchronize.cc
+ *  - performance/event/hipEventCreate.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Performance_hipEventSynchronize") {
-  const auto flag = GENERATE(hipEventDefault, hipEventBlockingSync);
+TEST_CASE("Performance_hipEventCreateWithFlags") {
+  const auto flag = GENERATE(
+      hipEventDefault, hipEventBlockingSync,
+      hipEventDisableTiming /*, hipEventInterprocess  disabled until fixed (EXSWHTEC-25) */);
   RunBenchmark(flag);
 }

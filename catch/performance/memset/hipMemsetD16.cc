@@ -35,7 +35,9 @@ class MemsetD16Benchmark : public Benchmark<MemsetD16Benchmark> {
   void operator()(LinearAllocs allocation_type, size_t size) {
     LinearAllocGuard<void> dst(allocation_type, size);
 
-    TIMED_SECTION(kTimerTypeEvent) { HIP_CHECK(hipMemsetD16(dst.ptr(), 311, size)); }
+    TIMED_SECTION(kTimerTypeEvent) {
+      HIP_CHECK(hipMemsetD16(reinterpret_cast<hipDeviceptr_t>(dst.ptr()), 311, size));
+    }
   }
 };
 

@@ -2,6 +2,7 @@
 set(TEST_SRC
   hipOccupancyMaxActiveBlocksPerMultiprocessor.cc
   hipOccupancyMaxPotentialBlockSize.cc
+  hipOccupancyMaxPotentialBlockSizeVariableSMemWithFlags.cc
 )
 
 hip_add_exe_to_target(NAME OccupancyTest

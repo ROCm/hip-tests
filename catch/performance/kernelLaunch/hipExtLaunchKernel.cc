@@ -38,16 +38,16 @@ class ExtLaunchKernelBenchmark
   constexpr void LaunchKernel() {
     if constexpr (kernel_type == KernelType::kNull) {
       error_ = hipExtLaunchKernel(reinterpret_cast<void*>(NullKernel), 1, 1, nullptr, 0, nullptr,
-                                  nullptr, nullptr, 0u);
+                                  events_[0], events_[1], 0u);
     } else if constexpr (kernel_type == KernelType::kSmall) {
       error_ = hipExtLaunchKernel(reinterpret_cast<void*>(SmallKernel), 1, 1, small_kernel_args_, 0,
-                                  nullptr, nullptr, nullptr, 0u);
+                                  nullptr, events_[0], events_[1], 0u);
     } else if constexpr (kernel_type == KernelType::kMedium) {
       error_ = hipExtLaunchKernel(reinterpret_cast<void*>(MediumKernel), 1, 1, medium_kernel_args_,
-                                  0, nullptr, nullptr, nullptr, 0u);
+                                  0, nullptr, events_[0], events_[1], 0u);
     } else if constexpr (kernel_type == KernelType::kLarge) {
       error_ = hipExtLaunchKernel(reinterpret_cast<void*>(LargeKernel), 1, 1, large_kernel_args_, 0,
-                                  nullptr, nullptr, nullptr, 0u);
+                                  nullptr, events_[0], events_[1], 0u);
     } else
       ;
   }
@@ -55,6 +55,7 @@ class ExtLaunchKernelBenchmark
   hipError_t GetError() { return error_; }
 
  private:
+  EventsGuard events_{2};
   hipError_t error_;
 
   void* small_kernel_args_[1] = {&small_kernel_args};
@@ -84,7 +85,7 @@ template <KernelType kernel_type, bool timer_type> static void RunBenchmark(bool
  *    -# With different kernel argument sizes
  * Test source
  * ------------------------
- *  - performance/kernelLaunch/triple_chevron.cc
+ *  - performance/kernelLaunch/hipExtLaunchKernel.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2

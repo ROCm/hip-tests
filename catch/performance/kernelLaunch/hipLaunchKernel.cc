@@ -80,7 +80,7 @@ template <KernelType kernel_type, bool timer_type> static void RunBenchmark(bool
  *    -# With different kernel argument sizes
  * Test source
  * ------------------------
- *  - performance/kernelLaunch/triple_chevron.cc
+ *  - performance/kernelLaunch/hipLaunchKernel.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2

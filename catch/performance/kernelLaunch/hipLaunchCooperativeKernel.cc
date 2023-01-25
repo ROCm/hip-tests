@@ -86,9 +86,10 @@ template <KernelType kernel_type, bool timer_type> static void RunBenchmark(bool
  *    -# With different kernel argument sizes
  * Test source
  * ------------------------
- *  - performance/kernelLaunch/triple_chevron.cc
+ *  - performance/kernelLaunch/hipLaunchCooperativeKernel.cc
  * Test requirements
  * ------------------------
+ *  - Device supports CooperativeLaunch
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Performance_hipLaunchCooperativeKernel") {

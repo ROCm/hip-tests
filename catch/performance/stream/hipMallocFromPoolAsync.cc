@@ -26,7 +26,7 @@ class MallocFromPoolAsyncBenchmark : public Benchmark<MallocFromPoolAsyncBenchma
     const hipStream_t stream = stream_guard.stream();
 
     hipMemPool_t mem_pool{nullptr};
-    hipMemPoolProps pool_props = CreateMemPoolProps(0);
+    hipMemPoolProps pool_props = CreateMemPoolProps(0, hipMemHandleTypeNone);
     HIP_CHECK(hipMemPoolCreate(&mem_pool, &pool_props));
 
     float* array_ptr{nullptr};

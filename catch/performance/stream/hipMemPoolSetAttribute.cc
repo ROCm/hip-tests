@@ -23,7 +23,7 @@ class MemPoolSetAttributeBenchmark : public Benchmark<MemPoolSetAttributeBenchma
  public:
   void operator()(const hipMemPoolAttr attribute) {
     hipMemPool_t mem_pool{nullptr};
-    hipMemPoolProps pool_props = CreateMemPoolProps(0);
+    hipMemPoolProps pool_props = CreateMemPoolProps(0, hipMemHandleTypeNone);
     HIP_CHECK(hipMemPoolCreate(&mem_pool, &pool_props));
 
     int value{0};

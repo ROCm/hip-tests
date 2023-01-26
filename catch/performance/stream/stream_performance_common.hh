@@ -50,10 +50,10 @@ static int AreMemPoolsSupported(int device_id) {
   return mem_pools_supported;
 }
 
-static hipMemPoolProps CreateMemPoolProps(const int device_id) {
+static hipMemPoolProps CreateMemPoolProps(const int device_id, const hipMemAllocationHandleType handle_type) {
   hipMemPoolProps kPoolProps = {
     hipMemAllocationTypePinned,
-    hipMemHandleTypeNone,
+    handle_type,
     {
       hipMemLocationTypeDevice,
       device_id

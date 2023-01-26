@@ -19,31 +19,42 @@ THE SOFTWARE.
 
 #include "stream_performance_common.hh"
 
-class MemPoolCreateBenchmark : public Benchmark<MemPoolCreateBenchmark> {
+class MemPoolImportPointerBenchmark : public Benchmark<MemPoolImportPointerBenchmark> {
  public:
-  void operator()() {
+  void operator()(const size_t array_size) {
+    float* device_ptr{nullptr};
+    float* device_ptr_import{nullptr};
     hipMemPool_t mem_pool{nullptr};
-    hipMemPoolProps pool_props = CreateMemPoolProps(0, hipMemHandleTypeNone);
+    hipMemPoolPtrExportData exp_data;
+
+    hipMemPoolProps props = CreateMemPoolProps(0, hipMemHandleTypePosixFileDescriptor);
+    HIP_CHECK(hipMemPoolCreate(&mem_pool, &props));
+    HIP_CHECK(hipMallocFromPoolAsync(&device_ptr, array_size * sizeof(float), mem_pool, nullptr));
+    HIP_CHECK(hipStreamSynchronize(nullptr));
+    HIP_CHECK(hipMemPoolExportPointer(&exp_data, device_ptr));
 
     TIMED_SECTION(kTimerTypeCpu) {
-      HIP_CHECK(hipMemPoolCreate(&mem_pool, &pool_props));
+      HIP_CHECK(hipMemPoolImportPointer(reinterpret_cast<void**>(device_ptr_import), mem_pool, &exp_data));
     }
 
-    REQUIRE(mem_pool != nullptr);
+    HIP_CHECK(hipFree(device_ptr));
+    HIP_CHECK(hipFree(device_ptr_import));
     HIP_CHECK(hipMemPoolDestroy(mem_pool));
   }
 };
 
-static void RunBenchmark() {
-  MemPoolCreateBenchmark benchmark;
-  benchmark.Run();
+static void RunBenchmark(const size_t array_size) {
+  MemPoolImportPointerBenchmark benchmark;
+  benchmark.AddSectionName(std::to_string(array_size));
+  benchmark.Run(array_size);
 }
 
-TEST_CASE("Performance_hipMemPoolCreate") {
+TEST_CASE("Performance_hipMemPoolImportPointer") {
   if (!AreMemPoolsSupported(0)) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeMemoryPoolsSupported "
                            "attribute. Hence skipping the testing with Pass result.\n");
     return;
   }
-  RunBenchmark();
+  size_t array_size = GENERATE(4_KB, 4_MB, 16_MB);
+  RunBenchmark(array_size);
 }

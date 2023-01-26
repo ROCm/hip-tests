@@ -23,7 +23,7 @@ class MemPoolDestroyBenchmark : public Benchmark<MemPoolDestroyBenchmark> {
  public:
   void operator()() {
     hipMemPool_t mem_pool{nullptr};
-    hipMemPoolProps pool_props = CreateMemPoolProps(0);
+    hipMemPoolProps pool_props = CreateMemPoolProps(0, hipMemHandleTypeNone);
     HIP_CHECK(hipMemPoolCreate(&mem_pool, &pool_props));
 
     TIMED_SECTION(kTimerTypeCpu) {

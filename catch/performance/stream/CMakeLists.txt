@@ -36,6 +36,10 @@ set(TEST_SRC
     hipMemPoolGetAttribute.cc
     hipMemPoolSetAccess.cc
     hipMallocFromPoolAsync.cc
+    hipMemPoolExportToShareableHandle.cc
+    hipMemPoolImportFromShareableHandle.cc
+    hipMemPoolExportPointer.cc
+    hipMemPoolImportPointer.cc
 )
 
 hip_add_exe_to_target(NAME StreamPerformance

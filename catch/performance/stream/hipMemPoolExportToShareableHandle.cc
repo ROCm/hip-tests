@@ -19,27 +19,29 @@ THE SOFTWARE.
 
 #include "stream_performance_common.hh"
 
-class MemPoolCreateBenchmark : public Benchmark<MemPoolCreateBenchmark> {
+class MemPoolExportToShareableHandleBenchmark : public Benchmark<MemPoolExportToShareableHandleBenchmark> {
  public:
   void operator()() {
     hipMemPool_t mem_pool{nullptr};
-    hipMemPoolProps pool_props = CreateMemPoolProps(0, hipMemHandleTypeNone);
+    int share_handle;
+
+    hipMemPoolProps props = CreateMemPoolProps(0, hipMemHandleTypePosixFileDescriptor);
+    HIP_CHECK(hipMemPoolCreate(&mem_pool, &props));
 
     TIMED_SECTION(kTimerTypeCpu) {
-      HIP_CHECK(hipMemPoolCreate(&mem_pool, &pool_props));
+      HIP_CHECK(hipMemPoolExportToShareableHandle(&share_handle, mem_pool, hipMemHandleTypePosixFileDescriptor, 0));
     }
 
-    REQUIRE(mem_pool != nullptr);
     HIP_CHECK(hipMemPoolDestroy(mem_pool));
   }
 };
 
 static void RunBenchmark() {
-  MemPoolCreateBenchmark benchmark;
+  MemPoolExportToShareableHandleBenchmark benchmark;
   benchmark.Run();
 }
 
-TEST_CASE("Performance_hipMemPoolCreate") {
+TEST_CASE("Performance_hipMemPoolExportToShareableHandle") {
   if (!AreMemPoolsSupported(0)) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeMemoryPoolsSupported "
                            "attribute. Hence skipping the testing with Pass result.\n");

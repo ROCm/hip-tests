@@ -55,9 +55,9 @@ static void RunBenchmark() {
 
 /**
  * @warning **MemPool APIs are not fully implemented within current version
- *          or HIP and therefore they cannot be executed on AMD and NVIDIA platforms.
- *          Therefore, all tests related to MemPool APIs are implemented without appropriate
- *          verification and will be verified once HIP supports MemPool APIs.**
+ *          or HIP and therefore they cannot be appropriately executed on AMD and NVIDIA platforms.
+ *          Therefore, all tests related to MemPool APIs are implemented without formal
+ *          verification and will be verified once HIP fully supports MemPool APIs.**
  * Test Description
  * ------------------------
  *  - Executes `hipMemPoolSetAccess` with `hipMemAccessFlagsProtReadWrite`.

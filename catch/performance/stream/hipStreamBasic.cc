@@ -39,6 +39,7 @@ THE SOFTWARE.
 class HipStreamQueryBenchmark : public Benchmark<HipStreamQueryBenchmark> {
  public:
   void operator()(bool perform_work) {
+    hipError_t error;
     hipStream_t stream;
     HIP_CHECK(hipStreamCreate(&stream));
     void *dptr;
@@ -47,7 +48,7 @@ class HipStreamQueryBenchmark : public Benchmark<HipStreamQueryBenchmark> {
       HIP_CHECK(hipMallocAsync(&dptr, 2048 * 4, stream));
     }
 
-    TIMED_SECTION(kTimerTypeCpu) { hipStreamQuery(stream); }
+    TIMED_SECTION(kTimerTypeCpu) { error = hipStreamQuery(stream); }
     
     if(perform_work) {
       HIP_CHECK(hipFreeAsync(dptr, stream));
@@ -61,10 +62,11 @@ class HipStreamQueryBenchmark : public Benchmark<HipStreamQueryBenchmark> {
 class HipStreamSynchronizeBenchmark : public Benchmark<HipStreamSynchronizeBenchmark> {
  public:
   void operator()() {
+    hipError_t error;
     hipStream_t stream;
     HIP_CHECK(hipStreamCreate(&stream));
     
-    TIMED_SECTION(kTimerTypeCpu) { hipStreamSynchronize(stream); }
+    TIMED_SECTION(kTimerTypeCpu) { error = hipStreamSynchronize(stream); }
       
     HIP_CHECK(hipStreamDestroy(stream));
   }

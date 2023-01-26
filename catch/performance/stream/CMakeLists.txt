@@ -41,6 +41,7 @@ set(TEST_SRC
     hipMemPoolImportFromShareableHandle.cc
     hipMemPoolExportPointer.cc
     hipMemPoolImportPointer.cc
+    hipStreamBasic.cc
 )
 else()
 set(TEST_SRC
@@ -52,6 +53,7 @@ set(TEST_SRC
     hipStreamWriteValue.cc
     hipMallocAsync.cc
     hipFreeAsync.cc
+    hipStreamBasic.cc
 )
 endif()
 

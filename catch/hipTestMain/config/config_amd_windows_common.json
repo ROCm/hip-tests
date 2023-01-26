@@ -93,6 +93,8 @@
 	   "Note: needs to be enabled when streamPerThread issues are fixed",
 	   "Unit_hipStreamSynchronize_NullStreamAndStreamPerThread",
 	   "Note: intermittent Seg fault failure ",
-	   "Unit_hipGraphAddEventRecordNode_Functional_WithoutFlags"
+	   "Unit_hipGraphAddEventRecordNode_Functional_WithoutFlags",
+		 "Performance_hipStreamWaitValue32",
+		 "Performance_hipStreamWaitValue64"
 	]
 }

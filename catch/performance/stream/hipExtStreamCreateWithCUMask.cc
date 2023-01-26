@@ -20,6 +20,13 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <performance_common.hh>
 
+/**
+ * @addtogroup stream stream
+ * @{
+ * @ingroup PerformanceTest
+ * Contains performance tests for all stream management HIP APIs.
+ */
+
 class ExtStreamCreateWithCUMaskBenchmark : public Benchmark<ExtStreamCreateWithCUMaskBenchmark> {
  public:
   void operator()() {
@@ -41,6 +48,17 @@ static void RunBenchmark() {
   benchmark.Run();
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipExtStreamCreateWithCUMask`.
+ * Test source
+ * ------------------------
+ *  - performance/stream/hipExtStreamCreateWithCUMask.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipExtStreamCreateWithCUMask") {
   RunBenchmark();
 }

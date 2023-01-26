@@ -20,6 +20,12 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <performance_common.hh>
 
+/**
+ * @addtogroup stream stream
+ * @{
+ * @ingroup PerformanceTest
+ */
+
 class StreamGetPriorityBenchmark : public Benchmark<StreamGetPriorityBenchmark> {
  public:
   void operator()(Streams stream_type) {
@@ -48,6 +54,20 @@ static void RunBenchmark(Streams stream_type) {
   benchmark.Run(stream_type);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipStreamGetPriority`:
+ *    -# Stream types:
+ *      - `null`
+ *      - created
+ * Test source
+ * ------------------------
+ *  - performance/stream/hipStreamGetPriority.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipStreamGetPriority") {
   Streams stream_type = GENERATE(Streams::nullstream, Streams::created);
   RunBenchmark(stream_type);

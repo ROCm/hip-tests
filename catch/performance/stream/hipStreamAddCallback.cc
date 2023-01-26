@@ -20,6 +20,12 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <performance_common.hh>
 
+/**
+ * @addtogroup stream stream
+ * @{
+ * @ingroup PerformanceTest
+ */
+
 void Callback(hipStream_t stream, hipError_t status, void* user_data) {}
 
 class StreamAddCallbackBenchmark : public Benchmark<StreamAddCallbackBenchmark> {
@@ -39,6 +45,17 @@ static void RunBenchmark() {
   benchmark.Run();
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipStreamAddCallback` on the created stream.
+ * Test source
+ * ------------------------
+ *  - performance/stream/hipStreamAddCallback.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipStreamAddCallback") {
   RunBenchmark();
 }

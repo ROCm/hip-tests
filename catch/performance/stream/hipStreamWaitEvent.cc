@@ -20,6 +20,12 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <performance_common.hh>
 
+/**
+ * @addtogroup stream stream
+ * @{
+ * @ingroup PerformanceTest
+ */
+
 class StreamWaitEventBenchmark : public Benchmark<StreamWaitEventBenchmark> {
  public:
   void operator()(Streams stream_type) {
@@ -54,6 +60,20 @@ static void RunBenchmark(Streams stream_type) {
   benchmark.Run(stream_type);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipStreamWaitEvent`:
+ *    -# Stream types:
+ *      - `null`
+ *      - created
+ * Test source
+ * ------------------------
+ *  - performance/stream/hipStreamWaitEvent.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipStreamWaitEvent") {
   Streams stream_type = GENERATE(Streams::nullstream, Streams::created);
   RunBenchmark(stream_type);

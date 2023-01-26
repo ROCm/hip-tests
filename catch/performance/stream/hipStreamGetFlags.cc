@@ -20,6 +20,12 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <performance_common.hh>
 
+/**
+ * @addtogroup stream stream
+ * @{
+ * @ingroup PerformanceTest
+ */
+
 class StreamGetFlagsBenchmark : public Benchmark<StreamGetFlagsBenchmark> {
  public:
   void operator()(unsigned int expected_flag) {
@@ -49,6 +55,20 @@ static void RunBenchmark(unsigned int expected_flag) {
   benchmark.Run(expected_flag);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipStreamGetFlags`:
+ *    -# Flags:
+ *      - `hipStreamDefault`
+ *      - `hipStreamNonBlocking`
+ * Test source
+ * ------------------------
+ *  - performance/stream/hipStreamGetFlags.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipStreamGetFlags") {
   unsigned int expected_flag = GENERATE(hipStreamDefault, hipStreamNonBlocking);
   RunBenchmark(expected_flag);

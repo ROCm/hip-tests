@@ -20,6 +20,12 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <performance_common.hh>
 
+/**
+ * @addtogroup stream stream
+ * @{
+ * @ingroup PerformanceTest
+ */
+
 class StreamWriteValue32Benchmark : public Benchmark<StreamWriteValue32Benchmark> {
  public:
   void operator()(const size_t array_size) {
@@ -61,11 +67,41 @@ static void RunBenchmark(const size_t array_size) {
   benchmark.Run(array_size);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipStreamWriteValue32`:
+ *    -# Allocation size:
+ *      - 4 KB
+ *      - 4 MB
+ *      - 16 MB
+ * Test source
+ * ------------------------
+ *  - performance/stream/hipStreamWriteValue.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipStreamWriteValue32") {
   size_t array_size = GENERATE(4_KB, 4_MB, 16_MB);
   RunBenchmark<StreamWriteValue32Benchmark>(array_size);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipStreamWriteValue64`:
+ *    -# Allocation size:
+ *      - 4 KB
+ *      - 4 MB
+ *      - 16 MB
+ * Test source
+ * ------------------------
+ *  - performance/stream/hipStreamWriteValue.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipStreamWriteValue64") {
   size_t array_size = GENERATE(4_KB, 4_MB, 16_MB);
   RunBenchmark<StreamWriteValue64Benchmark>(array_size);

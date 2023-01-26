@@ -20,6 +20,12 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <performance_common.hh>
 
+/**
+ * @addtogroup stream stream
+ * @{
+ * @ingroup PerformanceTest
+ */
+
 class MallocAsyncBenchmark : public Benchmark<MallocAsyncBenchmark> {
  public:
   void operator()(const size_t array_size) {
@@ -41,7 +47,22 @@ static void RunBenchmark(const size_t array_size) {
   benchmark.Run(array_size);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMallocAsync` with created stream:
+ *    -# Allocation size:
+ *      - 4 KB
+ *      - 4 MB
+ *      - 16 MB
+ * Test source
+ * ------------------------
+ *  - performance/stream/hipMallocAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMallocAsync") {
-  size_t array_size = GENERATE(4_KB, 5_MB, 16_MB);
+  size_t array_size = GENERATE(4_KB, 4_MB, 16_MB);
   RunBenchmark(array_size);
 }

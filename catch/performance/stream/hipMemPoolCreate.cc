@@ -19,6 +19,12 @@ THE SOFTWARE.
 
 #include "stream_performance_common.hh"
 
+/**
+ * @addtogroup stream stream
+ * @{
+ * @ingroup PerformanceTest
+ */
+
 class MemPoolCreateBenchmark : public Benchmark<MemPoolCreateBenchmark> {
  public:
   void operator()() {
@@ -39,6 +45,22 @@ static void RunBenchmark() {
   benchmark.Run();
 }
 
+/**
+ * @warning **MemPool APIs are not fully implemented within current version
+ *          or HIP and therefore they cannot be executed on AMD and NVIDIA platforms.
+ *          Therefore, all tests related to MemPool APIs are implemented without appropriate
+ *          verification and will be verified once HIP supports MemPool APIs.**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemPoolCreate`.
+ * Test source
+ * ------------------------
+ *  - performance/stream/hipMemPoolCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports memory pools
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemPoolCreate") {
   if (!AreMemPoolsSupported(0)) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeMemoryPoolsSupported "

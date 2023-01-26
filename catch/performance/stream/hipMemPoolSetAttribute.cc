@@ -19,6 +19,12 @@ THE SOFTWARE.
 
 #include "stream_performance_common.hh"
 
+/**
+ * @addtogroup stream stream
+ * @{
+ * @ingroup PerformanceTest
+ */
+
 class MemPoolSetAttributeBenchmark : public Benchmark<MemPoolSetAttributeBenchmark> {
  public:
   void operator()(const hipMemPoolAttr attribute) {
@@ -42,6 +48,27 @@ static void RunBenchmark(const hipMemPoolAttr attribute) {
   benchmark.Run(attribute);
 }
 
+/**
+ * @warning **MemPool APIs are not fully implemented within current version
+ *          or HIP and therefore they cannot be executed on AMD and NVIDIA platforms.
+ *          Therefore, all tests related to MemPool APIs are implemented without appropriate
+ *          verification and will be verified once HIP supports MemPool APIs.**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemPoolSetAttribute`:
+ *    -# Supported attributes:
+ *      - `hipMemPoolAttrReleaseThreshold`
+ *      - `hipMemPoolReuseFollowEventDependencies`
+ *      - `hipMemPoolReuseAllowOpportunistic`
+ *      - `hipMemPoolReuseAllowInternalDependencies`
+ * Test source
+ * ------------------------
+ *  - performance/stream/hipMemPoolSetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports memory pools
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemPoolSetAttribute") {
   if (!AreMemPoolsSupported(0)) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeMemoryPoolsSupported "

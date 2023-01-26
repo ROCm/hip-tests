@@ -19,6 +19,12 @@ THE SOFTWARE.
 
 #include "stream_performance_common.hh"
 
+/**
+ * @addtogroup stream stream
+ * @{
+ * @ingroup PerformanceTest
+ */
+
 class MemPoolTrimToBenchmark : public Benchmark<MemPoolTrimToBenchmark> {
  public:
   void operator()(const size_t min_bytes_to_hold) {
@@ -40,6 +46,26 @@ static void RunBenchmark(const size_t min_bytes_to_hold) {
   benchmark.Run(min_bytes_to_hold);
 }
 
+/**
+ * @warning **MemPool APIs are not fully implemented within current version
+ *          or HIP and therefore they cannot be executed on AMD and NVIDIA platforms.
+ *          Therefore, all tests related to MemPool APIs are implemented without appropriate
+ *          verification and will be verified once HIP supports MemPool APIs.**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMemPoolTrimTo`:
+ *    -# Minimum bytes to hold:
+ *      - 4 KB
+ *      - 4 MB
+ *      - 16 MB
+ * Test source
+ * ------------------------
+ *  - performance/stream/hipMemPoolTrimTo.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports memory pools
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMemPoolTrimTo") {
   if (!AreMemPoolsSupported(0)) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeMemoryPoolsSupported "

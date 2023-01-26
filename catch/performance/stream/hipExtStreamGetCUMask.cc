@@ -20,6 +20,12 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <performance_common.hh>
 
+/**
+ * @addtogroup stream stream
+ * @{
+ * @ingroup PerformanceTest
+ */
+
 class ExtStreamGetCUMaskBenchmark : public Benchmark<ExtStreamGetCUMaskBenchmark> {
  public:
   void operator()() {
@@ -43,6 +49,18 @@ static void RunBenchmark() {
   benchmark.Run();
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipExtStreamGetCUMask`.
+ *  - Creates basic mask and gets it into the new one.
+ * Test source
+ * ------------------------
+ *  - performance/stream/hipExtStreamGetCUMask.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipExtStreamGetCUMask") {
   RunBenchmark();
 }

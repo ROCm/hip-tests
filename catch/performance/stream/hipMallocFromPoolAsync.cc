@@ -19,6 +19,12 @@ THE SOFTWARE.
 
 #include "stream_performance_common.hh"
 
+/**
+ * @addtogroup stream stream
+ * @{
+ * @ingroup PerformanceTest
+ */
+
 class MallocFromPoolAsyncBenchmark : public Benchmark<MallocFromPoolAsyncBenchmark> {
  public:
   void operator()(const size_t array_size) {
@@ -49,6 +55,22 @@ static void RunBenchmark(const size_t array_size) {
   benchmark.Run(array_size);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipMallocFromPoolAsync`:
+ *    -# Allocation size:
+ *      - 4 KB
+ *      - 4 MB
+ *      - 16 MB
+ * Test source
+ * ------------------------
+ *  - performance/stream/hipMallocFromPoolAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports memory pools
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipMallocFromPoolAsync") {
   if (!AreMemPoolsSupported(0)) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeMemoryPoolsSupported "

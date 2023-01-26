@@ -19,6 +19,12 @@ THE SOFTWARE.
 
 #include "stream_performance_common.hh"
 
+/**
+ * @addtogroup stream stream
+ * @{
+ * @ingroup PerformanceTest
+ */
+
 class StreamWaitValue32Benchmark : public Benchmark<StreamWaitValue32Benchmark> {
  public:
   void operator()(const size_t array_size, unsigned int flag) {
@@ -67,6 +73,26 @@ static void RunBenchmark(const size_t array_size, unsigned int flag) {
   benchmark.Run(array_size, flag);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipStreamWaitValue32` for different array sizes:
+ *    -# 4 KB
+ *    -# 4 MB
+ *    -# 16 MB
+ *  - Uses different flag types for wait criteria:
+ *    -# Greater than or equal
+ *    -# Equal
+ *    -# Logical AND
+ *    -# Logical OR
+ * Test source
+ * ------------------------
+ *  - performance/stream/hipStreamWaitValue.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports Stream Wait Value operations
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipStreamWaitValue32") {
   if (!IsStreamWaitValueSupported(0)) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeCanUseStreamWaitValue "
@@ -79,6 +105,27 @@ TEST_CASE("Performance_hipStreamWaitValue32") {
   RunBenchmark<StreamWaitValue32Benchmark>(array_size, flag);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hipStreamWaitValue64`:
+ *    -# Allocation size:
+ *      - 4 KB
+ *      - 4 MB
+ *      - 16 MB
+ *    -# Wait type:
+ *      - Greater than or equal
+ *      - Equal
+ *      - Logical AND
+ *      - Logical OR
+ * Test source
+ * ------------------------
+ *  - performance/stream/hipStreamWaitValue.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports Stream Wait Value operations
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Performance_hipStreamWaitValue64") {
   if (!IsStreamWaitValueSupported(0)) {
     HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeCanUseStreamWaitValue "

@@ -30,7 +30,7 @@ THE SOFTWARE.
 TEST_CASE("Unit_hipMemcpyParam2D_Positive_Basic") {
   constexpr bool async = false;
 
-#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-236
+#if HT_NVIDIA  // Disabled on AMD due to defect - EXSWHTEC-236
   SECTION("Device to Host") { Memcpy2DDeviceToHostShell<async>(MemcpyParam2DAdapter<async>()); }
 #endif
 
@@ -45,7 +45,7 @@ TEST_CASE("Unit_hipMemcpyParam2D_Positive_Basic") {
 
   SECTION("Host to Device") { Memcpy2DHostToDeviceShell<async>(MemcpyParam2DAdapter<async>()); }
 
-#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-236
+#if HT_NVIDIA  // Disabled on AMD due to defect - EXSWHTEC-236
   SECTION("Host to Host") { Memcpy2DHostToHostShell<async>(MemcpyParam2DAdapter<async>()); }
 #endif
 }
@@ -59,15 +59,21 @@ TEST_CASE("Unit_hipMemcpyParam2D_Positive_Synchronization_Behavior") {
     Memcpy2DDtoHPageableSyncBehavior(MemcpyParam2DAdapter<>(), true);
   }
 
-#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-236
+#if HT_NVIDIA  // Disabled on AMD due to defect - EXSWHTEC-236
   SECTION("Device to Pinned Host") {
     Memcpy2DDtoHPinnedSyncBehavior(MemcpyParam2DAdapter<>(), true);
   }
 #endif
 
-#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-232
-  SECTION("Device to Device") { Memcpy2DDtoDSyncBehavior(MemcpyParam2DAdapter<>(), false); }
+  SECTION("Device to Device") {
+#if HT_NVIDIA
+    Memcpy2DDtoDSyncBehavior(MemcpyParam2DAdapter<>(), false);
+#else
+    Memcpy2DDtoDSyncBehavior(MemcpyParam2DAdapter<>(), true);
+#endif
+  }
 
+#if HT_NVIDIA  // Disabled on AMD due to defect - EXSWHTEC-232
   SECTION("Host to Host") { Memcpy2DHtoHSyncBehavior(MemcpyParam2DAdapter<>(), true); }
 #endif
 }
@@ -131,7 +137,7 @@ TEST_CASE("Unit_hipMemcpyParam2D_Negative_Parameters") {
                       hipErrorInvalidValue);
     }
 
-#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-237
+#if HT_NVIDIA  // Disabled on AMD due to defect - EXSWHTEC-237
     SECTION("WidthInBytes + srcXInBytes > srcPitch") {
       HIP_CHECK_ERROR(MemcpyParam2DAdapter<>(make_hipExtent(spitch - width + 1, 0, 0))(
                           dst, dpitch, src, spitch, width, height, kind),

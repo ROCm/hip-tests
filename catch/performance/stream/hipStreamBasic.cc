@@ -191,7 +191,7 @@ TEST_CASE("Performance_hipStreamCreateWithFlags") {
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Performance_hipStreamCreateWithFlags") {
+TEST_CASE("Performance_hipStreamCreateWithPriority") {
   const auto flag = GENERATE(hipStreamDefault, hipStreamNonBlocking);
   RunBenchmarkWithPriority(flag);
 }

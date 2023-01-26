@@ -44,14 +44,14 @@ class HipStreamQueryBenchmark : public Benchmark<HipStreamQueryBenchmark> {
     void *dptr;
     
     if(perform_work) {
-      hipMallocAsync(&dptr, 2048 * 4, stream);
+      HIP_CHECK(hipMallocAsync(&dptr, 2048 * 4, stream));
     }
 
     TIMED_SECTION(kTimerTypeCpu) { hipStreamQuery(stream); }
     
     if(perform_work) {
-      hipFreeAsync(dptr, stream);
-      hipStreamSynchronize(stream);
+      HIP_CHECK(hipFreeAsync(dptr, stream));
+      HIP_CHECK(hipStreamSynchronize(stream));
     }
     
     HIP_CHECK(hipStreamDestroy(stream));
@@ -97,7 +97,7 @@ class HipStreamCreateWithPriorityBenchmark : public Benchmark<HipStreamCreateWit
     hipStream_t stream;
     int priority_min, priority_max, priority_mid;
     
-    hipDeviceGetStreamPriorityRange(&priority_min, &priority_max);
+    HIP_CHECK(hipDeviceGetStreamPriorityRange(&priority_min, &priority_max));
     priority_mid = (priority_max + priority_min) / 2;
     
     TIMED_SECTION(kTimerTypeCpu) { HIP_CHECK(hipStreamCreateWithPriority(&stream, flag, priority_mid)); }

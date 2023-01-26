@@ -26,7 +26,7 @@ class MemPoolExportPointerBenchmark : public Benchmark<MemPoolExportPointerBench
     hipMemPool_t mem_pool{nullptr};
     hipMemPoolPtrExportData exp_data;
 
-    hipMemPoolProps props = CreateMemPoolProps(0, hipMemHandleTypePosixFileDescriptor);
+    hipMemPoolProps props = CreateMemPoolProps(0, kHandleType);
     HIP_CHECK(hipMemPoolCreate(&mem_pool, &props));
     HIP_CHECK(hipMallocFromPoolAsync(&device_ptr, array_size * sizeof(float), mem_pool, nullptr));
     HIP_CHECK(hipStreamSynchronize(nullptr));

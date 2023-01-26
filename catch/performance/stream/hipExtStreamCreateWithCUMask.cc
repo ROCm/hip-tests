@@ -57,6 +57,7 @@ static void RunBenchmark() {
  *  - performance/stream/hipExtStreamCreateWithCUMask.cc
  * Test requirements
  * ------------------------
+ *  - Platform specific (AMD)
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Performance_hipExtStreamCreateWithCUMask") {

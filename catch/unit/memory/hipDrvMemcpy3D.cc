@@ -31,7 +31,7 @@ THE SOFTWARE.
 TEST_CASE("Unit_hipDrvMemcpy3D_Positive_Basic") {
   constexpr bool async = false;
 
-#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-236
+#if HT_NVIDIA  // Disabled on AMD due to defect - EXSWHTEC-236
   SECTION("Device to Host") { Memcpy3DDeviceToHostShell<async>(DrvMemcpy3DWrapper<>); }
 #endif
 
@@ -46,7 +46,7 @@ TEST_CASE("Unit_hipDrvMemcpy3D_Positive_Basic") {
 
   SECTION("Host to Device") { Memcpy3DHostToDeviceShell<async>(DrvMemcpy3DWrapper<>); }
 
-#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-236
+#if HT_NVIDIA  // Disabled on AMD due to defect - EXSWHTEC-236
   SECTION("Host to Host") { Memcpy3DHostToHostShell<async>(DrvMemcpy3DWrapper<>); }
 #endif
 }
@@ -60,13 +60,19 @@ TEST_CASE("Unit_hipDrvMemcpy3D_Positive_Synchronization_Behavior") {
     Memcpy3DDtoHPageableSyncBehavior(DrvMemcpy3DWrapper<>, true);
   }
 
-#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-236
+#if HT_NVIDIA  // Disabled on AMD due to defect - EXSWHTEC-236
   SECTION("Device to Pinned Host") { Memcpy3DDtoHPinnedSyncBehavior(DrvMemcpy3DWrapper<>, true); }
 #endif
 
-#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-232
-  SECTION("Device to Device") { Memcpy3DDtoDSyncBehavior(DrvMemcpy3DWrapper<>, false); }
+  SECTION("Device to Device") {
+#if HT_NVIDIA
+    Memcpy3DDtoDSyncBehavior(DrvMemcpy3DWrapper<>, false);
+#else
+    Memcpy3DDtoDSyncBehavior(DrvMemcpy3DWrapper<>, true);
+#endif
+  }
 
+#if HT_NVIDIA  // Disabled on AMD due to defect - EXSWHTEC-232
   SECTION("Host to Host") { Memcpy3DHtoHSyncBehavior(DrvMemcpy3DWrapper<>, true); }
 #endif
 }
@@ -134,7 +140,7 @@ TEST_CASE("Unit_hipDrvMemcpy3D_Negative_Parameters") {
                       hipErrorInvalidValue);
     }
 
-#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-237
+#if HT_NVIDIA  // Disabled on AMD due to defect - EXSWHTEC-237
     SECTION("extent.width + dst_pos.x > dst_ptr.pitch") {
       hipPos invalid_pos = dst_pos;
       invalid_pos.x = dst_ptr.pitch - extent.width + 1;

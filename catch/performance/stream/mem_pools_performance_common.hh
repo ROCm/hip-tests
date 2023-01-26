@@ -28,27 +28,6 @@ THE SOFTWARE.
   static const hipMemAllocationHandleType kHandleType = hipMemHandleTypeWin32;
 #endif
 
-static int IsStreamWaitValueSupported(int device_id) {
-  int wait_value_supported = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&wait_value_supported,
-                                  hipDeviceAttributeCanUseStreamWaitValue, 0));
-  return wait_value_supported;
-}
-
-static std::string GetFlagWaitSectionName(unsigned int flag) {
-  if (flag == hipStreamWaitValueGte) {
-    return "greater than";
-  } else if (flag == hipStreamWaitValueEq) {
-    return "equal";
-  } else if (flag == hipStreamWaitValueAnd) {
-    return "logical and";
-  } else if (flag == hipStreamWaitValueNor) {
-    return "logical nor";
-  } else {
-    return "unknown flag";
-  }
-}
-
 static int AreMemPoolsSupported(int device_id) {
   int mem_pools_supported = 0;
   HIP_CHECK(hipDeviceGetAttribute(&mem_pools_supported,

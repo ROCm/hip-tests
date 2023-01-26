@@ -17,13 +17,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "stream_performance_common.hh"
+#include <hip_test_common.hh>
+#include <performance_common.hh>
 
 /**
  * @addtogroup stream stream
  * @{
  * @ingroup PerformanceTest
  */
+
+static int IsStreamWaitValueSupported(int device_id) {
+  int wait_value_supported = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&wait_value_supported,
+                                  hipDeviceAttributeCanUseStreamWaitValue, 0));
+  return wait_value_supported;
+}
 
 class StreamWaitValue32Benchmark : public Benchmark<StreamWaitValue32Benchmark> {
  public:
@@ -69,7 +77,22 @@ template <typename WaitValueBenchmark>
 static void RunBenchmark(const size_t array_size, unsigned int flag) {
   WaitValueBenchmark benchmark;
   benchmark.AddSectionName(std::to_string(array_size));
-  benchmark.AddSectionName(GetFlagWaitSectionName(flag));
+  switch (flag) {
+    case hipStreamWaitValueGte:
+      benchmark.AddSectionName("greater than or equal");
+      break;
+    case hipStreamWaitValueEq:
+      benchmark.AddSectionName("equal");
+      break;
+    case hipStreamWaitValueAnd:
+      benchmark.AddSectionName("logical and");
+      break;
+    case hipStreamWaitValueNor:
+      benchmark.AddSectionName("logical nor");
+      break;
+    default:
+      benchmark.AddSectionName("unknown flag");
+  }
   benchmark.Run(array_size, flag);
 }
 

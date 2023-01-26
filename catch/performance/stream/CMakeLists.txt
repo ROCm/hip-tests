@@ -52,17 +52,6 @@ set(TEST_SRC
     hipStreamWriteValue.cc
     hipMallocAsync.cc
     hipFreeAsync.cc
-    hipMemPoolCreate.cc
-    hipMemPoolDestroy.cc
-    hipMemPoolTrimTo.cc
-    hipMemPoolSetAttribute.cc
-    hipMemPoolGetAttribute.cc
-    hipMemPoolSetAccess.cc
-    hipMallocFromPoolAsync.cc
-    hipMemPoolExportToShareableHandle.cc
-    hipMemPoolImportFromShareableHandle.cc
-    hipMemPoolExportPointer.cc
-    hipMemPoolImportPointer.cc
 )
 endif()
 

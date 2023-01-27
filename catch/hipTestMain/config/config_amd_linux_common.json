@@ -15,8 +15,6 @@
 	   "Unit_hipMemset_Negative_OutOfBoundsPtr",
 	   "Unit_hipDeviceReset_Positive_Basic",
 	   "Unit_hipDeviceReset_Positive_Threaded",
-		 "Performance_hipStreamWaitValue32",
-		 "Performance_hipStreamWaitValue64",
 	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep",
 	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ClonedGrph",
 	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ChldNode",
@@ -29,6 +27,8 @@
 	   "Unit_hipStreamAttachMemAsync_Negative_Parameters",
 	   "Unit_hipMemGetAddressRange_Positive",
 	   "Unit_hipGraphAddMemcpyNode1D_Negative_Basic",
-	   "Unit_hipStreamGetCaptureInfo_Nullstream_CaptureInfo"
+	   "Unit_hipStreamGetCaptureInfo_Nullstream_CaptureInfo",
+		 "Performance_hipStreamWaitValue32",
+		 "Performance_hipStreamWaitValue64"
 	]
 }

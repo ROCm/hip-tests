@@ -94,12 +94,12 @@
 	   "Unit_hipStreamSynchronize_NullStreamAndStreamPerThread",
 	   "Note: intermittent Seg fault failure ",
 	   "Unit_hipGraphAddEventRecordNode_Functional_WithoutFlags",
-		 "Performance_hipStreamWaitValue32",
-		 "Performance_hipStreamWaitValue64",
 	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep",
 	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ClonedGrph",
 	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ChldNode",
 	   "Unit_hipMemGetAddressRange_Negative",
-	   "Unit_hipMemGetAddressRange_Positive"
+	   "Unit_hipMemGetAddressRange_Positive",
+		 "Performance_hipStreamWaitValue32",
+		 "Performance_hipStreamWaitValue64"
 	]
 }

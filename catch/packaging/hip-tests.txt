@@ -76,7 +76,7 @@ set(CPACK_PACKAGE_DESCRIPTION "HIP:
           Heterogenous-computing Interface for Portability [CATCH TESTS]")
 set(CPACK_PACKAGE_VENDOR "Advanced Micro Devices, Inc.")
 set(CPACK_PACKAGE_CONTACT "HIP Support <hip.support@amd.com>")
-set(CPACK_PACKAGE_VERSION @HIP_VERSION_MAJOR@.@HIP_VERSION_MINOR@.@HIP_VERSION_PATCH_GITHASH@)
+set(CPACK_PACKAGE_VERSION @HIP_VERSION_MAJOR@.@HIP_VERSION_MINOR@.@HIP_PACKAGING_VERSION_PATCH@)
 # by default rpm tries to reduce the file size by stripping the executable
 # To avoid build/packaging failures SWDEV-375603 and skip stripping
 set(CPACK_RPM_SPEC_MORE_DEFINE "%global __os_install_post %{nil}")
@@ -98,6 +98,27 @@ if (CPACK_PACKAGE_VERSION MATCHES "local" )
   #If building locally default value will cause build failure
   #DEBUG SYMBOL pacaking require SOURCE_DIR to be small
   set(CPACK_RPM_BUILD_SOURCE_DIRS_PREFIX ${CPACK_INSTALL_PREFIX})
+endif()
+
+if (DEFINED ENV{CPACK_DEBIAN_PACKAGE_RELEASE})
+  set(CPACK_DEBIAN_PACKAGE_RELEASE $ENV{CPACK_DEBIAN_PACKAGE_RELEASE})
+else()
+  set(CPACK_DEBIAN_PACKAGE_RELEASE "local")
+endif()
+
+if(DEFINED ENV{CPACK_RPM_PACKAGE_RELEASE})
+  set(CPACK_RPM_PACKAGE_RELEASE $ENV{CPACK_RPM_PACKAGE_RELEASE})
+else()
+  set(CPACK_RPM_PACKAGE_RELEASE "local")
+endif()
+
+execute_process( COMMAND rpm --eval %{?dist}
+                 RESULT_VARIABLE PROC_RESULT
+                 OUTPUT_VARIABLE EVAL_RESULT
+                 OUTPUT_STRIP_TRAILING_WHITESPACE )
+# Add os distribution tag to rpm package name . For deb package its set from build env
+if ( PROC_RESULT EQUAL "0" AND NOT EVAL_RESULT STREQUAL "" )
+  string(APPEND CPACK_RPM_PACKAGE_RELEASE "%{?dist}")
 endif()
 
 set(CPACK_SOURCE_GENERATOR "TGZ")

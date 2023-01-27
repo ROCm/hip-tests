@@ -99,7 +99,7 @@
 	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ChldNode",
 	   "Unit_hipMemGetAddressRange_Negative",
 	   "Unit_hipMemGetAddressRange_Positive",
-		 "Performance_hipStreamWaitValue32",
-		 "Performance_hipStreamWaitValue64"
+	   "Performance_hipStreamWaitValue32",
+	   "Performance_hipStreamWaitValue64"
 	]
 }

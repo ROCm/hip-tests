@@ -28,7 +28,7 @@
 	   "Unit_hipMemGetAddressRange_Positive",
 	   "Unit_hipGraphAddMemcpyNode1D_Negative_Basic",
 	   "Unit_hipStreamGetCaptureInfo_Nullstream_CaptureInfo",
-		 "Performance_hipStreamWaitValue32",
-		 "Performance_hipStreamWaitValue64"
+	   "Performance_hipStreamWaitValue32",
+	   "Performance_hipStreamWaitValue64"
 	]
 }

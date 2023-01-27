@@ -1,5 +1,5 @@
 
-# Copyright (c) 2016 - 2021 Advanced Micro Devices, Inc. All rights reserved.
+# Copyright (c) 2016 - 2022 Advanced Micro Devices, Inc. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -77,10 +77,14 @@ set(CPACK_PACKAGE_DESCRIPTION "HIP:
 set(CPACK_PACKAGE_VENDOR "Advanced Micro Devices, Inc.")
 set(CPACK_PACKAGE_CONTACT "HIP Support <hip.support@amd.com>")
 set(CPACK_PACKAGE_VERSION @HIP_VERSION_MAJOR@.@HIP_VERSION_MINOR@.@HIP_VERSION_PATCH_GITHASH@)
+# by default rpm tries to reduce the file size by stripping the executable
+# To avoid build/packaging failures SWDEV-375603 and skip stripping
+set(CPACK_RPM_SPEC_MORE_DEFINE "%global __os_install_post %{nil}")
 
+set (CPACK_RPM_PACKAGE_AUTOREQ 0)
 # to remove hip-catch-* package during uninstallation of rocm
-set (CPACK_DEBIAN_PACKAGE_DEPENDS "rocm-core")
-set (CPACK_RPM_PACKAGE_REQUIRES "rocm-core")
+set (CPACK_DEBIAN_PACKAGE_DEPENDS "rocm-core, hip-runtime-amd")
+set (CPACK_RPM_PACKAGE_REQUIRES "rocm-core, hip-runtime-amd")
 
 if(NOT WIN32)
 set(CPACK_GENERATOR "TGZ;DEB;RPM" CACHE STRING "Linux package types for catch tests")

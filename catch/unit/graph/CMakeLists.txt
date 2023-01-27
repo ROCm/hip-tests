@@ -80,6 +80,13 @@ set(TEST_SRC
   hipGraphHostNodeGetParams.cc
   hipGraphExecChildGraphNodeSetParams.cc
   hipStreamGetCaptureInfo_v2.cc
+  hipUserObjectCreate.cc
+  hipGraphDebugDotPrint.cc
+  hipGraphCloneComplx.cc
+  hipGraphCreate.cc
+  hipGraphDestroy.cc
+  hipGraphExecDestroy.cc
+  hipGraphUpload.cc
 )
 
 hip_add_exe_to_target(NAME GraphsTest

@@ -439,7 +439,7 @@ static void doMemsetTest(allocType mallocType, memSetType memset_type, MultiDDat
 }
 
 TEST_CASE("Unit_hipMemsetSync") {
-#if HT_AMD || HT_NVIDIA
+#if HT_NVIDIA
   HipTest::HIP_SKIP_TEST("EXSWCPHIPT-86");
   return;
 #endif
@@ -452,7 +452,7 @@ TEST_CASE("Unit_hipMemsetSync") {
 }
 
 TEMPLATE_TEST_CASE("Unit_hipMemsetDSync", "", int8_t, int16_t, uint32_t) {
-#if HT_AMD || HT_NVIDIA
+#if HT_NVIDIA
   HipTest::HIP_SKIP_TEST("EXSWCPHIPT-86");
   return;
 #endif
@@ -474,7 +474,7 @@ TEMPLATE_TEST_CASE("Unit_hipMemsetDSync", "", int8_t, int16_t, uint32_t) {
 }
 
 TEST_CASE("Unit_hipMemset2DSync") {
-#if HT_AMD || HT_NVIDIA
+#if HT_NVIDIA
   HipTest::HIP_SKIP_TEST("EXSWCPHIPT-86");
   return;
 #endif
@@ -489,7 +489,7 @@ TEST_CASE("Unit_hipMemset2DSync") {
 }
 
 TEST_CASE("Unit_hipMemset3DSync") {
-#if HT_AMD || HT_NVIDIA
+#if HT_NVIDIA
   HipTest::HIP_SKIP_TEST("EXSWCPHIPT-86");
   return;
 #endif

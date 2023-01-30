@@ -24,12 +24,15 @@ int main(int argc, char** argv) {
     | Opt(cmd_options.warmups, "warmups")
         ["-W"]["--warmups"]
         ("Number of warmup iterations used for performance tests (default: 100)")
-    | Opt(cmd_options.display, "display")
-        ["-S"]["--display"]
-        ("Display output of performance tests (default: true)")
-    | Opt(cmd_options.progress, "progress")
+    | Opt(cmd_options.no_display)
+        ["-S"]["--no-display"]
+        ("Do not display the output of performance tests")
+    | Opt(cmd_options.progress)
         ["-P"]["--progress"]
-        ("Show progress bar when running performance tests (default: false)")
+        ("Show progress bar when running performance tests")
+    | Opt(cmd_options.extended_run)
+        ["-E"]["--extended-run"]
+        ("TODO: Description goes here")
   ;
   // clang-format on
 

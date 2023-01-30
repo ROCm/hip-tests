@@ -102,7 +102,7 @@ template <typename Derived> class Benchmark {
   Benchmark()
       : iterations_(cmd_options.iterations),
         warmups_(cmd_options.warmups),
-        display_output_(cmd_options.display),
+        display_output_(!cmd_options.no_display),
         progress_bar_(cmd_options.progress) {
     benchmark_name_ = Catch::getResultCapture().getCurrentTestName();
   }
@@ -151,7 +151,7 @@ template <typename Derived> class Benchmark {
 
     float deviation =
         std::accumulate(cbegin(samples), cend(samples), .0,
-                    [mean](float sum, float next) { return sum + std::pow(next - mean, 2); });
+                        [mean](float sum, float next) { return sum + std::pow(next - mean, 2); });
     deviation = sqrt(deviation / samples.size());
 
     float best = *std::min_element(cbegin(samples), cend(samples));

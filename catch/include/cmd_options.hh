@@ -25,8 +25,9 @@ THE SOFTWARE.
 struct CmdOptions {
   int iterations = 1000;
   int warmups = 100;
-  bool display = true;
+  bool no_display = false;
   bool progress = false;
+  bool extended_run = false;
 };
 
 extern CmdOptions cmd_options;

@@ -37,13 +37,16 @@ class LaunchKernelBenchmark
  public:
   constexpr void LaunchKernel() {
     if constexpr (kernel_type == KernelType::kNull) {
-      error_ = hipLaunchKernel(reinterpret_cast<void*>(NullKernel), 1, 1, nullptr);
+      error_ = hipLaunchKernel(reinterpret_cast<void*>(NullKernel), 1, 1, nullptr, 0, nullptr);
     } else if constexpr (kernel_type == KernelType::kSmall) {
-      error_ = hipLaunchKernel(reinterpret_cast<void*>(SmallKernel), 1, 1, small_kernel_args_);
+      error_ = hipLaunchKernel(reinterpret_cast<void*>(SmallKernel), 1, 1, small_kernel_args_, 0,
+                               nullptr);
     } else if constexpr (kernel_type == KernelType::kMedium) {
-      error_ = hipLaunchKernel(reinterpret_cast<void*>(MediumKernel), 1, 1, medium_kernel_args_);
+      error_ = hipLaunchKernel(reinterpret_cast<void*>(MediumKernel), 1, 1, medium_kernel_args_, 0,
+                               nullptr);
     } else if constexpr (kernel_type == KernelType::kLarge) {
-      error_ = hipLaunchKernel(reinterpret_cast<void*>(LargeKernel), 1, 1, large_kernel_args_);
+      error_ = hipLaunchKernel(reinterpret_cast<void*>(LargeKernel), 1, 1, large_kernel_args_, 0,
+                               nullptr);
     } else
       ;
   }

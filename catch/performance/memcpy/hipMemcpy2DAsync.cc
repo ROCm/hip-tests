@@ -62,25 +62,13 @@ static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind, bool e
   } else if (kind == hipMemcpyHostToHost) {
     LinearAllocGuard<int> src_allocation(LinearAllocs::hipHostMalloc, width * sizeof(int) * height);
     LinearAllocGuard<int> dst_allocation(LinearAllocs::hipHostMalloc, width * sizeof(int) * height);
-    benchmark.Run(dst_allocation.ptr(), width * sizeof(int),
-                  src_allocation.ptr(), width * sizeof(int), width * sizeof(int),
-                  height, hipMemcpyHostToHost, stream);
+    benchmark.Run(dst_allocation.ptr(), width * sizeof(int), src_allocation.ptr(),
+                  width * sizeof(int), width * sizeof(int), height, hipMemcpyHostToHost, stream);
   } else {
     // hipMemcpyDeviceToDevice
-    int src_device = 0;
-    int dst_device = 1;
+    int src_device = std::get<0>(GetDeviceIds(enable_peer_access));
+    int dst_device = std::get<1>(GetDeviceIds(enable_peer_access));
 
-    if (enable_peer_access) {
-      int can_access_peer = 0;
-      HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, src_device, dst_device));
-      if (!can_access_peer) {
-        INFO("Peer access cannot be enabled between devices " << src_device << " and " << dst_device);
-        REQUIRE(can_access_peer);
-      }
-      HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));
-    } else {
-      dst_device = 0;
-    }
     LinearAllocGuard2D<int> src_allocation(width, height);
     HIP_CHECK(hipSetDevice(dst_device));
     LinearAllocGuard2D<int> dst_allocation(width, height);

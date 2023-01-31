@@ -38,19 +38,8 @@ static void RunBenchmark(size_t size, bool enable_peer_access=false) {
   MemcpyDtoDBenchmark benchmark;
   benchmark.AddSectionName(std::to_string(size));
 
-  int src_device = 0;
-  int dst_device = 1;
-  if (enable_peer_access) {
-    int can_access_peer = 0;
-    HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, src_device, dst_device));
-    if (!can_access_peer) {
-      INFO("Peer access cannot be enabled between devices " << src_device << " and " << dst_device);
-      REQUIRE(can_access_peer);
-    }
-    HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));
-  } else {
-    dst_device = 0;
-  }
+  int src_device = std::get<0>(GetDeviceIds(enable_peer_access));
+  int dst_device = std::get<1>(GetDeviceIds(enable_peer_access));
 
   LinearAllocGuard<int> src_allocation(LinearAllocs::hipMalloc, size);
   HIP_CHECK(hipSetDevice(dst_device));

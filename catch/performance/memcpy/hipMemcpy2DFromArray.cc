@@ -27,42 +27,9 @@ THE SOFTWARE.
 
 class Memcpy2DFromArrayBenchmark : public Benchmark<Memcpy2DFromArrayBenchmark> {
  public:
-  void operator()(size_t width, size_t height, hipMemcpyKind kind, bool enable_peer_access){
-    if (kind == hipMemcpyDeviceToHost) {
-      size_t allocation_size = width * height * sizeof(int);
-      LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, allocation_size);
-      ArrayAllocGuard<int> array_allocation(make_hipExtent(width, height, 0), hipArrayDefault);
-
-      TIMED_SECTION(kTimerTypeEvent) {
-        HIP_CHECK(hipMemcpy2DFromArray(host_allocation.ptr(), width * sizeof(int), array_allocation.ptr(),
-                  0, 0, width * sizeof(int), height, hipMemcpyDeviceToHost));
-      }
-    } else {
-      // hipMemcpyDeviceToDevice
-      int src_device = 0;
-      int dst_device = 1;
-
-      if (enable_peer_access) {
-        int can_access_peer = 0;
-        HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, src_device, dst_device));
-        if (!can_access_peer) {
-          INFO("Peer access cannot be enabled between devices " << src_device << " and " << dst_device);
-          REQUIRE(can_access_peer);
-        }
-        HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));
-      } else {
-        dst_device = 0;
-      }
-      LinearAllocGuard2D<int> device_allocation(width, height);
-      HIP_CHECK(hipSetDevice(dst_device));
-      ArrayAllocGuard<int> array_allocation(make_hipExtent(width, height, 0), hipArrayDefault);
-
-      HIP_CHECK(hipSetDevice(src_device));
-      TIMED_SECTION(kTimerTypeEvent) {
-        HIP_CHECK(hipMemcpy2DFromArray(device_allocation.ptr(), device_allocation.pitch(),
-                  array_allocation.ptr(), 0, 0, device_allocation.width(),
-                  device_allocation.height(), hipMemcpyDeviceToDevice));
-      }
+  void operator()(void* dst, size_t dst_pitch, hipArray_const_t src, size_t width, size_t height, hipMemcpyKind kind) {
+    TIMED_SECTION(kTimerTypeCpu) {
+      HIP_CHECK(hipMemcpy2DFromArray(dst, dst_pitch, src, 0, 0, width, height, kind));
     }
   }
 };
@@ -71,7 +38,37 @@ static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind,
                          bool enable_peer_access=false) {
   Memcpy2DFromArrayBenchmark benchmark;
   benchmark.AddSectionName("(" + std::to_string(width) + ", " + std::to_string(height) + ")");
-  benchmark.Run(width, height, kind, enable_peer_access);
+
+  if (kind == hipMemcpyDeviceToHost) {
+    size_t allocation_size = width * height * sizeof(int);
+    LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, allocation_size);
+    ArrayAllocGuard<int> array_allocation(make_hipExtent(width, height, 0), hipArrayDefault);
+    benchmark.Run(host_allocation.ptr(), width * sizeof(int), array_allocation.ptr(),
+                  width * sizeof(int), height, hipMemcpyDeviceToHost);
+  } else {
+    // hipMemcpyDeviceToDevice
+    int src_device = 0;
+    int dst_device = 1;
+
+    if (enable_peer_access) {
+      int can_access_peer = 0;
+      HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, src_device, dst_device));
+      if (!can_access_peer) {
+        INFO("Peer access cannot be enabled between devices " << src_device << " and " << dst_device);
+        REQUIRE(can_access_peer);
+      }
+      HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));
+    } else {
+      dst_device = 0;
+    }
+    LinearAllocGuard2D<int> device_allocation(width, height);
+    HIP_CHECK(hipSetDevice(dst_device));
+    ArrayAllocGuard<int> array_allocation(make_hipExtent(width, height, 0), hipArrayDefault);
+    HIP_CHECK(hipSetDevice(src_device));
+    benchmark.Run(device_allocation.ptr(), device_allocation.pitch(),
+                  array_allocation.ptr(), device_allocation.width(),
+                  device_allocation.height(), hipMemcpyDeviceToDevice);
+  }
 }
 
 /**

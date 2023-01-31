@@ -27,13 +27,9 @@ THE SOFTWARE.
 
 class MemcpyHtoDBenchmark : public Benchmark<MemcpyHtoDBenchmark> {
  public:
-  void operator()(LinearAllocs host_allocation_type, LinearAllocs device_allocation_type, size_t size) {
-    LinearAllocGuard<int> device_allocation(device_allocation_type, size);
-    LinearAllocGuard<int> host_allocation(host_allocation_type, size);
-
-    TIMED_SECTION(kTimerTypeEvent) {
-      HIP_CHECK(hipMemcpyHtoD(reinterpret_cast<hipDeviceptr_t>(device_allocation.ptr()),
-                              host_allocation.ptr(), size));
+  void operator()(hipDeviceptr_t& dst, void* src, size_t size) {
+    TIMED_SECTION(kTimerTypeCpu) {
+      HIP_CHECK(hipMemcpyHtoD(dst, src, size));
     }
   }
 };
@@ -42,7 +38,10 @@ static void RunBenchmark(LinearAllocs host_allocation_type, LinearAllocs device_
   MemcpyHtoDBenchmark benchmark;
   benchmark.AddSectionName(std::to_string(size));
   benchmark.AddSectionName(GetAllocationSectionName(host_allocation_type));
-  benchmark.Run(host_allocation_type, device_allocation_type, size);
+
+  LinearAllocGuard<int> device_allocation(device_allocation_type, size);
+  LinearAllocGuard<int> host_allocation(host_allocation_type, size);
+  benchmark.Run(reinterpret_cast<hipDeviceptr_t>(device_allocation.ptr()), host_allocation.ptr(), size);
 }
 
 /**

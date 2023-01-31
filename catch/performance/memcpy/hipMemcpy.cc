@@ -28,38 +28,9 @@ THE SOFTWARE.
 
 class MemcpyBenchmark : public Benchmark<MemcpyBenchmark> {
  public:
-  void operator()(LinearAllocs dst_allocation_type, LinearAllocs src_allocation_type, size_t size,
-                  hipMemcpyKind kind, bool enable_peer_access) {
-    if (kind != hipMemcpyDeviceToDevice) {
-      LinearAllocGuard<int> src_allocation(src_allocation_type, size);
-      LinearAllocGuard<int> dst_allocation(dst_allocation_type, size);
-
-      TIMED_SECTION(kTimerTypeEvent) {
-        HIP_CHECK(hipMemcpy(dst_allocation.ptr(), src_allocation.ptr(), size, kind));
-      }
-    } else {
-      int src_device = 0;
-      int dst_device = 1;
-
-      if (enable_peer_access) {
-        int can_access_peer = 0;
-        HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, src_device, dst_device));
-        if (!can_access_peer) {
-          INFO("Peer access cannot be enabled between devices " << src_device << " and " << dst_device);
-          REQUIRE(can_access_peer);
-        }
-        HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));
-      } else {
-        dst_device = 0;
-      }
-      LinearAllocGuard<int> src_allocation(LinearAllocs::hipMalloc, size);
-      HIP_CHECK(hipSetDevice(dst_device));
-      LinearAllocGuard<int> dst_allocation(LinearAllocs::hipMalloc, size);
-
-      HIP_CHECK(hipSetDevice(src_device));
-      TIMED_SECTION(kTimerTypeEvent) {
-        HIP_CHECK(hipMemcpy(dst_allocation.ptr(), src_allocation.ptr(), size, kind));
-      }
+  void operator()(void* dst, const void* src, size_t size, hipMemcpyKind kind) {
+    TIMED_SECTION(kTimerTypeCpu) {
+      HIP_CHECK(hipMemcpy(dst, src, size, kind));
     }
   }
 };
@@ -70,7 +41,32 @@ static void RunBenchmark(LinearAllocs dst_allocation_type, LinearAllocs src_allo
   benchmark.AddSectionName(std::to_string(size));
   benchmark.AddSectionName(GetAllocationSectionName(src_allocation_type));
   benchmark.AddSectionName(GetAllocationSectionName(dst_allocation_type));
-  benchmark.Run(dst_allocation_type, src_allocation_type, size, kind, enable_peer_access);
+
+  if (kind != hipMemcpyDeviceToDevice) {
+    LinearAllocGuard<int> src_allocation(src_allocation_type, size);
+    LinearAllocGuard<int> dst_allocation(dst_allocation_type, size);
+    benchmark.Run(dst_allocation.ptr(), src_allocation.ptr(), size, kind);
+  } else {
+    int src_device = 0;
+    int dst_device = 1;
+
+    if (enable_peer_access) {
+      int can_access_peer = 0;
+      HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, src_device, dst_device));
+      if (!can_access_peer) {
+        INFO("Peer access cannot be enabled between devices " << src_device << " and " << dst_device);
+        REQUIRE(can_access_peer);
+      }
+      HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));
+    } else {
+      dst_device = 0;
+    }
+    LinearAllocGuard<int> src_allocation(src_allocation_type, size);
+    HIP_CHECK(hipSetDevice(dst_device));
+    LinearAllocGuard<int> dst_allocation(dst_allocation_type, size);
+    HIP_CHECK(hipSetDevice(src_device));
+    benchmark.Run(dst_allocation.ptr(), src_allocation.ptr(), size, kind);
+  }
 }
 
 /**

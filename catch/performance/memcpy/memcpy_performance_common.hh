@@ -22,8 +22,7 @@ THE SOFTWARE.
 #include <performance_common.hh>
 
 static hip_Memcpy2D CreateMemcpy2DParam(void* dst, size_t dpitch, void* src, size_t spitch,
-                                        size_t width, size_t height, hipMemcpyKind kind,
-                                        hipStream_t stream=nullptr) {
+                                        size_t width, size_t height, hipMemcpyKind kind) {
   hip_Memcpy2D params = {0};
   const hipExtent src_offset = {0};
   const hipExtent dst_offset = {0};

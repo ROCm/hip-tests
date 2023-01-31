@@ -27,63 +27,10 @@ THE SOFTWARE.
 
 class Memcpy2DBenchmark : public Benchmark<Memcpy2DBenchmark> {
  public:
-  void operator()(size_t width, size_t height, hipMemcpyKind kind, bool enable_peer_access) {
-    if (kind == hipMemcpyDeviceToHost) {
-      LinearAllocGuard2D<int> device_allocation(width, height);
-      LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc,
-                                            device_allocation.width() * height);
-      TIMED_SECTION(kTimerTypeEvent) {
-        HIP_CHECK(hipMemcpy2D(host_allocation.ptr(), device_allocation.width(),
-                              device_allocation.ptr(), device_allocation.pitch(),
-                              device_allocation.width(), device_allocation.height(),
-                              hipMemcpyDeviceToHost));
-      }
-    } else if (kind == hipMemcpyHostToDevice) {
-      LinearAllocGuard2D<int> device_allocation(width, height);
-      LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc,
-                                            device_allocation.width() * height);
-      TIMED_SECTION(kTimerTypeEvent) {
-        HIP_CHECK(hipMemcpy2D(device_allocation.ptr(), device_allocation.pitch(),
-                              host_allocation.ptr(), device_allocation.width(),
-                              device_allocation.width(), device_allocation.height(),
-                              hipMemcpyHostToDevice));
-      }
-    } else if (kind == hipMemcpyHostToHost) {
-      LinearAllocGuard<int> src_allocation(LinearAllocs::hipHostMalloc,
-                                           width * sizeof(int) * height);
-      LinearAllocGuard<int> dst_allocation(LinearAllocs::hipHostMalloc,
-                                           width * sizeof(int) * height);
-      TIMED_SECTION(kTimerTypeEvent) {
-        HIP_CHECK(hipMemcpy2D(dst_allocation.ptr(), width * sizeof(int), src_allocation.ptr(),
-                              width * sizeof(int), width * sizeof(int), height, hipMemcpyHostToHost));
-      }
-    } else {
-      // hipMemcpyDeviceToDevice
-      int src_device = 0;
-      int dst_device = 1;
-
-      if (enable_peer_access) {
-        int can_access_peer = 0;
-        HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, src_device, dst_device));
-        if (!can_access_peer) {
-          INFO("Peer access cannot be enabled between devices " << src_device << " and " << dst_device);
-          REQUIRE(can_access_peer);
-        }
-        HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));
-      } else {
-        dst_device = 0;
-      }
-      LinearAllocGuard2D<int> src_allocation(width, height);
-      HIP_CHECK(hipSetDevice(dst_device));
-      LinearAllocGuard2D<int> dst_allocation(width, height);
-
-      HIP_CHECK(hipSetDevice(src_device));
-      TIMED_SECTION(kTimerTypeEvent) {
-        HIP_CHECK(hipMemcpy2D(dst_allocation.ptr(), dst_allocation.pitch(),
-                              src_allocation.ptr(), src_allocation.pitch(),
-                              dst_allocation.width(), dst_allocation.height(),
-                              hipMemcpyDeviceToDevice));
-      }
+  void operator()(void* dst, size_t dst_pitch, const void* src, size_t src_pitch, size_t width,
+                  size_t height, hipMemcpyKind kind) {
+    TIMED_SECTION(kTimerTypeCpu) {
+      HIP_CHECK(hipMemcpy2D(dst, dst_pitch, src, src_pitch, width, height, kind));
     }
   }
 };
@@ -92,7 +39,55 @@ static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind,
                          bool enable_peer_access=false) {
   Memcpy2DBenchmark benchmark;
   benchmark.AddSectionName("(" + std::to_string(width) + ", " + std::to_string(height) + ")");
-  benchmark.Run(width, height, kind, enable_peer_access);
+
+  if (kind == hipMemcpyDeviceToHost) {
+    LinearAllocGuard2D<int> device_allocation(width, height);
+    LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc,
+                                          device_allocation.width() * height);
+    benchmark.Run(host_allocation.ptr(), device_allocation.width(),
+                  device_allocation.ptr(), device_allocation.pitch(),
+                  device_allocation.width(), device_allocation.height(),
+                  hipMemcpyDeviceToHost);
+  } else if (kind == hipMemcpyHostToDevice) {
+    LinearAllocGuard2D<int> device_allocation(width, height);
+    LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc,
+                                          device_allocation.width() * height);
+    benchmark.Run(device_allocation.ptr(), device_allocation.pitch(),
+                  host_allocation.ptr(), device_allocation.width(),
+                  device_allocation.width(), device_allocation.height(),
+                  hipMemcpyHostToDevice);
+  } else if (kind == hipMemcpyHostToHost) {
+    LinearAllocGuard<int> src_allocation(LinearAllocs::hipHostMalloc,
+                                         width * sizeof(int) * height);
+    LinearAllocGuard<int> dst_allocation(LinearAllocs::hipHostMalloc,
+                                         width * sizeof(int) * height);
+    benchmark.Run(dst_allocation.ptr(), width * sizeof(int), src_allocation.ptr(),
+                  width * sizeof(int), width * sizeof(int), height, hipMemcpyHostToHost);
+  } else {
+    // hipMemcpyDeviceToDevice
+    int src_device = 0;
+    int dst_device = 1;
+
+    if (enable_peer_access) {
+      int can_access_peer = 0;
+      HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, src_device, dst_device));
+      if (!can_access_peer) {
+        INFO("Peer access cannot be enabled between devices " << src_device << " and " << dst_device);
+        REQUIRE(can_access_peer);
+      }
+      HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));
+    } else {
+      dst_device = 0;
+    }
+    LinearAllocGuard2D<int> src_allocation(width, height);
+    HIP_CHECK(hipSetDevice(dst_device));
+    LinearAllocGuard2D<int> dst_allocation(width, height);
+    HIP_CHECK(hipSetDevice(src_device));
+    benchmark.Run(dst_allocation.ptr(), dst_allocation.pitch(),
+                  src_allocation.ptr(), src_allocation.pitch(),
+                  dst_allocation.width(), dst_allocation.height(),
+                  hipMemcpyDeviceToDevice);
+  }
 }
 
 /**

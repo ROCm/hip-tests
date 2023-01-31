@@ -29,8 +29,8 @@ __device__ int devSymbol[1_MB];
 
 class MemcpyToSymbolBenchmark : public Benchmark<MemcpyToSymbolBenchmark> {
  public:
-  void operator()(const void* source, size_t size=1, size_t offset=0) {
-    TIMED_SECTION(kTimerTypeEvent) {
+  void operator()(const void* source, size_t size, size_t offset) {
+    TIMED_SECTION(kTimerTypeCpu) {
       HIP_CHECK(hipMemcpyToSymbol(HIP_SYMBOL(devSymbol), source, size, offset));
     }
   }

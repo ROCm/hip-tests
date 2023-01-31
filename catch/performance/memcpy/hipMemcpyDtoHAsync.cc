@@ -27,17 +27,9 @@ THE SOFTWARE.
 
 class MemcpyDtoHAsyncBenchmark : public Benchmark<MemcpyDtoHAsyncBenchmark> {
  public:
-  void operator()(LinearAllocs host_allocation_type, LinearAllocs device_allocation_type, size_t size) {
-    const StreamGuard stream_guard(Streams::created);
-    const hipStream_t stream = stream_guard.stream();
-
-    LinearAllocGuard<int> device_allocation(device_allocation_type, size);
-    LinearAllocGuard<int> host_allocation(host_allocation_type, size);
-
+  void operator()(void* dst, const hipDeviceptr_t& src, size_t size, const hipStream_t& stream) {
     TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
-      HIP_CHECK(hipMemcpyDtoHAsync(host_allocation.ptr(),
-                                   reinterpret_cast<hipDeviceptr_t>(device_allocation.ptr()),
-                                   size, stream));
+      HIP_CHECK(hipMemcpyDtoHAsync(dst, src, size, stream));
     }
     HIP_CHECK(hipStreamSynchronize(stream));
   }
@@ -47,7 +39,14 @@ static void RunBenchmark(LinearAllocs host_allocation_type, LinearAllocs device_
   MemcpyDtoHAsyncBenchmark benchmark;
   benchmark.AddSectionName(std::to_string(size));
   benchmark.AddSectionName(GetAllocationSectionName(host_allocation_type));
-  benchmark.Run(host_allocation_type, device_allocation_type, size);
+
+  const StreamGuard stream_guard(Streams::created);
+  const hipStream_t stream = stream_guard.stream();
+  LinearAllocGuard<int> device_allocation(device_allocation_type, size);
+  LinearAllocGuard<int> host_allocation(host_allocation_type, size);
+  benchmark.Run(host_allocation.ptr(),
+                reinterpret_cast<hipDeviceptr_t>(device_allocation.ptr()),
+                size, stream);
 }
 
 /**

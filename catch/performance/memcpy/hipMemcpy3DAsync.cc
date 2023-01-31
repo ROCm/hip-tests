@@ -52,7 +52,7 @@ static void RunBenchmark(const hipExtent extent, hipMemcpyKind kind, bool enable
     LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, device_allocation.width() * 
                                           device_allocation.height() * device_allocation.depth());
     benchmark.Run(make_hipPitchedPtr(host_allocation.ptr(), device_allocation.width(),
-                                    device_allocation.width(), device_allocation.height()),
+                                     device_allocation.width(), device_allocation.height()),
                   device_allocation.pitched_ptr(), device_allocation.extent(), kind, stream);
   } else if (kind == hipMemcpyHostToDevice) {
     LinearAllocGuard3D<int> device_allocation(extent);
@@ -67,9 +67,9 @@ static void RunBenchmark(const hipExtent extent, hipMemcpyKind kind, bool enable
   } else if (kind == hipMemcpyHostToHost) {
     LinearAllocGuard3D<int> device_allocation(extent);
     LinearAllocGuard<int> src_allocation(LinearAllocs::hipHostMalloc, extent.width * 
-                                          extent.height * extent.depth);
+                                         extent.height * extent.depth);
     LinearAllocGuard<int> dst_allocation(LinearAllocs::hipHostMalloc, extent.width * 
-                                          extent.height * extent.depth);
+                                         extent.height * extent.depth);
     benchmark.Run(make_hipPitchedPtr(dst_allocation.ptr(), extent.width, extent.width, extent.height),
                   make_hipPitchedPtr(src_allocation.ptr(), extent.width, extent.width, extent.height),
                   extent, kind, stream);

@@ -59,7 +59,6 @@ static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind,
     LinearAllocGuard2D<int> device_allocation(width, height);
     HIP_CHECK(hipSetDevice(dst_device));
     ArrayAllocGuard<int> array_allocation(make_hipExtent(width, height, 0), hipArrayDefault);
-
     HIP_CHECK(hipSetDevice(src_device));
     benchmark.Run(array_allocation.ptr(), device_allocation.ptr(), device_allocation.pitch(),
                   device_allocation.width(), device_allocation.height(),

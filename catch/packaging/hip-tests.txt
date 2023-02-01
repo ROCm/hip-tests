@@ -77,6 +77,9 @@ set(CPACK_PACKAGE_DESCRIPTION "HIP:
 set(CPACK_PACKAGE_VENDOR "Advanced Micro Devices, Inc.")
 set(CPACK_PACKAGE_CONTACT "HIP Support <hip.support@amd.com>")
 set(CPACK_PACKAGE_VERSION @HIP_VERSION_MAJOR@.@HIP_VERSION_MINOR@.@HIP_VERSION_PATCH_GITHASH@)
+# by default rpm tries to reduce the file size by stripping the executable
+# To avoid build/packaging failures SWDEV-375603 and skip stripping
+set(CPACK_RPM_SPEC_MORE_DEFINE "%global __os_install_post %{nil}")
 
 set (CPACK_RPM_PACKAGE_AUTOREQ 0)
 # to remove hip-catch-* package during uninstallation of rocm
@@ -105,9 +108,9 @@ set(CPACK_RPM_PACKAGE_LICENSE "MIT")
 
 else()
 # windows packaging
+set(CPACK_SYSTEM_NAME "")
 set(CPACK_INSTALL_PREFIX "")
 set(CPACK_GENERATOR "ZIP" CACHE STRING "Windows package types for catch tests")
-set(CPACK_TGZ_FILE_NAME "ZIP-DEFAULT")
 set(CPACK_TEST_ZIP "ON")
 set(CPACK_ZIP_TEST_PACKAGE_NAME "catch")
 endif()

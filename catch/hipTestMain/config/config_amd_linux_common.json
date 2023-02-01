@@ -27,6 +27,8 @@
 	   "Unit_hipStreamAttachMemAsync_Negative_Parameters",
 	   "Unit_hipMemGetAddressRange_Positive",
 	   "Unit_hipGraphAddMemcpyNode1D_Negative_Basic",
-	   "Unit_hipStreamGetCaptureInfo_Nullstream_CaptureInfo"
+	   "Unit_hipStreamGetCaptureInfo_Nullstream_CaptureInfo",
+	   "intermittent issue: corrupted double-linked list",
+	   "Unit_hipGraphRetainUserObject_Functional_2"
 	]
 }

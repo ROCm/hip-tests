@@ -59,32 +59,32 @@ template <typename T> void verifyResults(T* hPtr, T* dPtr, int size) {
       REQUIRE(j != size);
     }
   }
+}
 
-  inline bool operator==(const dim3& l, const dim3& r) {
-    return l.x == r.x && l.y == r.y && l.z == r.z;
-  }
+inline bool operator==(const dim3& l, const dim3& r) {
+  return l.x == r.x && l.y == r.y && l.z == r.z;
+}
 
-  inline bool operator!=(const dim3& l, const dim3& r) { return !(l == r); }
+inline bool operator!=(const dim3& l, const dim3& r) { return !(l == r); }
 
-  template <typename T, typename F>
-  static inline void ArrayAllOf(const T* arr, uint32_t count, F value_gen) {
-    for (auto i = 0u; i < count; ++i) {
-      const std::optional<T> expected_val = value_gen(i);
-      if (!expected_val.has_value()) continue;
-      // Using require on every iteration leads to a noticeable performance loss on large arrays,
-      // even when the require passes.
-      if (arr[i] != expected_val.value()) {
-        INFO("Mismatch at index: " << i);
-        REQUIRE(arr[i] == expected_val.value());
-      }
+template <typename T, typename F>
+static inline void ArrayAllOf(const T* arr, uint32_t count, F value_gen) {
+  for (auto i = 0u; i < count; ++i) {
+    const std::optional<T> expected_val = value_gen(i);
+    if (!expected_val.has_value()) continue;
+    // Using require on every iteration leads to a noticeable performance loss on large arrays,
+    // even when the require passes.
+    if (arr[i] != expected_val.value()) {
+      INFO("Mismatch at index: " << i);
+      REQUIRE(arr[i] == expected_val.value());
     }
   }
+}
 
-  __device__ inline unsigned int thread_rank_in_grid() {
-    const auto block_size = blockDim.x * blockDim.y * blockDim.z;
-    const auto block_rank_in_grid = (blockIdx.z * gridDim.y + blockIdx.y) * gridDim.x + blockIdx.x;
-    const auto thread_rank_in_block =
-        (threadIdx.z * blockDim.y + threadIdx.y) * blockDim.x + threadIdx.x;
-    return block_rank_in_grid * block_size + thread_rank_in_block;
-  }
+__device__ inline unsigned int thread_rank_in_grid() {
+  const auto block_size = blockDim.x * blockDim.y * blockDim.z;
+  const auto block_rank_in_grid = (blockIdx.z * gridDim.y + blockIdx.y) * gridDim.x + blockIdx.x;
+  const auto thread_rank_in_block =
+      (threadIdx.z * blockDim.y + threadIdx.y) * blockDim.x + threadIdx.x;
+  return block_rank_in_grid * block_size + thread_rank_in_block;
 }

@@ -35,3 +35,10 @@ THE SOFTWARE.
  * This section describes the graph management types & functions of HIP runtime API.
  * @}
  */
+
+/**
+ * @defgroup CooperativeGroupsTest Cooperative Groups 
+ * @{
+ * This section describes tests for cooperative groups API's of the HIP runtime.
+ * @}
+ */

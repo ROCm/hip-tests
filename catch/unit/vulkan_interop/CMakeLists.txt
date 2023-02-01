@@ -1,5 +1,9 @@
 set(TEST_SRC
     vulkan_test.cc
+    hipExternalMemoryGetMappedBuffer.cc
+    hipImportExternalMemory.cc
+    hipDestroyExternalMemory.cc
+    hipWaitExternalSemaphoresAsync.cc
     hipImportExternalSemaphore.cc
     hipDestroyExternalSemaphore.cc
    )

@@ -53,6 +53,24 @@ static __global__ void device_function(float* C_d, float* A_d, size_t Num) {
   }
 }
 
+static __global__ void device_function_gfx11(float* C_d, float* A_d, size_t Num) {
+#if HT_AMD
+  size_t gputhread = (blockIdx.x * blockDim.x + threadIdx.x);
+  size_t stride = blockDim.x * gridDim.x;
+
+  for (size_t i = gputhread; i < Num; i += stride) {
+    C_d[i] = A_d[i] * A_d[i];
+  }
+
+  // Delay thread 1 only in the GPU
+  if (gputhread == 1) {
+    uint64_t wait_t = 3200000000, start = wall_clock64(), cur;
+    do {
+      cur = wall_clock64() - start;
+    } while (cur < wait_t);
+  }
+#endif
+}
 
 static void HIPRT_CB Thread1_Callback(hipStream_t stream, hipError_t status,
                                       void* userData) {
@@ -128,7 +146,8 @@ TEST_CASE("Unit_hipStreamAddCallback_MultipleThreads") {
   constexpr unsigned threadsPerBlock = 256;
   constexpr unsigned blocks = (N + 255)/threadsPerBlock;
 
-  hipLaunchKernelGGL((device_function), dim3(blocks),
+  auto device_function_used = IsGfx11() ? device_function_gfx11 : device_function;
+  hipLaunchKernelGGL((device_function_used), dim3(blocks),
                      dim3(threadsPerBlock), 0,
                      mystream, C_d, A_d, N);
   HIP_CHECK(hipGetLastError());

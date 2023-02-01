@@ -1,3 +1,5 @@
+set(COMMON_SHARED_SRC streamCommon.cc)
+
 if(HIP_PLATFORM MATCHES "amd")
 set(TEST_SRC
     hipStreamCreate.cc
@@ -10,7 +12,6 @@ set(TEST_SRC
     hipStreamDestroy.cc
     hipStreamGetCUMask.cc
     hipAPIStreamDisable.cc
-    streamCommon.cc
     hipStreamValue.cc
     hipStreamWithCUMask.cc
     hipStreamACb_MultiThread.cc
@@ -34,7 +35,6 @@ set(TEST_SRC
     hipAPIStreamDisable.cc
     # hipStreamAttachMemAsync_old.cc   # Disabling it on nvidia due to issue in function definition of hipStreamAttachMemAsync
                                        # Fixing would break ABI, to be re-enabled when the fix is made.
-    streamCommon.cc
     hipStreamValue.cc
     hipStreamSynchronize.cc
     hipStreamQuery.cc
@@ -48,4 +48,5 @@ endif()
 hip_add_exe_to_target(NAME StreamTest
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests
-                      COMPILE_OPTIONS -std=c++17)
+                      COMPILE_OPTIONS -std=c++17
+                      COMMON_SHARED_SRC ${COMMON_SHARED_SRC})

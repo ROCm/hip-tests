@@ -18,10 +18,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+set(COMMON_SHARED_SRC DriverContext.cc)
+
 # Common Tests - Test independent of all platforms
 if(HIP_PLATFORM MATCHES "amd")
 set(TEST_SRC
-    DriverContext.cc
     memset.cc
     malloc.cc
     hipMemcpy2DToArray.cc
@@ -46,7 +47,6 @@ set(TEST_SRC
     hipMemcpy_MultiThread.cc
     hipHostRegister.cc
     hipHostUnregister.cc
-    hipMallocPitch.cc
     hipMemPtrGetInfo.cc
     hipPointerGetAttributes.cc
     hipHostGetFlags.cc
@@ -79,13 +79,11 @@ set(TEST_SRC
     hipMemcpyWithStreamMultiThread.cc
     hipMemsetAsyncAndKernel.cc
     hipMemset2DAsyncMultiThreadAndKernel.cc
-    hipMallocManaged.cc
     hipMallocConcurrency.cc
     hipMemcpyDtoD.cc
     hipMemcpyDtoDAsync.cc
     hipHostMalloc.cc
     hipMemcpy_old.cc
-    hipMemcpy.cc
     hipMemcpy_derivatives.cc
     hipMemcpyAsync.cc
     hipMemsetFunctional.cc
@@ -119,7 +117,6 @@ set(TEST_SRC
 )
 else()
 set(TEST_SRC
-    DriverContext.cc
     memset.cc
     malloc.cc
     hipMemcpy2DToArray.cc
@@ -144,7 +141,6 @@ set(TEST_SRC
     hipMemcpy_MultiThread.cc
     hipHostRegister.cc
     hipHostUnregister.cc
-    hipMallocPitch.cc
     hipHostGetFlags.cc
     hipHostGetDevicePointer.cc
     hipMallocManaged_MultiScenario.cc
@@ -174,13 +170,11 @@ set(TEST_SRC
     hipMemcpyWithStreamMultiThread.cc
     hipMemsetAsyncAndKernel.cc
     hipMemset2DAsyncMultiThreadAndKernel.cc
-    hipMallocManaged.cc
     hipMallocConcurrency.cc
     hipMemcpyDtoD.cc
     hipMemcpyDtoDAsync.cc
     hipHostMalloc.cc
     hipMemcpy_old.cc
-    hipMemcpy.cc
     hipMemcpy_derivatives.cc
     hipMemcpyAsync.cc
     hipMemsetFunctional.cc
@@ -221,4 +215,5 @@ endif()
 
 hip_add_exe_to_target(NAME MemoryTest
                       TEST_SRC ${TEST_SRC}
-                      TEST_TARGET_NAME build_tests)
+                      TEST_TARGET_NAME build_tests
+                      COMMON_SHARED_SRC ${COMMON_SHARED_SRC})

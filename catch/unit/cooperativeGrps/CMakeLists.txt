@@ -1,6 +1,6 @@
 # Common Tests - Test independent of all platforms
 set(TEST_SRC
-  hipCGThreadBlockType.cc
+  thread_block.cc
   hipCGMultiGridGroupType.cc
   hipCGGridGroupType.cc
   hipCGThreadBlockTileType.cc

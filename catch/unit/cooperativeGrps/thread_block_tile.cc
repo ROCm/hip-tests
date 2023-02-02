@@ -500,51 +500,28 @@ __global__ void block_tile_sync_check(T* global_data, unsigned int* wait_modifie
   T* const data = use_global ? global_data : reinterpret_cast<T*>(shared_data);
   const auto tid = cg::this_grid().thread_rank();
   const auto block = cg::this_thread_block();
-  const auto partition = cg::tiled_partition<tile_size>(block);
+  const auto partition = cg::tiled_partition<tile_size>(cg::this_thread_block());
 
-  const auto data_idx = [](unsigned int i) {
-    return use_global ? i : i % cg::this_thread_block().size();
-  };
+  const auto data_idx = [&block](unsigned int i) { return use_global ? i : (i % block.size()); };
 
   const auto partitions_in_block = (block.size() + partition.size() - 1) / partition.size();
   const auto partition_rank = block.thread_rank() / partition.size();
   const auto tail = partitions_in_block * partition.size() - block.size();
-
   const auto window_size = partition.size() - tail * (partition_rank == partitions_in_block - 1);
+
   const auto block_base_idx = tid / block.size() * block.size();
   const auto tile_base_idx = block_base_idx + partition_rank * partition.size();
-  const auto wait_modifier = wait_modifiers[tid];
 
+  const auto wait_modifier = wait_modifiers[tid];
   busy_wait(wait_modifier);
-  // if(tid == 929) {
-  //   printf("%u\n", partition.thread_rank());
-  // }
   data[data_idx(tid)] = partition.thread_rank();
-  // if(data[data_idx(tid)]) {
-  //   printf("tid: %llu, %u\n", tid, data[data_idx(tid)]);
-  // }
   partition.sync();
   bool valid = true;
-
-  for (auto i = 0; i < partition.size(); ++i) {
+  for (auto i = 0; i < window_size; ++i) {
     const auto expected = (partition.thread_rank() + i) % window_size;
 
-    // if (data_idx >= cg::this_grid().size()) {
-    //   continue;
-    // }
-
-
     if (!(valid &= (data[data_idx(tile_base_idx + expected)] == expected))) {
-      // if(tid == 929) {
-      // printf("tid: %llu, window size: %u, i: %d, base:%u, expected: %u, actual: %u, idx: %u\n", tid, window_size, i,
-      //        tile_base_idx, expected, data[data_idx(tile_base_idx + expected)], data_idx(tile_base_idx + expected));
-      // }
-      
       break;
-    } else {
-      if(block.size() == 1024) {
-      printf("%llu\n", tid);
-      }
     }
   }
   partition.sync();
@@ -554,11 +531,7 @@ __global__ void block_tile_sync_check(T* global_data, unsigned int* wait_modifie
   }
 }
 
-uint64_t counter =0; 
 template <bool global_memory, typename T, size_t tile_size> void BlockTileSyncTestImpl() {
-  if(!(counter % 1000)) {
-    std::cout << counter++ << std::endl; 
-  }
   DYNAMIC_SECTION("Tile size: " << tile_size) {
     const auto randomized_run_count = GENERATE(range(0, 1));
     auto blocks = GenerateBlockDimensions();
@@ -568,7 +541,7 @@ template <bool global_memory, typename T, size_t tile_size> void BlockTileSyncTe
     CPUGrid grid(blocks, threads);
 
     const auto alloc_size = grid.thread_count_ * sizeof(T);
-    const auto alloc_size_per_block = alloc_size / grid.threads_in_block_count_;
+    const auto alloc_size_per_block = alloc_size / grid.block_count_;
 
     LinearAllocGuard<T> arr_dev(LinearAllocs::hipMalloc, alloc_size);
     LinearAllocGuard<T> arr(LinearAllocs::hipHostMalloc, alloc_size);
@@ -576,8 +549,8 @@ template <bool global_memory, typename T, size_t tile_size> void BlockTileSyncTe
     int max_shared_mem_per_block = 0;
     HIP_CHECK(hipDeviceGetAttribute(&max_shared_mem_per_block,
                                     hipDeviceAttributeMaxSharedMemoryPerBlock, 0));
-    if(!global_memory && (max_shared_mem_per_block < alloc_size_per_block)) {
-      return; 
+    if (!global_memory && (max_shared_mem_per_block < alloc_size_per_block)) {
+      return;
     }
 
     LinearAllocGuard<unsigned int> wait_modifiers_dev(LinearAllocs::hipMalloc,
@@ -603,8 +576,7 @@ template <bool global_memory, typename T, size_t tile_size> void BlockTileSyncTe
     HIP_CHECK(hipDeviceSynchronize());
 
     REQUIRE(
-        std::all_of(arr.ptr(), arr.ptr() + grid.thread_count_, [](unsigned int e) {
-      return e; }));
+        std::all_of(arr.ptr(), arr.ptr() + grid.thread_count_, [](unsigned int e) { return e; }));
   }
 }
 

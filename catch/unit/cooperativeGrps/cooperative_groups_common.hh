@@ -175,3 +175,25 @@ inline dim3 GenerateBlockDimensionsForShuffle() {
                            values(multipliers)),
                        dim3(5, 5, 5));
 }
+
+template <class T>
+bool CheckDimensions(unsigned int num_devices, T kernel, dim3 blocks, dim3 threads) {
+  hipDeviceProp_t props;
+  int max_blocks_per_sm_arr[num_devices];
+  int num_sm = 0;
+  int max_blocks_per_sm = INT_MAX;
+  for (int i = 0; i < num_devices; i++) {
+    HIP_CHECK(hipSetDevice(i));
+    HIP_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor(&max_blocks_per_sm_arr[i], kernel,
+                                                           threads.x * threads.y * threads.z, 0));
+    if (max_blocks_per_sm_arr[i] < max_blocks_per_sm) {
+      max_blocks_per_sm = max_blocks_per_sm_arr[i];
+      HIP_CHECK(hipGetDeviceProperties(&props, i));
+      num_sm = props.multiProcessorCount;
+    }
+  }
+  if ((blocks.x * blocks.y * blocks.z) > max_blocks_per_sm * num_sm) {
+    return false;
+  }
+  return true;
+}

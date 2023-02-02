@@ -59,7 +59,11 @@ template <typename T> class LinearAllocGuard {
   }
 
   LinearAllocGuard(const LinearAllocGuard&) = delete;
-  LinearAllocGuard(LinearAllocGuard&&) = delete;
+  LinearAllocGuard(LinearAllocGuard&& o)
+      : allocation_type_(o.allocation_type_), ptr_(o.ptr_), host_ptr_(o.host_ptr_) {
+    o.ptr_ = nullptr;
+    o.host_ptr_ = nullptr;
+  }
 
   ~LinearAllocGuard() {
     // No Catch macros, don't want to possibly throw in the destructor
@@ -219,10 +223,12 @@ class StreamGuard {
   }
 
   StreamGuard(const StreamGuard&) = delete;
-  StreamGuard(StreamGuard&&) = delete;
+  StreamGuard(StreamGuard&& o) : stream_(o.stream_), stream_type_(o.stream_type_) {
+    o.stream_ = nullptr;
+  }
 
   ~StreamGuard() {
-    if (stream_type_ == Streams::created) {
+    if (stream_type_ == Streams::created && stream_ != nullptr) {
       static_cast<void>(hipStreamDestroy(stream_));
     }
   }

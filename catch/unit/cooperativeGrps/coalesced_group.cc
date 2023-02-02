@@ -53,17 +53,6 @@ static __global__ void coalesced_group_thread_rank_getter(unsigned int* thread_r
   }
 }
 
-#if HT_AMD
-static __global__ void coalesced_group_is_valid_getter(unsigned int* is_valid_flags,
-                                                       uint64_t active_mask) {
-  const auto tile = cg::tiled_partition<64>(cg::this_thread_block());
-  if (active_mask & (static_cast<uint64_t>(1) << tile.thread_rank())) {
-    cg::thread_group active = cg::coalesced_threads();
-    is_valid_flags[thread_rank_in_grid()] = cg::is_valid(active);
-  }
-}
-#endif
-
 template <unsigned int warp_size>
 static __global__ void coalesced_group_non_member_size_getter(unsigned int* sizes,
                                                               uint64_t active_mask) {

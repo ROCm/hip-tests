@@ -17,16 +17,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
-#include <hip/hip_cooperative_groups.h>
+#include "cooperative_groups_common.hh"
+#include "cpu_grid.h"
 
 #include <bitset>
 #include <array>
 
+#include <cmd_options.hh>
+#include <hip_test_common.hh>
+#include <hip/hip_cooperative_groups.h>
 #include <resource_guards.hh>
 
-#include "cooperative_groups_common.hh"
-#include "cpu_grid.h"
 
 /**
  * @addtogroup thread_block_tile thread_block_tile
@@ -459,7 +460,8 @@ __global__ void block_tile_sync_check(T* global_data, unsigned int* wait_modifie
 
 template <bool global_memory, typename T, size_t tile_size> void BlockTileSyncTestImpl() {
   DYNAMIC_SECTION("Tile size: " << tile_size) {
-    const auto randomized_run_count = GENERATE(range(0, 1));
+    const auto randomized_run_count = GENERATE(range(0, cmd_options.cg_extended_run));
+    INFO("Run number: " << randomized_run_count + 1);
     auto blocks = GenerateBlockDimensions();
     auto threads = GenerateThreadDimensions();
     INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);

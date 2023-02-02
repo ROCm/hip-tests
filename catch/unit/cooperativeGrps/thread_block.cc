@@ -64,44 +64,6 @@ static __global__ void thread_block_non_member_thread_rank_getter(unsigned int* 
   thread_ranks[thread_rank_in_grid()] = cg::thread_rank(cg::this_thread_block());
 }
 
-static dim3 GenerateThreadDimensions() {
-  hipDeviceProp_t props;
-  HIP_CHECK(hipGetDeviceProperties(&props, 0));
-  const auto multipliers = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3,
-                            1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5};
-  return GENERATE_COPY(
-      dim3(1, 1, 1), dim3(props.maxThreadsDim[0], 1, 1), dim3(1, props.maxThreadsDim[1], 1),
-      dim3(1, 1, props.maxThreadsDim[2]),
-      map([max = props.maxThreadsDim[0]](
-              double i) { return dim3(std::min(static_cast<int>(i * kWarpSize), max), 1, 1); },
-          values(multipliers)),
-      map([max = props.maxThreadsDim[1]](
-              double i) { return dim3(1, std::min(static_cast<int>(i * kWarpSize), max), 1); },
-          values(multipliers)),
-      map([max = props.maxThreadsDim[2]](
-              double i) { return dim3(1, 1, std::min(static_cast<int>(i * kWarpSize), max)); },
-          values(multipliers)),
-      dim3(16, 8, 8), dim3(32, 32, 1), dim3(64, 8, 2), dim3(16, 16, 3), dim3(kWarpSize - 1, 3, 3),
-      dim3(kWarpSize + 1, 3, 3));
-}
-
-static dim3 GenerateBlockDimensions() {
-  hipDeviceProp_t props;
-  HIP_CHECK(hipGetDeviceProperties(&props, 0));
-  const auto multipliers = {0.1, 0.5, 0.9, 1.0, 1.1, 1.5, 1.9, 2.0, 3.0, 4.0};
-  return GENERATE_COPY(dim3(1, 1, 1),
-                       map([sm = props.multiProcessorCount](
-                               double i) { return dim3(static_cast<int>(i * sm), 1, 1); },
-                           values(multipliers)),
-                       map([sm = props.multiProcessorCount](
-                               double i) { return dim3(1, static_cast<int>(i * sm), 1); },
-                           values(multipliers)),
-                       map([sm = props.multiProcessorCount](
-                               double i) { return dim3(1, 1, static_cast<int>(i * sm)); },
-                           values(multipliers)),
-                       dim3(5, 5, 5));
-}
-
 /**
  * Test Description
  * ------------------------
@@ -324,6 +286,12 @@ template <bool global_memory, typename T> void ThreadBlockSyncTest() {
   CPUGrid grid(blocks, threads);
 
   const auto alloc_size = grid.thread_count_ * sizeof(T);
+  int max_shared_mem_per_block = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&max_shared_mem_per_block,
+                                  hipDeviceAttributeMaxSharedMemoryPerBlock, 0));
+  if (!global_memory && max_shared_mem_per_block < alloc_size) {
+    return;
+  }
   LinearAllocGuard<T> arr_dev(LinearAllocs::hipMalloc, alloc_size);
   LinearAllocGuard<T> arr(LinearAllocs::hipHostMalloc, alloc_size);
 

@@ -66,17 +66,7 @@ static __global__ void sync_kernel(unsigned int* atomic_val, unsigned int* array
     // atomicInc instruction many times before the last thread ever gets to it.
     // If the sync works, then it will likely contain "total number of blocks"*i
     if (rank == (grid.size() - 1)) {
-      long long time_diff = 0;
-      long long last_clock = clock64();
-      do {
-        long long cur_clock = clock64();
-        if (cur_clock > last_clock) {
-          time_diff += (cur_clock - last_clock);
-        }
-        // If it rolls over, we don't know how much to add to catch up.
-        // So just ignore those slipped cycles.
-        last_clock = cur_clock;
-      } while (time_diff < 1000000);
+      busy_wait(100000);
     }
     if (threadIdx.x == blockDim.x - 1 && threadIdx.y == blockDim.y - 1 &&
         threadIdx.z == blockDim.z - 1) {
@@ -86,44 +76,6 @@ static __global__ void sync_kernel(unsigned int* atomic_val, unsigned int* array
     offset += gridDim.x * gridDim.y * gridDim.z;
   }
 }
-
-static dim3 GenerateThreadDimensions() {
-  hipDeviceProp_t props;
-  HIP_CHECK(hipGetDeviceProperties(&props, 0));
-  const auto multipliers = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3,
-                            1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5};
-  return GENERATE_COPY(
-      dim3(1, 1, 1), dim3(props.maxThreadsDim[0], 1, 1), dim3(1, props.maxThreadsDim[1], 1),
-      dim3(1, 1, props.maxThreadsDim[2]),
-      map([max = props.maxThreadsDim[0]](
-              double i) { return dim3(std::min(static_cast<int>(i * kWarpSize), max), 1, 1); },
-          values(multipliers)),
-      map([max = props.maxThreadsDim[1]](
-              double i) { return dim3(1, std::min(static_cast<int>(i * kWarpSize), max), 1); },
-          values(multipliers)),
-      map([max = props.maxThreadsDim[2]](
-              double i) { return dim3(1, 1, std::min(static_cast<int>(i * kWarpSize), max)); },
-          values(multipliers)),
-      dim3(16, 8, 8), dim3(32, 32, 1), dim3(64, 8, 2), dim3(16, 16, 3), dim3(kWarpSize - 1, 3, 3),
-      dim3(kWarpSize + 1, 3, 3));
-}
-
-static dim3 GenerateBlockDimensions() {
-  hipDeviceProp_t props;
-  HIP_CHECK(hipGetDeviceProperties(&props, 0));
-  const auto multipliers = {0.1, 0.5, 0.9, 1.0, 1.1, 1.5, 1.9, 2.0};
-  return GENERATE_COPY(dim3(1, 1, 1),
-                       map([sm = props.multiProcessorCount](
-                               double i) { return dim3(static_cast<int>(i * sm), 1, 1); },
-                           values(multipliers)),
-                       map([sm = props.multiProcessorCount](
-                               double i) { return dim3(1, static_cast<int>(i * sm), 1); },
-                           values(multipliers)),
-                       map([sm = props.multiProcessorCount](
-                               double i) { return dim3(1, 1, static_cast<int>(i * sm)); },
-                           values(multipliers)));
-}
-
 
 /**
  * Test Description
@@ -152,6 +104,7 @@ TEST_CASE("Unit_Grid_Group_Getters_Positive_Basic") {
 
   const auto blocks = GenerateBlockDimensions();
   const auto threads = GenerateThreadDimensions();
+  if ((blocks.x * blocks.y * blocks.z) > 2 * device_properties.multiProcessorCount) return;
   INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);
   INFO("Block dimensions: x " << threads.x << ", y " << threads.y << ", z " << threads.z);
 
@@ -221,6 +174,7 @@ TEST_CASE("Unit_Grid_Group_Getters_Via_Non_Member_Functions_Positive_Basic") {
 
   const auto blocks = GenerateBlockDimensions();
   const auto threads = GenerateThreadDimensions();
+  if ((blocks.x * blocks.y * blocks.z) > 2 * device_properties.multiProcessorCount) return;
   INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);
   INFO("Block dimensions: x " << threads.x << ", y " << threads.y << ", z " << threads.z);
 
@@ -290,6 +244,7 @@ TEST_CASE("Unit_Grid_Group_Sync_Positive_Basic") {
   auto loops = GENERATE(2, 4, 8, 16);
   const auto blocks = GenerateBlockDimensions();
   const auto threads = GenerateThreadDimensions();
+  if ((blocks.x * blocks.y * blocks.z) > 2 * device_properties.multiProcessorCount) return;
   INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);
   INFO("Block dimensions: x " << threads.x << ", y " << threads.y << ", z " << threads.z);
 

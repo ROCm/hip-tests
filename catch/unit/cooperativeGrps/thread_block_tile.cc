@@ -57,10 +57,50 @@ __global__ void thread_block_partition_thread_rank_getter(unsigned int* thread_r
   }
 }
 
+static dim3 GenerateThreadDimensions() {
+  hipDeviceProp_t props;
+  HIP_CHECK(hipGetDeviceProperties(&props, 0));
+  const auto multipliers = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3,
+                            1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5};
+  return GENERATE_COPY(
+      dim3(1, 1, 1), dim3(props.maxThreadsDim[0], 1, 1), dim3(1, props.maxThreadsDim[1], 1),
+      dim3(1, 1, props.maxThreadsDim[2]),
+      map([max = props.maxThreadsDim[0]](
+              double i) { return dim3(std::min(static_cast<int>(i * kWarpSize), max), 1, 1); },
+          values(multipliers)),
+      map([max = props.maxThreadsDim[1]](
+              double i) { return dim3(1, std::min(static_cast<int>(i * kWarpSize), max), 1); },
+          values(multipliers)),
+      map([max = props.maxThreadsDim[2]](
+              double i) { return dim3(1, 1, std::min(static_cast<int>(i * kWarpSize), max)); },
+          values(multipliers)),
+      dim3(16, 8, 8), dim3(32, 32, 1), dim3(64, 8, 2), dim3(16, 16, 3), dim3(kWarpSize - 1, 3, 3),
+      dim3(kWarpSize + 1, 3, 3));
+}
+
+static dim3 GenerateBlockDimensions() {
+  hipDeviceProp_t props;
+  HIP_CHECK(hipGetDeviceProperties(&props, 0));
+  const auto multipliers = {0.1, 0.5, 0.9, 1.0, 1.1, 1.5, 1.9, 2.0, 3.0, 4.0};
+  return GENERATE_COPY(dim3(1, 1, 1),
+                       map([sm = props.multiProcessorCount](
+                               double i) { return dim3(static_cast<int>(i * sm), 1, 1); },
+                           values(multipliers)),
+                       map([sm = props.multiProcessorCount](
+                               double i) { return dim3(1, static_cast<int>(i * sm), 1); },
+                           values(multipliers)),
+                       map([sm = props.multiProcessorCount](
+                               double i) { return dim3(1, 1, static_cast<int>(i * sm)); },
+                           values(multipliers)),
+                       dim3(5, 5, 5));
+}
+
 template <bool dynamic, size_t tile_size> void BlockPartitionGettersBasicTestImpl() {
   DYNAMIC_SECTION("Tile size: " << tile_size) {
-    auto threads = GENERATE(dim3(53, 1, 1));
-    auto blocks = GENERATE(dim3(3, 1, 1));
+    auto blocks = GenerateBlockDimensions();
+    auto threads = GenerateThreadDimensions();
+    INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);
+    INFO("Block dimensions: x " << threads.x << ", y " << threads.y << ", z " << threads.z);
     CPUGrid grid(blocks, threads);
 
     const auto alloc_size = grid.thread_count_ * sizeof(unsigned int);
@@ -138,6 +178,43 @@ TEST_CASE("Unit_Thread_Block_Tile_Dynamic_Getters_Positive_Basic") {
 #endif
 }
 
+static dim3 GenerateThreadDimensionsForShuffle() {
+  hipDeviceProp_t props;
+  HIP_CHECK(hipGetDeviceProperties(&props, 0));
+  const auto multipliers = {0.5, 0.9, 1.0, 1.5, 2.0};
+  return GENERATE_COPY(
+      dim3(1, 1, 1), dim3(props.maxThreadsDim[0], 1, 1), dim3(1, props.maxThreadsDim[1], 1),
+      dim3(1, 1, props.maxThreadsDim[2]),
+      map([max = props.maxThreadsDim[0]](
+              double i) { return dim3(std::min(static_cast<int>(i * kWarpSize), max), 1, 1); },
+          values(multipliers)),
+      map([max = props.maxThreadsDim[1]](
+              double i) { return dim3(1, std::min(static_cast<int>(i * kWarpSize), max), 1); },
+          values(multipliers)),
+      map([max = props.maxThreadsDim[2]](
+              double i) { return dim3(1, 1, std::min(static_cast<int>(i * kWarpSize), max)); },
+          values(multipliers)),
+      dim3(16, 8, 8), dim3(32, 32, 1), dim3(64, 8, 2), dim3(16, 16, 3), dim3(kWarpSize - 1, 3, 3),
+      dim3(kWarpSize + 1, 3, 3));
+}
+
+static dim3 GenerateBlockDimensionsForShuffle() {
+  hipDeviceProp_t props;
+  HIP_CHECK(hipGetDeviceProperties(&props, 0));
+  const auto multipliers = {0.5, 1.0};
+  return GENERATE_COPY(dim3(1, 1, 1),
+                       map([sm = props.multiProcessorCount](
+                               double i) { return dim3(static_cast<int>(i * sm), 1, 1); },
+                           values(multipliers)),
+                       map([sm = props.multiProcessorCount](
+                               double i) { return dim3(1, static_cast<int>(i * sm), 1); },
+                           values(multipliers)),
+                       map([sm = props.multiProcessorCount](
+                               double i) { return dim3(1, 1, static_cast<int>(i * sm)); },
+                           values(multipliers)),
+                       dim3(5, 5, 5));
+}
+
 template <typename T, size_t tile_size>
 __global__ void block_tile_shfl_up(T* const out, const unsigned int delta) {
   const auto partition = cg::tiled_partition<tile_size>(cg::this_thread_block());
@@ -147,8 +224,10 @@ __global__ void block_tile_shfl_up(T* const out, const unsigned int delta) {
 
 template <typename T, size_t tile_size> void BlockTileShflUpTestImpl() {
   DYNAMIC_SECTION("Tile size: " << tile_size) {
-    auto threads = GENERATE(dim3(3, 1, 1), dim3(57, 2, 8));
-    auto blocks = GENERATE(dim3(2, 1, 1), dim3(5, 5, 5));
+    auto blocks = GenerateBlockDimensionsForShuffle();
+    auto threads = GenerateThreadDimensionsForShuffle();
+    INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);
+    INFO("Block dimensions: x " << threads.x << ", y " << threads.y << ", z " << threads.z);
     auto delta = GENERATE(range(static_cast<size_t>(0), tile_size));
     INFO("Delta: " << delta);
     CPUGrid grid(blocks, threads);
@@ -204,8 +283,10 @@ __global__ void block_tile_shfl_down(T* const out, const unsigned int delta) {
 
 template <typename T, size_t tile_size> void BlockTileShflDownTestImpl() {
   DYNAMIC_SECTION("Tile size: " << tile_size) {
-    auto threads = GENERATE(dim3(3, 1, 1));
-    auto blocks = GENERATE(dim3(2, 1, 1));
+    auto blocks = GenerateBlockDimensionsForShuffle();
+    auto threads = GenerateThreadDimensionsForShuffle();
+    INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);
+    INFO("Block dimensions: x " << threads.x << ", y " << threads.y << ", z " << threads.z);
     auto delta = GENERATE(range(static_cast<size_t>(0), tile_size));
     INFO("Delta: " << delta);
     CPUGrid grid(blocks, threads);
@@ -273,8 +354,10 @@ __global__ void block_tile_shfl_xor(T* const out, const unsigned mask) {
 
 template <typename T, size_t tile_size> void BlockTileShflXORTestImpl() {
   DYNAMIC_SECTION("Tile size: " << tile_size) {
-    auto threads = GENERATE(dim3(3, 1, 1));
-    auto blocks = GENERATE(dim3(2, 1, 1));
+    auto blocks = GenerateBlockDimensionsForShuffle();
+    auto threads = GenerateThreadDimensionsForShuffle();
+    INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);
+    INFO("Block dimensions: x " << threads.x << ", y " << threads.y << ", z " << threads.z);
     const auto mask = GENERATE(range(static_cast<size_t>(0), tile_size));
     INFO("Mask: 0x" << std::hex << mask);
     CPUGrid grid(blocks, threads);
@@ -346,8 +429,11 @@ template <typename T> static inline T GenerateRandomInteger(const T min, const T
 
 template <typename T, size_t tile_size> void BlockTileShflTestImpl() {
   DYNAMIC_SECTION("Tile size: " << tile_size) {
-    auto threads = GENERATE(dim3(3, 1, 1));
-    auto blocks = GENERATE(dim3(2, 1, 1));
+    auto blocks = GenerateBlockDimensionsForShuffle();
+    auto threads = GenerateThreadDimensionsForShuffle();
+    INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);
+    INFO("Block dimensions: x " << threads.x << ", y " << threads.y << ", z " << threads.z);
+    auto run_repetitions = GENERATE(range(0, 5));
     CPUGrid grid(blocks, threads);
 
     const auto alloc_size = grid.thread_count_ * sizeof(T);
@@ -413,43 +499,73 @@ __global__ void block_tile_sync_check(T* global_data, unsigned int* wait_modifie
   extern __shared__ uint8_t shared_data[];
   T* const data = use_global ? global_data : reinterpret_cast<T*>(shared_data);
   const auto tid = cg::this_grid().thread_rank();
-  const auto partition = cg::tiled_partition<tile_size>(cg::this_thread_block());
+  const auto block = cg::this_thread_block();
+  const auto partition = cg::tiled_partition<tile_size>(block);
 
+  const auto data_idx = [](unsigned int i) {
+    return use_global ? i : cg::this_thread_block().thread_rank();
+  };
+
+  const auto partitions_in_block = (block.size() + partition.size() - 1) / partition.size();
+  const auto partition_rank = block.thread_rank() / partition.size();
+  const auto tail = partitions_in_block * partition.size() - block.size();
+
+  const auto window_size = partition.size() - tail * (partition_rank == partitions_in_block - 1);
+  const auto block_base_idx = tid / block.size() * block.size();
+  const auto tile_base_idx = block_base_idx + partition_rank * partition.size();
   const auto wait_modifier = wait_modifiers[tid];
+
   busy_wait(wait_modifier);
-  data[tid] = partition.thread_rank();
+  data[data_idx(tid)] = partition.thread_rank();
   partition.sync();
   bool valid = true;
+
   for (auto i = 0; i < partition.size(); ++i) {
-    const auto tile_base_idx = (tid / partition.size()) * partition.size();
-    const auto expected = (partition.thread_rank() + i) % partition.size();
-    const auto data_idx = tile_base_idx + expected;
+    const auto expected = (partition.thread_rank() + i) % window_size;
 
-    if (data_idx >= cg::this_grid().size()) {
-      continue;
-    }
+    // if (data_idx >= cg::this_grid().size()) {
+    //   continue;
+    // }
 
-    if (!(valid &= (data[tile_base_idx + expected] == expected))) {
+
+    if (!(valid &= (data[data_idx(tile_base_idx + expected)] == expected))) {
+      // printf("tid: %llu, window size: %u, i: %d, base:%u, expected: %u\n", tid, window_size, i,
+      //        tile_base_idx, expected);
       break;
     }
   }
   partition.sync();
-  data[tid] = valid;
+  data[data_idx(tid)] = valid;
   if constexpr (!use_global) {
-    global_data[tid] = data[tid];
+    global_data[tid] = data[data_idx(tid)];
   }
 }
 
+uint64_t counter =0; 
 template <bool global_memory, typename T, size_t tile_size> void BlockTileSyncTestImpl() {
+  if(!(counter % 1000)) {
+    std::cout << counter++ << std::endl; 
+  }
   DYNAMIC_SECTION("Tile size: " << tile_size) {
-    const auto randomized_run_count = GENERATE(range(0, 5));
-    const auto threads = GENERATE_COPY(dim3(35, 1, 1));
-    const auto blocks = dim3(1, 1, 1);
+    const auto randomized_run_count = GENERATE(range(0, 1));
+    auto blocks = GenerateBlockDimensions();
+    auto threads = GenerateThreadDimensions();
+    INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);
+    INFO("Block dimensions: x " << threads.x << ", y " << threads.y << ", z " << threads.z);
     CPUGrid grid(blocks, threads);
 
     const auto alloc_size = grid.thread_count_ * sizeof(T);
+    const auto alloc_size_per_block = alloc_size / grid.threads_in_block_count_;
+
     LinearAllocGuard<T> arr_dev(LinearAllocs::hipMalloc, alloc_size);
     LinearAllocGuard<T> arr(LinearAllocs::hipHostMalloc, alloc_size);
+
+    int max_shared_mem_per_block = 0;
+    HIP_CHECK(hipDeviceGetAttribute(&max_shared_mem_per_block,
+                                    hipDeviceAttributeMaxSharedMemoryPerBlock, 0));
+    if(!global_memory && (max_shared_mem_per_block < alloc_size_per_block)) {
+      return; 
+    }
 
     LinearAllocGuard<unsigned int> wait_modifiers_dev(LinearAllocs::hipMalloc,
                                                       grid.thread_count_ * sizeof(unsigned int));
@@ -462,7 +578,7 @@ template <bool global_memory, typename T, size_t tile_size> void BlockTileSyncTe
       std::fill_n(wait_modifiers.ptr(), grid.thread_count_, 0u);
     }
 
-    const auto shared_memory_size = global_memory ? 0u : alloc_size;
+    const auto shared_memory_size = global_memory ? 0u : alloc_size_per_block;
     HIP_CHECK(hipMemcpy(wait_modifiers_dev.ptr(), wait_modifiers.ptr(),
                         grid.thread_count_ * sizeof(unsigned int), hipMemcpyHostToDevice));
 
@@ -474,7 +590,8 @@ template <bool global_memory, typename T, size_t tile_size> void BlockTileSyncTe
     HIP_CHECK(hipDeviceSynchronize());
 
     REQUIRE(
-        std::all_of(arr.ptr(), arr.ptr() + grid.thread_count_, [](unsigned int e) { return e; }));
+        std::all_of(arr.ptr(), arr.ptr() + grid.thread_count_, [](unsigned int e) {
+      return e; }));
   }
 }
 

@@ -2,10 +2,9 @@
 set(TEST_SRC
   hipCGThreadBlockType.cc
   hipCGMultiGridGroupType.cc
-  hipCGGridGroupType.cc
+  grid_group.cc
   hipCGThreadBlockTileType.cc
   hipCGThreadBlockTileTypeShfl.cc
-  hipLaunchCooperativeKernel.cc
   hipLaunchCooperativeKernelMultiDevice.cc
   hipCGCoalescedGroupType.cc
   hipCGCoalescedGroupTypeShfl_down.cc

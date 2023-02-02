@@ -24,6 +24,7 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 #include <utils.hh>
 
+#include <cmd_options.hh>
 #include <hip_test_common.hh>
 #include <hip/hip_cooperative_groups.h>
 
@@ -276,9 +277,8 @@ template <typename T> static inline T GenerateRandomInteger(const T min, const T
 }
 
 template <bool global_memory, typename T> void ThreadBlockSyncTest() {
-  hipDeviceProp_t props;
-  HIP_CHECK(hipGetDeviceProperties(&props, 0));
-  const auto randomized_run_count = GENERATE(range(0, 5));
+  const auto randomized_run_count = GENERATE(range(0, cmd_options.cg_extended_run));
+  INFO("Run number: " << randomized_run_count + 1);
   const auto blocks = dim3(1, 1, 1);
   const auto threads = GenerateThreadDimensions();
   INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);

@@ -542,10 +542,6 @@ template <bool global_memory, typename T, size_t tile_size> void BlockTileSyncTe
 
     const auto alloc_size = grid.thread_count_ * sizeof(T);
     const auto alloc_size_per_block = alloc_size / grid.block_count_;
-
-    LinearAllocGuard<T> arr_dev(LinearAllocs::hipMalloc, alloc_size);
-    LinearAllocGuard<T> arr(LinearAllocs::hipHostMalloc, alloc_size);
-
     int max_shared_mem_per_block = 0;
     HIP_CHECK(hipDeviceGetAttribute(&max_shared_mem_per_block,
                                     hipDeviceAttributeMaxSharedMemoryPerBlock, 0));
@@ -553,6 +549,8 @@ template <bool global_memory, typename T, size_t tile_size> void BlockTileSyncTe
       return;
     }
 
+    LinearAllocGuard<T> arr_dev(LinearAllocs::hipMalloc, alloc_size);
+    LinearAllocGuard<T> arr(LinearAllocs::hipHostMalloc, alloc_size);
     LinearAllocGuard<unsigned int> wait_modifiers_dev(LinearAllocs::hipMalloc,
                                                       grid.thread_count_ * sizeof(unsigned int));
     LinearAllocGuard<unsigned int> wait_modifiers(LinearAllocs::hipHostMalloc,

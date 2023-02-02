@@ -503,7 +503,7 @@ __global__ void block_tile_sync_check(T* global_data, unsigned int* wait_modifie
   const auto partition = cg::tiled_partition<tile_size>(block);
 
   const auto data_idx = [](unsigned int i) {
-    return use_global ? i : cg::this_thread_block().thread_rank();
+    return use_global ? i : i % cg::this_thread_block().size();
   };
 
   const auto partitions_in_block = (block.size() + partition.size() - 1) / partition.size();
@@ -516,7 +516,13 @@ __global__ void block_tile_sync_check(T* global_data, unsigned int* wait_modifie
   const auto wait_modifier = wait_modifiers[tid];
 
   busy_wait(wait_modifier);
+  // if(tid == 929) {
+  //   printf("%u\n", partition.thread_rank());
+  // }
   data[data_idx(tid)] = partition.thread_rank();
+  // if(data[data_idx(tid)]) {
+  //   printf("tid: %llu, %u\n", tid, data[data_idx(tid)]);
+  // }
   partition.sync();
   bool valid = true;
 
@@ -529,9 +535,16 @@ __global__ void block_tile_sync_check(T* global_data, unsigned int* wait_modifie
 
 
     if (!(valid &= (data[data_idx(tile_base_idx + expected)] == expected))) {
-      // printf("tid: %llu, window size: %u, i: %d, base:%u, expected: %u\n", tid, window_size, i,
-      //        tile_base_idx, expected);
+      // if(tid == 929) {
+      // printf("tid: %llu, window size: %u, i: %d, base:%u, expected: %u, actual: %u, idx: %u\n", tid, window_size, i,
+      //        tile_base_idx, expected, data[data_idx(tile_base_idx + expected)], data_idx(tile_base_idx + expected));
+      // }
+      
       break;
+    } else {
+      if(block.size() == 1024) {
+      printf("%llu\n", tid);
+      }
     }
   }
   partition.sync();

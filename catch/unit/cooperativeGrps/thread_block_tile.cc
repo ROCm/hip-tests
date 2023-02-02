@@ -57,44 +57,6 @@ __global__ void thread_block_partition_thread_rank_getter(unsigned int* thread_r
   }
 }
 
-static dim3 GenerateThreadDimensions() {
-  hipDeviceProp_t props;
-  HIP_CHECK(hipGetDeviceProperties(&props, 0));
-  const auto multipliers = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3,
-                            1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5};
-  return GENERATE_COPY(
-      dim3(1, 1, 1), dim3(props.maxThreadsDim[0], 1, 1), dim3(1, props.maxThreadsDim[1], 1),
-      dim3(1, 1, props.maxThreadsDim[2]),
-      map([max = props.maxThreadsDim[0]](
-              double i) { return dim3(std::min(static_cast<int>(i * kWarpSize), max), 1, 1); },
-          values(multipliers)),
-      map([max = props.maxThreadsDim[1]](
-              double i) { return dim3(1, std::min(static_cast<int>(i * kWarpSize), max), 1); },
-          values(multipliers)),
-      map([max = props.maxThreadsDim[2]](
-              double i) { return dim3(1, 1, std::min(static_cast<int>(i * kWarpSize), max)); },
-          values(multipliers)),
-      dim3(16, 8, 8), dim3(32, 32, 1), dim3(64, 8, 2), dim3(16, 16, 3), dim3(kWarpSize - 1, 3, 3),
-      dim3(kWarpSize + 1, 3, 3));
-}
-
-static dim3 GenerateBlockDimensions() {
-  hipDeviceProp_t props;
-  HIP_CHECK(hipGetDeviceProperties(&props, 0));
-  const auto multipliers = {0.1, 0.5, 0.9, 1.0, 1.1, 1.5, 1.9, 2.0, 3.0, 4.0};
-  return GENERATE_COPY(dim3(1, 1, 1),
-                       map([sm = props.multiProcessorCount](
-                               double i) { return dim3(static_cast<int>(i * sm), 1, 1); },
-                           values(multipliers)),
-                       map([sm = props.multiProcessorCount](
-                               double i) { return dim3(1, static_cast<int>(i * sm), 1); },
-                           values(multipliers)),
-                       map([sm = props.multiProcessorCount](
-                               double i) { return dim3(1, 1, static_cast<int>(i * sm)); },
-                           values(multipliers)),
-                       dim3(5, 5, 5));
-}
-
 template <bool dynamic, size_t tile_size> void BlockPartitionGettersBasicTestImpl() {
   DYNAMIC_SECTION("Tile size: " << tile_size) {
     auto blocks = GenerateBlockDimensions();
@@ -178,42 +140,6 @@ TEST_CASE("Unit_Thread_Block_Tile_Dynamic_Getters_Positive_Basic") {
 #endif
 }
 
-static dim3 GenerateThreadDimensionsForShuffle() {
-  hipDeviceProp_t props;
-  HIP_CHECK(hipGetDeviceProperties(&props, 0));
-  const auto multipliers = {0.5, 0.9, 1.0, 1.5, 2.0};
-  return GENERATE_COPY(
-      dim3(1, 1, 1), dim3(props.maxThreadsDim[0], 1, 1), dim3(1, props.maxThreadsDim[1], 1),
-      dim3(1, 1, props.maxThreadsDim[2]),
-      map([max = props.maxThreadsDim[0]](
-              double i) { return dim3(std::min(static_cast<int>(i * kWarpSize), max), 1, 1); },
-          values(multipliers)),
-      map([max = props.maxThreadsDim[1]](
-              double i) { return dim3(1, std::min(static_cast<int>(i * kWarpSize), max), 1); },
-          values(multipliers)),
-      map([max = props.maxThreadsDim[2]](
-              double i) { return dim3(1, 1, std::min(static_cast<int>(i * kWarpSize), max)); },
-          values(multipliers)),
-      dim3(16, 8, 8), dim3(32, 32, 1), dim3(64, 8, 2), dim3(16, 16, 3), dim3(kWarpSize - 1, 3, 3),
-      dim3(kWarpSize + 1, 3, 3));
-}
-
-static dim3 GenerateBlockDimensionsForShuffle() {
-  hipDeviceProp_t props;
-  HIP_CHECK(hipGetDeviceProperties(&props, 0));
-  const auto multipliers = {0.5, 1.0};
-  return GENERATE_COPY(dim3(1, 1, 1),
-                       map([sm = props.multiProcessorCount](
-                               double i) { return dim3(static_cast<int>(i * sm), 1, 1); },
-                           values(multipliers)),
-                       map([sm = props.multiProcessorCount](
-                               double i) { return dim3(1, static_cast<int>(i * sm), 1); },
-                           values(multipliers)),
-                       map([sm = props.multiProcessorCount](
-                               double i) { return dim3(1, 1, static_cast<int>(i * sm)); },
-                           values(multipliers)),
-                       dim3(5, 5, 5));
-}
 
 template <typename T, size_t tile_size>
 __global__ void block_tile_shfl_up(T* const out, const unsigned int delta) {

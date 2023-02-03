@@ -108,7 +108,8 @@ template <bool dynamic, size_t... tile_sizes> void BlockPartitionGettersBasicTes
  * ------------------------
  *    - Creates tiled partitions for each of the valid sizes{2, 4, 8, 16, 32, 64(if AMD)} and writes
  * the return values of size and thread_rank member functions to an output array that is validated
- * on the host side. Test source
+ * on the host side. 
+ * Test source
  * ------------------------
  *    - unit/cooperativeGrps/thread_block_tile.cc
  * Test requirements
@@ -127,7 +128,8 @@ TEST_CASE("Unit_Thread_Block_Tile_Getters_Positive_Basic") {
  * ------------------------
  *    - Creates tiled partitions for each of the valid sizes{2, 4, 8, 16, 32, 64(if AMD)} via the
  * dynamic tiled partition api and writes the return values of size and thread_rank member functions
- * to an output array that is validated on host. Test source
+ * to an output array that is validated on host. 
+ * Test source
  * ------------------------
  *    - unit/cooperativeGrps/thread_block_tile.cc
  * Test requirements
@@ -520,10 +522,7 @@ template <bool global_memory, typename T, size_t... tile_sizes> void BlockTileSy
  * thread executes a busy wait loop for a random amount of clock cycles, the amount being read from
  * an input array. After the write a tile-wide sync is performed and each thread validates that it
  * can read the expected values that other threads within the same tile have written to their
- * respective array slots. Each thread begins the validation from a given offset from its own index.
- * For the first run of the test, all the offsets are zero, so memory reads should be coalesced as
- * adjacent threads read from adjacent memory locations. On subsequent runs the offsets are
- * randomized for each thread, leading to non-coalesced reads and cache thrashing.
+ * respective array slots. 
  * Test source
  * ------------------------
  *    - unit/cooperativeGrps/thread_block_tile.cc

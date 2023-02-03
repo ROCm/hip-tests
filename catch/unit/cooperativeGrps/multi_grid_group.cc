@@ -49,7 +49,7 @@ static __global__ void multi_grid_group_thread_rank_getter(unsigned int* thread_
 template <typename BaseType = cg::multi_grid_group>
 static __global__ void multi_grid_group_is_valid_getter(unsigned int* is_valid_flags) {
   const BaseType group = cg::this_multi_grid();
-  is_valid_flags[thread_rank_in_grid()] = cg::this_multi_grid().is_valid();
+  is_valid_flags[thread_rank_in_grid()] = static_cast<unsigned int>(group.is_valid());
 }
 
 static __global__ void multi_grid_group_num_grids_getter(unsigned int* num_grids) {
@@ -111,6 +111,40 @@ static __global__ void sync_kernel(unsigned int* atomic_val, unsigned int* globa
   }
 }
 
+static void get_multi_grid_dims(dim3& grid_dim, dim3& block_dim, unsigned int device,
+                                unsigned int test_case) {
+  hipDeviceProp_t props;
+  HIP_CHECK(hipSetDevice(device))
+  HIP_CHECK(hipGetDeviceProperties(&props, 0));
+  int sm = props.multiProcessorCount;
+  std::vector<dim3> block_dim_values = {dim3(1, 1, 1),
+                                        dim3(props.maxThreadsDim[0], 1, 1),
+                                        dim3(1, props.maxThreadsDim[1], 1),
+                                        dim3(1, 1, props.maxThreadsDim[2]),
+                                        dim3(16, 8, 8),
+                                        dim3(32, 32, 1),
+                                        dim3(64, 8, 2),
+                                        dim3(16, 16, 3),
+                                        dim3(kWarpSize - 1, 3, 3),
+                                        dim3(kWarpSize + 1, 3, 3)};
+  std::vector<dim3> grid_dim_values = {dim3(1, 1, 1),
+                                       dim3(sm, 2, 1),
+                                       dim3(2, sm, 1),
+                                       dim3(1, sm, 2),
+                                       dim3(static_cast<int>(0.5 * sm), 1, 3),
+                                       dim3(4, static_cast<int>(0.5 * sm), 1),
+                                       dim3(1, 1, static_cast<int>(0.5 * sm)),
+                                       dim3(3, 3, 3)};
+
+  if (test_case < 10) {
+    grid_dim = grid_dim_values[test_case % grid_dim_values.size()];
+    block_dim = block_dim_values[test_case % block_dim_values.size()];
+  } else {
+    grid_dim = grid_dim_values[(test_case + device) % grid_dim_values.size()];
+    block_dim = block_dim_values[(test_case + device) % block_dim_values.size()];
+  }
+}
+
 /**
  * Test Description
  * ------------------------
@@ -138,28 +172,21 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Basic") {
       return;
     }
   }
-
-  const auto blocks = GenerateBlockDimensions();
-  const auto threads = GenerateThreadDimensions();
-  if (!CheckDimensions(num_devices, multi_grid_group_size_getter<cg::multi_grid_group>, blocks,
-                       threads))
-    return;
-
-  INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);
-  INFO("Block dimensions: x " << threads.x << ", y " << threads.y << ", z " << threads.z);
-
-  const CPUGrid grid(blocks, threads);
-
-  // Calculate total thread count and local grid ranks
-  unsigned int multi_grid_thread_count = 0;
-  unsigned int multi_grid_grid_rank_0[MaxGPUs];
-  multi_grid_grid_rank_0[0] = 0;
+  const auto test_case = GENERATE(range(0, 20));
+  dim3 grid_dims[MaxGPUs];
+  dim3 block_dims[MaxGPUs];
   for (int i = 0; i < num_devices; i++) {
-    if (i > 0) {
-      multi_grid_grid_rank_0[i] = multi_grid_thread_count;
-    }
-    multi_grid_thread_count += grid.thread_count_;
+    get_multi_grid_dims(grid_dims[i], block_dims[i], i, test_case);
+    if (!CheckDimensions(i, multi_grid_group_size_getter<cg::multi_grid_group>, grid_dims[i],
+                         block_dims[i]))
+      return;
+    INFO("Grid dimensions dev " << i << " : x " << grid_dims[i].x << ", y " << grid_dims[i].y
+                                << ", z " << grid_dims[i].z);
+    INFO("Block dimensions dev " << i << " : x " << block_dims[i].x << ", y " << block_dims[i].y
+                                 << ", z " << block_dims[i].z);
   }
+
+  CPUMultiGrid multi_grid(num_devices, grid_dims, block_dims);
 
   std::vector<StreamGuard> streams;
   std::vector<LinearAllocGuard<unsigned int>> uint_arr_dev;
@@ -170,9 +197,11 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Basic") {
     HIP_CHECK(hipDeviceSynchronize());
     streams.emplace_back(Streams::created);
 
-    uint_arr_dev.emplace_back(LinearAllocs::hipMalloc, grid.thread_count_ * sizeof(unsigned int));
+    uint_arr_dev.emplace_back(LinearAllocs::hipMalloc,
+                              multi_grid.grids_[i].thread_count_ * sizeof(unsigned int));
     uint_arr_dev_ptr[i] = uint_arr_dev[i].ptr();
-    uint_arr.emplace_back(LinearAllocs::hipHostMalloc, grid.thread_count_ * sizeof(unsigned int));
+    uint_arr.emplace_back(LinearAllocs::hipHostMalloc,
+                          multi_grid.grids_[i].thread_count_ * sizeof(unsigned int));
   }
 
   // Launch Kernel
@@ -183,8 +212,8 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Basic") {
 
     launchParamsList[i].func =
         reinterpret_cast<void*>(multi_grid_group_size_getter<cg::multi_grid_group>);
-    launchParamsList[i].gridDim = blocks;
-    launchParamsList[i].blockDim = threads;
+    launchParamsList[i].gridDim = grid_dims[i];
+    launchParamsList[i].blockDim = block_dims[i];
     launchParamsList[i].sharedMem = 0;
     launchParamsList[i].stream = streams[i].stream();
     launchParamsList[i].args = &args[i];
@@ -193,7 +222,8 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Basic") {
   for (int i = 0; i < num_devices; i++) {
     HIP_CHECK(hipSetDevice(i));
     HIP_CHECK(hipMemcpy(uint_arr[i].ptr(), uint_arr_dev[i].ptr(),
-                        grid.thread_count_ * sizeof(*uint_arr[i].ptr()), hipMemcpyDeviceToHost));
+                        multi_grid.grids_[i].thread_count_ * sizeof(*uint_arr[i].ptr()),
+                        hipMemcpyDeviceToHost));
     HIP_CHECK(hipDeviceSynchronize());
 
     launchParamsList[i].func =
@@ -204,10 +234,11 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Basic") {
   for (int i = 0; i < num_devices; i++) {
     HIP_CHECK(hipSetDevice(i));
     // Verify multi_grid_group.size() values
-    ArrayAllOf(uint_arr[i].ptr(), grid.thread_count_,
-               [size = multi_grid_thread_count](uint32_t) { return size; });
+    ArrayAllOf(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_,
+               [size = multi_grid.thread_count_](uint32_t) { return size; });
     HIP_CHECK(hipMemcpy(uint_arr[i].ptr(), uint_arr_dev[i].ptr(),
-                        grid.thread_count_ * sizeof(*uint_arr[i].ptr()), hipMemcpyDeviceToHost));
+                        multi_grid.grids_[i].thread_count_ * sizeof(*uint_arr[i].ptr()),
+                        hipMemcpyDeviceToHost));
     HIP_CHECK(hipDeviceSynchronize());
 
     launchParamsList[i].func = reinterpret_cast<void*>(multi_grid_group_grid_rank_getter);
@@ -217,10 +248,12 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Basic") {
   for (int i = 0; i < num_devices; i++) {
     HIP_CHECK(hipSetDevice(i));
     // Verify multi_grid_group.thread_rank() values
-    ArrayAllOf(uint_arr[i].ptr(), grid.thread_count_,
-               [rank_0 = multi_grid_grid_rank_0[i]](uint32_t j) { return rank_0 + j; });
+    const auto multi_grid_thread0_rank = multi_grid.thread0_rank_in_multi_grid(i);
+    ArrayAllOf(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_,
+               [rank_0 = multi_grid_thread0_rank](uint32_t j) { return rank_0 + j; });
     HIP_CHECK(hipMemcpy(uint_arr[i].ptr(), uint_arr_dev[i].ptr(),
-                        grid.thread_count_ * sizeof(*uint_arr[i].ptr()), hipMemcpyDeviceToHost));
+                        multi_grid.grids_[i].thread_count_ * sizeof(*uint_arr[i].ptr()),
+                        hipMemcpyDeviceToHost));
     HIP_CHECK(hipDeviceSynchronize());
 
     launchParamsList[i].func = reinterpret_cast<void*>(multi_grid_group_num_grids_getter);
@@ -230,29 +263,32 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Basic") {
   for (int i = 0; i < num_devices; i++) {
     HIP_CHECK(hipSetDevice(i));
     // Verify multi_grid_group.grid_rank() values
-    ArrayAllOf(uint_arr[i].ptr(), grid.thread_count_, [rank = i](uint32_t) { return rank; });
+    ArrayAllOf(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_,
+               [rank = i](uint32_t) { return rank; });
 
     HIP_CHECK(hipMemcpy(uint_arr[i].ptr(), uint_arr_dev[i].ptr(),
-                        grid.thread_count_ * sizeof(*uint_arr[i].ptr()), hipMemcpyDeviceToHost));
+                        multi_grid.grids_[i].thread_count_ * sizeof(*uint_arr[i].ptr()),
+                        hipMemcpyDeviceToHost));
     HIP_CHECK(hipDeviceSynchronize());
 
     launchParamsList[i].func =
         reinterpret_cast<void*>(multi_grid_group_is_valid_getter<cg::multi_grid_group>);
   }
+  HIP_CHECK(hipLaunchCooperativeKernelMultiDevice(launchParamsList, num_devices, 0));
 
   for (int i = 0; i < num_devices; i++) {
     HIP_CHECK(hipSetDevice(i));
     // Verify multi_grid_group.num_grids() values
-    ArrayAllOf(uint_arr[i].ptr(), grid.thread_count_,
+    ArrayAllOf(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_,
                [num = num_devices](uint32_t) { return num; });
 
     HIP_CHECK(hipMemcpy(uint_arr[i].ptr(), uint_arr_dev[i].ptr(),
-                        grid.thread_count_ * sizeof(*uint_arr[i].ptr()), hipMemcpyDeviceToHost));
+                        multi_grid.grids_[i].thread_count_ * sizeof(*uint_arr[i].ptr()),
+                        hipMemcpyDeviceToHost));
     HIP_CHECK(hipDeviceSynchronize());
 
     // Verify multi_grid_group.is_valid() values
-    ArrayAllOf(uint_arr[i].ptr(), grid.thread_count_,
-               [num = num_devices](uint32_t) { return num; });
+    ArrayAllOf(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_, [](uint32_t j) { return 1; });
   }
 }
 
@@ -274,7 +310,6 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Base_Type") {
   int num_devices = 0;
   HIP_CHECK(hipGetDeviceCount(&num_devices));
   num_devices = min(num_devices, MaxGPUs);
-
   hipDeviceProp_t device_properties[num_devices];
   for (int i = 0; i < num_devices; i++) {
     HIP_CHECK(hipGetDeviceProperties(&device_properties[i], i));
@@ -284,27 +319,21 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Base_Type") {
     }
   }
 
-  const auto blocks = GenerateBlockDimensions();
-  const auto threads = GenerateThreadDimensions();
-  if (!CheckDimensions(num_devices, multi_grid_group_size_getter<cg::thread_group>, blocks,
-                       threads))
-    return;
-
-  INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);
-  INFO("Block dimensions: x " << threads.x << ", y " << threads.y << ", z " << threads.z);
-
-  const CPUGrid grid(blocks, threads);
-
-  // Calculate total thread count and local grid ranks
-  unsigned int multi_grid_thread_count = 0;
-  unsigned int multi_grid_grid_rank_0[MaxGPUs];
-  multi_grid_grid_rank_0[0] = 0;
+  const auto test_case = GENERATE(range(0, 20));
+  dim3 grid_dims[MaxGPUs];
+  dim3 block_dims[MaxGPUs];
   for (int i = 0; i < num_devices; i++) {
-    if (i > 0) {
-      multi_grid_grid_rank_0[i] = multi_grid_thread_count;
-    }
-    multi_grid_thread_count += grid.thread_count_;
+    get_multi_grid_dims(grid_dims[i], block_dims[i], i, test_case);
+    if (!CheckDimensions(i, multi_grid_group_size_getter<cg::multi_grid_group>, grid_dims[i],
+                         block_dims[i]))
+      return;
+    INFO("Grid dimensions dev " << i << " : x " << grid_dims[i].x << ", y " << grid_dims[i].y
+                                << ", z " << grid_dims[i].z);
+    INFO("Block dimensions dev " << i << " : x " << block_dims[i].x << ", y " << block_dims[i].y
+                                 << ", z " << block_dims[i].z);
   }
+
+  CPUMultiGrid multi_grid(num_devices, grid_dims, block_dims);
 
   std::vector<StreamGuard> streams;
   std::vector<LinearAllocGuard<unsigned int>> uint_arr_dev;
@@ -315,9 +344,11 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Base_Type") {
     HIP_CHECK(hipDeviceSynchronize());
     streams.emplace_back(Streams::created);
 
-    uint_arr_dev.emplace_back(LinearAllocs::hipMalloc, grid.thread_count_ * sizeof(unsigned int));
+    uint_arr_dev.emplace_back(LinearAllocs::hipMalloc,
+                              multi_grid.grids_[i].thread_count_ * sizeof(unsigned int));
     uint_arr_dev_ptr[i] = uint_arr_dev[i].ptr();
-    uint_arr.emplace_back(LinearAllocs::hipHostMalloc, grid.thread_count_ * sizeof(unsigned int));
+    uint_arr.emplace_back(LinearAllocs::hipHostMalloc,
+                          multi_grid.grids_[i].thread_count_ * sizeof(unsigned int));
   }
 
   // Launch Kernel
@@ -328,8 +359,8 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Base_Type") {
 
     launchParamsList[i].func =
         reinterpret_cast<void*>(multi_grid_group_size_getter<cg::thread_group>);
-    launchParamsList[i].gridDim = blocks;
-    launchParamsList[i].blockDim = threads;
+    launchParamsList[i].gridDim = grid_dims[i];
+    launchParamsList[i].blockDim = block_dims[i];
     launchParamsList[i].sharedMem = 0;
     launchParamsList[i].stream = streams[i].stream();
     launchParamsList[i].args = &args[i];
@@ -339,7 +370,8 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Base_Type") {
   for (int i = 0; i < num_devices; i++) {
     HIP_CHECK(hipSetDevice(i));
     HIP_CHECK(hipMemcpy(uint_arr[i].ptr(), uint_arr_dev[i].ptr(),
-                        grid.thread_count_ * sizeof(*uint_arr[i].ptr()), hipMemcpyDeviceToHost));
+                        multi_grid.grids_[i].thread_count_ * sizeof(*uint_arr[i].ptr()),
+                        hipMemcpyDeviceToHost));
     HIP_CHECK(hipDeviceSynchronize());
 
     launchParamsList[i].func =
@@ -350,10 +382,11 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Base_Type") {
   for (int i = 0; i < num_devices; i++) {
     HIP_CHECK(hipSetDevice(i));
     // Verify multi_grid_group.size() values
-    ArrayAllOf(uint_arr[i].ptr(), grid.thread_count_,
-               [size = multi_grid_thread_count](uint32_t) { return size; });
+    ArrayAllOf(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_,
+               [size = multi_grid.thread_count_](uint32_t) { return size; });
     HIP_CHECK(hipMemcpy(uint_arr[i].ptr(), uint_arr_dev[i].ptr(),
-                        grid.thread_count_ * sizeof(*uint_arr[i].ptr()), hipMemcpyDeviceToHost));
+                        multi_grid.grids_[i].thread_count_ * sizeof(*uint_arr[i].ptr()),
+                        hipMemcpyDeviceToHost));
     HIP_CHECK(hipDeviceSynchronize());
 
     launchParamsList[i].func =
@@ -364,14 +397,16 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Base_Type") {
   for (int i = 0; i < num_devices; i++) {
     HIP_CHECK(hipSetDevice(i));
     // Verify multi_grid_group.thread_rank() values
-    ArrayAllOf(uint_arr[i].ptr(), grid.thread_count_,
-               [rank_0 = multi_grid_grid_rank_0[i]](uint32_t j) { return rank_0 + j; });
+    const auto multi_grid_thread0_rank = multi_grid.thread0_rank_in_multi_grid(i);
+    ArrayAllOf(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_,
+               [rank_0 = multi_grid_thread0_rank](uint32_t j) { return rank_0 + j; });
     HIP_CHECK(hipMemcpy(uint_arr[i].ptr(), uint_arr_dev[i].ptr(),
-                        grid.thread_count_ * sizeof(*uint_arr[i].ptr()), hipMemcpyDeviceToHost));
+                        multi_grid.grids_[i].thread_count_ * sizeof(*uint_arr[i].ptr()),
+                        hipMemcpyDeviceToHost));
     HIP_CHECK(hipDeviceSynchronize());
 
     // Verify multi_grid_group.is_valid() values
-    ArrayAllOf(uint_arr[i].ptr(), grid.thread_count_, [](uint32_t j) { return 1; });
+    ArrayAllOf(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_, [](uint32_t j) { return 1; });
   }
 }
 
@@ -401,28 +436,21 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Non_Member_Functions") {
       return;
     }
   }
-
-  const auto blocks = GenerateBlockDimensions();
-  const auto threads = GenerateThreadDimensions();
-
-  if (!CheckDimensions(num_devices, multi_grid_group_non_member_size_getter, blocks, threads))
-    return;
-
-  INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);
-  INFO("Block dimensions: x " << threads.x << ", y " << threads.y << ", z " << threads.z);
-
-  const CPUGrid grid(blocks, threads);
-
-  // Calculate total thread count and local grid ranks
-  unsigned int multi_grid_thread_count = 0;
-  unsigned int multi_grid_grid_rank_0[MaxGPUs];
-  multi_grid_grid_rank_0[0] = 0;
+  const auto test_case = GENERATE(range(0, 20));
+  dim3 grid_dims[MaxGPUs];
+  dim3 block_dims[MaxGPUs];
   for (int i = 0; i < num_devices; i++) {
-    if (i > 0) {
-      multi_grid_grid_rank_0[i] = multi_grid_thread_count;
-    }
-    multi_grid_thread_count += grid.thread_count_;
+    get_multi_grid_dims(grid_dims[i], block_dims[i], i, test_case);
+    if (!CheckDimensions(i, multi_grid_group_size_getter<cg::multi_grid_group>, grid_dims[i],
+                         block_dims[i]))
+      return;
+    INFO("Grid dimensions dev " << i << " : x " << grid_dims[i].x << ", y " << grid_dims[i].y
+                                << ", z " << grid_dims[i].z);
+    INFO("Block dimensions dev " << i << " : x " << block_dims[i].x << ", y " << block_dims[i].y
+                                 << ", z " << block_dims[i].z);
   }
+
+  CPUMultiGrid multi_grid(num_devices, grid_dims, block_dims);
 
   std::vector<StreamGuard> streams;
   std::vector<LinearAllocGuard<unsigned int>> uint_arr_dev;
@@ -433,9 +461,11 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Non_Member_Functions") {
     HIP_CHECK(hipDeviceSynchronize());
     streams.emplace_back(Streams::created);
 
-    uint_arr_dev.emplace_back(LinearAllocs::hipMalloc, grid.thread_count_ * sizeof(unsigned int));
+    uint_arr_dev.emplace_back(LinearAllocs::hipMalloc,
+                              multi_grid.grids_[i].thread_count_ * sizeof(unsigned int));
     uint_arr_dev_ptr[i] = uint_arr_dev[i].ptr();
-    uint_arr.emplace_back(LinearAllocs::hipHostMalloc, grid.thread_count_ * sizeof(unsigned int));
+    uint_arr.emplace_back(LinearAllocs::hipHostMalloc,
+                          multi_grid.grids_[i].thread_count_ * sizeof(unsigned int));
   }
 
   // Launch Kernel
@@ -445,8 +475,8 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Non_Member_Functions") {
     args[i] = &uint_arr_dev_ptr[i];
 
     launchParamsList[i].func = reinterpret_cast<void*>(multi_grid_group_non_member_size_getter);
-    launchParamsList[i].gridDim = blocks;
-    launchParamsList[i].blockDim = threads;
+    launchParamsList[i].gridDim = grid_dims[i];
+    launchParamsList[i].blockDim = block_dims[i];
     launchParamsList[i].sharedMem = 0;
     launchParamsList[i].stream = streams[i].stream();
     launchParamsList[i].args = &args[i];
@@ -455,7 +485,8 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Non_Member_Functions") {
   for (int i = 0; i < num_devices; i++) {
     HIP_CHECK(hipSetDevice(i));
     HIP_CHECK(hipMemcpy(uint_arr[i].ptr(), uint_arr_dev[i].ptr(),
-                        grid.thread_count_ * sizeof(*uint_arr[i].ptr()), hipMemcpyDeviceToHost));
+                        multi_grid.grids_[i].thread_count_ * sizeof(*uint_arr[i].ptr()),
+                        hipMemcpyDeviceToHost));
     HIP_CHECK(hipDeviceSynchronize());
 
     launchParamsList[i].func =
@@ -466,14 +497,16 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Non_Member_Functions") {
   for (int i = 0; i < num_devices; i++) {
     HIP_CHECK(hipSetDevice(i));
     // Verify multi_grid_group.size() values
-    ArrayAllOf(uint_arr[i].ptr(), grid.thread_count_,
-               [size = multi_grid_thread_count](uint32_t) { return size; });
+    ArrayAllOf(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_,
+               [size = multi_grid.thread_count_](uint32_t) { return size; });
     HIP_CHECK(hipMemcpy(uint_arr[i].ptr(), uint_arr_dev[i].ptr(),
-                        grid.thread_count_ * sizeof(*uint_arr[i].ptr()), hipMemcpyDeviceToHost));
+                        multi_grid.grids_[i].thread_count_ * sizeof(*uint_arr[i].ptr()),
+                        hipMemcpyDeviceToHost));
     HIP_CHECK(hipDeviceSynchronize());
     // Verify multi_grid_group.thread_rank() values
-    ArrayAllOf(uint_arr[i].ptr(), grid.thread_count_,
-               [rank_0 = multi_grid_grid_rank_0[i]](uint32_t j) { return rank_0 + j; });
+    const auto multi_grid_thread0_rank = multi_grid.thread0_rank_in_multi_grid(i);
+    ArrayAllOf(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_,
+               [rank_0 = multi_grid_thread0_rank](uint32_t j) { return rank_0 + j; });
   }
 }
 
@@ -516,17 +549,21 @@ TEST_CASE("Unit_Multi_Grid_Group_Positive_Sync") {
     }
   }
   auto loops = GENERATE(2, 4, 8, 16);
-  const auto blocks = GenerateBlockDimensions();
-  const auto threads = GenerateThreadDimensions();
+  const auto test_case = GENERATE(range(0, 20));
+  dim3 grid_dims[MaxGPUs];
+  dim3 block_dims[MaxGPUs];
+  for (int i = 0; i < num_devices; i++) {
+    get_multi_grid_dims(grid_dims[i], block_dims[i], i, test_case);
+    if (!CheckDimensions(i, multi_grid_group_size_getter<cg::multi_grid_group>, grid_dims[i],
+                         block_dims[i]))
+      return;
+    INFO("Grid dimensions dev " << i << " : x " << grid_dims[i].x << ", y " << grid_dims[i].y
+                                << ", z " << grid_dims[i].z);
+    INFO("Block dimensions dev " << i << " : x " << block_dims[i].x << ", y " << block_dims[i].y
+                                 << ", z " << block_dims[i].z);
+  }
 
-  // Calculate the device occupancy to check if block size is valid
-  if (!CheckDimensions(num_devices, sync_kernel, blocks, threads)) return;
-
-  INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);
-  INFO("Block dimensions: x " << threads.x << ", y " << threads.y << ", z " << threads.z);
-
-  const CPUGrid grid(blocks, threads);
-  unsigned int array_len = grid.block_count_ * loops;
+  CPUMultiGrid multi_grid(num_devices, grid_dims, block_dims);
 
   std::vector<StreamGuard> streams;
   std::vector<LinearAllocGuard<unsigned int>> uint_arr_dev;
@@ -540,6 +577,7 @@ TEST_CASE("Unit_Multi_Grid_Group_Positive_Sync") {
     streams.emplace_back(Streams::created);
 
     // Allocate grid sync arrays
+    unsigned int array_len = multi_grid.grids_[i].block_count_ * loops;
     uint_arr_dev.emplace_back(LinearAllocs::hipMalloc, array_len * sizeof(unsigned int));
     uint_arr_dev_ptr[i] = uint_arr_dev[i].ptr();
     uint_arr.emplace_back(LinearAllocs::hipHostMalloc, array_len * sizeof(unsigned int));
@@ -563,8 +601,8 @@ TEST_CASE("Unit_Multi_Grid_Group_Positive_Sync") {
     dev_params[i][3] = reinterpret_cast<void*>(&loops);
 
     md_params[i].func = reinterpret_cast<void*>(sync_kernel);
-    md_params[i].gridDim = blocks;
-    md_params[i].blockDim = threads;
+    md_params[i].gridDim = grid_dims[i];
+    md_params[i].blockDim = block_dims[i];
     md_params[i].sharedMem = 0;
     md_params[i].stream = streams[i].stream();
     md_params[i].args = dev_params[i];
@@ -576,6 +614,8 @@ TEST_CASE("Unit_Multi_Grid_Group_Positive_Sync") {
 
   // Read back the grid sync buffer to host
   for (int i = 0; i < num_devices; i++) {
+    HIP_CHECK(hipSetDevice(i));
+    unsigned int array_len = multi_grid.grids_[i].block_count_ * loops;
     HIP_CHECK(hipMemcpy(uint_arr[i].ptr(), uint_arr_dev[i].ptr(), array_len * sizeof(unsigned int),
                         hipMemcpyDeviceToHost));
   }
@@ -586,12 +626,12 @@ TEST_CASE("Unit_Multi_Grid_Group_Positive_Sync") {
   for (int i = 0; i < num_devices; i++) {
     unsigned int max_in_this_loop = 0;
     for (unsigned int j = 0; j < loops; j++) {
-      max_in_this_loop += grid.block_count_;
+      max_in_this_loop += multi_grid.grids_[i].block_count_;
       unsigned int k = 0;
-      for (k = 0; k < grid.block_count_ - 1; k++) {
-        REQUIRE(uint_arr[i].ptr()[j * grid.block_count_ + k] < max_in_this_loop);
+      for (k = 0; k < multi_grid.grids_[i].block_count_ - 1; k++) {
+        REQUIRE(uint_arr[i].ptr()[j * multi_grid.grids_[i].block_count_ + k] < max_in_this_loop);
       }
-      REQUIRE(uint_arr[i].ptr()[j * grid.block_count_ + k] == max_in_this_loop - 1);
+      REQUIRE(uint_arr[i].ptr()[j * multi_grid.grids_[i].block_count_ + k] == max_in_this_loop - 1);
     }
   }
 

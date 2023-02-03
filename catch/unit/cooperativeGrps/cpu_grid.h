@@ -74,3 +74,29 @@ struct CPUGrid {
   const unsigned int threads_in_block_count_;
   const unsigned int thread_count_;
 };
+
+struct CPUMultiGrid {
+  CPUMultiGrid(const unsigned int num_grids, const dim3 grid_dims[], const dim3 block_dims[]) {
+    thread_count_ = 0;
+    grid_count_ = num_grids;
+    grids_.reserve(grid_count_);
+    for (int i = 0; i < grid_count_; i++) {
+      grids_.emplace_back(grid_dims[i], block_dims[i]);
+      thread_count_ += grids_[i].thread_count_;
+    }
+  }
+
+  inline unsigned int thread0_rank_in_multi_grid(const unsigned int grid_rank) const {
+    unsigned int multi_grid_thread_rank_0 = 0;
+    unsigned int multi_grid_thread_count = 0;
+    for (int i = 0; i <= grid_rank; i++) {
+      multi_grid_thread_rank_0 = multi_grid_thread_count;
+      multi_grid_thread_count += grids_[i].thread_count_;
+    }
+    return multi_grid_thread_rank_0;
+  }
+
+  std::vector<CPUGrid> grids_;
+  unsigned int grid_count_;
+  unsigned int thread_count_;
+};

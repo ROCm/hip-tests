@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 #include <utils.hh>
 
+#include <cmd_options.hh>
 #include <hip_test_common.hh>
 #include <hip/hip_cooperative_groups.h>
 
@@ -110,6 +111,19 @@ __global__ void coalesced_group_tiled_partition_thread_rank_getter(uint64_t* act
       cg::tiled_partition(cg::coalesced_threads(), tile_size).thread_rank();
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Deactivates threads based on passed in mask and creates tiled partitions over coalesced
+ * threads for each of the valid sizes{2, 4, 8, 16, 32, 64(if AMD)} and writes the return values of
+ * size and thread_rank member functions to an output array that is validated on the host side.
+ * Test source
+ * ------------------------
+ *    - unit/cooperativeGrps/coalesced_group_tiled_partition.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Coalesced_Group_Tiled_Partition_Getters_Positive_Basic") {
   const auto tile_size = GenerateTileSizes();
   INFO("Tile size: " << tile_size);
@@ -287,8 +301,23 @@ template <typename T> static void CoalescedGroupTiledPartitonShflUpTestImpl() {
   }
 }
 
-TEMPLATE_TEST_CASE("Unit_Coalesced_Group_Tiled_Partition_Shfl_Up_Positive_Basic", "", uint8_t,
-                   uint16_t, uint32_t) {
+/**
+ * Test Description
+ * ------------------------
+ *    - Validates the shuffle up behavior of tiled partitions of all valid sizes{2, 4, 8, 16, 32,
+ * 64(if AMD)} for delta values of [0, tile size). The partitions are created over a coalesced
+ * group, with memberships of threads in the coalesced group being controlled via a passed in active
+ * mask. The test is run for all overloads of shfl_up.
+ * Test source
+ * ------------------------
+ *    - unit/cooperativeGrps/coalesced_group_tiled_partition.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEMPLATE_TEST_CASE("Unit_Coalesced_Group_Tiled_Partition_Shfl_Up_Positive_Basic", "", int,
+                   unsigned int, long, unsigned long, long long, unsigned long long, float,
+                   double) {
   CoalescedGroupTiledPartitonShflUpTestImpl<TestType>();
 }
 
@@ -375,8 +404,23 @@ template <typename T> static void CoalescedGroupTiledPartitonShflDownTestImpl() 
   }
 }
 
-TEMPLATE_TEST_CASE("Unit_Coalesced_Group_Tiled_Partition_Shfl_Down_Positive_Basic", "", uint8_t,
-                   uint16_t, uint32_t) {
+/**
+ * Test Description
+ * ------------------------
+ *    - Validates the shuffle down behavior of tiled partitions of all valid sizes{2, 4, 8, 16, 32,
+ * 64(if AMD)} for delta values of [0, tile size). The partitions are created over a coalesced
+ * group, with memberships of threads in the coalesced group being controlled via a passed in active
+ * mask. The test is run for all overloads of shfl_down.
+ * Test source
+ * ------------------------
+ *    - unit/cooperativeGrps/coalesced_group_tiled_partition.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEMPLATE_TEST_CASE("Unit_Coalesced_Group_Tiled_Partition_Shfl_Down_Positive_Basic", "", int,
+                   unsigned int, long, unsigned long, long long, unsigned long long, float,
+                   double) {
   CoalescedGroupTiledPartitonShflDownTestImpl<TestType>();
 }
 
@@ -466,8 +510,23 @@ template <typename T> static void CoalescedGroupTiledPartitonShflTestImpl() {
   }
 }
 
-TEMPLATE_TEST_CASE("Unit_Coalesced_Group_Tiled_Partition_Shfl_Positive_Basic", "", uint8_t,
-                   uint16_t, uint32_t) {
+/**
+ * Test Description
+ * ------------------------
+ *    - Validates the shuffle behavior of tiled partitions of all valid sizes{2, 4, 8, 16, 32,
+ * 64(if AMD)} for delta values of [0, tile size). The partitions are created over a coalesced
+ * group, with memberships of threads in the coalesced group being controlled via a passed in active
+ * mask. The test is run for all overloads of shfl.
+ * Test source
+ * ------------------------
+ *    - unit/cooperativeGrps/coalesced_group_tiled_partition.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEMPLATE_TEST_CASE("Unit_Coalesced_Group_Tiled_Partition_Shfl_Positive_Basic", "", int,
+                   unsigned int, long, unsigned long, long long, unsigned long long, float,
+                   double) {
   CoalescedGroupTiledPartitonShflTestImpl<TestType>();
 }
 
@@ -520,8 +579,7 @@ __global__ void coalesced_group_tiled_partition_sync_check(uint64_t* active_mask
 }
 
 template <bool global_memory, typename T> void CoalescedGroupTiledPartitionSyncTest() {
-  // const auto randomized_run_count = GENERATE(range(0, cmd_options.cg_extended_run));
-  const auto randomized_run_count(GENERATE(range(0, 5)));
+  const auto randomized_run_count = GENERATE(range(0, cmd_options.cg_extended_run));
   INFO("Run number: " << randomized_run_count + 1);
   const auto tile_size = GenerateTileSizes();
   INFO("Tile size: " << tile_size);
@@ -595,6 +653,25 @@ template <bool global_memory, typename T> void CoalescedGroupTiledPartitionSyncT
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Launches a kernel wherein threads in each warp are deactivated based on a passed bitmask.
+ * Coalesced groups are formed and divided into tiled partitions(size of 2, 4, 8, 16, 32, 64 if AMD)
+ * and every thread writes its intra-tile rank into an array slot determined by its global warp rank
+ * and coalesced group rank. The array is either in global or dynamic shared memory based on a
+ * compile time switch, and the test is run for arrays of 1, 2, and 4 byte elements. Before the
+ * write each thread executes a busy wait loop for a random amount of clock cycles, the amount being
+ * read from an input array. After the write a tile-wide sync is performed and each thread validates
+ * that it can read the expected values that other threads within the same tile have written to
+ * their respective array slots.
+ * Test source
+ * ------------------------
+ *    - unit/cooperativeGrps/coalesced_group_tiled_partition.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 uint64_t counter = 0;
 TEMPLATE_TEST_CASE("Unit_Coalesced_Group_Tiled_Partition_Sync_Positive_Basic", "", uint8_t,
                    uint16_t, uint32_t) {

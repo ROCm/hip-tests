@@ -355,3 +355,134 @@ TEMPLATE_TEST_CASE("Unit_Coalesced_Group_Tiled_Partition_Shfl_Positive_Basic", "
                    uint16_t, uint32_t) {
   CoalescedGroupTiledPartitonShflTestImpl<TestType>();
 }
+
+
+template <bool use_global, size_t warp_size, typename T>
+__global__ void coalesced_group_tiled_partition_sync_check(uint64_t* active_masks, T* global_data,
+                                                           unsigned int* wait_modifiers,
+                                                           size_t tile_size) {
+  if (deactivate_thread<warp_size>(active_masks)) {
+    return;
+  }
+
+  extern __shared__ uint8_t shared_data[];
+  T* const data = use_global ? global_data : reinterpret_cast<T*>(shared_data);
+  const auto tid = cg::this_grid().thread_rank();
+  const auto block = cg::this_thread_block();
+  const auto coalesced = cg::coalesced_threads();
+  const auto partition = cg::tiled_partition(coalesced, tile_size);
+  const auto data_idx = [&block](unsigned int i) { return use_global ? i : (i % block.size()); };
+
+  const auto wait_modifier = wait_modifiers[tid];
+
+  const auto block_rank = tid / block.size();
+  const auto warp_rank = block.thread_rank() / warp_size;
+  const auto warp_base = block_rank * block.size() + warp_rank * warp_size;
+  const auto global_idx = warp_base + coalesced.thread_rank();
+
+  busy_wait(wait_modifier);
+  data[data_idx(global_idx)] = partition.thread_rank();
+  partition.sync();
+
+  bool valid = true;
+  const auto tile_rank = coalesced.thread_rank() / tile_size;
+  for (auto i = 0u; i < tile_size; ++i) {
+    const auto target_rank_in_tile = (coalesced.thread_rank() + i) % tile_size;
+    const auto target_rank_in_warp = tile_rank * tile_size + target_rank_in_tile;
+    if (target_rank_in_warp >= coalesced.size()) {
+      continue;
+    }
+    if (!(valid &= (data[data_idx(warp_base + target_rank_in_warp)] == target_rank_in_tile))) {
+      break;
+    }
+  }
+  // Validate
+  partition.sync();
+  data[data_idx(global_idx)] = valid;
+  if constexpr (!use_global) {
+    global_data[global_idx] = data[data_idx(global_idx)];
+  }
+}
+
+template <bool global_memory, typename T> void CoalescedGroupTiledPartitionSyncTest() {
+  // const auto randomized_run_count = GENERATE(range(0, cmd_options.cg_extended_run));
+  const auto randomized_run_count(GENERATE(range(0, 5)));
+  INFO("Run number: " << randomized_run_count + 1);
+  const auto tile_size = GENERATE(2u, 4u, 8u, 16u, 32u);
+  INFO("Tile size: " << tile_size);
+  auto blocks = GenerateBlockDimensionsForShuffle();
+  auto threads = GenerateThreadDimensionsForShuffle();
+  INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);
+  INFO("Block dimensions: x " << threads.x << ", y " << threads.y << ", z " << threads.z);
+  CPUGrid grid(blocks, threads);
+
+  const auto alloc_size = grid.thread_count_ * sizeof(T);
+  const auto alloc_size_per_block = alloc_size / grid.block_count_;
+  int max_shared_mem_per_block = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&max_shared_mem_per_block,
+                                  hipDeviceAttributeMaxSharedMemoryPerBlock, 0));
+  if (!global_memory && (max_shared_mem_per_block < alloc_size_per_block)) {
+    return;
+  }
+
+  LinearAllocGuard<T> arr_dev(LinearAllocs::hipMalloc, alloc_size);
+  LinearAllocGuard<T> arr(LinearAllocs::hipHostMalloc, alloc_size);
+  LinearAllocGuard<unsigned int> wait_modifiers_dev(LinearAllocs::hipMalloc,
+                                                    grid.thread_count_ * sizeof(unsigned int));
+  LinearAllocGuard<unsigned int> wait_modifiers(LinearAllocs::hipHostMalloc,
+                                                grid.thread_count_ * sizeof(unsigned int));
+  const auto warps_in_block = (grid.threads_in_block_count_ + kWarpSize - 1) / kWarpSize;
+  const auto warps_in_grid = warps_in_block * grid.block_count_;
+  LinearAllocGuard<uint64_t> active_masks_dev(LinearAllocs::hipMalloc,
+                                              warps_in_grid * sizeof(uint64_t));
+  LinearAllocGuard<uint64_t> active_masks(LinearAllocs::hipHostMalloc,
+                                          warps_in_grid * sizeof(uint64_t));
+  if (randomized_run_count != 0) {
+    std::generate(wait_modifiers.ptr(), wait_modifiers.ptr() + grid.thread_count_,
+                  [] { return GenerateRandomInteger(0u, 1500u); });
+  } else {
+    std::fill_n(wait_modifiers.ptr(), grid.thread_count_, 0u);
+  }
+  std::generate(active_masks.ptr(), active_masks.ptr() + warps_in_grid,
+                [] { return GenerateRandomInteger(0u, std::numeric_limits<uint32_t>().max()); });
+
+  HIP_CHECK(hipMemcpy(active_masks_dev.ptr(), active_masks.ptr(), warps_in_grid * sizeof(uint64_t),
+                      hipMemcpyHostToDevice));
+  HIP_CHECK(hipMemcpy(wait_modifiers_dev.ptr(), wait_modifiers.ptr(),
+                      grid.thread_count_ * sizeof(unsigned int), hipMemcpyHostToDevice));
+
+  const auto shared_memory_size = global_memory ? 0u : alloc_size_per_block;
+  coalesced_group_tiled_partition_sync_check<global_memory, kWarpSize>
+      <<<blocks, threads, shared_memory_size>>>(active_masks_dev.ptr(), arr_dev.ptr(),
+                                                wait_modifiers_dev.ptr(), tile_size);
+  HIP_CHECK(hipGetLastError());
+
+  HIP_CHECK(hipMemcpy(arr.ptr(), arr_dev.ptr(), alloc_size, hipMemcpyDeviceToHost));
+  HIP_CHECK(hipDeviceSynchronize());
+
+  const auto tail = warps_in_block * kWarpSize - grid.threads_in_block_count_;
+  for (int i = 0u; i < grid.block_count_; ++i) {
+    for (int j = 0u; j < warps_in_block; ++j) {
+      const auto warp_idx = i * warps_in_block + j;
+      auto mask = active_masks.ptr()[warp_idx];
+      const auto shift_amount =
+          (tail + 32 * TestContext::get().isNvidia()) * !((warp_idx + 1) % warps_in_block);
+      mask = (mask << shift_amount) >> shift_amount;
+      const auto active_count = std::bitset<sizeof(mask) * 8>(mask).count();
+      const auto start_offset = i * grid.threads_in_block_count_ + j * kWarpSize;
+      const auto end_offset = start_offset + active_count;
+      const auto valid =
+          std::all_of(arr.ptr() + start_offset, arr.ptr() + end_offset, [](T e) { return e; });
+      if (!valid) {
+        REQUIRE(valid);
+      }
+    }
+  }
+}
+
+uint64_t counter = 0;
+TEMPLATE_TEST_CASE("Unit_Coalesced_Group_Tiled_Partition_Sync_Positive_Basic", "", uint8_t,
+                   uint16_t, uint32_t) {
+  SECTION("Global memory") { CoalescedGroupTiledPartitionSyncTest<true, TestType>(); }
+  SECTION("Shared memory") { CoalescedGroupTiledPartitionSyncTest<false, TestType>(); }
+}

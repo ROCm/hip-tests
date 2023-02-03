@@ -104,7 +104,7 @@ TEST_CASE("Unit_Grid_Group_Getters_Positive_Basic") {
 
   const auto blocks = GenerateBlockDimensions();
   const auto threads = GenerateThreadDimensions();
-  if ((blocks.x * blocks.y * blocks.z) > 2 * device_properties.multiProcessorCount) return;
+  if (!CheckDimensions(device, grid_group_size_getter, blocks, threads)) return;
   INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);
   INFO("Block dimensions: x " << threads.x << ", y " << threads.y << ", z " << threads.z);
 
@@ -174,7 +174,7 @@ TEST_CASE("Unit_Grid_Group_Getters_Via_Non_Member_Functions_Positive_Basic") {
 
   const auto blocks = GenerateBlockDimensions();
   const auto threads = GenerateThreadDimensions();
-  if ((blocks.x * blocks.y * blocks.z) > 2 * device_properties.multiProcessorCount) return;
+  if (!CheckDimensions(device, grid_group_non_member_size_getter, blocks, threads)) return;
   INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);
   INFO("Block dimensions: x " << threads.x << ", y " << threads.y << ", z " << threads.z);
 
@@ -244,7 +244,7 @@ TEST_CASE("Unit_Grid_Group_Sync_Positive_Basic") {
   auto loops = GENERATE(2, 4, 8, 16);
   const auto blocks = GenerateBlockDimensions();
   const auto threads = GenerateThreadDimensions();
-  if ((blocks.x * blocks.y * blocks.z) > 2 * device_properties.multiProcessorCount) return;
+  if (!CheckDimensions(device, sync_kernel, blocks, threads)) return;
   INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);
   INFO("Block dimensions: x " << threads.x << ", y " << threads.y << ", z " << threads.z);
 

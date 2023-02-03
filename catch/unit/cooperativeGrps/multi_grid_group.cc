@@ -388,9 +388,13 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Base_Type") {
                         multi_grid.grids_[i].thread_count_ * sizeof(*uint_arr[i].ptr()),
                         hipMemcpyDeviceToHost));
     HIP_CHECK(hipDeviceSynchronize());
-
+#if HT_AMD
     launchParamsList[i].func =
         reinterpret_cast<void*>(multi_grid_group_is_valid_getter<cg::thread_group>);
+#else
+    launchParamsList[i].func =
+        reinterpret_cast<void*>(multi_grid_group_is_valid_getter<cg::multi_grid_group>);
+#endif
   }
   HIP_CHECK(hipLaunchCooperativeKernelMultiDevice(launchParamsList, num_devices, 0));
 
@@ -554,7 +558,7 @@ TEST_CASE("Unit_Multi_Grid_Group_Positive_Sync") {
   dim3 block_dims[MaxGPUs];
   for (int i = 0; i < num_devices; i++) {
     get_multi_grid_dims(grid_dims[i], block_dims[i], i, test_case);
-    if (!CheckDimensions(i, multi_grid_group_size_getter<cg::multi_grid_group>, grid_dims[i],
+    if (!CheckDimensions(i, sync_kernel, grid_dims[i],
                          block_dims[i]))
       return;
     INFO("Grid dimensions dev " << i << " : x " << grid_dims[i].x << ", y " << grid_dims[i].y

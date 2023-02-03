@@ -90,6 +90,7 @@ static __global__ void sync_kernel(unsigned int* atomic_val, unsigned int* array
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
+ *  - Device supports cooperative launch
  */
 TEST_CASE("Unit_Grid_Group_Getters_Positive_Basic") {
   int device;
@@ -160,6 +161,7 @@ TEST_CASE("Unit_Grid_Group_Getters_Positive_Basic") {
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
+ *  - Device supports cooperative launch
  */
 TEST_CASE("Unit_Grid_Group_Getters_Via_Non_Member_Functions_Positive_Basic") {
   int device;
@@ -214,7 +216,6 @@ TEST_CASE("Unit_Grid_Group_Getters_Via_Non_Member_Functions_Positive_Basic") {
 /**
  * Test Description
  * ------------------------
- *  - Test case description:
  *    - Launches a kernel where the last thread in a block atomically increments a global variable
  * within a work loop. The value returned from this atomic increment entirely depends on the order
  * the threads arrive at the atomic instruction. Each thread then stores the result in the global
@@ -229,6 +230,7 @@ TEST_CASE("Unit_Grid_Group_Getters_Via_Non_Member_Functions_Positive_Basic") {
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
+ *  - Device supports cooperative launch
  */
 TEST_CASE("Unit_Grid_Group_Sync_Positive_Basic") {
   int device;

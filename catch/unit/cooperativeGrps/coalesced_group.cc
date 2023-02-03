@@ -405,8 +405,7 @@ template <typename T> void CoalescedGroupShflUpTestImpl() {
   INFO("Coalesced group mask: " << active_mask);
   unsigned int active_thread_count = get_active_thread_count(active_mask, kWarpSize);
 
-  auto delta = GENERATE(0, kWarpSize / 5, kWarpSize / 4, kWarpSize / 3, kWarpSize / 2,
-                        (2 * kWarpSize) / 3, kWarpSize);
+  auto delta = GENERATE(range(static_cast<size_t>(0), kWarpSize));
   delta = delta % active_thread_count;
   INFO("Delta: " << delta);
   CPUGrid grid(blocks, threads);
@@ -474,8 +473,7 @@ template <typename T> void CoalescedGroupShflDownTest() {
   INFO("Coalesced group mask: " << active_mask);
   unsigned int active_thread_count = get_active_thread_count(active_mask, kWarpSize);
 
-  auto delta = GENERATE(0, kWarpSize / 5, kWarpSize / 4, kWarpSize / 3, kWarpSize / 2,
-                        (2 * kWarpSize) / 3, kWarpSize);
+  auto delta = GENERATE(range(static_cast<size_t>(0), kWarpSize));
   delta = delta % active_thread_count;
   INFO("Delta: " << delta);
   CPUGrid grid(blocks, threads);
@@ -610,7 +608,7 @@ template <typename T> void CoalescedGroupShflTest() {
  * mask, for generated shuffle target lanes
  * Test source
  * ------------------------
- *    - unit/cooperativeGrps/thread_block_tile.cc
+ *    - unit/cooperativeGrps/coalesced_group.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 5.2
@@ -751,7 +749,7 @@ template <bool global_memory, typename T> void CoalescedGroupSyncTest() {
  * each thread, leading to non-coalesced reads and cache thrashing.
  * Test source
  * ------------------------
- *    - unit/cooperativeGrps/thread_block_tile.cc
+ *    - unit/cooperativeGrps/coalesced_group.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 5.2

@@ -158,6 +158,7 @@ static void get_multi_grid_dims(dim3& grid_dim, dim3& block_dim, unsigned int de
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
+ *  - Devices support cooperative multi device launch
  */
 TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Basic") {
   int num_devices = 0;
@@ -305,6 +306,7 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Basic") {
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
+ *  - Devices support cooperative multi device launch
  */
 TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Base_Type") {
   int num_devices = 0;
@@ -426,6 +428,7 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Base_Type") {
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
+ *  - Devices support cooperative multi device launch
  */
 TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Non_Member_Functions") {
   int num_devices = 0;
@@ -517,7 +520,6 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Non_Member_Functions") {
 /**
  * Test Description
  * ------------------------
- *  - Test case description:
  *    - Launches a kernel to multiple gpus which tests sync of separate grids and sync of the entire
  * multi grid. The last thread in a block in a grid atomically increments a global variable within a
  * work loop. The value returned from this atomic increment entirely depends on the order the
@@ -538,6 +540,7 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Non_Member_Functions") {
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
+ *  - Devices support cooperative multi device launch
  */
 TEST_CASE("Unit_Multi_Grid_Group_Positive_Sync") {
   int num_devices = 0;

@@ -128,12 +128,12 @@ static void get_multi_grid_dims(dim3& grid_dim, dim3& block_dim, unsigned int de
                                         dim3(kWarpSize - 1, 3, 3),
                                         dim3(kWarpSize + 1, 3, 3)};
   std::vector<dim3> grid_dim_values = {dim3(1, 1, 1),
-                                       dim3(sm, 2, 1),
-                                       dim3(2, sm, 1),
-                                       dim3(1, sm, 2),
                                        dim3(static_cast<int>(0.5 * sm), 1, 3),
                                        dim3(4, static_cast<int>(0.5 * sm), 1),
                                        dim3(1, 1, static_cast<int>(0.5 * sm)),
+                                       dim3(sm, 2, 1),
+                                       dim3(2, sm, 1),
+                                       dim3(1, sm, 2),
                                        dim3(3, 3, 3)};
 
   if (test_case < 10) {
@@ -162,7 +162,7 @@ static void get_multi_grid_dims(dim3& grid_dim, dim3& block_dim, unsigned int de
 TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Basic") {
   int num_devices = 0;
   HIP_CHECK(hipGetDeviceCount(&num_devices));
-  num_devices = min(num_devices, MaxGPUs);
+  num_devices = min(num_devices, kMaxGPUs);
 
   hipDeviceProp_t device_properties[num_devices];
   for (int i = 0; i < num_devices; i++) {
@@ -173,8 +173,8 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Basic") {
     }
   }
   const auto test_case = GENERATE(range(0, 20));
-  dim3 grid_dims[MaxGPUs];
-  dim3 block_dims[MaxGPUs];
+  dim3 grid_dims[num_devices];
+  dim3 block_dims[num_devices];
   for (int i = 0; i < num_devices; i++) {
     get_multi_grid_dims(grid_dims[i], block_dims[i], i, test_case);
     if (!CheckDimensions(i, multi_grid_group_size_getter<cg::multi_grid_group>, grid_dims[i],
@@ -309,7 +309,7 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Basic") {
 TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Base_Type") {
   int num_devices = 0;
   HIP_CHECK(hipGetDeviceCount(&num_devices));
-  num_devices = min(num_devices, MaxGPUs);
+  num_devices = min(num_devices, kMaxGPUs);
   hipDeviceProp_t device_properties[num_devices];
   for (int i = 0; i < num_devices; i++) {
     HIP_CHECK(hipGetDeviceProperties(&device_properties[i], i));
@@ -320,8 +320,8 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Base_Type") {
   }
 
   const auto test_case = GENERATE(range(0, 20));
-  dim3 grid_dims[MaxGPUs];
-  dim3 block_dims[MaxGPUs];
+  dim3 grid_dims[num_devices];
+  dim3 block_dims[num_devices];
   for (int i = 0; i < num_devices; i++) {
     get_multi_grid_dims(grid_dims[i], block_dims[i], i, test_case);
     if (!CheckDimensions(i, multi_grid_group_size_getter<cg::multi_grid_group>, grid_dims[i],
@@ -430,7 +430,7 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Base_Type") {
 TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Non_Member_Functions") {
   int num_devices = 0;
   HIP_CHECK(hipGetDeviceCount(&num_devices));
-  num_devices = min(num_devices, MaxGPUs);
+  num_devices = min(num_devices, kMaxGPUs);
 
   hipDeviceProp_t device_properties[num_devices];
   for (int i = 0; i < num_devices; i++) {
@@ -441,8 +441,8 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Non_Member_Functions") {
     }
   }
   const auto test_case = GENERATE(range(0, 20));
-  dim3 grid_dims[MaxGPUs];
-  dim3 block_dims[MaxGPUs];
+  dim3 grid_dims[num_devices];
+  dim3 block_dims[num_devices];
   for (int i = 0; i < num_devices; i++) {
     get_multi_grid_dims(grid_dims[i], block_dims[i], i, test_case);
     if (!CheckDimensions(i, multi_grid_group_size_getter<cg::multi_grid_group>, grid_dims[i],
@@ -542,7 +542,7 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Non_Member_Functions") {
 TEST_CASE("Unit_Multi_Grid_Group_Positive_Sync") {
   int num_devices = 0;
   HIP_CHECK(hipGetDeviceCount(&num_devices));
-  num_devices = min(num_devices, MaxGPUs);
+  num_devices = min(num_devices, kMaxGPUs);
 
   hipDeviceProp_t device_properties[num_devices];
   for (int i = 0; i < num_devices; i++) {
@@ -554,8 +554,8 @@ TEST_CASE("Unit_Multi_Grid_Group_Positive_Sync") {
   }
   auto loops = GENERATE(2, 4, 8, 16);
   const auto test_case = GENERATE(range(0, 20));
-  dim3 grid_dims[MaxGPUs];
-  dim3 block_dims[MaxGPUs];
+  dim3 grid_dims[num_devices];
+  dim3 block_dims[num_devices];
   for (int i = 0; i < num_devices; i++) {
     get_multi_grid_dims(grid_dims[i], block_dims[i], i, test_case);
     if (!CheckDimensions(i, sync_kernel, grid_dims[i],

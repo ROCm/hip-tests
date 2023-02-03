@@ -28,13 +28,12 @@ constexpr size_t kWarpSize = 64;
 #else
 constexpr size_t kWarpSize = 32;
 #endif
+constexpr int kMaxGPUs = 8;
 }  // namespace
 
 #define ASSERT_EQUAL(lhs, rhs) HIP_ASSERT(lhs == rhs)
 #define ASSERT_LE(lhs, rhs) HIPASSERT(lhs <= rhs)
 #define ASSERT_GE(lhs, rhs) HIPASSERT(lhs >= rhs)
-
-constexpr int MaxGPUs = 8;
 
 template <typename T> void compareResults(T* cpu, T* gpu, int size) {
   for (unsigned int i = 0; i < size / sizeof(T); i++) {

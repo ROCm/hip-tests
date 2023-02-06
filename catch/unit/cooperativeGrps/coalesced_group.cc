@@ -16,14 +16,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <hip_test_common.hh>
-#include <hip/hip_cooperative_groups.h>
-
-#include <resource_guards.hh>
-#include <utils.hh>
-
 #include "cooperative_groups_common.hh"
 #include "cpu_grid.h"
+
+#include <cmd_options.hh>
+#include <hip_test_common.hh>
+#include <hip/hip_cooperative_groups.h>
+#include <resource_guards.hh>
+
 
 /**
  * @addtogroup coalesced_group coalesced_group
@@ -676,7 +676,7 @@ __global__ void coalesced_group_sync_check(T* global_data, unsigned int* wait_mo
 }
 
 template <bool global_memory, typename T> void CoalescedGroupSyncTest() {
-  const auto randomized_run_count = GENERATE(range(0, 1));
+  const auto randomized_run_count = GENERATE(range(0, cmd_options.cg_extended_run));
   const auto blocks = GenerateBlockDimensionsForShuffle();
   const auto threads = GenerateThreadDimensionsForShuffle();
   auto test_case = GENERATE(range(0, 4));
@@ -690,8 +690,6 @@ template <bool global_memory, typename T> void CoalescedGroupSyncTest() {
 
   const auto alloc_size = grid.thread_count_ * sizeof(T);
   const auto alloc_size_per_block = alloc_size / grid.block_count_;
-  LinearAllocGuard<T> arr_dev(LinearAllocs::hipMalloc, alloc_size);
-  LinearAllocGuard<T> arr(LinearAllocs::hipHostMalloc, alloc_size);
 
   int max_shared_mem_per_block = 0;
   HIP_CHECK(hipDeviceGetAttribute(&max_shared_mem_per_block,
@@ -700,6 +698,8 @@ template <bool global_memory, typename T> void CoalescedGroupSyncTest() {
     return;
   }
 
+  LinearAllocGuard<T> arr_dev(LinearAllocs::hipMalloc, alloc_size);
+  LinearAllocGuard<T> arr(LinearAllocs::hipHostMalloc, alloc_size);
   LinearAllocGuard<unsigned int> wait_modifiers_dev(LinearAllocs::hipMalloc,
                                                     grid.thread_count_ * sizeof(unsigned int));
   LinearAllocGuard<unsigned int> wait_modifiers(LinearAllocs::hipHostMalloc,

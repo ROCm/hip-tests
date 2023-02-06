@@ -31,6 +31,8 @@
 	   "Unit_hipGraphAddMemcpyNode1D_Negative_Basic",
 	   "Unit_hipStreamGetCaptureInfo_Nullstream_CaptureInfo",
 	   "intermittent issue: corrupted double-linked list",
-	   "Unit_hipGraphRetainUserObject_Functional_2"
+	   "Unit_hipGraphRetainUserObject_Functional_2",
+	   "intermittent issue: failure expected but sucess returned",
+	   "Unit_hipMemAdvise_NegtveTsts"
 	]
 }

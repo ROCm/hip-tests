@@ -232,15 +232,6 @@ TEST_CASE("Unit_hipMemAdvise_NegtveTsts") {
     std::string str;
     HIP_CHECK(hipGetDeviceCount(&NumDevs));
     HIP_CHECK(hipMallocManaged(&Hmm, MEM_SIZE * 2, hipMemAttachGlobal));
-#if HT_AMD
-    // Passing invalid value(99) device param
-    IfTestPassed &= CheckError(hipMemAdvise(Hmm, MEM_SIZE * 2,
-                               hipMemAdviseSetReadMostly, 99), __LINE__);
-
-    // Passing invalid value(-12) device param
-    IfTestPassed &= CheckError(hipMemAdvise(Hmm, MEM_SIZE * 2,
-                               hipMemAdviseSetReadMostly, -12), __LINE__);
-#endif
     // Passing NULL as first parameter instead of valid pointer to a memory
     IfTestPassed &= CheckError(hipMemAdvise(NULL, MEM_SIZE * 2,
                                hipMemAdviseSetReadMostly, 0), __LINE__);
@@ -378,6 +369,12 @@ TEST_CASE("Unit_hipMemAdvise_ReadMostly") {
       WARN("out value: " << out);
       IfTestPassed = false;
     }
+    // hipMemAdvise should succeed for SetReadMostly and UnsetReadMostly
+    // irrespective of the device
+    HIP_CHECK(hipMemAdvise(Hmm, MEM_SIZE, hipMemAdviseSetReadMostly, 99));
+
+    HIP_CHECK(hipMemAdvise(Hmm, MEM_SIZE, hipMemAdviseUnsetReadMostly, -12));
+     
     HIP_CHECK(hipFree(Hmm));
     REQUIRE(IfTestPassed);
   } else {

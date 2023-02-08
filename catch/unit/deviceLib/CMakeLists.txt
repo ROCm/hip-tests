@@ -13,6 +13,7 @@ set(TEST_SRC
     syncthreadsand.cc
     syncthreadscount.cc
     syncthreadsor.cc
+    Atomic_func.cc
 )
 
 if(UNIX)

@@ -108,6 +108,7 @@ set(TEST_SRC
     hipMemcpySync.cc
     hipMemsetSync.cc
     hipMemsetAsync.cc
+    hipMemAdvise_old.cc
     hipMemAdvise.cc
     hipMemRangeGetAttributes.cc
     hipStreamAttachMemAsync.cc
@@ -194,6 +195,7 @@ set(TEST_SRC
     hipMemcpySync.cc
     hipMemsetSync.cc
     hipMemsetAsync.cc
+    hipMemAdvise_old.cc
     hipMemAdvise.cc
     hipMemRangeGetAttributes.cc
     hipMemRangeGetAttributes_old.cc

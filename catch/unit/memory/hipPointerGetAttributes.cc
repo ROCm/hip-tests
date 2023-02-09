@@ -213,12 +213,10 @@ TEST_CASE("Unit_hipPointerGetAttributes_Basic") {
 
   char* A_d;
   char* A_Pinned_h;
-  char* A_OSAlloc_h;
   hipError_t e;
 
   HIP_CHECK(hipMalloc(&A_d, Nbytes));
   HIP_CHECK(hipHostMalloc(reinterpret_cast<void**>(&A_Pinned_h), Nbytes, hipHostMallocDefault));
-  A_OSAlloc_h = reinterpret_cast<char*>(malloc(Nbytes));
 
   size_t free, total;
   HIP_CHECK(hipMemGetInfo(&free, &total));

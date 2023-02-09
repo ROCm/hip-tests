@@ -25,9 +25,11 @@ constexpr bool enable_validation = false;
 
 TEST_CASE("Unit_hipImportExternalMemory_Vulkan_Negative_Parameters") {
   VulkanTest vkt(enable_validation);
+#if HT_NVIDIA
   const auto storage = vkt.CreateMappedStorage<int>(1, VK_BUFFER_USAGE_TRANSFER_DST_BIT, true);
   auto desc = vkt.BuildMemoryDescriptor(storage.memory, sizeof(*storage.host_ptr));
   hipExternalMemory_t ext_memory;
+#endif
 
 // Disabled due to defect - EXSWHTEC-182
 #if HT_NVIDIA

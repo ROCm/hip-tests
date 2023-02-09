@@ -141,9 +141,9 @@ static void initHipCtx(hipCtx_t* pcontext) {
 #endif
 
 static inline bool IsGfx11() {
-#if defined(HT_NVIDIA)
+#if HT_NVIDIA
   return false;
-#elif defined(HT_AMD)
+#elif HT_AMD
   int device = -1;
   hipDeviceProp_t props{};
   HIP_CHECK(hipGetDevice(&device));

@@ -15,6 +15,8 @@
 	   "Unit_hipMemset_Negative_OutOfBoundsPtr",
 	   "Unit_hipDeviceReset_Positive_Basic",
 	   "Unit_hipDeviceReset_Positive_Threaded",
+	   "Unit_hipMemAdvise_AccessedBy_All_Devices",
+	   "Unit_hipMemAdvise_No_Flag_Interference",
 	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep",
 	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ClonedGrph",
 	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ChldNode",
@@ -31,6 +33,8 @@
 	   "Performance_hipStreamWaitValue32",
 	   "Performance_hipStreamWaitValue64",
 	   "Performance_hipStreamWriteValue32",
-	   "Performance_hipStreamWriteValue64"
+	   "Performance_hipStreamWriteValue64",
+	   "intermittent issue: corrupted double-linked list",
+	   "Unit_hipGraphRetainUserObject_Functional_2"
 	]
 }

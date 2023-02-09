@@ -148,10 +148,10 @@ TEST_CASE("Unit_hipMemAdvise_Rounding") {
   unsigned int attribute = 0;
   HIP_CHECK(hipMemRangeGetAttribute(&attribute, sizeof(attribute), hipMemRangeAttributeAccessedBy,
                                     reinterpret_cast<void*>(base), rounded_up));
-  REQUIRE(device == attribute);
+  REQUIRE(device == static_cast<int>(attribute));
   HIP_CHECK(hipMemRangeGetAttribute(&attribute, sizeof(attribute), hipMemRangeAttributeAccessedBy,
                                     alloc.ptr(), 3 * kPageSize));
-  REQUIRE((rounded_up == 3 * kPageSize ? device : hipInvalidDeviceId) == attribute);
+  REQUIRE((rounded_up == 3 * kPageSize ? device : hipInvalidDeviceId) == static_cast<int>(attribute));
 }
 
 TEST_CASE("Unit_hipMemAdvise_Flags_Do_Not_Cause_Prefetch") {
@@ -193,7 +193,7 @@ TEST_CASE("Unit_hipMemAdvise_Read_Write_After_Advise") {
 
     std::fill_n(alloc.ptr(), count, -1);
     ArrayFindIfNot(alloc.ptr(), -1, count);
-    for (int i = 0; i < supported_devices.size(); ++i) {
+    for (int i = 0; i < static_cast<int>(supported_devices.size()); ++i) {
       HIP_CHECK(hipSetDevice(supported_devices[i]));
       VectorIncrement<<<count / 1024 + 1, 1024>>>(alloc.ptr(), 1, count);
       HIP_CHECK(hipGetLastError());

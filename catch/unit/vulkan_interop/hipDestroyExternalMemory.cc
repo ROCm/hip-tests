@@ -21,7 +21,9 @@ THE SOFTWARE.
 
 #include "vulkan_test.hh"
 
+#if HT_AMD && 0
 constexpr bool enable_validation = false;
+#endif
 
 TEST_CASE("Unit_hipDestroyExternalMemory_Vulkan_Negative_Parameters") {
   SECTION("extMem == nullptr") {

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -210,6 +210,53 @@ TEST_CASE("Unit_hipGraphUpload_Functional_multidevice_test") {
 }
 
 /**
+ * Functional Test for API - hipGraphUpload
+ - Make graph by using hipStreamBeginCapture with a low priority stream.
+   Upload the graph into high priority stream and execute the graph and verify.
+ */
+
+TEST_CASE("Unit_hipGraphUpload_Functional_With_Priority_Stream") {
+  constexpr size_t N = 1024;
+  constexpr size_t Nbytes = N * sizeof(int);
+  hipGraph_t graph;
+  hipGraphExec_t graphExec;
+
+  int *A_d, *B_d, *C_d, *A_h, *B_h, *C_h;
+  HipTest::initArrays(&A_d, &B_d, &C_d, &A_h, &B_h, &C_h, N, false);
+
+  hipStream_t stream1, stream2;
+  int minPriority = 0, maxPriority = 0;
+  HIP_CHECK(hipDeviceGetStreamPriorityRange(&minPriority, &maxPriority));
+  HIP_CHECK(hipStreamCreateWithPriority(&stream1, hipStreamDefault,
+                                        minPriority));
+  HIP_CHECK(hipStreamCreateWithPriority(&stream2, hipStreamDefault,
+                                        maxPriority));
+
+  HIP_CHECK(hipStreamBeginCapture(stream1, hipStreamCaptureModeGlobal));
+  HIP_CHECK(hipMemcpyAsync(A_d, A_h, Nbytes, hipMemcpyHostToDevice, stream1));
+  HIP_CHECK(hipMemcpyAsync(B_d, B_h, Nbytes, hipMemcpyHostToDevice, stream1));
+  HipTest::vectorADD<int><<<1, 1, 0, stream1>>>(A_d, B_d, C_d, N);
+  HIP_CHECK(hipMemcpyAsync(C_h, C_d, Nbytes, hipMemcpyDeviceToHost, stream1));
+  HIP_CHECK(hipStreamEndCapture(stream1, &graph));
+
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+
+  HIP_CHECK(hipGraphUpload(graphExec, stream2));
+
+  HIP_CHECK(hipGraphLaunch(graphExec, stream2));
+  HIP_CHECK(hipStreamSynchronize(stream2));
+
+  // Verify graph execution result
+  HipTest::checkVectorADD(A_h, B_h, C_h, N);
+
+  HipTest::freeArrays(A_d, B_d, C_d, A_h, B_h, C_h, false);
+  HIP_CHECK(hipGraphExecDestroy(graphExec));
+  HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipStreamDestroy(stream1));
+  HIP_CHECK(hipStreamDestroy(stream2));
+}
+
+/**
 * Negative Test for API - hipGraphUpload Argument Check
 1) Pass graphExec node as nullptr.
 2) Pass graphExec node as uninitialize object
@@ -242,4 +289,3 @@ TEST_CASE("Unit_hipGraphUpload_Negative_Argument_Check") {
   }
   HIP_CHECK(hipStreamDestroy(stream));
 }
-

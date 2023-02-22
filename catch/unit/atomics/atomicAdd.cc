@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include <cmd_options.hh>
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
+#include "negative_kernels_rtc.hh"
 
 template <typename T, bool shared = false> __global__ void AtomicAdd(T* const addr, const T val) {
   extern __shared__ char shmem[];
@@ -234,4 +235,34 @@ TEST_CASE("Unit_atomicAdd_Positive_ControlFlow") {
   for (int i = 0; i < N; ++i) {
     REQUIRE(res[i] == expected_res[i]);
   }
+}
+
+TEST_CASE("Unit_atomicAdd_Negative_Parameters_RTC") {
+  hiprtcProgram program{};
+
+  const auto program_source =
+    GENERATE(kAtomicAdd_int, kAtomicAdd_uint, kAtomicAdd_ulong,
+             kAtomicAdd_ulonglong, kAtomicAdd_float, kAtomicAdd_double);
+  HIPRTC_CHECK(hiprtcCreateProgram(&program, program_source, "atomicAdd_negative.cc", 0, nullptr, nullptr));
+  hiprtcResult result{hiprtcCompileProgram(program, 0, nullptr)};
+
+  // Get the compile log and count compiler error messages
+  size_t log_size{};
+  HIPRTC_CHECK(hiprtcGetProgramLogSize(program, &log_size));
+  std::string log(log_size, ' ');
+  HIPRTC_CHECK(hiprtcGetProgramLog(program, log.data()));
+  int error_count{0};
+  // Please check the content of negative_kernels_rtc.hh
+  int expected_error_count{3};
+  std::string error_message{"error:"};
+
+  size_t n_pos = log.find(error_message, 0);
+  while(n_pos != std::string::npos) {
+    ++error_count;
+    n_pos = log.find(error_message, n_pos + 1);
+  }
+
+  HIPRTC_CHECK(hiprtcDestroyProgram(&program));
+  HIPRTC_CHECK_ERROR(result, HIPRTC_ERROR_COMPILATION);
+  REQUIRE(error_count == expected_error_count);
 }

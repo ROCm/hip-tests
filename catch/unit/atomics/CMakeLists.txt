@@ -23,7 +23,19 @@ set(TEST_SRC
     atomicAdd_system.cc
 )
 
-hip_add_exe_to_target(NAME AtomicsTest
-                      TEST_SRC ${TEST_SRC}
-                      TEST_TARGET_NAME build_tests
-                      COMPILE_OPTIONS -std=c++17)
+if(HIP_PLATFORM MATCHES "nvidia")
+    hip_add_exe_to_target(NAME AtomicsTest
+                        TEST_SRC ${TEST_SRC}
+                        TEST_TARGET_NAME build_tests
+                        LINKER_LIBS nvrtc)
+elseif(HIP_PLATFORM MATCHES "amd")
+    hip_add_exe_to_target(NAME AtomicsTest
+                        TEST_SRC ${TEST_SRC}
+                        TEST_TARGET_NAME build_tests
+                        LINKER_LIBS hiprtc)
+endif()
+
+add_test(NAME Unit_atomicAdd_Negative_Parameters
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR}
+         atomicAdd_negative_kernels.cc 18)

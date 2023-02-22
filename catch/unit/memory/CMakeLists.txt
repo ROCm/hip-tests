@@ -18,14 +18,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+set(COMMON_SHARED_SRC DriverContext.cc)
+
 # Common Tests - Test independent of all platforms
 if(HIP_PLATFORM MATCHES "amd")
 set(TEST_SRC
-    DriverContext.cc
     memset.cc
     malloc.cc
     hipMemcpy2DToArray.cc
+    hipMemcpy2DToArray_old.cc
     hipMemcpy2DToArrayAsync.cc
+    hipMemcpy2DToArrayAsync_old.cc
     hipMemcpy3D.cc
     hipMemcpy3DAsync.cc
     hipMemcpyParam2D.cc
@@ -33,14 +36,17 @@ set(TEST_SRC
     hipMemcpy2D.cc
     hipMemcpy2DAsync.cc
     hipMemcpy2DFromArray.cc
+    hipMemcpy2DFromArray_old.cc
     hipMemcpy2DFromArrayAsync.cc
+    hipMemcpy2DFromArrayAsync_old.cc
     hipMemcpyAtoH.cc
+    hipMemcpyAtoH_old.cc
     hipMemcpyHtoA.cc
+    hipMemcpyHtoA_old.cc
     hipMemcpyAllApiNegative.cc
     hipMemcpy_MultiThread.cc
     hipHostRegister.cc
     hipHostUnregister.cc
-    hipMallocPitch.cc
     hipMemPtrGetInfo.cc
     hipPointerGetAttributes.cc
     hipHostGetFlags.cc
@@ -60,23 +66,29 @@ set(TEST_SRC
     hipMemCoherencyTst.cc
     hipMallocManaged.cc
     hipMemRangeGetAttribute.cc
+    hipMemRangeGetAttribute_old.cc
     hipMemcpyFromSymbol.cc
     hipPtrGetAttribute.cc
     hipMemPoolApi.cc
     hipMemcpyPeer.cc
+    hipMemcpyPeer_old.cc
     hipMemcpyPeerAsync.cc
+    hipMemcpyPeerAsync_old.cc
+    hipMemcpyWithStream_old.cc
     hipMemcpyWithStream.cc
     hipMemcpyWithStreamMultiThread.cc
     hipMemsetAsyncAndKernel.cc
     hipMemset2DAsyncMultiThreadAndKernel.cc
-    hipMallocManaged.cc
     hipMallocConcurrency.cc
     hipMemcpyDtoD.cc
     hipMemcpyDtoDAsync.cc
     hipHostMalloc.cc
-    hipMemcpy.cc
+    hipMemcpy_old.cc
+    hipMemcpy_derivatives.cc
     hipMemcpyAsync.cc
     hipMemsetFunctional.cc
+    hipMalloc.cc
+    hipExtMallocWithFlags.cc
     hipMallocPitch.cc
     hipMallocArray.cc
     hipMalloc3D.cc
@@ -96,16 +108,21 @@ set(TEST_SRC
     hipMemcpySync.cc
     hipMemsetSync.cc
     hipMemsetAsync.cc
+    hipMemAdvise_old.cc
     hipMemAdvise.cc
     hipMemRangeGetAttributes.cc
+    hipStreamAttachMemAsync.cc
+    hipMemRangeGetAttributes_old.cc
+    hipMemGetAddressRange.cc
 )
 else()
 set(TEST_SRC
-    DriverContext.cc
     memset.cc
     malloc.cc
     hipMemcpy2DToArray.cc
+    hipMemcpy2DToArray_old.cc
     hipMemcpy2DToArrayAsync.cc
+    hipMemcpy2DToArrayAsync_old.cc
     hipMemcpy3D.cc
     hipMemcpy3DAsync.cc
     hipMemcpyParam2D.cc
@@ -113,14 +130,17 @@ set(TEST_SRC
     hipMemcpy2D.cc
     hipMemcpy2DAsync.cc
     hipMemcpy2DFromArray.cc
+    hipMemcpy2DFromArray_old.cc
     hipMemcpy2DFromArrayAsync.cc
+    hipMemcpy2DFromArrayAsync_old.cc
     hipMemcpyAtoH.cc
+    hipMemcpyAtoH_old.cc
     hipMemcpyHtoA.cc
+    hipMemcpyHtoA_old.cc
     hipMemcpyAllApiNegative.cc
     hipMemcpy_MultiThread.cc
     hipHostRegister.cc
     hipHostUnregister.cc
-    hipMallocPitch.cc
     hipHostGetFlags.cc
     hipHostGetDevicePointer.cc
     hipMallocManaged_MultiScenario.cc
@@ -137,23 +157,28 @@ set(TEST_SRC
     hipMemAdviseMmap.cc
     hipMallocManaged.cc
     hipMemRangeGetAttribute.cc
+    hipMemRangeGetAttribute_old.cc
     hipMemcpyFromSymbol.cc
     hipPtrGetAttribute.cc
     hipMemPoolApi.cc
     hipMemcpyPeer.cc
+    hipMemcpyPeer_old.cc
     hipMemcpyPeerAsync.cc
+    hipMemcpyPeerAsync_old.cc
+    hipMemcpyWithStream_old.cc
     hipMemcpyWithStream.cc
     hipMemcpyWithStreamMultiThread.cc
     hipMemsetAsyncAndKernel.cc
     hipMemset2DAsyncMultiThreadAndKernel.cc
-    hipMallocManaged.cc
     hipMallocConcurrency.cc
     hipMemcpyDtoD.cc
     hipMemcpyDtoDAsync.cc
     hipHostMalloc.cc
-    hipMemcpy.cc
+    hipMemcpy_old.cc
+    hipMemcpy_derivatives.cc
     hipMemcpyAsync.cc
     hipMemsetFunctional.cc
+    hipMalloc.cc
     hipMallocPitch.cc
     hipMallocArray.cc
     hipMalloc3D.cc
@@ -170,9 +195,13 @@ set(TEST_SRC
     hipMemcpySync.cc
     hipMemsetSync.cc
     hipMemsetAsync.cc
+    hipMemAdvise_old.cc
     hipMemAdvise.cc
     hipMemRangeGetAttributes.cc
+    hipMemRangeGetAttributes_old.cc
     hipGetSymbolSizeAddress.cc
+    hipStreamAttachMemAsync.cc
+    hipMemGetAddressRange.cc
 )
 endif()
 
@@ -186,4 +215,5 @@ endif()
 
 hip_add_exe_to_target(NAME MemoryTest
                       TEST_SRC ${TEST_SRC}
-                      TEST_TARGET_NAME build_tests)
+                      TEST_TARGET_NAME build_tests
+                      COMMON_SHARED_SRC ${COMMON_SHARED_SRC})

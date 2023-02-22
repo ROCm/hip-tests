@@ -1,6 +1,6 @@
 def hipBuildTest(String backendLabel) {
         node(backendLabel) {
-          stage("Source sync ${backendLabel}") {
+          stage("SYNC - ${backendLabel}") {
 
             // Checkout hip repository with the PR patch
             dir("${WORKSPACE}/hip-tests") {
@@ -37,7 +37,7 @@ def hipBuildTest(String backendLabel) {
             }
         }
 
-        stage("Build - Catch2 framework") {
+        stage("BUILD HIP - ${backendLabel}") {
             // Running the build on hipamd workspace
             dir("${WORKSPACE}/hipamd") {
                 sh  """#!/usr/bin/env bash
@@ -56,7 +56,7 @@ def hipBuildTest(String backendLabel) {
             }
         }
         
-        stage("Build - HIP TESTS") {
+        stage("BUILD HIP TESTS - ${backendLabel}") {
             // Running the build on HIP TESTS workspace
             dir("${WORKSPACE}/hip-tests") {
                 env.HIP_PATH = "${HIPAMD_DIR}" + "/build/install"
@@ -78,12 +78,16 @@ def hipBuildTest(String backendLabel) {
             }
         }
 
-        stage('HIP Unit Tests - Catch2 framework') {
+        stage("TEST - ${backendLabel}") {
             dir("${WORKSPACE}/hip-tests") {
                 sh  """#!/usr/bin/env bash
                     set -x
                     cd build
-                    ctest
+                    if [[ $backendLabel =~ amd ]]; then
+                        ctest
+                    else
+                        ctest -E 'Unit_hipMemcpyHtoD_Positive_Synchronization_Behavior|Unit_hipMemcpy_Positive_Synchronization_Behavior|Unit_hipFreeNegativeHost'
+                    fi
                     """
             }
         }

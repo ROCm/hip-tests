@@ -21,27 +21,20 @@ THE SOFTWARE.
 
 #include "vulkan_test.hh"
 
-#if HT_AMD && 0
 constexpr bool enable_validation = false;
-#endif
 
-TEST_CASE("Unit_hipDestroyExternalMemory_Vulkan_Negative_Parameters") {
-  SECTION("extMem == nullptr") {
-    HIP_CHECK_ERROR(hipDestroyExternalMemory(nullptr), hipErrorInvalidValue);
+TEST_CASE("Unit_hipDestroyExternalSemaphore_Vulkan_Negative_Parameters") {
+  SECTION("extSem == nullptr") {
+    HIP_CHECK_ERROR(hipDestroyExternalSemaphore(nullptr), hipErrorInvalidValue);
   }
 
 // Segfaults in CUDA
-// Disabled on AMD due to defect - EXSWHTEC-187
-#if HT_AMD && 0
+#if HT_AMD
   SECTION("Double free") {
     VulkanTest vkt(enable_validation);
-    const auto storage = vkt.CreateMappedStorage<int>(1, VK_BUFFER_USAGE_TRANSFER_DST_BIT, true);
-    auto desc = vkt.BuildMemoryDescriptor(storage.memory, sizeof(*storage.host_ptr));
-    hipExternalMemory_t ext_memory;
-    HIP_CHECK(hipImportExternalMemory(&ext_memory, &desc));
-
-    HIP_CHECK(hipDestroyExternalMemory(ext_memory));
-    HIP_CHECK_ERROR(hipDestroyExternalMemory(ext_memory), hipErrorInvalidValue);
+    const auto ext_semaphore = ImportBinarySemaphore(vkt);
+    HIP_CHECK(hipDestroyExternalSemaphore(ext_semaphore));
+    HIP_CHECK_ERROR(hipDestroyExternalSemaphore(ext_semaphore), hipErrorInvalidValue);
   }
 #endif
 }

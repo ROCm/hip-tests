@@ -25,12 +25,12 @@ endif ()
 
 if(NOT DEFINED HIP_PATH)
     if(NOT DEFINED ENV{HIP_PATH})
-        set(HIP_PATH "${ROCM_PATH}/hip" CACHE PATH "Path to which HIP has been installed")
+        set(HIP_PATH ${ROCM_PATH} CACHE PATH "Path to which HIP has been installed")
     else()
         set(HIP_PATH $ENV{HIP_PATH} CACHE PATH "Path to which HIP has been installed")
     endif()
 endif()
-set(CMAKE_MODULE_PATH "${HIP_PATH}/cmake" ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH "${HIP_PATH}/hip/cmake" ${CMAKE_MODULE_PATH})
 set(CMAKE_HIP_ARCHITECTURES OFF)
 project(12_cmake)
 
@@ -53,7 +53,7 @@ set_source_files_properties(${MY_SOURCE_FILES} PROPERTIES HIP_SOURCE_PROPERTY_FO
 hip_add_executable(${MY_TARGET_NAME} ${MY_SOURCE_FILES} HIPCC_OPTIONS ${MY_HIPCC_OPTIONS} HCC_OPTIONS ${MY_HCC_OPTIONS} CLANG_OPTIONS ${MY_CLANG_OPTIONS} NVCC_OPTIONS ${MY_NVCC_OPTIONS})
 
 # Search for rocm in common locations
-list(APPEND CMAKE_PREFIX_PATH ${HIP_PATH} ${ROCM_PATH})
+list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/hip ${ROCM_PATH})
 find_package(hip QUIET)
 if(TARGET hip::host)
     message(STATUS "Found hip::host at ${hip_DIR}")

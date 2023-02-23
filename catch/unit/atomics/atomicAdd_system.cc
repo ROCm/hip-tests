@@ -32,7 +32,7 @@ template <typename T> void AtomicAddCPU(T* const addr, const T val, int n) {
   for (int i = 0; i < n; ++i) __sync_fetch_and_add(addr, val);
 }
 
-TEMPLATE_TEST_CASE("Unit_atomicAdd_system_Positive_CPU", "", int, unsigned int,
+TEMPLATE_TEST_CASE("Unit_atomicAdd_system_Positive_CPU", "", int, unsigned int, unsigned long,
                    unsigned long long) {
   const auto allocation_type = GENERATE(LinearAllocs::hipHostMalloc, LinearAllocs::hipMallocManaged,
                                         LinearAllocs::mallocAndRegister);
@@ -57,12 +57,27 @@ TEMPLATE_TEST_CASE("Unit_atomicAdd_system_Positive_CPU", "", int, unsigned int,
   REQUIRE(res == expected_res);
 }
 
-TEMPLATE_TEST_CASE("Unit_atomicAdd_system_Positive_PeerGPU", "", int, unsigned int,
+TEMPLATE_TEST_CASE("Unit_atomicAdd_system_Positive_PeerGPU", "", int, unsigned int, unsigned long,
                    unsigned long long, float, double) {
   const auto device_count = HipTest::getDeviceCount();
   if (device_count < 2) {
     HipTest::HIP_SKIP_TEST("Two or more GPUs are required");
     return;
+  }
+
+  // Enable peer access between all pairs of devices to avoid Memory access fault by GPU node.
+  for (int i = 0; i < device_count; ++i) {
+    HIP_CHECK(hipSetDevice(i));
+    for (int j = 0; j < device_count; ++j) {
+      if (i == j) continue;
+      int can_access_peer = 0;
+      HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, i, j));
+      if (!can_access_peer) {
+        INFO("Peer access cannot be enabled between devices " << i << " " << j);
+        REQUIRE(can_access_peer);
+      }
+      HIP_CHECK(hipDeviceEnablePeerAccess(j, 0));
+    }
   }
 
   const auto allocation_type =

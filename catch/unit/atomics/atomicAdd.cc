@@ -66,8 +66,8 @@ __global__ void AtomicAddMultiDest(T* const addr, const T val, const int n) {
   }
 }
 
-TEMPLATE_TEST_CASE("Unit_atomicAdd_Positive_SameAddress", "", int, unsigned int, unsigned long long,
-                   float, double) {
+TEMPLATE_TEST_CASE("Unit_atomicAdd_Positive_SameAddress", "", int, unsigned int, unsigned long,
+                   unsigned long long, float, double) {
   const auto allocation_type =
       GENERATE(LinearAllocs::hipHostMalloc, LinearAllocs::hipMalloc, LinearAllocs::hipMallocManaged,
                LinearAllocs::mallocAndRegister);
@@ -101,7 +101,7 @@ TEMPLATE_TEST_CASE("Unit_atomicAdd_Positive_SameAddress", "", int, unsigned int,
 }
 
 TEMPLATE_TEST_CASE("Unit_atomicAdd_Positive_DifferentAddressSameWarp", "", int, unsigned int,
-                   unsigned long long, float, double) {
+                   unsigned long, unsigned long long, float, double) {
   const auto allocation_type =
       GENERATE(LinearAllocs::hipHostMalloc, LinearAllocs::hipMalloc, LinearAllocs::hipMallocManaged,
                LinearAllocs::mallocAndRegister);
@@ -137,8 +137,8 @@ TEMPLATE_TEST_CASE("Unit_atomicAdd_Positive_DifferentAddressSameWarp", "", int, 
   for (int i = 0; i < warp_size; ++i) REQUIRE(res[i] == expected_res);
 }
 
-TEMPLATE_TEST_CASE("Unit_atomicAdd_Positive_MultiKernel", "", int, unsigned int, unsigned long long,
-                   float, double) {
+TEMPLATE_TEST_CASE("Unit_atomicAdd_Positive_MultiKernel", "", int, unsigned int, unsigned long,
+                   unsigned long long, float, double) {
   const auto allocation_type =
       GENERATE(LinearAllocs::hipHostMalloc, LinearAllocs::hipMalloc, LinearAllocs::hipMallocManaged,
                LinearAllocs::mallocAndRegister);

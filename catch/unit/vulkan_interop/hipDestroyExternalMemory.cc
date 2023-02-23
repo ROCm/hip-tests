@@ -1,6 +1,5 @@
 /*
 Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -20,76 +19,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
-#include <hip_test_process.hh>
+#include "vulkan_test.hh"
 
-TEST_CASE("Unit_printf_specifier") {
-#ifdef __HIP_PLATFORM_NVIDIA__
-  std::string reference(R"here(xyzzy
-%
-hello % world
-%s
-%s0xf01dab1eca55e77e
-%cxyzzy
-sep
--42
-42
-123.456000
--123.456000
--1.234560e+02
-1.234560E+02
-123.456
--123.456
-x
-(null)
-(nil)
-3.14159000    hello 0xf01dab1eca55e77e
-)here");
-#elif !defined(_WIN32)
-  std::string reference(R"here(xyzzy
-%
-hello % world
-%s
-%s0xf01dab1eca55e77e
-%cxyzzy
-sep
--42
-42
-123.456000
--123.456000
--1.234560e+02
-1.234560E+02
-123.456
--123.456
-x
+constexpr bool enable_validation = false;
 
-(nil)
-3.14159000    hello 0xf01dab1eca55e77e
-)here");
-#else
-  std::string reference(R"here(xyzzy
-%
-hello % world
-%s
-%sF01DAB1ECA55E77E
-%cxyzzy
-sep
--42
-42
-123.456000
--123.456000
--1.234560e+02
-1.234560E+02
-123.456
--123.456
-x
+TEST_CASE("Unit_hipDestroyExternalMemory_Vulkan_Negative_Parameters") {
+  SECTION("extMem == nullptr") {
+    HIP_CHECK_ERROR(hipDestroyExternalMemory(nullptr), hipErrorInvalidValue);
+  }
 
-0000000000000000
-3.14159000    hello F01DAB1ECA55E77E
-)here");
+// Segfaults in CUDA
+// Disabled on AMD due to defect - EXSWHTEC-187
+#if HT_AMD && 0
+  SECTION("Double free") {
+    VulkanTest vkt(enable_validation);
+    const auto storage = vkt.CreateMappedStorage<int>(1, VK_BUFFER_USAGE_TRANSFER_DST_BIT, true);
+    auto desc = vkt.BuildMemoryDescriptor(storage.memory, sizeof(*storage.host_ptr));
+    hipExternalMemory_t ext_memory;
+    HIP_CHECK(hipImportExternalMemory(&ext_memory, &desc));
+
+    HIP_CHECK(hipDestroyExternalMemory(ext_memory));
+    HIP_CHECK_ERROR(hipDestroyExternalMemory(ext_memory), hipErrorInvalidValue);
+  }
 #endif
-
-  hip::SpawnProc proc("printfSpecifiers_exe", true);
-  REQUIRE(0 == proc.run());
-  REQUIRE(proc.getOutput() == reference);
 }

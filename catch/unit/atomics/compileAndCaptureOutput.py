@@ -42,6 +42,7 @@ class AtomicsCompile(unittest.TestCase):
       '-I' + os.environ["HIP_PATH"] + '/include',
       '-I' + self.path + '/../../external/picojson',
       '--std=c++17',
+      '-ferror-limit=100',
       '-c',
       self.path + '/' + self.file],
       stderr=subprocess.PIPE)

@@ -23,7 +23,7 @@ THE SOFTWARE.
 #include <cmd_options.hh>
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
-#include "negative_kernels_rtc.hh"
+#include "atomicAdd_negative_kernels_rtc.hh"
 
 template <typename T, bool shared = false> __global__ void AtomicAdd(T* const addr, const T val) {
   extern __shared__ char shmem[];

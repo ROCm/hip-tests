@@ -52,15 +52,11 @@ __global__ void atomicAdd_int_v6(short* address, int* result) {
   *result = atomicAdd(address, 1234);
 }
 
-__global__ void atomicAdd_int_v7(__half* address, int* result) {
+__global__ void atomicAdd_int_v7(long* address, int* result) {
   *result = atomicAdd(address, 1234);
 }
 
-__global__ void atomicAdd_int_v8(long* address, int* result) {
-  *result = atomicAdd(address, 1234);
-}
-
-__global__ void atomicAdd_int_v9(long long* address, int* result) {
+__global__ void atomicAdd_int_v8(long long* address, int* result) {
   *result = atomicAdd(address, 1234);
 }
 
@@ -89,15 +85,11 @@ __global__ void atomicAdd_uint_v6(short* address, unsigned int* result) {
   *result = atomicAdd(address, 1234);
 }
 
-__global__ void atomicAdd_uint_v7(__half* address, unsigned int* result) {
+__global__ void atomicAdd_uint_v7(long* address, unsigned int* result) {
   *result = atomicAdd(address, 1234);
 }
 
-__global__ void atomicAdd_uint_v8(long* address, unsigned int* result) {
-  *result = atomicAdd(address, 1234);
-}
-
-__global__ void atomicAdd_uint_v9(long long* address, unsigned int* result) {
+__global__ void atomicAdd_uint_v8(long long* address, unsigned int* result) {
   *result = atomicAdd(address, 1234);
 }
 
@@ -126,15 +118,11 @@ __global__ void atomicAdd_ulong_v6(short* address, unsigned long* result) {
   *result = atomicAdd(address, 1234);
 }
 
-__global__ void atomicAdd_ulong_v7(__half* address, unsigned long* result) {
+__global__ void atomicAdd_ulong_v7(long* address, unsigned long* result) {
   *result = atomicAdd(address, 1234);
 }
 
-__global__ void atomicAdd_ulong_v8(long* address, unsigned long* result) {
-  *result = atomicAdd(address, 1234);
-}
-
-__global__ void atomicAdd_ulong_v9(long long* address, unsigned long* result) {
+__global__ void atomicAdd_ulong_v8(long long* address, unsigned long* result) {
   *result = atomicAdd(address, 1234);
 }
 
@@ -163,15 +151,11 @@ __global__ void atomicAdd_ulonglong_v6(short* address, unsigned long long* resul
   *result = atomicAdd(address, 1234);
 }
 
-__global__ void atomicAdd_ulonglong_v7(__half* address, unsigned long long* result) {
+__global__ void atomicAdd_ulonglong_v7(long* address, unsigned long long* result) {
   *result = atomicAdd(address, 1234);
 }
 
-__global__ void atomicAdd_ulonglong_v8(long* address, unsigned long long* result) {
-  *result = atomicAdd(address, 1234);
-}
-
-__global__ void atomicAdd_ulonglong_v9(long long* address, unsigned long long* result) {
+__global__ void atomicAdd_ulonglong_v8(long long* address, unsigned long long* result) {
   *result = atomicAdd(address, 1234);
 }
 
@@ -200,15 +184,11 @@ __global__ void atomicAdd_float_v6(short* address, float* result) {
   *result = atomicAdd(address, 1234.f);
 }
 
-__global__ void atomicAdd_float_v7(__half* address, float* result) {
+__global__ void atomicAdd_float_v7(long* address, float* result) {
   *result = atomicAdd(address, 1234.f);
 }
 
-__global__ void atomicAdd_float_v8(long* address, float* result) {
-  *result = atomicAdd(address, 1234.f);
-}
-
-__global__ void atomicAdd_float_v9(long long* address, float* result) {
+__global__ void atomicAdd_float_v8(long long* address, float* result) {
   *result = atomicAdd(address, 1234);
 }
 
@@ -237,14 +217,10 @@ __global__ void atomicAdd_double_v6(short* address, double* result) {
   *result = atomicAdd(address, 1234.0);
 }
 
-__global__ void atomicAdd_double_v7(__half* address, double* result) {
+__global__ void atomicAdd_double_v7(long* address, double* result) {
   *result = atomicAdd(address, 1234.0);
 }
 
-__global__ void atomicAdd_double_v8(long* address, double* result) {
-  *result = atomicAdd(address, 1234.0);
-}
-
-__global__ void atomicAdd_double_v9(long long* address, double* result) {
+__global__ void atomicAdd_double_v8(long long* address, double* result) {
   *result = atomicAdd(address, 1234.0);
 }

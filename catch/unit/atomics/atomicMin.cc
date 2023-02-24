@@ -58,7 +58,7 @@ __global__ void AtomicMinMultiDest(T* const addr, const T val, const int n) {
     __syncthreads();
   }
 
-  atomicMin(ptr + tid % n , val);
+  atomicMin(ptr + tid % n , val - tid % n);
 
   if constexpr (shared) {
     __syncthreads();
@@ -113,7 +113,7 @@ TEMPLATE_TEST_CASE("Unit_atomicMin_Positive_DifferentAddressSameWarp", "", int, 
 
   const auto kSize = sizeof(TestType) * warp_size;
   constexpr TestType kValue = std::is_floating_point_v<TestType> ? 5.5f : 5;
-  const TestType kInitValue = GENERATE(kValue - 2, kValue + 2);
+  const TestType kInitValue = GENERATE_REF(warp_size / 2 - 2, warp_size / 2 + 2);
 
   LinearAllocGuard<TestType> alloc(allocation_type, kSize);
   TestType src[warp_size];
@@ -122,21 +122,27 @@ TEMPLATE_TEST_CASE("Unit_atomicMin_Positive_DifferentAddressSameWarp", "", int, 
   }
   HIP_CHECK(hipMemcpy(alloc.ptr(), src, kSize, hipMemcpyHostToDevice));
 
+  int num_blocks, num_threads;
+
   SECTION("device memory") {
-    HipTest::launchKernel(AtomicMinMultiDest<TestType, false>, 256, warp_size * warp_size, 0, nullptr,
-                          alloc.ptr(), kValue, warp_size);
+    num_blocks = 3, num_threads = 128;
+    HipTest::launchKernel(AtomicMinMultiDest<TestType, false>, num_blocks, num_threads, 0, nullptr,
+                          alloc.ptr(), kValue + warp_size - 1, warp_size);
   }
 
   SECTION("shared memory") {
-    HipTest::launchKernel(AtomicMinMultiDest<TestType, true>, 256, warp_size * warp_size, kSize, nullptr,
-                          alloc.ptr(), kValue, warp_size);
+    num_blocks = 1, num_threads = 256;
+    HipTest::launchKernel(AtomicMinMultiDest<TestType, true>, num_blocks, num_threads, kSize, nullptr,
+                          alloc.ptr(), kValue + warp_size - 1, warp_size);
   }
 
   TestType res[warp_size];
   HIP_CHECK(hipMemcpy(&res, alloc.ptr(), kSize, hipMemcpyDeviceToHost));
 
-  const auto expected_res = std::min(kInitValue, kValue);
-  for (int i = 0; i < warp_size; ++i) REQUIRE(res[i] == expected_res);
+  for (int i = 0; i < warp_size; ++i) {
+    const auto expected_res = std::min(kInitValue, kValue + warp_size - i - 1);
+    REQUIRE(res[i] == expected_res);
+  }
 }
 
 TEMPLATE_TEST_CASE("Unit_atomicMin_Positive_MultiKernel", "", int, unsigned int,

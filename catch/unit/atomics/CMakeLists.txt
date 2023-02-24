@@ -38,4 +38,4 @@ endif()
 add_test(NAME Unit_atomicAdd_Negative_Parameters
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/compileAndCaptureOutput.py
          ${CMAKE_CURRENT_SOURCE_DIR}
-         atomicAdd_negative_kernels.cc 18)
+         atomicAdd_negative_kernels.cc 54)

@@ -175,3 +175,75 @@ TEMPLATE_TEST_CASE("Unit_atomicMin_Positive_MultiKernel", "", int, unsigned int,
   const auto expected_res = std::min(kInitValue, kValue);
   REQUIRE(res == expected_res);
 }
+
+void ControlFlowTestRefMin(int* array, int n, int num_blocks, int num_threads) {
+  for (int idx = 0; idx < num_blocks * num_threads; ++idx) {
+    int val = idx % num_threads;
+    bool condition1 = (val % 2 == 0);
+    bool condition2 = (val % 4 == 0);
+    bool condition3 = (val % 8 == 0);
+
+    if (condition1 && condition2) {
+      array[0] = std::min(val, array[0]);
+    } else if (condition3) {
+      array[idx % n] = std::min(array[idx % n], val / 2);
+      if (array[idx % n] > 10) {
+        array[idx % n] = std::min(array[idx % n], 30);
+      }
+    } else {
+      for (int i = 0; i < val; ++i) {
+        array[idx % n] = std::min(array[idx % n], val - i);
+      }
+    }
+  }
+}
+
+__device__ void ControlFlowTestMin(int* array, int n, int idx) {
+  int val = threadIdx.x;
+  bool condition1 = (val % 2 == 0);
+  bool condition2 = (val % 4 == 0);
+  bool condition3 = (val % 8 == 0);
+
+  if (condition1 && condition2) {
+    atomicMin(&array[0], val);
+  } else if (condition3) {
+    atomicMin(&array[idx % n], val / 2);
+    if (array[idx % n] > 10) {
+      atomicMin(&array[idx % n], 30);
+    }
+  } else {
+    for (int i = 0; i < val; ++i) {
+      atomicMin(&array[idx % n], val - i);
+    }
+  }
+}
+
+__global__ void ControlFlowTestKernelMin(int* array, int n) {
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+  ControlFlowTestMin(array, n, idx);
+}
+
+TEST_CASE("Unit_atomicMin_Positive_ControlFlow") {
+  constexpr auto N = 30;
+  constexpr auto kSize = sizeof(int) * N;
+
+  LinearAllocGuard<int> alloc(LinearAllocs::hipMalloc, kSize);
+  int expected_res[N];
+  for (int i = 0; i < N; ++i) {
+    expected_res[i] = 23;
+  }
+  HIP_CHECK(hipMemcpy(alloc.ptr(), expected_res, kSize, hipMemcpyHostToDevice));
+
+  int num_blocks = 2, num_threads = 64;
+  HipTest::launchKernel(ControlFlowTestKernelMin, num_blocks, num_threads, 0, nullptr, alloc.ptr(), N);
+
+  int res[N];
+  HIP_CHECK(hipMemcpy(&res, alloc.ptr(), kSize, hipMemcpyDeviceToHost));
+
+  ControlFlowTestRefMin(expected_res, N, num_blocks, num_threads);
+
+  for (int i = 0; i < N; ++i) {
+    REQUIRE(res[i] == expected_res[i]);
+  }
+  std::cout << std::endl;
+}

@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include <cmd_options.hh>
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
+#include <regex>
 
 template <typename T, bool shared = false>
 __global__ void AtomicMin(T* const addr, const T val) {
@@ -245,5 +246,4 @@ TEST_CASE("Unit_atomicMin_Positive_ControlFlow") {
   for (int i = 0; i < N; ++i) {
     REQUIRE(res[i] == expected_res[i]);
   }
-  std::cout << std::endl;
 }

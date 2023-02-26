@@ -40,7 +40,7 @@ __global__ void atomicExchKernel(T* const global_mem, T* const old_vals) {
     __syncthreads();
   }
 
-  old_vals[tid] = atomicExch(mem, static_cast<T>(tid) + 1);
+  old_vals[tid] = atomicExch(mem, static_cast<T>(tid + 1));
 
   if constexpr (use_shared_mem) {
     __syncthreads();
@@ -104,5 +104,95 @@ TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Basic_Same_Address", "", int, unsig
   SECTION("Shared memory") {
     const auto blocks = GENERATE(dim3(1));
     AtomicExchSameAddressTest<TestType, true>(blocks, threads);
+  }
+}
+
+template <typename T, bool use_shared_mem>
+__global__ void atomicExchMultiDestKernel(T* const global_mem, T* const old_vals,
+                                          const unsigned int width) {
+  extern __shared__ uint8_t shared_mem[];
+
+  const auto tid = cg::this_grid().thread_rank();
+
+  T* const mem = use_shared_mem ? reinterpret_cast<T*>(shared_mem) : global_mem;
+
+  if constexpr (use_shared_mem) {
+    if (tid < width) mem[tid] = global_mem[tid];
+    __syncthreads();
+  }
+
+  old_vals[tid] = atomicExch(mem + tid % width, static_cast<T>(tid + width));
+
+  if constexpr (use_shared_mem) {
+    __syncthreads();
+    if (tid < width) global_mem[tid] = mem[tid];
+  }
+}
+
+template <typename TestType, bool use_shared_mem>
+void AtomicExchMultiDestTest(const dim3 blocks, const dim3 threads, const unsigned int width) {
+  const auto thread_count = blocks.x * blocks.y * blocks.z * threads.x * threads.y * threads.z;
+  const auto old_vals_alloc_size = thread_count * sizeof(TestType);
+  LinearAllocGuard<TestType> old_vals_dev(LinearAllocs::hipMalloc, old_vals_alloc_size);
+  std::vector<TestType> old_vals(thread_count);
+
+  const auto mem_alloc_size = width * sizeof(TestType);
+  LinearAllocGuard<TestType> mem_dev(LinearAllocs::hipMalloc, mem_alloc_size);
+  std::vector<TestType> mem(width);
+  std::iota(mem.begin(), mem.end(), 0);
+
+  HIP_CHECK(hipMemset(old_vals_dev.ptr(), 0, old_vals_alloc_size));
+  HIP_CHECK(hipMemcpy(mem_dev.ptr(), mem.data(), mem_alloc_size, hipMemcpyHostToDevice));
+  const auto shared_mem_size = use_shared_mem ? mem_alloc_size : 0u;
+  atomicExchMultiDestKernel<TestType, use_shared_mem>
+      <<<blocks, threads, shared_mem_size>>>(mem_dev.ptr(), old_vals_dev.ptr(), width);
+  HIP_CHECK(hipGetLastError());
+
+  HIP_CHECK(
+      hipMemcpy(old_vals.data(), old_vals_dev.ptr(), old_vals_alloc_size, hipMemcpyDeviceToHost));
+  HIP_CHECK(hipMemcpy(mem.data(), mem_dev.ptr(), mem_alloc_size, hipMemcpyDeviceToHost));
+  HIP_CHECK(hipDeviceSynchronize());
+
+  for (auto i = 0u; i < width; ++i) {
+    REQUIRE(i < mem[i]);
+    REQUIRE(thread_count + i >= mem[i]);
+  }
+
+  std::sort(old_vals.begin(), old_vals.end());
+  if (old_vals.back() == old_vals.size() - 1) {
+    for (auto i = 0u; i < old_vals.size(); ++i) {
+      REQUIRE(i == old_vals[i]);
+    }
+  } else if (old_vals.back() == old_vals.size() + width - 1) {
+    bool skipped = false;
+    for (auto i = 0u; i < old_vals.size(); ++i) {
+      if (!skipped) {
+        skipped = !skipped & old_vals[i] == i + width;
+        REQUIRE(skipped | old_vals[i] == i);
+      } else {
+        REQUIRE(old_vals[i] == i + width);
+      }
+    }
+  } else {
+    INFO("TODO: Think of a message");
+    REQUIRE(false);
+  }
+}
+
+TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Basic_Different_Address_Same_Warp", "", int,
+                   unsigned int, unsigned long long, float) {
+  int warp_size = 0; 
+  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
+  
+  const auto threads = GENERATE(dim3(1024));
+
+  SECTION("Global memory") {
+    const auto blocks = GENERATE(dim3(40));
+    AtomicExchMultiDestTest<TestType, false>(blocks, threads, warp_size);
+  }
+
+  SECTION("Shared memory") {
+    const auto blocks = GENERATE(dim3(1));
+    AtomicExchMultiDestTest<TestType, true>(blocks, threads, warp_size);
   }
 }

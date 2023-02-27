@@ -126,7 +126,7 @@ TEMPLATE_TEST_CASE("Unit_atomicMax_Positive_DifferentAddressSameWarp", "", int, 
 
   SECTION("device memory") {
     num_blocks = 3, num_threads = 128;
-    HipTest::launchKernel(AtomicMinMultiDest<TestType, false>, num_blocks, num_threads, 0, nullptr,
+    HipTest::launchKernel(AtomicMaxMultiDest<TestType, false>, num_blocks, num_threads, 0, nullptr,
                           alloc.ptr(), kValue + warp_size - 1, warp_size);
   }
 

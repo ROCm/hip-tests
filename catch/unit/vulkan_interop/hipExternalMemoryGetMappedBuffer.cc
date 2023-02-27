@@ -112,7 +112,9 @@ TEST_CASE("Unit_hipExternalMemoryGetMappedBuffer_Vulkan_Negative_Parameters") {
 
   hipExternalMemoryBufferDesc external_mem_buffer_desc = {};
   external_mem_buffer_desc.size = vk_storage.size;
+#if HT_NVIDIA
   void* hip_dev_ptr = nullptr;
+#endif
 
 // Disabled on AMD due to defect - EXSWHTEC-176
 #if HT_NVIDIA

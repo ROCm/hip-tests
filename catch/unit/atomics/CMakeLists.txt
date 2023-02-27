@@ -21,6 +21,7 @@
 set(TEST_SRC
     atomicAdd.cc
     atomicMin.cc
+    atomicMax.cc
 )
 
 if(HIP_PLATFORM MATCHES "nvidia")
@@ -46,3 +47,9 @@ add_test(NAME Unit_atomicMin_Negative_Parameters
          ${CMAKE_CURRENT_SOURCE_DIR}
          ${HIP_PLATFORM}
          atomicMin_negative_kernels.cc 48)
+
+add_test(NAME Unit_atomicMax_Negative_Parameters
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR}
+         ${HIP_PLATFORM}
+         atomicMax_negative_kernels.cc 48)

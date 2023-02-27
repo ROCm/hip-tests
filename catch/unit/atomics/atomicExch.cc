@@ -49,14 +49,15 @@ __global__ void atomicExchKernel(T* const global_mem, T* const old_vals) {
 }
 
 template <typename TestType, bool use_shared_mem>
-void AtomicExchSameAddressTest(const dim3 blocks, const dim3 threads) {
+void AtomicExchSameAddressTest(const dim3 blocks, const dim3 threads,
+                               const LinearAllocs alloc_type) {
   const auto thread_count = blocks.x * blocks.y * blocks.z * threads.x * threads.y * threads.z;
   const auto old_vals_size = thread_count;
   const auto old_vals_alloc_size = old_vals_size * sizeof(TestType);
   LinearAllocGuard<TestType> old_vals_dev(LinearAllocs::hipMalloc, old_vals_alloc_size);
   std::vector<TestType> old_vals(old_vals_size);
 
-  LinearAllocGuard<TestType> mem_dev(LinearAllocs::hipMalloc, sizeof(TestType));
+  LinearAllocGuard<TestType> mem_dev(alloc_type, sizeof(TestType));
   TestType mem;
 
   HIP_CHECK(hipMemset(mem_dev.ptr(), 0, sizeof(TestType)));
@@ -98,12 +99,15 @@ TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Basic_Same_Address", "", int, unsig
 
   SECTION("Global memory") {
     const auto blocks = GENERATE(dim3(20));
-    AtomicExchSameAddressTest<TestType, false>(blocks, threads);
+    using LA = LinearAllocs;
+    const auto allocation_type =
+        GENERATE(LA::hipMalloc, LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister);
+    AtomicExchSameAddressTest<TestType, false>(blocks, threads, allocation_type);
   }
 
   SECTION("Shared memory") {
     const auto blocks = GENERATE(dim3(1));
-    AtomicExchSameAddressTest<TestType, true>(blocks, threads);
+    AtomicExchSameAddressTest<TestType, true>(blocks, threads, LinearAllocs::hipMalloc);
   }
 }
 
@@ -130,14 +134,15 @@ __global__ void atomicExchMultiDestKernel(T* const global_mem, T* const old_vals
 }
 
 template <typename TestType, bool use_shared_mem>
-void AtomicExchMultiDestTest(const dim3 blocks, const dim3 threads, const unsigned int width) {
+void AtomicExchMultiDestTest(const dim3 blocks, const dim3 threads, const LinearAllocs alloc_type,
+                             const unsigned int width) {
   const auto thread_count = blocks.x * blocks.y * blocks.z * threads.x * threads.y * threads.z;
   const auto old_vals_alloc_size = thread_count * sizeof(TestType);
   LinearAllocGuard<TestType> old_vals_dev(LinearAllocs::hipMalloc, old_vals_alloc_size);
   std::vector<TestType> old_vals(thread_count);
 
   const auto mem_alloc_size = width * sizeof(TestType);
-  LinearAllocGuard<TestType> mem_dev(LinearAllocs::hipMalloc, mem_alloc_size);
+  LinearAllocGuard<TestType> mem_dev(alloc_type, mem_alloc_size);
   std::vector<TestType> mem(width);
   std::iota(mem.begin(), mem.end(), 0);
 
@@ -181,18 +186,21 @@ void AtomicExchMultiDestTest(const dim3 blocks, const dim3 threads, const unsign
 
 TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Basic_Different_Address_Same_Warp", "", int,
                    unsigned int, unsigned long long, float) {
-  int warp_size = 0; 
+  int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
-  
+
   const auto threads = GENERATE(dim3(1024));
 
   SECTION("Global memory") {
     const auto blocks = GENERATE(dim3(40));
-    AtomicExchMultiDestTest<TestType, false>(blocks, threads, warp_size);
+    using LA = LinearAllocs;
+    const auto allocation_type =
+        GENERATE(LA::hipMalloc, LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister);
+    AtomicExchMultiDestTest<TestType, false>(blocks, threads, LinearAllocs::hipMalloc, warp_size);
   }
 
   SECTION("Shared memory") {
     const auto blocks = GENERATE(dim3(1));
-    AtomicExchMultiDestTest<TestType, true>(blocks, threads, warp_size);
+    AtomicExchMultiDestTest<TestType, true>(blocks, threads, LinearAllocs::hipMalloc, warp_size);
   }
 }

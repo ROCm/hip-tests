@@ -23,7 +23,7 @@ THE SOFTWARE.
 #include <cmd_options.hh>
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
-#include "negative_kernels_rtc.hh"
+#include "atomicAdd_negative_kernels_rtc.hh"
 
 template <typename T, bool shared = false> __global__ void AtomicAdd(T* const addr, const T val) {
   extern __shared__ char shmem[];
@@ -253,7 +253,7 @@ TEST_CASE("Unit_atomicAdd_Negative_Parameters_RTC") {
   HIPRTC_CHECK(hiprtcGetProgramLog(program, log.data()));
   int error_count{0};
   // Please check the content of negative_kernels_rtc.hh
-  int expected_error_count{3};
+  int expected_error_count{8};
   std::string error_message{"error:"};
 
   size_t n_pos = log.find(error_message, 0);

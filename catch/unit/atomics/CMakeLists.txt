@@ -21,7 +21,9 @@
 set(TEST_SRC
     atomicAdd.cc
     atomicMin.cc
+    atomicMin_system.cc
     atomicMax.cc
+    atomicMax_system.cc
 )
 
 if(HIP_PLATFORM MATCHES "nvidia")

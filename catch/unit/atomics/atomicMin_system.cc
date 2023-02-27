@@ -28,6 +28,44 @@ template <typename T> __global__ void AtomicMinSystem(T* const addr, const T val
   atomicMin_system(addr, val);
 }
 
+template <typename T> void AtomicMinCPU(T* const addr, const T val, int n) {
+  for (int i = 0; i < n; ++i) {
+    T value = __atomic_load_n(addr, __ATOMIC_RELAXED);
+    bool done = false;
+    while(!done && value > val) {
+      done = __atomic_compare_exchange_n(addr, &value, val, false,
+                __ATOMIC_RELAXED, __ATOMIC_RELAXED);
+    }
+  }
+}
+
+TEMPLATE_TEST_CASE("Unit_atomicMin_system_Positive_CPU", "", int, unsigned int, unsigned long,
+                   unsigned long long) {
+  const auto allocation_type = GENERATE(LinearAllocs::hipHostMalloc, LinearAllocs::hipMallocManaged,
+                                        LinearAllocs::mallocAndRegister);
+
+  constexpr auto kSize = sizeof(TestType);
+  constexpr TestType kValue = std::is_floating_point_v<TestType> ? 5.5f : 5;
+  const TestType kInitValue = GENERATE(kValue - 2, kValue + 2);
+
+  LinearAllocGuard<TestType> alloc(allocation_type, kSize);
+
+  memset(alloc.host_ptr(), 0, kSize);
+  memset(alloc.host_ptr(), kInitValue, 1);
+
+  int num_blocks = 3, num_threads = 128;
+  HipTest::launchKernel(AtomicMinSystem<TestType>, num_blocks, num_threads, 0, nullptr, alloc.ptr(),
+                        kValue);
+  AtomicMinCPU(alloc.host_ptr(), kValue, num_blocks * num_threads);
+
+  HIP_CHECK(hipDeviceSynchronize());
+
+  auto res = *alloc.host_ptr();
+
+  const auto expected_res = std::min(kInitValue, kValue);
+  REQUIRE(res == expected_res);
+}
+
 TEMPLATE_TEST_CASE("Unit_atomicMin_system_Positive_PeerGPU", "", int, unsigned int, unsigned long,
                    unsigned long long, float, double) {
   const auto device_count = HipTest::getDeviceCount();

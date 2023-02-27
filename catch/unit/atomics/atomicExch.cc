@@ -27,6 +27,21 @@ THE SOFTWARE.
 
 namespace cg = cooperative_groups;
 
+std::string to_string(const LinearAllocs allocation_type) {
+  switch (allocation_type) {
+    case LinearAllocs::malloc:
+      return "host pageable";
+    case LinearAllocs::hipHostMalloc:
+      return "host pinned";
+    case LinearAllocs::hipMalloc:
+      return "device malloc";
+    case LinearAllocs::hipMallocManaged:
+      return "managed";
+    default:
+      return "unknown alloc type";
+  }
+}
+
 template <typename T, bool use_shared_mem>
 __global__ void atomicExchKernel(T* const global_mem, T* const old_vals) {
   __shared__ T shared_mem;
@@ -92,9 +107,15 @@ TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Basic_Same_Address", "", int, unsig
   }
 }
 
+template <typename T>
+__device__ T* pitched_offset(T* const ptr, const unsigned int pitch, const unsigned int idx) {
+  const auto byte_ptr = reinterpret_cast<uint8_t*>(ptr);
+  return reinterpret_cast<T*>(byte_ptr + idx * pitch);
+}
+
 template <typename T, bool use_shared_mem>
 __global__ void atomicExchMultiDestKernel(T* const global_mem, T* const old_vals,
-                                          const unsigned int width) {
+                                          const unsigned int width, const unsigned pitch) {
   extern __shared__ uint8_t shared_mem[];
 
   const auto tid = cg::this_grid().thread_rank();
@@ -102,22 +123,29 @@ __global__ void atomicExchMultiDestKernel(T* const global_mem, T* const old_vals
   T* const mem = use_shared_mem ? reinterpret_cast<T*>(shared_mem) : global_mem;
 
   if constexpr (use_shared_mem) {
-    if (tid < width) mem[tid] = global_mem[tid];
+    if (tid < width) {
+      const auto target = pitched_offset(mem, pitch, tid);
+      *target = *pitched_offset(global_mem, pitch, tid);
+    };
     __syncthreads();
   }
 
-  old_vals[tid] = atomicExch(mem + tid % width, static_cast<T>(tid + width));
+  old_vals[tid] = atomicExch(pitched_offset(mem, pitch, tid % width), static_cast<T>(tid + width));
 
   if constexpr (use_shared_mem) {
     __syncthreads();
-    if (tid < width) global_mem[tid] = mem[tid];
+    if (tid < width) {
+      const auto target = pitched_offset(global_mem, pitch, tid);
+      *target = *pitched_offset(mem, pitch, tid);
+    };
   }
 }
 
 template <typename TestType, bool use_shared_mem>
-void AtomicExchMultiDestTest(const dim3 blocks, const dim3 threads, const LinearAllocs alloc_type,
-                             const unsigned int width) {
-  const auto mem_alloc_size = width * sizeof(TestType);
+void AtomicExchMultiDestWithScatter(const dim3 blocks, const dim3 threads,
+                                    const LinearAllocs alloc_type, const unsigned int width,
+                                    const unsigned int pitch) {
+  const auto mem_alloc_size = width * pitch;
   LinearAllocGuard<TestType> mem_dev(alloc_type, mem_alloc_size);
 
   const auto thread_count = blocks.x * blocks.y * blocks.z * threads.x * threads.y * threads.z;
@@ -126,16 +154,17 @@ void AtomicExchMultiDestTest(const dim3 blocks, const dim3 threads, const Linear
   std::vector<TestType> old_vals(thread_count + width);
   std::iota(old_vals.begin(), old_vals.begin() + width, 0);
 
-  HIP_CHECK(hipMemcpy(mem_dev.ptr(), old_vals.data(), mem_alloc_size, hipMemcpyHostToDevice));
+  HIP_CHECK(hipMemcpy2D(mem_dev.ptr(), pitch, old_vals.data(), sizeof(TestType), sizeof(TestType),
+                        width, hipMemcpyHostToDevice));
   const auto shared_mem_size = use_shared_mem ? mem_alloc_size : 0u;
   atomicExchMultiDestKernel<TestType, use_shared_mem>
-      <<<blocks, threads, shared_mem_size>>>(mem_dev.ptr(), old_vals_dev.ptr(), width);
+      <<<blocks, threads, shared_mem_size>>>(mem_dev.ptr(), old_vals_dev.ptr(), width, pitch);
   HIP_CHECK(hipGetLastError());
 
   HIP_CHECK(
       hipMemcpy(old_vals.data(), old_vals_dev.ptr(), old_vals_alloc_size, hipMemcpyDeviceToHost));
-  HIP_CHECK(hipMemcpy(old_vals.data() + thread_count, mem_dev.ptr(), mem_alloc_size,
-                      hipMemcpyDeviceToHost));
+  HIP_CHECK(hipMemcpy2D(old_vals.data() + thread_count, sizeof(TestType), mem_dev.ptr(), pitch,
+                        sizeof(TestType), width, hipMemcpyDeviceToHost));
   HIP_CHECK(hipDeviceSynchronize());
 
   // Every thread will exchange its grid-wide linear id into a target location within mem_dev,
@@ -153,23 +182,47 @@ void AtomicExchMultiDestTest(const dim3 blocks, const dim3 threads, const Linear
   }
 }
 
-TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Basic_Different_Address_Same_Warp", "", int,
-                   unsigned int, unsigned long long, float) {
-  int warp_size = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
-
+template <typename TestType>
+void AtomicExchMultiDestWithScatterTest(const unsigned int width, const unsigned int pitch) {
   const auto threads = GENERATE(dim3(1024), dim3(1023), dim3(511), dim3(17), dim3(31));
 
   SECTION("Global memory") {
     const auto blocks = GENERATE(dim3(40));
     using LA = LinearAllocs;
-    const auto allocation_type =
-        GENERATE(LA::hipMalloc, LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister);
-    AtomicExchMultiDestTest<TestType, false>(blocks, threads, LinearAllocs::hipMalloc, warp_size);
+    for (const auto alloc_type :
+         {LA::hipMalloc, LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister}) {
+      DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
+        AtomicExchMultiDestWithScatter<TestType, false>(blocks, threads, LinearAllocs::hipMalloc,
+                                                        width, pitch);
+      }
+    }
   }
 
   SECTION("Shared memory") {
     const auto blocks = GENERATE(dim3(1));
-    AtomicExchMultiDestTest<TestType, true>(blocks, threads, LinearAllocs::hipMalloc, warp_size);
+    AtomicExchMultiDestWithScatter<TestType, true>(blocks, threads, LinearAllocs::hipMalloc, width,
+                                                   pitch);
   }
+}
+
+TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Basic_Same_Address_Runtime", "", int, unsigned int,
+                   unsigned long long, float) {
+  AtomicExchMultiDestWithScatterTest<TestType>(1, sizeof(TestType));
+}
+
+TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Basic_Adjacent_Addresses", "", int, unsigned int,
+                   unsigned long long, float) {
+  int warp_size = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
+
+  AtomicExchMultiDestWithScatterTest<TestType>(warp_size, sizeof(TestType));
+}
+
+TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Basic_Scattered_Addresses", "", int, unsigned int,
+                   unsigned long long, float) {
+  int warp_size = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
+  const auto cache_line_size = 128u;
+
+  AtomicExchMultiDestWithScatterTest<TestType>(warp_size, cache_line_size);
 }

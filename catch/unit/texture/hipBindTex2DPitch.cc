@@ -20,6 +20,9 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 
+
+#if CUDA_VERSION < CUDA_12000
+
 #define SIZE_H 8
 #define SIZE_W 12
 #define TYPE_t float
@@ -77,3 +80,6 @@ TEST_CASE("Unit_hipBindTexture2D_Pitch") {
   HIP_CHECK(hipFree(devPtrA));
   HIP_CHECK(hipFree(devPtrB));
 }
+
+#endif // CUDA_VERSION < CUDA_12000
+

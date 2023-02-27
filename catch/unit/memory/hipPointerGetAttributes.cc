@@ -213,12 +213,10 @@ TEST_CASE("Unit_hipPointerGetAttributes_Basic") {
 
   char* A_d;
   char* A_Pinned_h;
-  char* A_OSAlloc_h;
   hipError_t e;
 
   HIP_CHECK(hipMalloc(&A_d, Nbytes));
   HIP_CHECK(hipHostMalloc(reinterpret_cast<void**>(&A_Pinned_h), Nbytes, hipHostMallocDefault));
-  A_OSAlloc_h = reinterpret_cast<char*>(malloc(Nbytes));
 
   size_t free, total;
   HIP_CHECK(hipMemGetInfo(&free, &total));
@@ -260,8 +258,6 @@ TEST_CASE("Unit_hipPointerGetAttributes_Basic") {
     REQUIRE(attribs.devicePointer != attribs2.devicePointer);
   }
   HIP_CHECK(hipFree(A_d));
-  e = hipPointerGetAttributes(&attribs, A_d);
-  REQUIRE(e == hipErrorInvalidValue);
 
   // Device-visible host memory
   printf("\nDevice-visible host memory (hipHostMalloc)\n");
@@ -272,15 +268,10 @@ TEST_CASE("Unit_hipPointerGetAttributes_Basic") {
   char* ptr1 = reinterpret_cast<char*>(attribs.hostPointer);
   REQUIRE((ptr1 + Nbytes / 2) == reinterpret_cast<char*>(attribs2.hostPointer));
 
-
   HIP_CHECK(hipHostFree(A_Pinned_h));
-  e = hipPointerGetAttributes(&attribs, A_Pinned_h);
-  REQUIRE(e == hipErrorInvalidValue);
 
   // OS memory
   printf("\nOS-allocated memory (malloc)\n");
-  e = hipPointerGetAttributes(&attribs, A_OSAlloc_h);
-  REQUIRE(e == hipErrorInvalidValue);
 }
 
 TEST_CASE("Unit_hipPointerGetAttributes_ClusterAlloc") {

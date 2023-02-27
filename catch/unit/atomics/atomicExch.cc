@@ -51,51 +51,32 @@ __global__ void atomicExchKernel(T* const global_mem, T* const old_vals) {
 template <typename TestType, bool use_shared_mem>
 void AtomicExchSameAddressTest(const dim3 blocks, const dim3 threads,
                                const LinearAllocs alloc_type) {
-  const auto thread_count = blocks.x * blocks.y * blocks.z * threads.x * threads.y * threads.z;
-  const auto old_vals_size = thread_count;
-  const auto old_vals_alloc_size = old_vals_size * sizeof(TestType);
-  LinearAllocGuard<TestType> old_vals_dev(LinearAllocs::hipMalloc, old_vals_alloc_size);
-  std::vector<TestType> old_vals(old_vals_size);
-
   LinearAllocGuard<TestType> mem_dev(alloc_type, sizeof(TestType));
-  TestType mem;
+
+  const auto thread_count = blocks.x * blocks.y * blocks.z * threads.x * threads.y * threads.z;
+  const auto old_vals_alloc_size = thread_count * sizeof(TestType);
+  LinearAllocGuard<TestType> old_vals_dev(LinearAllocs::hipMalloc, old_vals_alloc_size);
+  std::vector<TestType> old_vals(thread_count + 1);
+
 
   HIP_CHECK(hipMemset(mem_dev.ptr(), 0, sizeof(TestType)));
-  HIP_CHECK(hipMemset(old_vals_dev.ptr(), 0, old_vals_alloc_size));
   atomicExchKernel<TestType, use_shared_mem>
       <<<blocks, threads>>>(mem_dev.ptr(), old_vals_dev.ptr());
   HIP_CHECK(
       hipMemcpy(old_vals.data(), old_vals_dev.ptr(), old_vals_alloc_size, hipMemcpyDeviceToHost));
-  HIP_CHECK(hipMemcpy(&mem, mem_dev.ptr(), sizeof(TestType), hipMemcpyDeviceToHost));
+  HIP_CHECK(hipMemcpy(old_vals.data() + thread_count, mem_dev.ptr(), sizeof(TestType),
+                      hipMemcpyDeviceToHost));
   HIP_CHECK(hipDeviceSynchronize());
 
-  REQUIRE(0 < mem);
-  REQUIRE(old_vals_size >= mem);
-
   std::sort(old_vals.begin(), old_vals.end());
-  if (old_vals.back() == old_vals.size() - 1) {
-    for (auto i = 0u; i < old_vals_size; ++i) {
-      REQUIRE(i == old_vals[i]);
-    }
-  } else if (old_vals.back() == old_vals.size()) {
-    bool skipped = false;
-    for (auto i = 0u; i < old_vals.size(); ++i) {
-      if (!skipped) {
-        skipped = !skipped & old_vals[i] == i + 1;
-        REQUIRE(skipped | old_vals[i] == i);
-      } else {
-        REQUIRE(old_vals[i] == i + 1);
-      }
-    }
-  } else {
-    INFO("Largest old value should be equal to num_threads or num_threads - 1");
-    REQUIRE(false);
+  for (auto i = 0u; i < old_vals.size(); ++i) {
+    REQUIRE(i == old_vals[i]);
   }
 }
 
 TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Basic_Same_Address", "", int, unsigned int,
                    unsigned long long, float) {
-  const auto threads = GENERATE(dim3(1024));
+  const auto threads = GENERATE(dim3(1024), dim3(1023), dim3(511), dim3(17), dim3(31));
 
   SECTION("Global memory") {
     const auto blocks = GENERATE(dim3(20));
@@ -136,18 +117,16 @@ __global__ void atomicExchMultiDestKernel(T* const global_mem, T* const old_vals
 template <typename TestType, bool use_shared_mem>
 void AtomicExchMultiDestTest(const dim3 blocks, const dim3 threads, const LinearAllocs alloc_type,
                              const unsigned int width) {
+  const auto mem_alloc_size = width * sizeof(TestType);
+  LinearAllocGuard<TestType> mem_dev(alloc_type, mem_alloc_size);
+
   const auto thread_count = blocks.x * blocks.y * blocks.z * threads.x * threads.y * threads.z;
   const auto old_vals_alloc_size = thread_count * sizeof(TestType);
   LinearAllocGuard<TestType> old_vals_dev(LinearAllocs::hipMalloc, old_vals_alloc_size);
-  std::vector<TestType> old_vals(thread_count);
+  std::vector<TestType> old_vals(thread_count + width);
+  std::iota(old_vals.begin(), old_vals.begin() + width, 0);
 
-  const auto mem_alloc_size = width * sizeof(TestType);
-  LinearAllocGuard<TestType> mem_dev(alloc_type, mem_alloc_size);
-  std::vector<TestType> mem(width);
-  std::iota(mem.begin(), mem.end(), 0);
-
-  HIP_CHECK(hipMemset(old_vals_dev.ptr(), 0, old_vals_alloc_size));
-  HIP_CHECK(hipMemcpy(mem_dev.ptr(), mem.data(), mem_alloc_size, hipMemcpyHostToDevice));
+  HIP_CHECK(hipMemcpy(mem_dev.ptr(), old_vals.data(), mem_alloc_size, hipMemcpyHostToDevice));
   const auto shared_mem_size = use_shared_mem ? mem_alloc_size : 0u;
   atomicExchMultiDestKernel<TestType, use_shared_mem>
       <<<blocks, threads, shared_mem_size>>>(mem_dev.ptr(), old_vals_dev.ptr(), width);
@@ -155,32 +134,22 @@ void AtomicExchMultiDestTest(const dim3 blocks, const dim3 threads, const Linear
 
   HIP_CHECK(
       hipMemcpy(old_vals.data(), old_vals_dev.ptr(), old_vals_alloc_size, hipMemcpyDeviceToHost));
-  HIP_CHECK(hipMemcpy(mem.data(), mem_dev.ptr(), mem_alloc_size, hipMemcpyDeviceToHost));
+  HIP_CHECK(hipMemcpy(old_vals.data() + thread_count, mem_dev.ptr(), mem_alloc_size,
+                      hipMemcpyDeviceToHost));
   HIP_CHECK(hipDeviceSynchronize());
 
-  for (auto i = 0u; i < width; ++i) {
-    REQUIRE(i < mem[i]);
-    REQUIRE(thread_count + i >= mem[i]);
-  }
-
+  // Every thread will exchange its grid-wide linear id into a target location within mem_dev,
+  // receiving back the value previously present therein. This previous value is written to
+  // old_vals_dev.
+  // old_vals_dev will not contain values that the final scheduled warp exchanged into mem_dev, but
+  // mem_dev obviously will.
+  // Given that mem_dev initially contains values in the range [0, width) and that the maximum value
+  // the final thread shall write is thread_count + width - 1, presuming correct operation of
+  // atomicExch, the union of mem_dev and old_vals_dev shall contain values in the range
+  //[0, thread_count + width)
   std::sort(old_vals.begin(), old_vals.end());
-  if (old_vals.back() == old_vals.size() - 1) {
-    for (auto i = 0u; i < old_vals.size(); ++i) {
-      REQUIRE(i == old_vals[i]);
-    }
-  } else if (old_vals.back() == old_vals.size() + width - 1) {
-    bool skipped = false;
-    for (auto i = 0u; i < old_vals.size(); ++i) {
-      if (!skipped) {
-        skipped = !skipped & old_vals[i] == i + width;
-        REQUIRE(skipped | old_vals[i] == i);
-      } else {
-        REQUIRE(old_vals[i] == i + width);
-      }
-    }
-  } else {
-    INFO("TODO: Think of a message");
-    REQUIRE(false);
+  for (auto i = 0u; i < old_vals.size(); ++i) {
+    REQUIRE(i == old_vals[i]);
   }
 }
 
@@ -189,7 +158,7 @@ TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Basic_Different_Address_Same_Warp",
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
 
-  const auto threads = GENERATE(dim3(1024));
+  const auto threads = GENERATE(dim3(1024), dim3(1023), dim3(511), dim3(17), dim3(31));
 
   SECTION("Global memory") {
     const auto blocks = GENERATE(dim3(40));

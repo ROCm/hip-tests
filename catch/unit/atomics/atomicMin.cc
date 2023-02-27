@@ -252,7 +252,8 @@ TEST_CASE("Unit_atomicMin_Negative_Parameters_RTC") {
   hiprtcProgram program{};
 
   const auto program_source =
-    GENERATE(kAtomicMin_int);
+    GENERATE(kAtomicMin_int, kAtomicMin_uint, kAtomicMin_ulong,
+             kAtomicMin_ulonglong, kAtomicMin_float, kAtomicMin_double);
   HIPRTC_CHECK(hiprtcCreateProgram(&program, program_source, "atomicMin_negative.cc", 0, nullptr, nullptr));
   hiprtcResult result{hiprtcCompileProgram(program, 0, nullptr)};
 

@@ -87,6 +87,8 @@ TEST_CASE("Unit_hipClassKernel_Friend") {
                       0,
                       0,
                       result_ecd);
+  HIP_CHECK(hipStreamSynchronize(nullptr));
+  HIP_CHECK(hipFree(result_ecd));
 }
 
 // check sizeof empty class is 1

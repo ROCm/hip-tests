@@ -161,8 +161,17 @@ TEST_CASE("Unit_hipGraphUpload_Functional_multidevice_test") {
     SECTION("Pass a common stream for all device") {
       hipStream_t stream;
       HIP_CHECK(hipStreamCreate(&stream));
-
+      int currDevice = -1;
+      HIP_CHECK(hipGetDevice(&currDevice));
       for (int i = 0; i < numDevices; i++) {
+        if (i != currDevice) {
+          int can_access_peer = 0;
+          HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, currDevice, i));
+          if (!can_access_peer) {
+            INFO("Peer access cannot be enabled between devices " << currDevice << " " << i);
+            continue;
+          }
+        }
         HIP_CHECK(hipSetDevice(i));
         hipGraphUploadFunctional_with_hipStreamBeginCapture(stream);
         hipGraphUploadFunctional_with_stream(stream);

@@ -115,7 +115,8 @@ __device__ T* pitched_offset(T* const ptr, const unsigned int pitch, const unsig
 
 template <typename T, bool use_shared_mem>
 __global__ void atomicExchMultiDestKernel(T* const global_mem, T* const old_vals,
-                                          const unsigned int width, const unsigned pitch) {
+                                          const unsigned int width, const unsigned pitch,
+                                          const T base_val = 0) {
   extern __shared__ uint8_t shared_mem[];
 
   const auto tid = cg::this_grid().thread_rank();
@@ -130,7 +131,8 @@ __global__ void atomicExchMultiDestKernel(T* const global_mem, T* const old_vals
     __syncthreads();
   }
 
-  old_vals[tid] = atomicExch(pitched_offset(mem, pitch, tid % width), static_cast<T>(tid + width));
+  old_vals[tid] =
+      atomicExch(pitched_offset(mem, pitch, tid % width), base_val + static_cast<T>(tid + width));
 
   if constexpr (use_shared_mem) {
     __syncthreads();
@@ -225,4 +227,59 @@ TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Basic_Scattered_Addresses", "", int
   const auto cache_line_size = 128u;
 
   AtomicExchMultiDestWithScatterTest<TestType>(warp_size, cache_line_size);
+}
+
+template <typename TestType, unsigned int kernel_count, bool use_shared_mem>
+void Foo(const dim3 blocks, const dim3 threads, const LinearAllocs alloc_type,
+            const unsigned int width, const unsigned int pitch) {
+  static_assert(kernel_count > 1 && !use_shared_mem,
+                "Shared memory should not be used for a multiple kernel launch");
+
+  if constexpr (kernel_count > 1) {
+    int concurrent_kernels = 0;
+    HIP_CHECK(hipDeviceGetAttribute(&concurrent_kernels, hipDeviceAttributeConcurrentKernels, 0));
+    if (!concurrent_kernels) {
+      HipTest::HIP_SKIP_TEST("Test requires support for concurrent kernels");
+      return;
+    }
+  }
+
+  const auto mem_alloc_size = width * pitch;
+  LinearAllocGuard<TestType> mem_dev(alloc_type, mem_alloc_size);
+
+  const auto thread_count = blocks.x * blocks.y * blocks.z * threads.x * threads.y * threads.z;
+  const auto old_vals_alloc_size = thread_count * sizeof(TestType) * kernel_count;
+  LinearAllocGuard<TestType> old_vals_dev(LinearAllocs::hipMalloc, old_vals_alloc_size);
+  std::vector<TestType> old_vals(thread_count * kernel_count + width);
+  std::iota(old_vals.begin(), old_vals.begin() + width, 0);
+
+  struct CreatedStream {
+    auto stream() { return stream_.stream(); }
+    StreamGuard stream_{Streams::created};
+  };
+  std::array<CreatedStream, kernel_count> streams;
+
+  HIP_CHECK(hipMemcpy2D(mem_dev.ptr(), pitch, old_vals.data(), sizeof(TestType), sizeof(TestType),
+                        width, hipMemcpyHostToDevice));
+  for (auto i = 0; i < kernel_count; ++i) {
+    atomicExchMultiDestKernel<TestType, false><<<blocks, threads, 0, streams[i].stream()>>>(
+        mem_dev.ptr(), old_vals_dev.ptr() + thread_count * i, width, pitch, thread_count * i);
+    HIP_CHECK(hipGetLastError());
+  }
+  HIP_CHECK(
+      hipMemcpy(old_vals.data(), old_vals_dev.ptr(), old_vals_alloc_size, hipMemcpyDeviceToHost));
+  HIP_CHECK(hipMemcpy2D(old_vals.data() + kernel_count * thread_count, sizeof(TestType),
+                        mem_dev.ptr(), pitch, sizeof(TestType), width, hipMemcpyDeviceToHost));
+  HIP_CHECK(hipDeviceSynchronize());
+
+  std::sort(old_vals.begin(), old_vals.end());
+  for (auto i = 0u; i < old_vals.size(); ++i) {
+    REQUIRE(i == old_vals[i]);
+  }
+}
+
+TEST_CASE("Foo") {
+  const auto threads = GENERATE(dim3(1024), dim3(1023), dim3(511), dim3(17), dim3(31));
+  const auto blocks = GENERATE(dim3(40));
+  Foo<int, 2, false>(blocks, threads, LinearAllocs::hipMallocManaged, 32, 128);
 }

@@ -84,13 +84,13 @@ TEMPLATE_TEST_CASE("Unit_atomicXor_Positive_SameAddress", "", int, unsigned int,
   int num_blocks, num_threads;
 
   SECTION("device memory") {
-    num_blocks = 3, num_threads = 128;
+    num_blocks = 3, num_threads = 127;
     HipTest::launchKernel(AtomicXor<TestType, false>, num_blocks, num_threads, 0, nullptr,
                           alloc.ptr(), kMask);
   }
 
   SECTION("shared memory") {
-    num_blocks = 1, num_threads = 256;
+    num_blocks = 1, num_threads = 255;
     HipTest::launchKernel(AtomicXor<TestType, true>, num_blocks, num_threads, kSize, nullptr,
                           alloc.ptr(), kMask);
   }
@@ -100,6 +100,7 @@ TEMPLATE_TEST_CASE("Unit_atomicXor_Positive_SameAddress", "", int, unsigned int,
 
   auto expected_res = kInitValue ^ kMask;
   for (int i = 0; i < num_blocks * num_threads - 1; ++i) expected_res = expected_res ^ kMask;
+  std::cout << kInitValue << ", " << res << ", " << expected_res << std::endl;
   REQUIRE(res == expected_res);
 }
 
@@ -126,13 +127,13 @@ TEMPLATE_TEST_CASE("Unit_atomicXor_Positive_DifferentAddressSameWarp", "", int, 
   int num_blocks, num_threads;
 
   SECTION("device memory") {
-    num_blocks = 3, num_threads = 128;
+    num_blocks = 3, num_threads = 127;
     HipTest::launchKernel(AtomicXorMultiDest<TestType, false>, num_blocks, num_threads, 0, nullptr,
                           alloc.ptr(), kMask, warp_size);
   }
 
   SECTION("shared memory") {
-    num_blocks = 1, num_threads = 256;
+    num_blocks = 1, num_threads = 255;
     HipTest::launchKernel(AtomicXorMultiDest<TestType, true>, num_blocks, num_threads, kSize, nullptr,
                           alloc.ptr(), kMask, warp_size);
   }
@@ -141,7 +142,7 @@ TEMPLATE_TEST_CASE("Unit_atomicXor_Positive_DifferentAddressSameWarp", "", int, 
   HIP_CHECK(hipMemcpy(&res, alloc.ptr(), kSize, hipMemcpyDeviceToHost));
 
   for (int i = 0; i < warp_size; ++i) {
-    auto expected_res = kInitValue ^ kMask ;
+    auto expected_res = kInitValue ^ kMask;
     for (int i = 0; i < num_blocks * num_threads - 1; ++i) expected_res = expected_res ^ kMask;
     REQUIRE(res[i] == expected_res);
   }
@@ -163,18 +164,21 @@ TEMPLATE_TEST_CASE("Unit_atomicXor_Positive_MultiKernel", "", int, unsigned int,
 
   StreamGuard stream1(Streams::created);
   StreamGuard stream2(Streams::created);
+  StreamGuard stream3(Streams::created);
 
-  int num_blocks = 3, num_threads = 128;
+  int num_blocks = 3, num_threads = 127;
   HipTest::launchKernel(AtomicXor<TestType, false>, num_blocks, num_threads, 0, stream1.stream(),
                         alloc.ptr(), kMask);
   HipTest::launchKernel(AtomicXor<TestType, false>, num_blocks, num_threads, 0, stream2.stream(),
+                        alloc.ptr(), kMask);
+  HipTest::launchKernel(AtomicXor<TestType, false>, num_blocks, num_threads, 0, stream3.stream(),
                         alloc.ptr(), kMask);
 
   TestType res;
   HIP_CHECK(hipMemcpy(&res, alloc.ptr(), kSize, hipMemcpyDeviceToHost));
 
   auto expected_res = kInitValue ^ kMask ;
-  for (int i = 0; i < 2 * num_blocks * num_threads - 1; ++i) expected_res = expected_res ^ kMask;
+  for (int i = 0; i < 3 * num_blocks * num_threads - 1; ++i) expected_res = expected_res ^ kMask;
   REQUIRE(res == expected_res);
 }
 

@@ -45,7 +45,7 @@ TEMPLATE_TEST_CASE("Unit_atomicXor_system_Positive_CPU", "", int, unsigned int, 
 
   HIP_CHECK(hipMemcpy(alloc.ptr(), &kInitValue, kSize, hipMemcpyHostToDevice));
 
-  int num_blocks = 3, num_threads = 128;
+  int num_blocks = 3, num_threads = 127;
   HipTest::launchKernel(AtomicXorSystem<TestType>, num_blocks, num_threads, 0, nullptr, alloc.ptr(),
                         kMask);
   AtomicXorCPU(alloc.host_ptr(), kMask, num_blocks * num_threads);
@@ -96,7 +96,7 @@ TEMPLATE_TEST_CASE("Unit_atomicXor_system_Positive_PeerGPU", "", int, unsigned i
 
   HIP_CHECK(hipMemcpy(alloc.ptr(), &kInitValue, kSize, hipMemcpyHostToDevice));
 
-  int num_blocks = 3, num_threads = 128;
+  int num_blocks = 3, num_threads = 127;
   for (int i = 0; i < device_count; ++i) {
     HIP_CHECK(hipSetDevice(i));
     HipTest::launchKernel(AtomicXorSystem<TestType>, num_blocks, num_threads, 0, nullptr,

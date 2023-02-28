@@ -83,6 +83,7 @@ set(TEST_SRC
   hipGraphDebugDotPrint.cc
   hipGraphCloneComplx.cc
   hipGraphNodeSetEnabled.cc
+  hipGraphNodeGetEnabled.cc
   hipGraphCreate.cc
   hipGraphDestroy.cc
   hipGraphExecDestroy.cc

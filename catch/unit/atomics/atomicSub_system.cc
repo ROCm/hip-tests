@@ -24,12 +24,12 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 
-TEMPLATE_TEST_CASE("Unit_atomicAdd_system_Positive_Host_Coherency", "", int, unsigned int,
+TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Host_Coherency", "", int, unsigned int,
                    unsigned long, unsigned long long, float, double) {
-  HostCoherencyTest<TestType, AtomicOp::kAddSystem>();
+  HostCoherencyTest<TestType, AtomicOp::kSubSystem>();
 }
 
-TEMPLATE_TEST_CASE("Unit_atomicAdd_system_Positive_Peer_Device_Coherency", "", int, unsigned int,
+TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Peer_Device_Coherency", "", int, unsigned int,
                    unsigned long, unsigned long long, float, double) {
   const auto device_count = HipTest::getDeviceCount();
   if (device_count < 2) {
@@ -37,5 +37,5 @@ TEMPLATE_TEST_CASE("Unit_atomicAdd_system_Positive_Peer_Device_Coherency", "", i
     return;
   }
 
-  PeerDeviceCoherencyTest<TestType, AtomicOp::kAddSystem>();
+  PeerDeviceCoherencyTest<TestType, AtomicOp::kSubSystem>();
 }

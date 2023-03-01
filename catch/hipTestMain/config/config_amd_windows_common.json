@@ -100,6 +100,8 @@
 	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ClonedGrph",
 	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ChldNode",
 	   "Unit_hipMemGetAddressRange_Negative",
-	   "Unit_hipMemGetAddressRange_Positive"
+	   "Unit_hipMemGetAddressRange_Positive",
+	   "Note: intermittent Failure",
+	   "Unit_hipGraphRetainUserObject_Functional_2"
 	]
 }

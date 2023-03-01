@@ -23,7 +23,7 @@ THE SOFTWARE.
 #include <hip/hip_cooperative_groups.h>
 
 namespace {
-#if (__HIP_DEVICE_COMPILE__ && !__GFX8__ && !__GFX9__ && __AMDGCN_WAVEFRONT_SIZE == 64) || HT_NVIDIA
+#if (!__GFX8__ && !__GFX9__) || HT_NVIDIA
 constexpr size_t kWarpSize = 32;
 #else
 constexpr size_t kWarpSize = 64;

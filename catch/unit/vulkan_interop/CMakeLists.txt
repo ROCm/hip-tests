@@ -2,7 +2,13 @@ set(COMMON_SHARED_SRC vulkan_test.cc)
 
 set(TEST_SRC
     hipExternalMemoryGetMappedBuffer.cc
-)
+    hipImportExternalMemory.cc
+    hipDestroyExternalMemory.cc
+    hipWaitExternalSemaphoresAsync.cc
+    hipSignalExternalSemaphoresAsync.cc
+    hipImportExternalSemaphore.cc
+    hipDestroyExternalSemaphore.cc
+   )
 
 find_package(Vulkan)
 if(NOT Vulkan_FOUND)

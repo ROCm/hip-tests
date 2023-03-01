@@ -32,6 +32,21 @@ enum class LinearAllocs {
   noAlloc
 };
 
+inline std::string to_string(const LinearAllocs allocation_type) {
+  switch (allocation_type) {
+    case LinearAllocs::malloc:
+      return "host pageable";
+    case LinearAllocs::hipHostMalloc:
+      return "host pinned";
+    case LinearAllocs::hipMalloc:
+      return "device malloc";
+    case LinearAllocs::hipMallocManaged:
+      return "managed";
+    default:
+      return "unknown alloc type";
+  }
+}
+
 template <typename T> class LinearAllocGuard {
  public:
   LinearAllocGuard() = default;

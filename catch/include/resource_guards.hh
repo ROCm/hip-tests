@@ -46,8 +46,8 @@ template <typename T> class LinearAllocGuard {
         HIP_CHECK(hipHostGetDevicePointer(reinterpret_cast<void**>(&ptr_), host_ptr_, 0u));
         break;
       case LinearAllocs::hipHostMalloc:
-        HIP_CHECK(hipHostMalloc(reinterpret_cast<void**>(&ptr_), size, flags));
-        host_ptr_ = ptr_;
+        HIP_CHECK(hipHostMalloc(reinterpret_cast<void**>(&host_ptr_), size, flags));
+        HIP_CHECK(hipHostGetDevicePointer(reinterpret_cast<void**>(&ptr_), host_ptr_, 0u));
         break;
       case LinearAllocs::hipMalloc:
         HIP_CHECK(hipMalloc(reinterpret_cast<void**>(&ptr_), size));

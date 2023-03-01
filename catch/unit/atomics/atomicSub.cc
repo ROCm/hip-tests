@@ -24,18 +24,29 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 
-TEMPLATE_TEST_CASE("Unit_atomicAdd_system_Positive_Host_Coherency", "", int, unsigned int,
-                   unsigned long, unsigned long long, float, double) {
-  HostCoherencyTest<TestType, AtomicOp::kAddSystem>();
+TEMPLATE_TEST_CASE("Unit_atomicSub_Positive_Same_Address", "", int, unsigned int,
+                   unsigned long long, float, double) {
+  SameAddressTest<TestType, AtomicOp::kSub>();
 }
 
-TEMPLATE_TEST_CASE("Unit_atomicAdd_system_Positive_Peer_Device_Coherency", "", int, unsigned int,
-                   unsigned long, unsigned long long, float, double) {
-  const auto device_count = HipTest::getDeviceCount();
-  if (device_count < 2) {
-    HipTest::HIP_SKIP_TEST("Two or more devices are required");
-    return;
-  }
+TEMPLATE_TEST_CASE("Unit_atomicSub_Positive_Same_Address_Runtime", "", int, unsigned int,
+                   unsigned long long, float, double) {
+  MultiDestWithScatterTest<TestType, AtomicOp::kSub>(1, sizeof(TestType));
+}
 
-  PeerDeviceCoherencyTest<TestType, AtomicOp::kAddSystem>();
+TEMPLATE_TEST_CASE("Unit_atomicSub_Positive_Adjacent_Addresses", "", int, unsigned int,
+                   unsigned long long, float, double) {
+  int warp_size = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
+
+  MultiDestWithScatterTest<TestType, AtomicOp::kSub>(warp_size, sizeof(TestType));
+}
+
+TEMPLATE_TEST_CASE("Unit_atomicSub_Positive_Scattered_Addresses", "", int, unsigned int,
+                   unsigned long long, float, double) {
+  int warp_size = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
+  constexpr auto cache_line_size = 128u;
+
+  MultiDestWithScatterTest<TestType, AtomicOp::kSub>(warp_size, cache_line_size);
 }

@@ -50,7 +50,7 @@ TEST_CASE("Unit_hipPtrGetAttribute_Simple") {
   size_t free, total;
   HIP_CHECK(hipMemGetInfo(&free, &total));
   printf("hipMemGetInfo: free=%zu (%4.2f) Nbytes=%lu total=%zu (%4.2f)\n", free,
-         (free / 1024.0 / 1024.0), Nbytes, total,
+         (free / 1024.0 / 1024.0), static_cast<unsigned long>(Nbytes), total,
          (total / 1024.0 / 1024.0));
   REQUIRE(free + Nbytes <= total);
 

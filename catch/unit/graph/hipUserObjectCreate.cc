@@ -427,43 +427,37 @@ TEST_CASE("Unit_hipGraphRetainUserObject_Functional_2") {
   unsigned blocks = HipTest::setNumBlocks(blocksPerCU, threadsPerBlock, N);
 
   HIP_CHECK(hipGraphCreate(&graph, 0));
-  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr, 0, A_d, A_h,
-                                   Nbytes, hipMemcpyHostToDevice));
+  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr, 0, A_d, A_h, Nbytes,
+                                    hipMemcpyHostToDevice));
   dependencies.push_back(memcpyNode);
-  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr, 0, B_d, B_h,
-                                   Nbytes, hipMemcpyHostToDevice));
+  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr, 0, B_d, B_h, Nbytes,
+                                    hipMemcpyHostToDevice));
   dependencies.push_back(memcpyNode);
 
-  void* kernelArgs[] = {&A_d, &B_d, &C_d, reinterpret_cast<void *>(&NElem)};
-  kNodeParams.func = reinterpret_cast<void *>(HipTest::vectorADD<int>);
+  void* kernelArgs[] = {&A_d, &B_d, &C_d, reinterpret_cast<void*>(&NElem)};
+  kNodeParams.func = reinterpret_cast<void*>(HipTest::vectorADD<int>);
   kNodeParams.gridDim = dim3(blocks);
   kNodeParams.blockDim = dim3(threadsPerBlock);
   kNodeParams.sharedMemBytes = 0;
   kNodeParams.kernelParams = reinterpret_cast<void**>(kernelArgs);
   kNodeParams.extra = nullptr;
-  HIP_CHECK(hipGraphAddKernelNode(&kNode, graph, dependencies.data(),
-                                  dependencies.size(), &kNodeParams));
+  HIP_CHECK(
+      hipGraphAddKernelNode(&kNode, graph, dependencies.data(), dependencies.size(), &kNodeParams));
 
   dependencies.clear();
   dependencies.push_back(kNode);
-  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyNode, graph, dependencies.data(),
-                                    dependencies.size(), C_h, C_d,
-                                    Nbytes, hipMemcpyDeviceToHost));
+  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyNode, graph, dependencies.data(), dependencies.size(),
+                                    C_h, C_d, Nbytes, hipMemcpyDeviceToHost));
 
-  int refCount = 2;
-  int refCountRetain = 3;
-
-  float *object = new float();
+  float* object = new float();
   REQUIRE(object != nullptr);
   hipUserObject_t hObject;
 
-  HIP_CHECK(hipUserObjectCreate(&hObject, object,
-                                  destroyFloatObj,
-                                  refCount, hipUserObjectNoDestructorSync));
+  HIP_CHECK(
+      hipUserObjectCreate(&hObject, object, destroyFloatObj, 1, hipUserObjectNoDestructorSync));
   REQUIRE(hObject != nullptr);
-  HIP_CHECK(hipUserObjectRetain(hObject, refCountRetain));
-  HIP_CHECK(hipGraphRetainUserObject(graph, hObject, refCountRetain,
-                                       hipGraphUserObjectMove));
+  HIP_CHECK(hipGraphRetainUserObject(graph, hObject, 1,
+                                     hipGraphUserObjectMove));  // Pass ownership to hipGraph
 
   // Instantiate and launch the graph
   HIP_CHECK(hipGraphInstantiate(&graphExec, graph, NULL, NULL, 0));
@@ -472,9 +466,6 @@ TEST_CASE("Unit_hipGraphRetainUserObject_Functional_2") {
 
   // Verify result
   HipTest::checkVectorADD<int>(A_h, B_h, C_h, N);
-
-  HIP_CHECK(hipUserObjectRelease(hObject, refCount + refCountRetain));
-  HIP_CHECK(hipGraphReleaseUserObject(graph, hObject, refCountRetain));
 
   HipTest::freeArrays(A_d, B_d, C_d, A_h, B_h, C_h, false);
   HIP_CHECK(hipGraphExecDestroy(graphExec));

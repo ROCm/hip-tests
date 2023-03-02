@@ -37,13 +37,6 @@ THE SOFTWARE.
  */
 
 /**
- * @defgroup CooperativeGroupsTest Cooperative Groups 
- * @{
- * This section describes tests for cooperative groups API's of the HIP runtime.
- * @}
- */
-
-/**
  * @defgroup WarpTest Warp Functions
  * @{
  * This section describes tests for warp functions API's of the HIP runtime.

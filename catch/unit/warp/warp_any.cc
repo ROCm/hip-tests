@@ -32,8 +32,7 @@ THE SOFTWARE.
 namespace cg = cooperative_groups;
 
 
-__global__ void kernel_any(int* const out, const uint64_t* const active_masks,
-                           uint64_t predicate) {
+__global__ void kernel_any(int* const out, const uint64_t* const active_masks, uint64_t predicate) {
   if (deactivate_thread(active_masks)) {
     return;
   }
@@ -80,6 +79,7 @@ class WarpAny : public WarpTest<WarpAny, int> {
       }
     });
   }
+
  private:
   uint64_t predicate_mask_;
 };

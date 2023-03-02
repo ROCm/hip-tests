@@ -21,6 +21,14 @@
 set(TEST_SRC
     atomicAdd.cc
     atomicAdd_system.cc
+    atomicSub.cc
+    atomicSub_system.cc
+    atomicInc.cc
+    atomicDec.cc
+    unsafeAtomicAdd.cc
+    safeAtomicAdd.cc
+    atomicCAS.cc
+    atomicCAS_system.cc
     atomicAnd.cc
     atomicAnd_system.cc
     atomicOr.cc
@@ -31,14 +39,14 @@ set(TEST_SRC
 
 if(HIP_PLATFORM MATCHES "nvidia")
     hip_add_exe_to_target(NAME AtomicsTest
-                        TEST_SRC ${TEST_SRC}
-                        TEST_TARGET_NAME build_tests
-                        LINKER_LIBS nvrtc)
+                          TEST_SRC ${TEST_SRC}
+                          TEST_TARGET_NAME build_tests
+                          LINKER_LIBS nvrtc)
 elseif(HIP_PLATFORM MATCHES "amd")
     hip_add_exe_to_target(NAME AtomicsTest
-                        TEST_SRC ${TEST_SRC}
-                        TEST_TARGET_NAME build_tests
-                        LINKER_LIBS hiprtc)
+                          TEST_SRC ${TEST_SRC}
+                          TEST_TARGET_NAME build_tests
+                          LINKER_LIBS hiprtc)
 endif()
 
 add_test(NAME Unit_atomicAdd_Negative_Parameters

@@ -1,5 +1,6 @@
 # Common Tests - Test independent of all platforms
 set(TEST_SRC
+  warp_ballot.cc
 )
 
 hip_add_exe_to_target(NAME WarpTest

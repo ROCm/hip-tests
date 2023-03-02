@@ -24,27 +24,27 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 
-TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Peer_GPUs_Same_Address", "", int, unsigned int,
+TEMPLATE_TEST_CASE("Unit_atomicCAS_system_Positive_Peer_GPUs_Same_Address", "", int, unsigned int,
                    unsigned long long, float, double) {
-  MultipleDeviceMultipleKernelTest<TestType, AtomicOperation::kSubSystem>(2, 2, 1,
-                                                                          sizeof(TestType));
+  MultipleDeviceMultipleKernelTest<TestType, AtomicOperation::kCASAddSystem>(2, 2, 1,
+                                                                             sizeof(TestType));
 }
 
-TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Peer_GPUs_Adjacent_Addresses", "", int,
+TEMPLATE_TEST_CASE("Unit_atomicCAS_system_Positive_Peer_GPUs_Adjacent_Addresses", "", int,
                    unsigned int, unsigned long long, float, double) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
 
-  MultipleDeviceMultipleKernelTest<TestType, AtomicOperation::kSubSystem>(2, 2, warp_size,
-                                                                          sizeof(TestType));
+  MultipleDeviceMultipleKernelTest<TestType, AtomicOperation::kCASAddSystem>(2, 2, warp_size,
+                                                                             sizeof(TestType));
 }
 
-TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Peer_GPUs_Scattered_Addresses", "", int,
+TEMPLATE_TEST_CASE("Unit_atomicCAS_system_Positive_Peer_GPUs_Scattered_Addresses", "", int,
                    unsigned int, unsigned long long, float, double) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  MultipleDeviceMultipleKernelTest<TestType, AtomicOperation::kSubSystem>(2, 2, warp_size,
-                                                                          cache_line_size);
+  MultipleDeviceMultipleKernelTest<TestType, AtomicOperation::kCASAddSystem>(2, 2, warp_size,
+                                                                             cache_line_size);
 }

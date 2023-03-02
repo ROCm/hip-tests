@@ -25,24 +25,39 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 
 TEMPLATE_TEST_CASE("Unit_atomicDec_Positive_Same_Address", "", unsigned int) {
-  SameAddressTest<TestType, AtomicOp::kDec>();
-}
-
-TEMPLATE_TEST_CASE("Unit_atomicDec_Positive_Same_Address_Runtime", "", unsigned int) {
-  MultiDestWithScatterTest<TestType, AtomicOp::kDec>(1, sizeof(TestType));
+  SingleDeviceSingleKernelTest<TestType, AtomicOperation::kDec>(1, sizeof(TestType));
 }
 
 TEMPLATE_TEST_CASE("Unit_atomicDec_Positive_Adjacent_Addresses", "", unsigned int) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
 
-  MultiDestWithScatterTest<TestType, AtomicOp::kDec>(warp_size, sizeof(TestType));
+  SingleDeviceSingleKernelTest<TestType, AtomicOperation::kDec>(warp_size, sizeof(TestType));
 }
 
 TEMPLATE_TEST_CASE("Unit_atomicDec_Positive_Scattered_Addresses", "", unsigned int) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
-  constexpr auto cache_line_size = 128u;
+  const auto cache_line_size = 128u;
 
-  MultiDestWithScatterTest<TestType, AtomicOp::kDec>(warp_size, cache_line_size);
+  SingleDeviceSingleKernelTest<TestType, AtomicOperation::kDec>(warp_size, cache_line_size);
+}
+
+TEMPLATE_TEST_CASE("Unit_atomicDec_Positive_Multi_Kernel_Same_Address", "", unsigned int) {
+  SingleDeviceMultipleKernelTest<TestType, AtomicOperation::kDec>(2, 1, sizeof(TestType));
+}
+
+TEMPLATE_TEST_CASE("Unit_atomicDec_Positive_Multi_Kernel_Adjacent_Addresses", "", unsigned int) {
+  int warp_size = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
+
+  SingleDeviceMultipleKernelTest<TestType, AtomicOperation::kDec>(2, warp_size, sizeof(TestType));
+}
+
+TEMPLATE_TEST_CASE("Unit_atomicDec_Positive_Multi_Kernel_Scattered_Addresses", "", unsigned int) {
+  int warp_size = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
+  const auto cache_line_size = 128u;
+
+  SingleDeviceMultipleKernelTest<TestType, AtomicOperation::kDec>(2, warp_size, cache_line_size);
 }

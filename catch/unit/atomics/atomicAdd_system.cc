@@ -24,18 +24,27 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 
-TEMPLATE_TEST_CASE("Unit_atomicAdd_system_Positive_Host_Coherency", "", int, unsigned int,
-                   unsigned long, unsigned long long, float, double) {
-  HostCoherencyTest<TestType, AtomicOp::kAddSystem>();
+TEMPLATE_TEST_CASE("Unit_atomicAdd_system_Positive_Peer_GPUs_Same_Address", "", int, unsigned int,
+                   unsigned long long, float, double) {
+  MultipleDeviceMultipleKernelTest<TestType, AtomicOperation::kAddSystem>(2, 2, 1,
+                                                                          sizeof(TestType));
 }
 
-TEMPLATE_TEST_CASE("Unit_atomicAdd_system_Positive_Peer_Device_Coherency", "", int, unsigned int,
-                   unsigned long, unsigned long long, float, double) {
-  const auto device_count = HipTest::getDeviceCount();
-  if (device_count < 2) {
-    HipTest::HIP_SKIP_TEST("Two or more devices are required");
-    return;
-  }
+TEMPLATE_TEST_CASE("Unit_atomicAdd_system_Positive_Peer_GPUs_Adjacent_Addresses", "", int,
+                   unsigned int, unsigned long long, float, double) {
+  int warp_size = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
 
-  PeerDeviceCoherencyTest<TestType, AtomicOp::kAddSystem>();
+  MultipleDeviceMultipleKernelTest<TestType, AtomicOperation::kAddSystem>(2, 2, warp_size,
+                                                                          sizeof(TestType));
+}
+
+TEMPLATE_TEST_CASE("Unit_atomicAdd_system_Positive_Peer_GPUs_Scattered_Addresses", "", int,
+                   unsigned int, unsigned long long, float, double) {
+  int warp_size = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
+  const auto cache_line_size = 128u;
+
+  MultipleDeviceMultipleKernelTest<TestType, AtomicOperation::kAddSystem>(2, 2, warp_size,
+                                                                          cache_line_size);
 }

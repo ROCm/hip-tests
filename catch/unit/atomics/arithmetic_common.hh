@@ -28,70 +28,84 @@ THE SOFTWARE.
 
 namespace cg = cooperative_groups;
 
-enum class AtomicOp { kAdd = 0, kAddSystem, kSub, kSubSystem, kInc, kDec, kUnsafeAdd, kSafeAdd };
+enum class AtomicOperation {
+  kAdd = 0,
+  kAddSystem,
+  kSub,
+  kSubSystem,
+  kInc,
+  kDec,
+  kUnsafeAdd,
+  kSafeAdd,
+  kCASAdd,
+  kCASAddSystem
+};
 
 constexpr auto kIntegerTestValue = 7;
 constexpr auto kFloatingPointTestValue = 3.125;
+constexpr auto kIncDecWraparound = 1023;
 
-template <typename TestType, AtomicOp op> TestType GetTestValue() {
-  if constexpr (op == AtomicOp::kInc || op == AtomicOp::kDec) {
-    return 1;
+template <typename TestType, AtomicOperation operation>
+__host__ __device__ TestType GetTestValue() {
+  if constexpr (operation == AtomicOperation::kInc || operation == AtomicOperation::kDec) {
+    return kIncDecWraparound;
   }
 
   return std::is_floating_point_v<TestType> ? kFloatingPointTestValue : kIntegerTestValue;
 }
 
-template <typename TestType, AtomicOp op> __device__ TestType GetTestValue() {
-  if constexpr (op == AtomicOp::kInc || op == AtomicOp::kDec) {
-    return cg::this_grid().size();
-  }
+template <typename TestType> __device__ TestType CASAtomicAdd(TestType* address, TestType val) {
+  TestType old = *address, assumed;
 
-  return std::is_floating_point_v<TestType> ? kFloatingPointTestValue : kIntegerTestValue;
+  do {
+    assumed = old;
+    old = atomicCAS(address, assumed, val + assumed);
+  } while (assumed != old);
+
+  return old;
 }
 
-static std::string to_string(const LinearAllocs allocation_type) {
-  switch (allocation_type) {
-    case LinearAllocs::malloc:
-      return "host pageable";
-    case LinearAllocs::mallocAndRegister:
-      return "mapped";
-    case LinearAllocs::hipHostMalloc:
-      return "host pinned";
-    case LinearAllocs::hipMalloc:
-      return "device malloc";
-    case LinearAllocs::hipMallocManaged:
-      return "managed";
-    default:
-      return "unknown alloc type";
+template <typename TestType>
+__device__ TestType CASAtomicAddSystem(TestType* address, TestType val) {
+  TestType old = *address, assumed;
+
+  do {
+    assumed = old;
+    old = atomicCAS_system(address, assumed, val + assumed);
+  } while (assumed != old);
+
+  return old;
+}
+
+template <typename TestType, AtomicOperation operation>
+__device__ TestType PerformAtomicOperation(TestType* const mem) {
+  const auto val = GetTestValue<TestType, operation>();
+
+  if constexpr (operation == AtomicOperation::kAdd) {
+    return atomicAdd(mem, val);
+  } else if constexpr (operation == AtomicOperation::kAddSystem) {
+    return atomicAdd_system(mem, val);
+  } else if constexpr (operation == AtomicOperation::kSub) {
+    return atomicSub(mem, val);
+  } else if constexpr (operation == AtomicOperation::kSubSystem) {
+    return atomicSub_system(mem, val);
+  } else if constexpr (operation == AtomicOperation::kInc) {
+    return atomicInc(mem, val);
+  } else if constexpr (operation == AtomicOperation::kDec) {
+    return atomicDec(mem, val);
+  } else if constexpr (operation == AtomicOperation::kUnsafeAdd) {
+    return unsafeAtomicAdd(mem, val);
+  } else if constexpr (operation == AtomicOperation::kSafeAdd) {
+    return safeAtomicAdd(mem, val);
+  } else if constexpr (operation == AtomicOperation::kCASAdd) {
+    return CASAtomicAdd(mem, val);
+  } else if constexpr (operation == AtomicOperation::kCASAddSystem) {
+    return CASAtomicAddSystem(mem, val);
   }
 }
 
-template <typename TestType, AtomicOp op>
-__device__ void PerformAtomicOperation(TestType* const mem, TestType* const old_vals,
-                                       const unsigned int tid) {
-  TestType val = GetTestValue<TestType, op>();
-
-  if constexpr (op == AtomicOp::kAdd) {
-    old_vals[tid] = atomicAdd(mem, val);
-  } else if constexpr (op == AtomicOp::kAddSystem) {
-    old_vals[tid] = atomicAdd_system(mem, val);
-  } else if constexpr (op == AtomicOp::kSub) {
-    old_vals[tid] = atomicSub(mem, val);
-  } else if constexpr (op == AtomicOp::kSubSystem) {
-    old_vals[tid] = atomicSub_system(mem, val);
-  } else if constexpr (op == AtomicOp::kInc) {
-    old_vals[tid] = atomicInc(mem, val);
-  } else if constexpr (op == AtomicOp::kDec) {
-    old_vals[tid] = atomicDec(mem, val);
-  } else if constexpr (op == AtomicOp::kUnsafeAdd) {
-    old_vals[tid] = unsafeAtomicAdd(mem, val);
-  } else if constexpr (op == AtomicOp::kSafeAdd) {
-    old_vals[tid] = safeAtomicAdd(mem, val);
-  }
-}
-
-template <typename TestType, AtomicOp op, bool use_shared_mem>
-__global__ void AtomicTestKernel(TestType* const global_mem, TestType* const old_vals) {
+template <typename TestType, AtomicOperation operation, bool use_shared_mem>
+__global__ void TestKernel(TestType* const global_mem, TestType* const old_vals) {
   __shared__ TestType shared_mem;
 
   const auto tid = cg::this_grid().thread_rank();
@@ -103,7 +117,7 @@ __global__ void AtomicTestKernel(TestType* const global_mem, TestType* const old
     __syncthreads();
   }
 
-  PerformAtomicOperation<TestType, op>(mem, old_vals, tid);
+  old_vals[tid] = PerformAtomicOperation<TestType, operation>(mem);
 
   if constexpr (use_shared_mem) {
     __syncthreads();
@@ -112,40 +126,15 @@ __global__ void AtomicTestKernel(TestType* const global_mem, TestType* const old
 }
 
 template <typename TestType>
-__device__ TestType* PitchedOffset(TestType* const ptr, const unsigned int pitch,
-                                   const unsigned int idx) {
+__host__ __device__ TestType* PitchedOffset(TestType* const ptr, const unsigned int pitch,
+                                            const unsigned int idx) {
   const auto byte_ptr = reinterpret_cast<uint8_t*>(ptr);
   return reinterpret_cast<TestType*>(byte_ptr + idx * pitch);
 }
 
-template <typename TestType, AtomicOp op>
-__device__ void PerformPitchedAtomicOperation(TestType* const mem, TestType* const old_vals,
-                                              const unsigned int width, const unsigned int pitch,
-                                              const unsigned int tid) {
-  TestType val = GetTestValue<TestType, op>();
-
-  if constexpr (op == AtomicOp::kAdd) {
-    old_vals[tid] = atomicAdd(PitchedOffset(mem, pitch, tid % width), val);
-  } else if constexpr (op == AtomicOp::kAddSystem) {
-    old_vals[tid] = atomicAdd_system(PitchedOffset(mem, pitch, tid % width), val);
-  } else if constexpr (op == AtomicOp::kSub) {
-    old_vals[tid] = atomicSub(PitchedOffset(mem, pitch, tid % width), val);
-  } else if constexpr (op == AtomicOp::kSubSystem) {
-    old_vals[tid] = atomicSub_system(PitchedOffset(mem, pitch, tid % width), val);
-  } else if constexpr (op == AtomicOp::kInc) {
-    old_vals[tid] = atomicInc(PitchedOffset(mem, pitch, tid % width), val);
-  } else if constexpr (op == AtomicOp::kDec) {
-    old_vals[tid] = atomicDec(PitchedOffset(mem, pitch, tid % width), val);
-  } else if constexpr (op == AtomicOp::kUnsafeAdd) {
-    old_vals[tid] = unsafeAtomicAdd(PitchedOffset(mem, pitch, tid % width), val);
-  } else if constexpr (op == AtomicOp::kSafeAdd) {
-    old_vals[tid] = safeAtomicAdd(PitchedOffset(mem, pitch, tid % width), val);
-  }
-}
-
-template <typename TestType, AtomicOp op, bool use_shared_mem>
-__global__ void MultiDestAtomicTestKernel(TestType* const global_mem, TestType* const old_vals,
-                                          const unsigned int width, const unsigned pitch) {
+template <typename TestType, AtomicOperation operation, bool use_shared_mem>
+__global__ void TestKernel(TestType* const global_mem, TestType* const old_vals,
+                           const unsigned int width, const unsigned pitch) {
   extern __shared__ uint8_t shared_mem[];
 
   const auto tid = cg::this_grid().thread_rank();
@@ -160,7 +149,8 @@ __global__ void MultiDestAtomicTestKernel(TestType* const global_mem, TestType* 
     __syncthreads();
   }
 
-  PerformPitchedAtomicOperation<TestType, op>(mem, old_vals, width, pitch, tid);
+  old_vals[tid] =
+      PerformAtomicOperation<TestType, operation>(PitchedOffset(mem, pitch, tid % width));
 
   if constexpr (use_shared_mem) {
     __syncthreads();
@@ -171,304 +161,221 @@ __global__ void MultiDestAtomicTestKernel(TestType* const global_mem, TestType* 
   }
 }
 
-template <typename TestType, AtomicOp op>
-void InitializeMemory(TestType* const mem, const unsigned int width, const unsigned int pitch,
-                      const unsigned int thread_count) {
-  TestType val = GetTestValue<TestType, op>();
+struct TestParams {
+  auto ThreadCount() const {
+    return blocks.x * blocks.y * blocks.z * threads.x * threads.y * threads.z;
+  }
 
-  if constexpr (op == AtomicOp::kAdd || op == AtomicOp::kAddSystem || op == AtomicOp::kInc) {
-    HIP_CHECK(hipMemset(mem, 0, width * pitch));
-  } else if constexpr (op == AtomicOp::kSub || op == AtomicOp::kSubSystem || op == AtomicOp::kDec) {
-    HIP_CHECK(hipMemset2D(mem, pitch, thread_count / width * val, sizeof(TestType), width));
+  dim3 blocks;
+  dim3 threads;
+  unsigned int num_devices = 1u;
+  unsigned int kernel_count = 1u;
+  unsigned int width = 1u;
+  unsigned int pitch = 0u;
+  unsigned int host_thread_count = 0u;
+  LinearAllocs alloc_type;
+};
+
+template <typename TestType, AtomicOperation operation>
+std::tuple<std::vector<TestType>, std::vector<TestType>> TestKernelHostRef(const TestParams& p) {
+  const auto val = GetTestValue<TestType, operation>();
+
+  const auto thread_count = p.num_devices * p.kernel_count * p.ThreadCount();
+
+  std::vector<TestType> res_vals(p.width);
+  std::vector<TestType> old_vals;
+  old_vals.reserve(thread_count);
+
+  for (auto tid = 0u; tid < thread_count; ++tid) {
+    auto& res = res_vals[tid % p.width];
+    old_vals.push_back(res);
+
+    if constexpr (operation == AtomicOperation::kAdd || operation == AtomicOperation::kAddSystem ||
+                  operation == AtomicOperation::kUnsafeAdd ||
+                  operation == AtomicOperation::kSafeAdd || operation == AtomicOperation::kCASAdd ||
+                  operation == AtomicOperation::kCASAddSystem) {
+      res = res + val;
+    } else if constexpr (operation == AtomicOperation::kSub ||
+                         operation == AtomicOperation::kSubSystem) {
+      res = res - val;
+    } else if constexpr (operation == AtomicOperation::kInc) {
+      res = (res >= val) ? 0 : res + 1;
+    } else if constexpr (operation == AtomicOperation::kDec) {
+      res = ((res == 0) || (res > val)) ? val : res - 1;
+    }
+  }
+
+  return {res_vals, old_vals};
+}
+
+template <typename TestType, AtomicOperation operation>
+void Verify(const TestParams& p, std::vector<TestType>& res_vals, std::vector<TestType>& old_vals) {
+  auto [expected_res_vals, expected_old_vals] = TestKernelHostRef<TestType, operation>(p);
+
+  for (auto i = 0u; i < res_vals.size(); ++i) {
+    INFO("Results index: " << i);
+    REQUIRE(expected_res_vals[i] == res_vals[i]);
+  }
+
+  std::sort(begin(old_vals), end(old_vals));
+  std::sort(begin(expected_old_vals), end(expected_old_vals));
+  for (auto i = 0u; i < old_vals.size(); ++i) {
+    INFO("Old values index: " << i);
+    REQUIRE(expected_old_vals[i] == old_vals[i]);
   }
 }
 
-template <typename TestType, AtomicOp op>
-void VerifyResult(TestType* const result, const unsigned int width,
-                  const unsigned int thread_count) {
-  TestType val = GetTestValue<TestType, op>();
-
-  if constexpr (op == AtomicOp::kAdd || op == AtomicOp::kAddSystem || op == AtomicOp::kInc) {
-    for (auto i = 0u; i < width; ++i) REQUIRE(thread_count / width * val == result[i]);
-  } else if constexpr (op == AtomicOp::kSub || op == AtomicOp::kSubSystem || op == AtomicOp::kDec) {
-    for (auto i = 0u; i < width; ++i) REQUIRE(0 == result[i]);
-  }
+template <typename TestType, AtomicOperation operation, bool use_shared_mem>
+void LaunchKernel(const TestParams& p, hipStream_t stream, TestType* const mem_ptr,
+                  TestType* const old_vals) {
+  const auto shared_mem_size = use_shared_mem ? p.width * p.pitch : 0u;
+  if (p.width == 1 && p.pitch == sizeof(TestType))
+    TestKernel<TestType, operation, use_shared_mem>
+        <<<p.blocks, p.threads, shared_mem_size, stream>>>(mem_ptr, old_vals);
+  else
+    TestKernel<TestType, operation, use_shared_mem>
+        <<<p.blocks, p.threads, shared_mem_size, stream>>>(mem_ptr, old_vals, p.width, p.pitch);
 }
 
-template <typename TestType, AtomicOp op>
-void VerifyOldValues(std::vector<TestType>& old_vals, const unsigned int width) {
-  TestType val = GetTestValue<TestType, op>();
-
-  std::sort(old_vals.begin(), old_vals.end());
-  for (auto i = 0u, j = 0u; i < old_vals.size(); ++i, j += (i % width == 0)) {
-    REQUIRE(j * val == old_vals[i]);
-  }
-}
-
-template <typename TestType, AtomicOp op, bool use_shared_mem>
-void SameAddressTestImpl(const dim3 blocks, const dim3 threads, const LinearAllocs alloc_type) {
+template <typename TestType, AtomicOperation operation, bool use_shared_mem>
+void TestCore(const TestParams& p) {
   const unsigned int flags =
-      alloc_type == LinearAllocs::mallocAndRegister ? hipHostRegisterMapped : 0u;
-  LinearAllocGuard<TestType> mem_dev(alloc_type, sizeof(TestType), flags);
-  TestType result;
+      p.alloc_type == LinearAllocs::mallocAndRegister ? hipHostRegisterMapped : 0u;
 
-  const auto thread_count = blocks.x * blocks.y * blocks.z * threads.x * threads.y * threads.z;
-  const auto old_vals_alloc_size = thread_count * sizeof(TestType);
-  LinearAllocGuard<TestType> old_vals_dev(LinearAllocs::hipMalloc, old_vals_alloc_size);
-  std::vector<TestType> old_vals(thread_count);
-
-  TestType* ptr = alloc_type == LinearAllocs::hipMalloc ? mem_dev.ptr() : mem_dev.host_ptr();
-  InitializeMemory<TestType, op>(ptr, 1, sizeof(TestType), thread_count);
-
-  AtomicTestKernel<TestType, op, use_shared_mem>
-      <<<blocks, threads>>>(mem_dev.ptr(), old_vals_dev.ptr());
-  HIP_CHECK(hipGetLastError());
-
-  HIP_CHECK(hipMemcpy(&result, ptr, sizeof(TestType), hipMemcpyDeviceToHost));
-
-  VerifyResult<TestType, op>(&result, 1, thread_count);
-
-  HIP_CHECK(
-      hipMemcpy(old_vals.data(), old_vals_dev.ptr(), old_vals_alloc_size, hipMemcpyDeviceToHost));
-
-  VerifyOldValues<TestType, op>(old_vals, 1);
-}
-
-template <typename TestType, AtomicOp op> void SameAddressTest() {
-  const auto threads = GENERATE(dim3(1024));
-
-  SECTION("Global memory") {
-    constexpr auto blocks = dim3(3);
-    using LA = LinearAllocs;
-    const auto alloc_type =
-        GENERATE(LA::hipMalloc, LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister);
-    SameAddressTestImpl<TestType, op, false>(blocks, threads, alloc_type);
+  const auto old_vals_alloc_size = p.kernel_count * p.ThreadCount() * sizeof(TestType);
+  std::vector<LinearAllocGuard<TestType>> old_vals_devs;
+  std::vector<StreamGuard> streams;
+  for (auto i = 0; i < p.num_devices; ++i) {
+    HIP_CHECK(hipSetDevice(i));
+    old_vals_devs.emplace_back(LinearAllocs::hipMalloc, old_vals_alloc_size);
+    for (auto j = 0; j < p.kernel_count; ++j) {
+      streams.emplace_back(Streams::created);
+    }
   }
 
-  SECTION("Shared memory") {
-    constexpr auto blocks = dim3(1);
-    SameAddressTestImpl<TestType, op, true>(blocks, threads, LinearAllocs::hipMalloc);
-  }
-}
+  const auto mem_alloc_size = p.width * p.pitch;
+  LinearAllocGuard<TestType> mem_dev(p.alloc_type, mem_alloc_size);
 
-template <typename TestType, AtomicOp op, bool use_shared_mem>
-void MultiDestWithScatterTestImpl(const dim3 blocks, const dim3 threads,
-                                  const LinearAllocs alloc_type, const unsigned int width,
-                                  const unsigned int pitch) {
-  const auto mem_alloc_size = width * pitch;
-  const unsigned int flags =
-      alloc_type == LinearAllocs::mallocAndRegister ? hipHostRegisterMapped : 0u;
-  LinearAllocGuard<TestType> mem_dev(alloc_type, mem_alloc_size, flags);
-  std::vector<TestType> result(width);
+  std::vector<TestType> old_vals(p.num_devices * p.kernel_count * p.ThreadCount());
+  std::vector<TestType> res_vals(p.width);
 
-  const auto thread_count = blocks.x * blocks.y * blocks.z * threads.x * threads.y * threads.z;
-  const auto old_vals_alloc_size = thread_count * sizeof(TestType);
-  LinearAllocGuard<TestType> old_vals_dev(LinearAllocs::hipMalloc, old_vals_alloc_size);
-  std::vector<TestType> old_vals(thread_count);
+  TestType* const mem_ptr =
+      p.alloc_type == LinearAllocs::hipMalloc ? mem_dev.ptr() : mem_dev.host_ptr();
 
-  TestType* ptr = alloc_type == LinearAllocs::hipMalloc ? mem_dev.ptr() : mem_dev.host_ptr();
-  InitializeMemory<TestType, op>(ptr, width, pitch, thread_count);
+  HIP_CHECK(hipMemset(mem_ptr, 0, mem_alloc_size));
 
   const auto shared_mem_size = use_shared_mem ? mem_alloc_size : 0u;
-  MultiDestAtomicTestKernel<TestType, op, use_shared_mem>
-      <<<blocks, threads, shared_mem_size>>>(mem_dev.ptr(), old_vals_dev.ptr(), width, pitch);
-  HIP_CHECK(hipGetLastError());
+  for (auto i = 0u; i < p.num_devices; ++i) {
+    for (auto j = 0u; j < p.kernel_count; ++j) {
+      const auto& stream = streams[i * p.kernel_count + j].stream();
+      const auto old_vals = old_vals_devs[i].ptr() + j * p.ThreadCount();
+      LaunchKernel<TestType, operation, use_shared_mem>(p, stream, mem_dev.ptr(), old_vals);
+    }
+  }
 
-  HIP_CHECK(hipMemcpy2D(result.data(), sizeof(TestType), ptr, pitch, sizeof(TestType), width,
-                        hipMemcpyDeviceToHost));
+  for (auto i = 0u; i < p.num_devices; ++i) {
+    const auto device_offset = i * p.kernel_count * p.ThreadCount();
+    HIP_CHECK(hipMemcpy(old_vals.data() + device_offset, old_vals_devs[i].ptr(),
+                        old_vals_alloc_size, hipMemcpyDeviceToHost));
+  }
+  HIP_CHECK(hipMemcpy2D(res_vals.data(), sizeof(TestType), mem_ptr, p.pitch, sizeof(TestType),
+                        p.width, hipMemcpyDeviceToHost));
 
-  VerifyResult<TestType, op>(result.data(), width, thread_count);
-
-  HIP_CHECK(
-      hipMemcpy(old_vals.data(), old_vals_dev.ptr(), old_vals_alloc_size, hipMemcpyDeviceToHost));
-
-  VerifyOldValues<TestType, op>(old_vals, width);
+  Verify<TestType, operation>(p, res_vals, old_vals);
 }
 
-template <typename TestType, AtomicOp op>
-void MultiDestWithScatterTest(const unsigned int width, const unsigned int pitch) {
-  const auto threads = GENERATE(dim3(1024));
+template <typename TestType, AtomicOperation operation>
+void SingleDeviceSingleKernelTest(const unsigned int width, const unsigned int pitch) {
+  TestParams params;
+  params.num_devices = 1;
+  params.kernel_count = 1;
+  params.threads = GENERATE(dim3(1023));
+  params.width = width;
+  params.pitch = pitch;
 
   SECTION("Global memory") {
-    constexpr auto blocks = dim3(3);
+    params.blocks = GENERATE(dim3(3));
     using LA = LinearAllocs;
     for (const auto alloc_type :
          {LA::hipMalloc, LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister}) {
+      params.alloc_type = alloc_type;
       DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
-        MultiDestWithScatterTestImpl<TestType, op, false>(blocks, threads, alloc_type, width,
-                                                          pitch);
+        TestCore<TestType, operation, false>(params);
       }
     }
   }
 
   SECTION("Shared memory") {
-    constexpr auto blocks = dim3(1);
-    MultiDestWithScatterTestImpl<TestType, op, true>(blocks, threads, LinearAllocs::hipMalloc,
-                                                     width, pitch);
+    params.blocks = dim3(1);
+    params.alloc_type = LinearAllocs::hipMalloc;
+    TestCore<TestType, operation, true>(params);
   }
 }
 
-template <typename TestType, AtomicOp op>
-void MultiKernelTestImpl(const dim3 blocks, const dim3 threads, const LinearAllocs alloc_type) {
-  const unsigned int flags =
-      alloc_type == LinearAllocs::mallocAndRegister ? hipHostRegisterMapped : 0u;
-  LinearAllocGuard<TestType> mem_dev(alloc_type, sizeof(TestType), flags);
-  TestType result;
+template <typename TestType, AtomicOperation operation>
+void SingleDeviceMultipleKernelTest(const unsigned int kernel_count, const unsigned int width,
+                                    const unsigned int pitch) {
+  int concurrent_kernels = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&concurrent_kernels, hipDeviceAttributeConcurrentKernels, 0));
+  if (!concurrent_kernels) {
+    HipTest::HIP_SKIP_TEST("Test requires support for concurrent kernel execution");
+    return;
+  }
 
-  const auto thread_count = blocks.x * blocks.y * blocks.z * threads.x * threads.y * threads.z;
-  const auto old_vals_alloc_size = thread_count * sizeof(TestType) * 2;
-  LinearAllocGuard<TestType> old_vals_dev(LinearAllocs::hipMalloc, old_vals_alloc_size);
-  std::vector<TestType> old_vals(thread_count * 2);
+  TestParams params;
+  params.num_devices = 1;
+  params.kernel_count = kernel_count;
+  params.blocks = GENERATE(dim3(3));
+  params.threads = GENERATE(dim3(1023));
+  params.width = width;
+  params.pitch = pitch;
 
-  TestType* ptr = alloc_type == LinearAllocs::hipMalloc ? mem_dev.ptr() : mem_dev.host_ptr();
-  InitializeMemory<TestType, op>(ptr, 1, sizeof(TestType), thread_count * 2);
-
-  StreamGuard stream1(Streams::created);
-  StreamGuard stream2(Streams::created);
-
-  AtomicTestKernel<TestType, op, false>
-      <<<blocks, threads, 0, stream1.stream()>>>(mem_dev.ptr(), old_vals_dev.ptr());
-  HIP_CHECK(hipGetLastError());
-
-  AtomicTestKernel<TestType, op, false>
-      <<<blocks, threads, 0, stream2.stream()>>>(mem_dev.ptr(), old_vals_dev.ptr() + thread_count);
-  HIP_CHECK(hipGetLastError());
-
-  HIP_CHECK(hipStreamSynchronize(stream1.stream()));
-  HIP_CHECK(hipStreamSynchronize(stream2.stream()));
-
-  HIP_CHECK(hipMemcpy(&result, ptr, sizeof(TestType), hipMemcpyDeviceToHost));
-
-  VerifyResult<TestType, op>(ptr, 1, thread_count * 2);
-
-  HIP_CHECK(
-      hipMemcpy(old_vals.data(), old_vals_dev.ptr(), old_vals_alloc_size, hipMemcpyDeviceToHost));
-
-  VerifyOldValues<TestType, op>(old_vals, 1);
-}
-
-template <typename TestType, AtomicOp op> void MultiKernelTest() {
-  const auto threads = GENERATE(dim3(1024));
-
-  constexpr auto blocks = dim3(3);
   using LA = LinearAllocs;
   for (const auto alloc_type :
        {LA::hipMalloc, LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister}) {
+    params.alloc_type = alloc_type;
     DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
-      MultiKernelTestImpl<TestType, op>(blocks, threads, alloc_type);
+      TestCore<TestType, operation, false>(params);
     }
   }
 }
 
-template <typename TestType, AtomicOp op>
-void PerformAtomicOperationHost(TestType* const mem, TestType* old_vals, const unsigned int tid) {
-  TestType val = GetTestValue<TestType, op>();
-
-  if constexpr (op == AtomicOp::kAddSystem) {
-    old_vals[tid] = __atomic_fetch_add(mem, val, __ATOMIC_RELAXED);
-  } else if constexpr (op == AtomicOp::kSubSystem) {
-    old_vals[tid] = __atomic_fetch_sub(mem, val, __ATOMIC_RELAXED);
-  }
-}
-
-template <typename TestType, AtomicOp op>
-void AtomicTestHost(const unsigned int thread_count, TestType* const mem,
-                    TestType* const old_vals) {
-  for (auto tid = 0; tid < thread_count; ++tid) {
-    PerformAtomicOperationHost<TestType, op>(mem, old_vals, tid + thread_count);
-  }
-}
-
-template <typename TestType, AtomicOp op>
-void HostCoherencyTestImpl(const dim3 blocks, const dim3 threads, const LinearAllocs alloc_type) {
-  const unsigned int flags =
-      alloc_type == LinearAllocs::mallocAndRegister ? hipHostRegisterMapped : 0u;
-  LinearAllocGuard<TestType> mem_dev(alloc_type, sizeof(TestType), flags);
-
-  const auto thread_count = blocks.x * blocks.y * blocks.z * threads.x * threads.y * threads.z;
-  const auto old_vals_alloc_size = thread_count * sizeof(TestType);
-  LinearAllocGuard<TestType> old_vals_dev(LinearAllocs::hipMalloc, old_vals_alloc_size);
-  std::vector<TestType> old_vals(thread_count * 2);
-
-  InitializeMemory<TestType, op>(mem_dev.host_ptr(), 1, sizeof(TestType), thread_count * 2);
-
-  AtomicTestKernel<TestType, op, false><<<blocks, threads>>>(mem_dev.ptr(), old_vals_dev.ptr());
-  HIP_CHECK(hipGetLastError());
-
-  AtomicTestHost<TestType, op>(thread_count, mem_dev.host_ptr(), old_vals.data());
-  HIP_CHECK(hipDeviceSynchronize());
-
-  VerifyResult<TestType, op>(mem_dev.host_ptr(), 1, thread_count * 2);
-
-  HIP_CHECK(
-      hipMemcpy(old_vals.data(), old_vals_dev.ptr(), old_vals_alloc_size, hipMemcpyDeviceToHost));
-
-  VerifyOldValues<TestType, op>(old_vals, 1);
-}
-
-template <typename TestType, AtomicOp op> void HostCoherencyTest() {
-  const auto threads = GENERATE(dim3(1024));
-
-  constexpr auto blocks = dim3(2);
-  using LA = LinearAllocs;
-  for (const auto alloc_type : {LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister}) {
-    DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
-      HostCoherencyTestImpl<TestType, op>(blocks, threads, alloc_type);
+template <typename TestType, AtomicOperation operation>
+void MultipleDeviceMultipleKernelTest(const unsigned int num_devices,
+                                      const unsigned int kernel_count, const unsigned int width,
+                                      const unsigned int pitch) {
+  if (num_devices > 1) {
+    if (HipTest::getDeviceCount() < num_devices) {
+      std::string msg = std::to_string(num_devices) + " devices are required";
+      HipTest::HIP_SKIP_TEST(msg.c_str());
+      return;
     }
   }
-}
 
-template <typename TestType, AtomicOp op>
-void PeerDeviceCoherencyTestImpl(const dim3 blocks, const dim3 threads,
-                                 const LinearAllocs alloc_type) {
-  HIP_CHECK(hipSetDevice(0));
-
-  const unsigned int flags =
-      alloc_type == LinearAllocs::mallocAndRegister ? hipHostRegisterMapped : 0u;
-  LinearAllocGuard<TestType> mem_dev(alloc_type, sizeof(TestType), flags);
-
-  const auto thread_count = blocks.x * blocks.y * blocks.z * threads.x * threads.y * threads.z;
-  const auto old_vals_alloc_size = thread_count * sizeof(TestType);
-  std::vector<TestType> old_vals(thread_count * 2);
-
-  InitializeMemory<TestType, op>(mem_dev.host_ptr(), 1, sizeof(TestType), thread_count * 2);
-
-  HIP_CHECK(hipSetDevice(0));
-  LinearAllocGuard<TestType> old_vals_dev0(LinearAllocs::hipMalloc, old_vals_alloc_size);
-  AtomicTestKernel<TestType, op, false><<<blocks, threads>>>(mem_dev.ptr(), old_vals_dev0.ptr());
-  HIP_CHECK(hipGetLastError());
-
-  HIP_CHECK(hipSetDevice(1));
-  LinearAllocGuard<TestType> old_vals_dev1(LinearAllocs::hipMalloc, old_vals_alloc_size);
-  AtomicTestKernel<TestType, op, false><<<blocks, threads>>>(mem_dev.ptr(), old_vals_dev1.ptr());
-  HIP_CHECK(hipGetLastError());
-
-  for (auto i = 0u; i < 2; ++i) {
-    HIP_CHECK(hipSetDevice(i));
-    HIP_CHECK(hipDeviceSynchronize());
+  if (kernel_count > 1) {
+    for (auto i = 0u; i < num_devices; ++i) {
+      int concurrent_kernels = 0;
+      HIP_CHECK(hipDeviceGetAttribute(&concurrent_kernels, hipDeviceAttributeConcurrentKernels, i));
+      if (!concurrent_kernels) {
+        HipTest::HIP_SKIP_TEST("Test requires support for concurrent kernel execution");
+        return;
+      }
+    }
   }
 
-  HIP_CHECK(hipSetDevice(0));
+  TestParams params;
+  params.num_devices = num_devices;
+  params.kernel_count = kernel_count;
+  params.blocks = GENERATE(dim3(3));
+  params.threads = GENERATE(dim3(1023));
+  params.width = width;
+  params.pitch = pitch;
 
-  VerifyResult<TestType, op>(mem_dev.host_ptr(), 1, thread_count * 2);
-
-  HIP_CHECK(
-      hipMemcpy(old_vals.data(), old_vals_dev0.ptr(), old_vals_alloc_size, hipMemcpyDeviceToHost));
-
-  HIP_CHECK(hipMemcpy(old_vals.data() + thread_count, old_vals_dev1.ptr(), old_vals_alloc_size,
-                      hipMemcpyDeviceToHost));
-
-  VerifyOldValues<TestType, op>(old_vals, 1);
-}
-
-template <typename TestType, AtomicOp op> void PeerDeviceCoherencyTest() {
-  const auto threads = GENERATE(dim3(1024));
-
-  constexpr auto blocks = dim3(2);
   using LA = LinearAllocs;
   for (const auto alloc_type : {LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister}) {
+    params.alloc_type = alloc_type;
     DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
-      PeerDeviceCoherencyTestImpl<TestType, op>(blocks, threads, alloc_type);
+      TestCore<TestType, operation, false>(params);
     }
   }
 }

@@ -24,44 +24,47 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 
-TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_Positive_Same_Address", "", float, double) {
-  SingleDeviceSingleKernelTest<TestType, AtomicOperation::kUnsafeAdd>(1, sizeof(TestType));
+TEMPLATE_TEST_CASE("Unit_atomicCAS_Positive_Same_Address", "", int, unsigned int,
+                   unsigned long long, float, double) {
+  SingleDeviceSingleKernelTest<TestType, AtomicOperation::kCASAdd>(1, sizeof(TestType));
 }
 
-TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_Positive_Adjacent_Addresses", "", float, double) {
+TEMPLATE_TEST_CASE("Unit_atomicCAS_Positive_Adjacent_Addresses", "", int, unsigned int,
+                   unsigned long long, float, double) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
 
-  SingleDeviceSingleKernelTest<TestType, AtomicOperation::kUnsafeAdd>(warp_size, sizeof(TestType));
+  SingleDeviceSingleKernelTest<TestType, AtomicOperation::kCASAdd>(warp_size, sizeof(TestType));
 }
 
-TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_Positive_Scattered_Addresses", "", float, double) {
-  int warp_size = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
-  const auto cache_line_size = 128u;
-
-  SingleDeviceSingleKernelTest<TestType, AtomicOperation::kUnsafeAdd>(warp_size, cache_line_size);
-}
-
-TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_Positive_Multi_Kernel_Same_Address", "", float, double) {
-  SingleDeviceMultipleKernelTest<TestType, AtomicOperation::kUnsafeAdd>(2, 1, sizeof(TestType));
-}
-
-TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_Positive_Multi_Kernel_Adjacent_Addresses", "", float,
-                   double) {
-  int warp_size = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
-
-  SingleDeviceMultipleKernelTest<TestType, AtomicOperation::kUnsafeAdd>(2, warp_size,
-                                                                        sizeof(TestType));
-}
-
-TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_Positive_Multi_Kernel_Scattered_Addresses", "", float,
-                   double) {
+TEMPLATE_TEST_CASE("Unit_atomicCAS_Positive_Scattered_Addresses", "", int, unsigned int,
+                   unsigned long long, float, double) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  SingleDeviceMultipleKernelTest<TestType, AtomicOperation::kUnsafeAdd>(2, warp_size,
-                                                                        cache_line_size);
+  SingleDeviceSingleKernelTest<TestType, AtomicOperation::kCASAdd>(warp_size, cache_line_size);
+}
+
+TEMPLATE_TEST_CASE("Unit_atomicCAS_Positive_Multi_Kernel_Same_Address", "", int, unsigned int,
+                   unsigned long long, float, double) {
+  SingleDeviceMultipleKernelTest<TestType, AtomicOperation::kCASAdd>(2, 1, sizeof(TestType));
+}
+
+TEMPLATE_TEST_CASE("Unit_atomicCAS_Positive_Multi_Kernel_Adjacent_Addresses", "", int, unsigned int,
+                   unsigned long long, float, double) {
+  int warp_size = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
+
+  SingleDeviceMultipleKernelTest<TestType, AtomicOperation::kCASAdd>(2, warp_size,
+                                                                     sizeof(TestType));
+}
+
+TEMPLATE_TEST_CASE("Unit_atomicCAS_Positive_Multi_Kernel_Scattered_Addresses", "", int,
+                   unsigned int, unsigned long long, float, double) {
+  int warp_size = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
+  const auto cache_line_size = 128u;
+
+  SingleDeviceMultipleKernelTest<TestType, AtomicOperation::kCASAdd>(2, warp_size, cache_line_size);
 }

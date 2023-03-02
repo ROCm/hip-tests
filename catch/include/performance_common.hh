@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include <algorithm>
 #include <chrono>
 #include <memory>
+#include <numeric>
 #include <type_traits>
 #include <vector>
 

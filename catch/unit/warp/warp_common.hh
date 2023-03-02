@@ -99,7 +99,6 @@ template <typename Derived, typename T> class WarpTest {
     const auto warps_in_grid = warps_in_block_ * grid_.block_count_;
     LinearAllocGuard<uint64_t> active_masks_dev(LinearAllocs::hipMalloc,
                                                 warps_in_grid * sizeof(uint64_t));
-    hipMemset(arr_dev.ptr(), 0, alloc_size);
     active_masks_.resize(warps_in_grid);
     std::generate(active_masks_.begin(), active_masks_.end(),
                   [] { return GenerateRandomInteger(0ul, std::numeric_limits<uint64_t>().max()); });

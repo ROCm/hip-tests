@@ -20,159 +20,46 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <cmd_options.hh>
-#include <hip_test_common.hh>
-#include <resource_guards.hh>
 #include "atomicAnd_negative_kernels_rtc.hh"
+#include "bitwise_common.hh"
+#include <hip_test_common.hh>
 
-template <typename T, bool shared = false>
-__global__ void AtomicAnd(T* const addr, const T val) {
-  extern __shared__ char shmem[];
-  int tid = blockIdx.x * blockDim.x + threadIdx.x;
-
-  T* ptr = addr;
-
-  if constexpr (shared) {
-    ptr = reinterpret_cast<T*>(shmem);
-    if (tid == 0) ptr[0] = addr[0];
-    __syncthreads();
-  }
-
-  atomicAnd(ptr, val);
-
-  if constexpr (shared) {
-    __syncthreads();
-    if(tid == 0) addr[0] = ptr[0];
-  }
+TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_SameAddress", "", int, unsigned int, unsigned long long) {
+  Bitwise::SingleDeviceSingleKernelTest<TestType, Bitwise::AtomicOperation::kAnd>(1, sizeof(TestType));
 }
 
-template <typename T, bool shared = false>
-__global__ void AtomicAndMultiDest(T* const addr, const T val, const int n) {
-  extern __shared__ char shmem[];
-  int tid = blockIdx.x * blockDim.x + threadIdx.x;
-
-  T* ptr = addr;
-
-  if constexpr (shared) {
-    ptr = reinterpret_cast<T*>(shmem);
-    if (tid < n) ptr[tid] = addr[tid];
-    __syncthreads();
-  }
-
-  atomicAnd(ptr + tid % n , val - tid % n);
-
-  if constexpr (shared) {
-    __syncthreads();
-    if (tid < n) addr[tid] = ptr[tid];
-  }
-}
-
-TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_SameAddress", "", int, unsigned int,
-                   unsigned long, unsigned long long) {
-  const auto allocation_type =
-      GENERATE(LinearAllocs::hipHostMalloc, LinearAllocs::hipMalloc, LinearAllocs::hipMallocManaged,
-               LinearAllocs::mallocAndRegister);
-
-  constexpr auto kSize = sizeof(TestType);
-  constexpr TestType kMask = 0xAAAA;
-  const TestType kInitValue = std::numeric_limits<TestType>::max();
-
-  LinearAllocGuard<TestType> alloc(allocation_type, kSize);
-
-  HIP_CHECK(hipMemcpy(alloc.ptr(), &kInitValue, kSize, hipMemcpyHostToDevice));
-
-  int num_blocks, num_threads;
-
-  SECTION("device memory") {
-    num_blocks = 3, num_threads = 128;
-    HipTest::launchKernel(AtomicAnd<TestType, false>, num_blocks, num_threads, 0, nullptr,
-                          alloc.ptr(), kMask);
-  }
-
-  SECTION("shared memory") {
-    num_blocks = 1, num_threads = 256;
-    HipTest::launchKernel(AtomicAnd<TestType, true>, num_blocks, num_threads, kSize, nullptr,
-                          alloc.ptr(), kMask);
-  }
-
-  TestType res;
-  HIP_CHECK(hipMemcpy(&res, alloc.ptr(), kSize, hipMemcpyDeviceToHost));
-
-  const auto expected_res = kInitValue & kMask;
-  REQUIRE(res == expected_res);
-}
-
-TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_DifferentAddressSameWarp", "", int, unsigned int,
-                   unsigned long, unsigned long long) {
-  const auto allocation_type =
-      GENERATE(LinearAllocs::hipHostMalloc, LinearAllocs::hipMalloc, LinearAllocs::hipMallocManaged,
-               LinearAllocs::mallocAndRegister);
-
-  int warp_size;
+TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_Adjacent_Addresses", "", int, unsigned int, unsigned long long) {
+  int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
 
-  const auto kSize = sizeof(TestType) * warp_size;
-  constexpr TestType kMask = 0xAAAA;
-  const TestType kInitValue = std::numeric_limits<TestType>::max();
-
-  LinearAllocGuard<TestType> alloc(allocation_type, kSize);
-  TestType src[warp_size];
-  for (int i = 0; i < warp_size; ++i) {
-    src[i] = kInitValue;
-  }
-  HIP_CHECK(hipMemcpy(alloc.ptr(), src, kSize, hipMemcpyHostToDevice));
-
-  int num_blocks, num_threads;
-
-  SECTION("device memory") {
-    num_blocks = 3, num_threads = 128;
-    HipTest::launchKernel(AtomicAndMultiDest<TestType, false>, num_blocks, num_threads, 0, nullptr,
-                          alloc.ptr(), kMask + warp_size - 1, warp_size);
-  }
-
-  SECTION("shared memory") {
-    num_blocks = 1, num_threads = 256;
-    HipTest::launchKernel(AtomicAndMultiDest<TestType, true>, num_blocks, num_threads, kSize, nullptr,
-                          alloc.ptr(), kMask + warp_size - 1, warp_size);
-  }
-
-  TestType res[warp_size];
-  HIP_CHECK(hipMemcpy(&res, alloc.ptr(), kSize, hipMemcpyDeviceToHost));
-
-  for (int i = 0; i < warp_size; ++i) {
-    const auto expected_res = kInitValue & (kMask + warp_size - i - 1);
-    REQUIRE(res[i] == expected_res);
-  }
+  Bitwise::SingleDeviceSingleKernelTest<TestType, Bitwise::AtomicOperation::kAnd>(warp_size, sizeof(TestType));
 }
 
-TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_MultiKernel", "", int, unsigned int,
-                   unsigned long, unsigned long long) {
-  const auto allocation_type =
-      GENERATE(LinearAllocs::hipHostMalloc, LinearAllocs::hipMalloc, LinearAllocs::hipMallocManaged,
-               LinearAllocs::mallocAndRegister);
+TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_Scattered_Addresses", "", int, unsigned int, unsigned long long) {
+  int warp_size = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
+  const auto cache_line_size = 128u;
 
-  constexpr auto kSize = sizeof(TestType);
-  constexpr TestType kMask = 0xAAAA;
-  const TestType kInitValue = std::numeric_limits<TestType>::max();
+  Bitwise::SingleDeviceSingleKernelTest<TestType, Bitwise::AtomicOperation::kAnd>(warp_size, cache_line_size);
+}
 
-  LinearAllocGuard<TestType> alloc(allocation_type, kSize);
+TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_Multi_Kernel_Same_Address", "", int, unsigned int, unsigned long long) {
+  Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kAnd>(2, 1, sizeof(TestType));
+}
 
-  HIP_CHECK(hipMemcpy(alloc.ptr(), &kInitValue, kSize, hipMemcpyHostToDevice));
+TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_Multi_Kernel_Adjacent_Addresses", "", int, unsigned int, unsigned long long) {
+  int warp_size = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
 
-  StreamGuard stream1(Streams::created);
-  StreamGuard stream2(Streams::created);
+  Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kAnd>(2, warp_size, sizeof(TestType));
+}
 
-  int num_blocks = 3, num_threads = 128;
-  HipTest::launchKernel(AtomicAnd<TestType, false>, num_blocks, num_threads, 0, stream1.stream(),
-                        alloc.ptr(), kMask);
-  HipTest::launchKernel(AtomicAnd<TestType, false>, num_blocks, num_threads, 0, stream2.stream(),
-                        alloc.ptr(), kMask);
+TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_Multi_Kernel_Scattered_Addresses", "", int, unsigned int, unsigned long long) {
+  int warp_size = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
+  const auto cache_line_size = 128u;
 
-  TestType res;
-  HIP_CHECK(hipMemcpy(&res, alloc.ptr(), kSize, hipMemcpyDeviceToHost));
-
-  const auto expected_res = kInitValue & kMask;
-  REQUIRE(res == expected_res);
+  Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kAnd>(2, warp_size, cache_line_size);
 }
 
 TEST_CASE("Unit_atomicAnd_Negative_Parameters_RTC") {

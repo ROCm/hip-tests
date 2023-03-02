@@ -20,98 +20,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <cmd_options.hh>
+#include "bitwise_common.hh"
 #include <hip_test_common.hh>
-#include <resource_guards.hh>
 
-template <typename T> __global__ void AtomicAndSystem(T* const addr, const T val) {
-  atomicAnd_system(addr, val);
-}
-
-template <typename T> void AtomicAndCPU(T* const addr, const T val, int n) {
-  for (int i = 0; i < n; ++i) __sync_fetch_and_and(addr, val);
-}
-
-TEMPLATE_TEST_CASE("Unit_atomicAnd_system_Positive_CPU", "", int, unsigned int, unsigned long,
+TEMPLATE_TEST_CASE("Unit_atomicAnd_system_Positive_Peer_GPUs_Same_Address", "", int, unsigned int,
                    unsigned long long) {
-  const auto allocation_type = GENERATE(LinearAllocs::hipHostMalloc, LinearAllocs::hipMallocManaged,
-                                        LinearAllocs::mallocAndRegister);
-
-  constexpr auto kSize = sizeof(TestType);
-  constexpr TestType kMask = 0xAAAA;
-  const TestType kInitValue = std::numeric_limits<TestType>::max();
-
-  LinearAllocGuard<TestType> alloc(allocation_type, kSize);
-
-  HIP_CHECK(hipMemcpy(alloc.ptr(), &kInitValue, kSize, hipMemcpyHostToDevice));
-
-  int num_blocks = 3, num_threads = 128;
-  HipTest::launchKernel(AtomicAndSystem<TestType>, num_blocks, num_threads, 0, nullptr, alloc.ptr(),
-                        kMask);
-  AtomicAndCPU(alloc.host_ptr(), kMask, num_blocks * num_threads);
-
-  HIP_CHECK(hipDeviceSynchronize());
-
-  auto res = *alloc.host_ptr();
-
-  const auto expected_res = kInitValue & kMask;
-  REQUIRE(res == expected_res);
+  Bitwise::MultipleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kAndSystem>(2, 2, 1,
+                                                                          sizeof(TestType));
 }
 
-TEMPLATE_TEST_CASE("Unit_atomicAnd_system_Positive_PeerGPU", "", int, unsigned int, unsigned long,
-                   unsigned long long) {
-  const auto device_count = HipTest::getDeviceCount();
-  if (device_count < 2) {
-    HipTest::HIP_SKIP_TEST("Two or more GPUs are required");
-    return;
-  }
+TEMPLATE_TEST_CASE("Unit_atomicAnd_system_Positive_Peer_GPUs_Adjacent_Addresses", "", int,
+                   unsigned int, unsigned long long) {
+  int warp_size = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
 
-  // Enable peer access between all pairs of devices to avoid Memory access fault by GPU node.
-  for (int i = 0; i < device_count; ++i) {
-    HIP_CHECK(hipSetDevice(i));
-    for (int j = 0; j < device_count; ++j) {
-      if (i == j) continue;
-      int can_access_peer = 0;
-      HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, i, j));
-      if (!can_access_peer) {
-        INFO("Peer access cannot be enabled between devices " << i << " " << j);
-        REQUIRE(can_access_peer);
-      }
-      HIP_CHECK(hipDeviceEnablePeerAccess(j, 0));
-    }
-  }
+  Bitwise::MultipleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kAndSystem>(2, 2, warp_size,
+                                                                          sizeof(TestType));
+}
 
-  const auto allocation_type =
-      GENERATE(LinearAllocs::hipHostMalloc, LinearAllocs::hipMalloc, LinearAllocs::hipMallocManaged,
-               LinearAllocs::mallocAndRegister);
+TEMPLATE_TEST_CASE("Unit_atomicAnd_system_Positive_Peer_GPUs_Scattered_Addresses", "", int,
+                   unsigned int, unsigned long long) {
+  int warp_size = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
+  const auto cache_line_size = 128u;
 
-  constexpr auto kSize = sizeof(TestType);
-  constexpr TestType kMask = 0xAAAA;
-  const TestType kInitValue = std::numeric_limits<TestType>::max();
-
-  HIP_CHECK(hipSetDevice(0));
-
-  LinearAllocGuard<TestType> alloc(allocation_type, kSize);
-
-  HIP_CHECK(hipMemcpy(alloc.ptr(), &kInitValue, kSize, hipMemcpyHostToDevice));
-
-  int num_blocks = 3, num_threads = 128;
-  for (int i = 0; i < device_count; ++i) {
-    HIP_CHECK(hipSetDevice(i));
-    HipTest::launchKernel(AtomicAndSystem<TestType>, num_blocks, num_threads, 0, nullptr,
-                          alloc.ptr(), kMask);
-  }
-
-  for (int i = 0; i < device_count; ++i) {
-    HIP_CHECK(hipSetDevice(i));
-    HIP_CHECK(hipDeviceSynchronize());
-  }
-
-  HIP_CHECK(hipSetDevice(0));
-
-  TestType res;
-  HIP_CHECK(hipMemcpy(&res, alloc.ptr(), kSize, hipMemcpyDeviceToHost));
-
-  const auto expected_res = kInitValue & kMask;
-  REQUIRE(res == expected_res);
+  Bitwise::MultipleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kAndSystem>(2, 2, warp_size,
+                                                                          cache_line_size);
 }

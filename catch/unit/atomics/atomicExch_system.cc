@@ -22,45 +22,63 @@ THE SOFTWARE.
 
 #include "atomic_exch_common.hh"
 
-TEMPLATE_TEST_CASE("Unit_atomicExch_system_Positive_Peer_GPUs_Same_Address", "", int, unsigned int,
+TEMPLATE_TEST_CASE("Unit_atomicExch_system_Positive_Peer_GPUs", "", int, unsigned int,
                    unsigned long long, float) {
-  AtomicExchMultipleDeviceMultipleKernelTest<TestType>(2, 2, 1, sizeof(TestType));
-}
-
-TEMPLATE_TEST_CASE("Unit_atomicExch_system_Positive_Peer_GPUs_Adjacent_Addresses", "", int,
-                   unsigned int, unsigned long long, float) {
-  int warp_size = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
-
-  AtomicExchMultipleDeviceMultipleKernelTest<TestType>(2, 2, warp_size, sizeof(TestType));
-}
-
-TEMPLATE_TEST_CASE("Unit_atomicExch_system_Positive_Peer_GPUs_Scattered_Addresses", "", int,
-                   unsigned int, unsigned long long, float) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  AtomicExchMultipleDeviceMultipleKernelTest<TestType>(2, 2, warp_size, cache_line_size);
+  SECTION("Same address") {
+    AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(2, 2, 1, sizeof(TestType));
+  }
+
+  SECTION("Adjacent addresses") {
+    AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(2, 2, warp_size, sizeof(TestType));
+  }
+
+  SECTION("Scattered addresses") {
+    AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(2, 2, warp_size, cache_line_size);
+  }
 }
 
-TEMPLATE_TEST_CASE("Bla", "", int/*, unsigned int,
-                   unsigned long long, float*/) {
-  AtomicExchParams params;
-  params.num_devices = 2;
-  params.kernel_count = 2;
-  params.blocks = dim3(2);
-  params.threads = dim3(10);
-  params.width = 1;
-  params.pitch = sizeof(TestType);
-  params.host_thread_count = 5;
+TEMPLATE_TEST_CASE("Unit_atomicExch_system_Positive_Host_And_GPU", "", int, unsigned int,
+                   unsigned long long, float) {
+  int warp_size = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
+  const auto cache_line_size = 128u;
 
-  using LA = LinearAllocs;
-  for (const auto alloc_type :
-       {/*LA::hipHostMalloc, */ LA::hipMallocManaged /*, LA::mallocAndRegister*/}) {
-    params.alloc_type = alloc_type;
-    DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
-      AtomicExchWithHost<TestType, false, AtomicScopes::system>(params);
-    }
+  SECTION("Same address") {
+    AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(1, 1, 1, sizeof(TestType), 4);
+  }
+
+  SECTION("Adjacent addresses") {
+    AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(1, 1, warp_size, sizeof(TestType),
+                                                                4);
+  }
+
+  SECTION("Scattered addresses") {
+    AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(1, 1, warp_size, cache_line_size,
+                                                                4);
+  }
+}
+
+TEMPLATE_TEST_CASE("Unit_atomicExch_system_Positive_Host_And_Peer_GPUs", "", int, unsigned int,
+                   unsigned long long, float) {
+  int warp_size = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
+  const auto cache_line_size = 128u;
+
+  SECTION("Same address") {
+    AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(2, 2, 1, sizeof(TestType), 4);
+  }
+
+  SECTION("Adjacent addresses") {
+    AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(2, 2, warp_size, sizeof(TestType),
+                                                                4);
+  }
+
+  SECTION("Scattered addresses") {
+    AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(2, 2, warp_size, cache_line_size,
+                                                                4);
   }
 }

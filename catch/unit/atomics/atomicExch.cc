@@ -22,57 +22,51 @@ THE SOFTWARE.
 
 #include "atomic_exch_common.hh"
 
-TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Same_Address", "", int, unsigned int,
+TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Same_Address_Compile_Time", "", int, unsigned int,
                    unsigned long long, float) {
   AtomicExchSameAddressTest<TestType, AtomicScopes::device>();
 }
 
 
-TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Same_Address_Runtime", "", int, unsigned int,
-                   unsigned long long, float) {
-  AtomicExchSingleDeviceSingleKernelTest<TestType, AtomicScopes::device>(1, sizeof(TestType));
-}
-
-TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Adjacent_Addresses", "", int, unsigned int,
-                   unsigned long long, float) {
-  int warp_size = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
-
-  AtomicExchSingleDeviceSingleKernelTest<TestType, AtomicScopes::device>(warp_size,
-                                                                         sizeof(TestType));
-}
-
-TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Scattered_Addresses", "", int, unsigned int,
-                   unsigned long long, float) {
+TEMPLATE_TEST_CASE("Unit_atomicExch_Positive", "", int, unsigned int, unsigned long long, float) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  AtomicExchSingleDeviceSingleKernelTest<TestType, AtomicScopes::device>(warp_size,
-                                                                         cache_line_size);
-}
+  SECTION("Same address") {
+    AtomicExchSingleDeviceSingleKernelTest<TestType, AtomicScopes::device>(1, sizeof(TestType));
+  }
 
-
-TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Multi_Kernel_Same_Address_Runtime", "", int,
-                   unsigned int, unsigned long long, float) {
-  AtomicExchSingleDeviceMultipleKernelTest<TestType, AtomicScopes::device>(2, 1, sizeof(TestType));
-}
-
-TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Multi_Kernel_Adjacent_Addresses", "", int,
-                   unsigned int, unsigned long long, float) {
-  int warp_size = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
-
-  AtomicExchSingleDeviceMultipleKernelTest<TestType, AtomicScopes::device>(2, warp_size,
+  SECTION("Adjacent addresses") {
+    AtomicExchSingleDeviceSingleKernelTest<TestType, AtomicScopes::device>(warp_size,
                                                                            sizeof(TestType));
+  }
+
+  SECTION("Scattered addresses") {
+    AtomicExchSingleDeviceSingleKernelTest<TestType, AtomicScopes::device>(warp_size,
+                                                                           cache_line_size);
+  }
 }
 
-TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Multi_Kernel_Scattered_Addresses", "", int,
-                   unsigned int, unsigned long long, float) {
+
+TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Multi_Kernel", "", int, unsigned int,
+                   unsigned long long, float) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  AtomicExchSingleDeviceMultipleKernelTest<TestType, AtomicScopes::device>(2, warp_size,
-                                                                           cache_line_size);
+  SECTION("Same address") {
+    AtomicExchSingleDeviceMultipleKernelTest<TestType, AtomicScopes::device>(2, 1,
+                                                                             sizeof(TestType));
+  }
+
+  SECTION("Adjacent addresses") {
+    AtomicExchSingleDeviceMultipleKernelTest<TestType, AtomicScopes::device>(2, warp_size,
+                                                                             sizeof(TestType));
+  }
+
+  SECTION("Scattered addresses") {
+    AtomicExchSingleDeviceMultipleKernelTest<TestType, AtomicScopes::device>(2, warp_size,
+                                                                             cache_line_size);
+  }
 }

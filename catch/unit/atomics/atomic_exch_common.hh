@@ -157,88 +157,125 @@ struct AtomicExchParams {
   LinearAllocs alloc_type;
 };
 
-template <typename T>
-void HostAtomicExchange(const unsigned int iterations, T* mem, T* const old_vals,
-                        const unsigned int width, const unsigned pitch, T base_val) {
-  for (auto i = 0u; i < iterations; ++i) {
-    old_vals[i] = __atomic_exchange_n(pitched_offset(mem, pitch, i % width),
-                                      base_val + static_cast<T>(i), __ATOMIC_RELAXED);
+
+template <typename Derived, typename T, bool use_shared_mem, AtomicScopes scope>
+class AtomicExchCRTP {
+ public:
+  void run(const AtomicExchParams& p) const {
+    const auto thread_count =
+        p.blocks.x * p.blocks.y * p.blocks.z * p.threads.x * p.threads.y * p.threads.z;
+
+    const auto old_vals_alloc_size = p.kernel_count * thread_count * sizeof(T);
+    std::vector<LinearAllocGuard<T>> old_vals_devs;
+    std::vector<StreamGuard> streams;
+    for (auto i = 0; i < p.num_devices; ++i) {
+      HIP_CHECK(hipSetDevice(i));
+      old_vals_devs.emplace_back(LinearAllocs::hipMalloc, old_vals_alloc_size);
+      for (auto j = 0; j < p.kernel_count; ++j) {
+        streams.emplace_back(Streams::created);
+      }
+    }
+
+    const auto mem_alloc_size = p.width * p.pitch;
+    LinearAllocGuard<T> mem_dev(p.alloc_type, mem_alloc_size);
+
+    const auto host_iters_per_thread =
+        std::max(p.num_devices * p.kernel_count * thread_count / 20, p.width);
+
+    std::vector<T> old_vals(p.num_devices * p.kernel_count * thread_count + p.width +
+                            p.host_thread_count * host_iters_per_thread);
+    std::iota(old_vals.begin(), old_vals.begin() + p.width, 0);
+
+    HIP_CHECK(hipMemcpy2D(mem_dev.ptr(), p.pitch, old_vals.data(), sizeof(T), sizeof(T), p.width,
+                          hipMemcpyHostToDevice));
+
+    const auto shared_mem_size = use_shared_mem ? mem_alloc_size : 0u;
+    for (auto i = 0u; i < p.num_devices; ++i) {
+      const auto device_offset = i * p.kernel_count * thread_count;
+      for (auto j = 0u; j < p.kernel_count; ++j) {
+        const auto& stream = streams[i * p.kernel_count + j].stream();
+        const auto kern_offset = j * thread_count;
+        const auto old_vals = old_vals_devs[i].ptr() + kern_offset;
+        CastToDerived().LaunchKernel(shared_mem_size, stream, mem_dev.ptr(), old_vals,
+                                     device_offset + kern_offset, p);
+      }
+    }
+
+    PerformHostAtomicExchange(p.host_thread_count, host_iters_per_thread, mem_dev.host_ptr(),
+                              old_vals.data(), p);
+
+    for (auto i = 0u; i < p.num_devices; ++i) {
+      const auto device_offset = i * p.kernel_count * thread_count;
+      HIP_CHECK(hipMemcpy(old_vals.data() + device_offset, old_vals_devs[i].ptr(),
+                          old_vals_alloc_size, hipMemcpyDeviceToHost));
+    }
+    HIP_CHECK(hipMemcpy2D(old_vals.data() + p.num_devices * p.kernel_count * thread_count,
+                          sizeof(T), mem_dev.ptr(), p.pitch, sizeof(T), p.width,
+                          hipMemcpyDeviceToHost));
+
+    CastToDerived().ValidateResults(old_vals);
   }
-}
 
-template <typename T>
-void PerformHostAtomicExchange(const unsigned int thread_count, const unsigned int iterations,
-                               T* mem, T* const old_vals, const AtomicExchParams& p) {
-  if (thread_count == 0) {
-    return;
-  }
-  const auto dev_threads =
-      p.blocks.x * p.blocks.y * p.blocks.z * p.threads.x * p.threads.y * p.threads.z;
-  const auto host_base_val = p.num_devices * p.kernel_count * dev_threads + p.width;
+ private:
+  const Derived& CastToDerived() const { return static_cast<const Derived&>(*this); }
 
-  std::vector<std::thread> threads;
-  for (auto i = 0u; i < thread_count; ++i) {
-    const auto thread_base_val = host_base_val + i * iterations;
-    threads.push_back(std::thread(HostAtomicExchange<T>, iterations, mem,
-                                  old_vals + thread_base_val, p.width, p.pitch, thread_base_val));
-  }
-
-  for (auto& th : threads) {
-    th.join();
-  }
-}
-
-template <typename TestType, bool use_shared_mem, AtomicScopes scope>
-void AtomicExch(const AtomicExchParams& p) {
-  const auto thread_count =
-      p.blocks.x * p.blocks.y * p.blocks.z * p.threads.x * p.threads.y * p.threads.z;
-
-  const auto old_vals_alloc_size = p.kernel_count * thread_count * sizeof(TestType);
-  std::vector<LinearAllocGuard<TestType>> old_vals_devs;
-  std::vector<StreamGuard> streams;
-  for (auto i = 0; i < p.num_devices; ++i) {
-    HIP_CHECK(hipSetDevice(i));
-    old_vals_devs.emplace_back(LinearAllocs::hipMalloc, old_vals_alloc_size);
-    for (auto j = 0; j < p.kernel_count; ++j) {
-      streams.emplace_back(Streams::created);
+  static void HostAtomicExchange(const unsigned int iterations, T* mem, T* const old_vals,
+                                 const unsigned int width, const unsigned pitch, T base_val) {
+    for (auto i = 0u; i < iterations; ++i) {
+      T new_val = base_val + static_cast<T>(i);
+      T old_val;
+      __atomic_exchange(pitched_offset(mem, pitch, i % width), &new_val, &old_val,
+                        __ATOMIC_RELAXED);
+      old_vals[i] = old_val;
     }
   }
 
-  const auto mem_alloc_size = p.width * p.pitch;
-  LinearAllocGuard<TestType> mem_dev(p.alloc_type, mem_alloc_size);
+  void PerformHostAtomicExchange(const unsigned int thread_count, const unsigned int iterations,
+                                 T* mem, T* const old_vals, const AtomicExchParams& p) const {
+    if (thread_count == 0) {
+      return;
+    }
+    const auto dev_threads =
+        p.blocks.x * p.blocks.y * p.blocks.z * p.threads.x * p.threads.y * p.threads.z;
+    const auto host_base_val = p.num_devices * p.kernel_count * dev_threads + p.width;
 
-  std::vector<TestType> old_vals(p.num_devices * p.kernel_count * thread_count + p.width);
-  std::iota(old_vals.begin(), old_vals.begin() + p.width, 0);
+    std::vector<std::thread> threads;
+    for (auto i = 0u; i < thread_count; ++i) {
+      const auto thread_base_val = host_base_val + i * iterations;
+      threads.push_back(std::thread(HostAtomicExchange, iterations, mem, old_vals + thread_base_val,
+                                    p.width, p.pitch, thread_base_val));
+    }
 
-  HIP_CHECK(hipMemcpy2D(mem_dev.ptr(), p.pitch, old_vals.data(), sizeof(TestType), sizeof(TestType),
-                        p.width, hipMemcpyHostToDevice));
-
-  const auto shared_mem_size = use_shared_mem ? mem_alloc_size : 0u;
-  for (auto i = 0u; i < p.num_devices; ++i) {
-    const auto device_offset = i * p.kernel_count * thread_count;
-    for (auto j = 0u; j < p.kernel_count; ++j) {
-      const auto& stream = streams[i * p.kernel_count + j].stream();
-      const auto kern_offset = j * thread_count;
-      const auto old_vals = old_vals_devs[i].ptr() + kern_offset;
-      atomic_exch_kernel<TestType, use_shared_mem, scope>
-          <<<p.blocks, p.threads, shared_mem_size, stream>>>(mem_dev.ptr(), old_vals, p.width,
-                                                             p.pitch, device_offset + kern_offset);
+    for (auto& th : threads) {
+      th.join();
     }
   }
+};
 
-  for (auto i = 0u; i < p.num_devices; ++i) {
-    const auto device_offset = i * p.kernel_count * thread_count;
-    HIP_CHECK(hipMemcpy(old_vals.data() + device_offset, old_vals_devs[i].ptr(),
-                        old_vals_alloc_size, hipMemcpyDeviceToHost));
+template <typename T, bool use_shared_mem, AtomicScopes scope>
+class AtomicExch
+    : public AtomicExchCRTP<AtomicExch<T, use_shared_mem, scope>, T, use_shared_mem, scope> {
+ public:
+  void LaunchKernel(const unsigned int shared_mem_size, const hipStream_t stream, T* const mem,
+                    T* const old_vals, const T base_val, const AtomicExchParams& p) const {
+    atomic_exch_kernel<T, use_shared_mem, scope><<<p.blocks, p.threads, shared_mem_size, stream>>>(
+        mem, old_vals, p.width, p.pitch, base_val);
   }
-  HIP_CHECK(hipMemcpy2D(old_vals.data() + p.num_devices * p.kernel_count * thread_count,
-                        sizeof(TestType), mem_dev.ptr(), p.pitch, sizeof(TestType), p.width,
-                        hipMemcpyDeviceToHost));
 
-  std::sort(old_vals.begin(), old_vals.end());
-  for (auto i = 0u; i < old_vals.size(); ++i) {
-    REQUIRE(i == old_vals[i]);
+  void ValidateResults(std::vector<T>& old_vals) const {
+    std::sort(old_vals.begin(), old_vals.end());
+    for (auto i = 0u; i < old_vals.size(); ++i) {
+      REQUIRE(i == old_vals[i]);
+    }
   }
+};
+
+inline dim3 GenerateAtomicExchThreadDimensions() { return GENERATE(dim3(16), dim3(1024)); }
+
+inline dim3 GenerateAtomicExchBlockDimensions() {
+  int sm_count = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&sm_count, hipDeviceAttributeMultiprocessorCount, 0));
+  return GENERATE_COPY(dim3(sm_count), dim3(sm_count + sm_count / 2));
 }
 
 template <typename TestType, AtomicScopes scope>
@@ -246,18 +283,18 @@ void AtomicExchSingleDeviceSingleKernelTest(const unsigned int width, const unsi
   AtomicExchParams params;
   params.num_devices = 1;
   params.kernel_count = 1;
-  params.threads = GENERATE(dim3(1024), dim3(1023), dim3(511), dim3(17), dim3(31));
+  params.threads = GenerateAtomicExchThreadDimensions();
   params.width = width;
   params.pitch = pitch;
 
   SECTION("Global memory") {
-    params.blocks = GENERATE(dim3(40));
+    params.blocks = GenerateAtomicExchBlockDimensions();
     using LA = LinearAllocs;
     for (const auto alloc_type :
          {LA::hipMalloc, LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister}) {
       params.alloc_type = alloc_type;
       DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
-        AtomicExch<TestType, false, scope>(params);
+        AtomicExch<TestType, false, scope>().run(params);
       }
     }
   }
@@ -265,7 +302,7 @@ void AtomicExchSingleDeviceSingleKernelTest(const unsigned int width, const unsi
   SECTION("Shared memory") {
     params.blocks = dim3(1);
     params.alloc_type = LinearAllocs::hipMalloc;
-    AtomicExch<TestType, true, scope>(params);
+    AtomicExch<TestType, true, scope>().run(params);
   }
 }
 
@@ -282,8 +319,8 @@ void AtomicExchSingleDeviceMultipleKernelTest(const unsigned int kernel_count,
   AtomicExchParams params;
   params.num_devices = 1;
   params.kernel_count = kernel_count;
-  params.blocks = GENERATE(dim3(40));
-  params.threads = GENERATE(dim3(1024), dim3(1023), dim3(511), dim3(17), dim3(31));
+  params.blocks = GenerateAtomicExchBlockDimensions();
+  params.threads = GenerateAtomicExchThreadDimensions();
   params.width = width;
   params.pitch = pitch;
 
@@ -292,16 +329,17 @@ void AtomicExchSingleDeviceMultipleKernelTest(const unsigned int kernel_count,
        {LA::hipMalloc, LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister}) {
     params.alloc_type = alloc_type;
     DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
-      AtomicExch<TestType, false, scope>(params);
+      AtomicExch<TestType, false, scope>().run(params);
     }
   }
 }
 
 template <typename TestType>
-void AtomicExchMultipleDeviceMultipleKernelTest(const unsigned int num_devices,
-                                                const unsigned int kernel_count,
-                                                const unsigned int width,
-                                                const unsigned int pitch) {
+void AtomicExchMultipleDeviceMultipleKernelAndHostTest(const unsigned int num_devices,
+                                                       const unsigned int kernel_count,
+                                                       const unsigned int width,
+                                                       const unsigned int pitch,
+                                                       const unsigned int host_thread_count = 0u) {
   if (num_devices > 1) {
     if (HipTest::getDeviceCount() < num_devices) {
       std::string msg = std::to_string(num_devices) + " devices are required";
@@ -324,77 +362,17 @@ void AtomicExchMultipleDeviceMultipleKernelTest(const unsigned int num_devices,
   AtomicExchParams params;
   params.num_devices = num_devices;
   params.kernel_count = kernel_count;
-  params.blocks = GENERATE(dim3(40));
-  params.threads = GENERATE(dim3(1024), dim3(1023), dim3(511), dim3(17), dim3(31));
+  params.blocks = GenerateAtomicExchBlockDimensions();
+  params.threads = GenerateAtomicExchThreadDimensions();
   params.width = width;
   params.pitch = pitch;
+  params.host_thread_count = host_thread_count;
 
   using LA = LinearAllocs;
   for (const auto alloc_type : {LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister}) {
     params.alloc_type = alloc_type;
     DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
-      AtomicExch<TestType, false, AtomicScopes::system>(params);
+      AtomicExch<TestType, false, AtomicScopes::system>().run(params);
     }
-  }
-}
-
-
-template <typename TestType, bool use_shared_mem, AtomicScopes scope>
-void AtomicExchWithHost(const AtomicExchParams& p) {
-  const auto thread_count =
-      p.blocks.x * p.blocks.y * p.blocks.z * p.threads.x * p.threads.y * p.threads.z;
-
-  const auto old_vals_alloc_size = p.kernel_count * thread_count * sizeof(TestType);
-  std::vector<LinearAllocGuard<TestType>> old_vals_devs;
-  std::vector<StreamGuard> streams;
-  for (auto i = 0; i < p.num_devices; ++i) {
-    HIP_CHECK(hipSetDevice(i));
-    old_vals_devs.emplace_back(LinearAllocs::hipMalloc, old_vals_alloc_size);
-    for (auto j = 0; j < p.kernel_count; ++j) {
-      streams.emplace_back(Streams::created);
-    }
-  }
-
-  const auto mem_alloc_size = p.width * p.pitch;
-  LinearAllocGuard<TestType> mem_dev(p.alloc_type, mem_alloc_size);
-
-  const auto host_iters_per_thread =
-      std::max(p.num_devices * p.kernel_count * thread_count / 20, p.width);
-
-  std::vector<TestType> old_vals(p.num_devices * p.kernel_count * thread_count + p.width +
-                                 p.host_thread_count * host_iters_per_thread);
-  std::iota(old_vals.begin(), old_vals.begin() + p.width, 0);
-
-  HIP_CHECK(hipMemcpy2D(mem_dev.ptr(), p.pitch, old_vals.data(), sizeof(TestType), sizeof(TestType),
-                        p.width, hipMemcpyHostToDevice));
-
-  const auto shared_mem_size = use_shared_mem ? mem_alloc_size : 0u;
-  for (auto i = 0u; i < p.num_devices; ++i) {
-    const auto device_offset = i * p.kernel_count * thread_count;
-    for (auto j = 0u; j < p.kernel_count; ++j) {
-      const auto& stream = streams[i * p.kernel_count + j].stream();
-      const auto kern_offset = j * thread_count;
-      const auto old_vals = old_vals_devs[i].ptr() + kern_offset;
-      atomic_exch_kernel<TestType, use_shared_mem, scope>
-          <<<p.blocks, p.threads, shared_mem_size, stream>>>(mem_dev.ptr(), old_vals, p.width,
-                                                             p.pitch, device_offset + kern_offset);
-    }
-  }
-
-  PerformHostAtomicExchange(p.host_thread_count, host_iters_per_thread, mem_dev.host_ptr(),
-                            old_vals.data(), p);
-
-  for (auto i = 0u; i < p.num_devices; ++i) {
-    const auto device_offset = i * p.kernel_count * thread_count;
-    HIP_CHECK(hipMemcpy(old_vals.data() + device_offset, old_vals_devs[i].ptr(),
-                        old_vals_alloc_size, hipMemcpyDeviceToHost));
-  }
-  HIP_CHECK(hipMemcpy2D(old_vals.data() + p.num_devices * p.kernel_count * thread_count,
-                        sizeof(TestType), mem_dev.ptr(), p.pitch, sizeof(TestType), p.width,
-                        hipMemcpyDeviceToHost));
-
-  std::sort(old_vals.begin(), old_vals.end());
-  for (auto i = 0u; i < old_vals.size(); ++i) {
-    REQUIRE(i == old_vals[i]);
   }
 }

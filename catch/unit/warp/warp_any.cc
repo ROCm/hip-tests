@@ -72,7 +72,7 @@ class WarpAny : public WarpTest<WarpAny, int> {
       }
 
       if (!active_mask.test(rank_in_warp))
-        return 0;
+        return std::nullopt;
       else {
         // Active predicate mask must be calculated as partition can be smaller than warp_size
         auto active_predicate = get_active_predicate(predicate_mask_, partition_size);

@@ -41,8 +41,7 @@ static bool check_if_all(uint64_t predicate_mask, uint64_t active_mask, size_t p
   return true;
 }
 
-__global__ void kernel_all(int* const out, const uint64_t* const active_masks,
-                           uint64_t predicate) {
+__global__ void kernel_all(int* const out, const uint64_t* const active_masks, uint64_t predicate) {
   if (deactivate_thread(active_masks)) {
     return;
   }
@@ -89,6 +88,7 @@ class WarpAll : public WarpTest<WarpAll, int> {
       }
     });
   }
+
  private:
   uint64_t predicate_mask_;
 };

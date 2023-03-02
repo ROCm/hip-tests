@@ -32,6 +32,14 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
 
+#if defined(_WIN32)
+#if defined(_WIN64)
+typedef __int64 ssize_t;
+#else   // !_WIN64
+typedef __int32 ssize_t;
+#endif  // !_WIN64
+#endif  /*_WIN32*/
+
 class Timer {
  public:
   Timer(const Timer&) = delete;

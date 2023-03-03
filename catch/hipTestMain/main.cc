@@ -12,5 +12,5 @@ int main(int argc, char** argv) {
   int out = Catch::Session().run(argc, argv);
   TestContext::get().cleanContext();
   return out;
-
+  
 }

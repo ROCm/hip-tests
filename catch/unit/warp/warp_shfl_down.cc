@@ -26,7 +26,7 @@ THE SOFTWARE.
  * @{
  * @ingroup WarpTest
  * `T __shfl_down(T var, unsigned int lane_delta, int width = warpSize)` -
- * Contains unit test for warp shfl_up function
+ * Contains unit test for warp shfl_down function
  */
 
 namespace cg = cooperative_groups;
@@ -82,7 +82,7 @@ template <typename T> class WarpShflDown : public WarpTest<WarpShflDown<T>, T> {
  * Test Description
  * ------------------------
  *  - Validates the warp shuffle down behavior for all valid width sizes {2, 4, 8, 16, 32,
- * 64(if supported)} for delta values of [0, width_). The threads are deactivated based on the
+ * 64(if supported)} for delta values of [0, width). The threads are deactivated based on the
  * passed active mask. The test is run for all overloads of shfl_down.
  * Test source
  * ------------------------

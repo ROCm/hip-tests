@@ -81,7 +81,7 @@ template <typename T> class WarpShflUp : public WarpTest<WarpShflUp<T>, T> {
  * Test Description
  * ------------------------
  *  - Validates the warp shuffle up behavior for all valid width sizes {2, 4, 8, 16, 32,
- * 64(if supported)} for delta values of [0, width_). The threads are deactivated based on the
+ * 64(if supported)} for delta values of [0, width). The threads are deactivated based on the
  * passed active mask. The test is run for all overloads of shfl_up.
  * Test source
  * ------------------------

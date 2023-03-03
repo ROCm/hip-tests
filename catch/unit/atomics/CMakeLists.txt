@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-# Copyright (c) 2022 Advanced Micro Devices, Inc. All Rights Reserved.
-=======
 # Copyright (c) 2023 Advanced Micro Devices, Inc. All Rights Reserved.
->>>>>>> origin/atomics_base
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +27,6 @@ set(TEST_SRC
     atomicDec.cc
     unsafeAtomicAdd.cc
     safeAtomicAdd.cc
-    atomicCAS.cc
-    atomicCAS_system.cc
 )
 
 if(HIP_PLATFORM MATCHES "nvidia")
@@ -47,16 +41,8 @@ elseif(HIP_PLATFORM MATCHES "amd")
                         LINKER_LIBS hiprtc)
 endif()
 
-<<<<<<< HEAD
 add_test(NAME Unit_atomicAdd_Negative_Parameters
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/compileAndCaptureOutput.py
          ${CMAKE_CURRENT_SOURCE_DIR}
          ${HIP_PLATFORM}
          atomicAdd_negative_kernels.cc 48)
-=======
-add_test(NAME #TestName
-         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/compileAndCaptureOutput.py
-         ${CMAKE_CURRENT_SOURCE_DIR}
-         ${HIP_PLATFORM}
-         #source_file.cc expected_error_num)
->>>>>>> origin/atomics_base

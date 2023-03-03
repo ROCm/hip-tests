@@ -41,6 +41,7 @@ THE SOFTWARE.
  *  - unit/atomics/atomicXor_system.cc
  * Test requirements
  * ------------------------
+ *  - Multi-device
  *  - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_atomicXor_system_Positive_Peer_GPUs_Same_Address", "", int, unsigned int,
@@ -59,6 +60,7 @@ TEMPLATE_TEST_CASE("Unit_atomicXor_system_Positive_Peer_GPUs_Same_Address", "", 
  *  - unit/atomics/atomicXor_system.cc
  * Test requirements
  * ------------------------
+ *  - Multi-device
  *  - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_atomicXor_system_Positive_Peer_GPUs_Adjacent_Addresses", "", int,
@@ -80,6 +82,7 @@ TEMPLATE_TEST_CASE("Unit_atomicXor_system_Positive_Peer_GPUs_Adjacent_Addresses"
  *  - unit/atomics/atomicXor_system.cc
  * Test requirements
  * ------------------------
+ *  - Multi-device
  *  - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_atomicXor_system_Positive_Peer_GPUs_Scattered_Addresses", "", int,

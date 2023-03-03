@@ -51,7 +51,7 @@ TEMPLATE_TEST_CASE("Unit_atomicXor_Positive_Multi_Kernel_Adjacent_Addresses", ""
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
 
-  Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kXor>(2, warp_size, sizeof(TestType));
+  Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kXor>(2, warp_size - 1, sizeof(TestType));
 }
 
 TEMPLATE_TEST_CASE("Unit_atomicXor_Positive_Multi_Kernel_Scattered_Addresses", "", int, unsigned int, unsigned long long) {
@@ -59,7 +59,7 @@ TEMPLATE_TEST_CASE("Unit_atomicXor_Positive_Multi_Kernel_Scattered_Addresses", "
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kXor>(2, warp_size, cache_line_size);
+  Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kXor>(2, warp_size - 1, cache_line_size);
 }
 
 TEST_CASE("Unit_atomicXor_Negative_Parameters_RTC") {
@@ -70,13 +70,13 @@ TEST_CASE("Unit_atomicXor_Negative_Parameters_RTC") {
   HIPRTC_CHECK(hiprtcCreateProgram(&program, program_source, "atomicXor_negative.cc", 0, nullptr, nullptr));
   hiprtcResult result{hiprtcCompileProgram(program, 0, nullptr)};
 
-  Get the compile log and count compiler error messages
+  // Get the compile log and count compiler error messages
   size_t log_size{};
   HIPRTC_CHECK(hiprtcGetProgramLogSize(program, &log_size));
   std::string log(log_size, ' ');
   HIPRTC_CHECK(hiprtcGetProgramLog(program, log.data()));
   int error_count{0};
-  Please check the content of negative_kernels_rtc.hh
+  // Please check the content of negative_kernels_rtc.hh
   int expected_error_count{10};
   std::string error_message{"error:"};
 

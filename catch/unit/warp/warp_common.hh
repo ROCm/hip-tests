@@ -80,6 +80,15 @@ inline uint64_t get_active_predicate(uint64_t predicate, size_t partition_size) 
   return active_predicate;
 }
 
+inline int generate_width(int warp_size) {
+  int exponent = 0;
+  while (warp_size >>= 1) {
+    ++exponent;
+  }
+
+  return GENERATE_COPY(map([](int e) { return 1 << e; }, range(1, exponent + 1)));
+}
+
 template <typename Derived, typename T> class WarpTest {
  public:
   WarpTest() : warp_size_{get_warp_size()} {}

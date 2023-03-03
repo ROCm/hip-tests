@@ -21,6 +21,7 @@ THE SOFTWARE.
 
 #include <functional>
 #include <vector>
+#include <numeric>
 
 #include <hip_test_defgroups.hh>
 #include <hip_test_common.hh>

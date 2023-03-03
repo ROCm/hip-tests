@@ -23,12 +23,46 @@ THE SOFTWARE.
 #include "min_max_common.hh"
 #include <hip_test_common.hh>
 
+/**
+ * @addtogroup atomicMax_system atomicMax_system
+ * @{
+ * @ingroup AtomicsTest
+ * `atomicMax_system(TestType* address, TestType* val)` -
+ * performs system-wide atomic maximum between address and val, returns old value.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Performs atomicMax_system from multiple threads on the same address.
+ *  - Uses multiple devices and launches multiple kernels.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/atomicMax_system.cc
+ * Test requirements
+ * ------------------------
+ *  - Multi-device
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Same_Address", "", int, unsigned int,
                    unsigned long long, float, double) {
   MinMax::MultipleDeviceMultipleKernelTest<TestType, MinMax::AtomicOperation::kMaxSystem>(2, 2, 1,
                                                                           sizeof(TestType));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Performs atomicMax_system from multiple threads on adjacent addresses.
+ *  - Uses multiple devices and launches multiple kernels.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/atomicMax_system.cc
+ * Test requirements
+ * ------------------------
+ *  - Multi-device
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Adjacent_Addresses", "", int,
                    unsigned int, unsigned long long, float, double) {
   int warp_size = 0;
@@ -38,6 +72,19 @@ TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Adjacent_Addresses"
                                                                           sizeof(TestType));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Performs atomicMax_system from multiple threads on scaterred addresses.
+ *  - Uses multiple devices and launches multiple kernels.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/atomicMax_system.cc
+ * Test requirements
+ * ------------------------
+ *  - Multi-device
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Scattered_Addresses", "", int,
                    unsigned int, unsigned long long, float, double) {
   int warp_size = 0;

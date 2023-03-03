@@ -23,10 +23,42 @@ THE SOFTWARE.
 #include "min_max_common.hh"
 #include <hip_test_common.hh>
 
+/**
+ * @addtogroup safeAtomicMax safeAtomicMax
+ * @{
+ * @ingroup AtomicsTest
+ * `safeAtomicMax(TestType* address, TestType* val)` -
+ * calculates maximum between address and val, returns old value.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Performs safeAtomicMax from multiple threads on the same address.
+ *  - Uses only one device and launches one kernel.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/safeAtomicMax.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_safeAtomicMax_Positive_SameAddress", "", float, double) {
   MinMax::SingleDeviceSingleKernelTest<TestType, MinMax::AtomicOperation::kSafeMax>(1, sizeof(TestType));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Performs safeAtomicMax from multiple threads on adjacent addresses.
+ *  - Uses only one device and launches one kernel.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/safeAtomicMax.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_safeAtomicMax_Positive_Adjacent_Addresses", "", float, double) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
@@ -34,6 +66,18 @@ TEMPLATE_TEST_CASE("Unit_safeAtomicMax_Positive_Adjacent_Addresses", "", float, 
   MinMax::SingleDeviceSingleKernelTest<TestType, MinMax::AtomicOperation::kSafeMax>(warp_size, sizeof(TestType));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Performs safeAtomicMax from multiple threads on the scaterred addresses.
+ *  - Uses only one device and launches one kernel.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/safeAtomicMax.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_safeAtomicMax_Positive_Scattered_Addresses", "", float, double) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
@@ -42,10 +86,34 @@ TEMPLATE_TEST_CASE("Unit_safeAtomicMax_Positive_Scattered_Addresses", "", float,
   MinMax::SingleDeviceSingleKernelTest<TestType, MinMax::AtomicOperation::kSafeMax>(warp_size, cache_line_size);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Performs safeAtomicMax from multiple threads on the same address.
+ *  - Uses only one device and launches multiple kernels.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/safeAtomicMax.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_safeAtomicMax_Positive_Multi_Kernel_Same_Address", "", float, double) {
   MinMax::SingleDeviceMultipleKernelTest<TestType, MinMax::AtomicOperation::kSafeMax>(2, 1, sizeof(TestType));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Performs safeAtomicMax from multiple threads on adjacent addresses.
+ *  - Uses only one device and launches multiple kernels.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/safeAtomicMax.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_safeAtomicMax_Positive_Multi_Kernel_Adjacent_Addresses", "", float, double) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
@@ -53,6 +121,18 @@ TEMPLATE_TEST_CASE("Unit_safeAtomicMax_Positive_Multi_Kernel_Adjacent_Addresses"
   MinMax::SingleDeviceMultipleKernelTest<TestType, MinMax::AtomicOperation::kSafeMax>(2, warp_size, sizeof(TestType));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Performs safeAtomicMax from multiple threads on the scaterred addresses.
+ *  - Uses only one device and launches multiple kernels.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/safeAtomicMax.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_safeAtomicMax_Positive_Multi_Kernel_Scattered_Addresses", "", float, double) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));

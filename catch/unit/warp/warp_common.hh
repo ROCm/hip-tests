@@ -94,6 +94,7 @@ template <typename Derived, typename T> class WarpTest {
     const auto alloc_size = grid_.thread_count_ * sizeof(T);
     LinearAllocGuard<T> arr_dev(LinearAllocs::hipMalloc, alloc_size);
     LinearAllocGuard<T> arr(LinearAllocs::hipHostMalloc, alloc_size);
+    HIP_CHECK(hipMemset(arr_dev.ptr(), 0, alloc_size));
 
     warps_in_block_ = (grid_.threads_in_block_count_ + warp_size_ - 1) / warp_size_;
     const auto warps_in_grid = warps_in_block_ * grid_.block_count_;

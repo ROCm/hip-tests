@@ -40,5 +40,87 @@ THE SOFTWARE.
  * @defgroup AtomicsTest Device Atomics
  * @{
  * This section describes tests for the Device Atomic APIs.
+ */
+
+/**
+ * @addtogroup atomicAnd atomicAnd
+ * @{
+ * @ingroup AtomicsTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Compiles atomicAnd with invalid parameters.
+ *  - Compiles the source with specialized Python tool.
+ *    -# Utilizes sub-process to invoke compilation of faulty source.
+ *    -# Performs post-processing of compiler output and counts errors.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_atomicAnd_Negative_Parameters") {}
+/**
+ * End doxygen group atomicAnd.
+ * @}
+ */
+
+/**
+ * @addtogroup atomicOr atomicOr
+ * @{
+ * @ingroup AtomicsTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Compiles atomicOr with invalid parameters.
+ *  - Compiles the source with specialized Python tool.
+ *    -# Utilizes sub-process to invoke compilation of faulty source.
+ *    -# Performs post-processing of compiler output and counts errors.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_atomicOr_Negative_Parameters") {}
+/**
+ * End doxygen group atomicOr.
+ * @}
+ */
+
+/**
+ * @addtogroup atomicXor atomicXor
+ * @{
+ * @ingroup AtomicsTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Compiles atomicXor with invalid parameters.
+ *  - Compiles the source with specialized Python tool.
+ *    -# Utilizes sub-process to invoke compilation of faulty source.
+ *    -# Performs post-processing of compiler output and counts errors.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_atomicOr_Negative_Parameters") {}
+/**
+ * End doxygen group atomicXor.
+ * @}
+ */
+
+/**
+ * End doxygen group AtomicsTest.
  * @}
  */

@@ -13,6 +13,7 @@ set(TEST_SRC
     syncthreadsand.cc
     syncthreadscount.cc
     syncthreadsor.cc
+    Atomic_func.cc
 )
 
 if(UNIX)
@@ -28,6 +29,7 @@ set(AMD_TEST_SRC
     bitInsert.cc
     floatTM.cc
     hipMathFunctions.cc
+    hmax_hmin.cc
 )
 set(AMD_ARCH_SPEC_TEST_SRC
     AtomicAdd_Coherent_withunsafeflag.cc

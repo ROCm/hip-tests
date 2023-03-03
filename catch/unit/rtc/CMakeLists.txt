@@ -4,6 +4,7 @@ set(TEST_SRC
     warpsize.cc
     hipRtcFunctional.cc
     hipStreamCaptureRtc.cc
+    includepath.cc
 )
 
 # AMD only tests
@@ -12,6 +13,14 @@ set(AMD_TEST_SRC
     hipRtcBfloat16.cc
     linker.cc
 )
+
+add_custom_target(copyRtcHeaders ALL
+  COMMAND ${CMAKE_COMMAND} -E copy
+  ${CMAKE_CURRENT_SOURCE_DIR}/saxpy.h
+  ${CMAKE_CURRENT_BINARY_DIR}/saxpy.h
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+  ${CMAKE_CURRENT_SOURCE_DIR}/headers
+  ${CMAKE_CURRENT_BINARY_DIR}/headers)
 
 if(HIP_PLATFORM MATCHES "nvidia")
   hip_add_exe_to_target(NAME RTC
@@ -25,3 +34,5 @@ elseif(HIP_PLATFORM MATCHES "amd")
                       TEST_TARGET_NAME build_tests
                       LINKER_LIBS hiprtc)
 endif()
+
+add_dependencies(build_tests copyRtcHeaders)

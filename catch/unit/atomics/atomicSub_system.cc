@@ -26,8 +26,8 @@ THE SOFTWARE.
 
 TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Peer_GPUs_Same_Address", "", int, unsigned int,
                    unsigned long long, float, double) {
-  MultipleDeviceMultipleKernelTest<TestType, AtomicOperation::kSubSystem>(2, 2, 1,
-                                                                          sizeof(TestType));
+  MultipleDeviceMultipleKernelAndHostTest<TestType, AtomicOperation::kSubSystem>(2, 2, 1,
+                                                                                 sizeof(TestType));
 }
 
 TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Peer_GPUs_Adjacent_Addresses", "", int,
@@ -35,8 +35,8 @@ TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Peer_GPUs_Adjacent_Addresses"
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
 
-  MultipleDeviceMultipleKernelTest<TestType, AtomicOperation::kSubSystem>(2, 2, warp_size,
-                                                                          sizeof(TestType));
+  MultipleDeviceMultipleKernelAndHostTest<TestType, AtomicOperation::kSubSystem>(2, 2, warp_size,
+                                                                                 sizeof(TestType));
 }
 
 TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Peer_GPUs_Scattered_Addresses", "", int,
@@ -45,6 +45,6 @@ TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Peer_GPUs_Scattered_Addresses
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  MultipleDeviceMultipleKernelTest<TestType, AtomicOperation::kSubSystem>(2, 2, warp_size,
-                                                                          cache_line_size);
+  MultipleDeviceMultipleKernelAndHostTest<TestType, AtomicOperation::kSubSystem>(2, 2, warp_size,
+                                                                                 cache_line_size);
 }

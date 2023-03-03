@@ -36,4 +36,5 @@ endif()
 add_test(NAME #TestName
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/compileAndCaptureOutput.py
          ${CMAKE_CURRENT_SOURCE_DIR}
+         ${HIP_PLATFORM}
          #source_file.cc expected_error_num)

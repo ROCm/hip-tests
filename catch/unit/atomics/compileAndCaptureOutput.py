@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2022 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,33 +28,42 @@ class AtomicsCompile(unittest.TestCase):
   expected_error_count = None
   file = None
   error_string = None
+  platform = None
 
   def setUp(self):
     self.error_string = 'error:'
     self.assertFalse(self.path == None)
     self.assertFalse(self.file == None)
     self.assertFalse(self.expected_error_count == None)
+    self.assertTrue(self.platform == 'amd' or self.platform == 'nvidia')
 
   def test_atomic(self):
-    compiler_output = subprocess.run([os.environ["HIP_PATH"] + '/bin/hipcc',
+    compiler_args = [
+      os.environ["HIP_PATH"] + '/bin/hipcc',
       '-I' + self.path + '/../../external/Catch2',
       '-I' + self.path + '/../../include',
       '-I' + os.environ["HIP_PATH"] + '/include',
       '-I' + self.path + '/../../external/picojson',
       '--std=c++17',
       '-c',
-      self.path + '/' + self.file],
-      stderr=subprocess.PIPE)
+      self.path + '/' + self.file,
+      ]
+    # HIP compiler on AMD platforms has limit of 20 errors, and some negative
+    # test cases expect that more errors are detected.
+    if (self.platform == 'amd'):
+      compiler_args.append('-ferror-limit=100')
+    compiler_output = subprocess.run(compiler_args, stderr=subprocess.PIPE)
     # Get the compiler output in the stdout if -V flag is raised during ctest invocation.
     print(compiler_output.stderr.decode('UTF-8'))
     self.assertEqual(compiler_output.stderr.decode('UTF-8').count(self.error_string),
                      self.expected_error_count)
 
 if __name__ == '__main__':
-  if len(sys.argv) == 4:
+  if len(sys.argv) == 5:
     AtomicsCompile.path = sys.argv[1]
-    AtomicsCompile.file = sys.argv[2]
-    AtomicsCompile.expected_error_count = int(sys.argv[3])
+    AtomicsCompile.platform = sys.argv[2]
+    AtomicsCompile.file = sys.argv[3]
+    AtomicsCompile.expected_error_count = int(sys.argv[4])
   # Unittest looks at the same argv's as the __main__ and doesn't know how
   # to handle arguments other than the executable (0). Therefore passing only
   # executable as the argv for unittest module.

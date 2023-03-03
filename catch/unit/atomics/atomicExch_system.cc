@@ -20,10 +20,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "atomic_exch_common.hh"
+#include "atomicExch_common.hh"
+#include "atomicExch_system_negative_kernels_rtc.hh"
 
 TEMPLATE_TEST_CASE("Unit_atomicExch_system_Positive_Peer_GPUs", "", int, unsigned int,
-                   unsigned long long, float) {
+                   unsigned long long, float, double) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
@@ -42,7 +43,7 @@ TEMPLATE_TEST_CASE("Unit_atomicExch_system_Positive_Peer_GPUs", "", int, unsigne
 }
 
 TEMPLATE_TEST_CASE("Unit_atomicExch_system_Positive_Host_And_GPU", "", int, unsigned int,
-                   unsigned long long, float) {
+                   unsigned long long, float, double) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
@@ -63,7 +64,7 @@ TEMPLATE_TEST_CASE("Unit_atomicExch_system_Positive_Host_And_GPU", "", int, unsi
 }
 
 TEMPLATE_TEST_CASE("Unit_atomicExch_system_Positive_Host_And_Peer_GPUs", "", int, unsigned int,
-                   unsigned long long, float) {
+                   unsigned long long, float, double) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
@@ -81,4 +82,35 @@ TEMPLATE_TEST_CASE("Unit_atomicExch_system_Positive_Host_And_Peer_GPUs", "", int
     AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(2, 2, warp_size, cache_line_size,
                                                                 4);
   }
+}
+
+TEST_CASE("Unit_atomicExch_system_Negative_Parameters_RTC") {
+  hiprtcProgram program{};
+
+  const auto program_source =
+      GENERATE(kAtomicExchSystemInt, kAtomicExchSystemUnsignedInt, kAtomicExchSystemULL,
+               kAtomicExchSystemFloat, kAtomicExchSystemDouble);
+  HIPRTC_CHECK(
+      hiprtcCreateProgram(&program, program_source, "atomicExch_negative.cc", 0, nullptr, nullptr));
+  hiprtcResult result{hiprtcCompileProgram(program, 0, nullptr)};
+
+  // Get the compile log and count compiler error messages
+  size_t log_size{};
+  HIPRTC_CHECK(hiprtcGetProgramLogSize(program, &log_size));
+  std::string log(log_size, ' ');
+  HIPRTC_CHECK(hiprtcGetProgramLog(program, log.data()));
+  int error_count{0};
+
+  int expected_error_count{8};
+  std::string error_message{"error:"};
+
+  size_t n_pos = log.find(error_message, 0);
+  while (n_pos != std::string::npos) {
+    ++error_count;
+    n_pos = log.find(error_message, n_pos + 1);
+  }
+
+  HIPRTC_CHECK(hiprtcDestroyProgram(&program));
+  HIPRTC_CHECK_ERROR(result, HIPRTC_ERROR_COMPILATION);
+  REQUIRE(error_count == expected_error_count);
 }

@@ -23,12 +23,44 @@ THE SOFTWARE.
 #include "bitwise_common.hh"
 #include <hip_test_common.hh>
 
+/**
+ * @addtogroup atomicOr_system atomicOr_system
+ * @{
+ * @ingroup AtomicsTest
+ * `atomicOr_system(TestType* address, TestType* val)` -
+ * performs system-wide atomic bitwise OR between address and val, returns old value.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Performs atomicOr_system from multiple threads on the same address.
+ *  - Uses multiple devices and launches multiple kernels.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/atomicOr_system.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_atomicOr_system_Positive_Peer_GPUs_Same_Address", "", int, unsigned int,
                    unsigned long long) {
   Bitwise::MultipleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOrSystem>(2, 2, 1,
                                                                           sizeof(TestType));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Performs atomicOr_system from multiple threads on adjacent addresses.
+ *  - Uses multiple devices and launches multiple kernels.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/atomicOr_system.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_atomicOr_system_Positive_Peer_GPUs_Adjacent_Addresses", "", int,
                    unsigned int, unsigned long long) {
   int warp_size = 0;
@@ -38,6 +70,18 @@ TEMPLATE_TEST_CASE("Unit_atomicOr_system_Positive_Peer_GPUs_Adjacent_Addresses",
                                                                           sizeof(TestType));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Performs atomicOr_system from multiple threads on scaterred addresses.
+ *  - Uses multiple devices and launches multiple kernels.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/atomicOr_system.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_atomicOr_system_Positive_Peer_GPUs_Scattered_Addresses", "", int,
                    unsigned int, unsigned long long) {
   int warp_size = 0;

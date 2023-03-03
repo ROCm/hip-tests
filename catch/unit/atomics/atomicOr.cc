@@ -24,10 +24,42 @@ THE SOFTWARE.
 #include "bitwise_common.hh"
 #include <hip_test_common.hh>
 
+/**
+ * @addtogroup atomicOr atomicOr
+ * @{
+ * @ingroup AtomicsTest
+ * `atomicOr(TestType* address, TestType* val)` -
+ * performs atomic bitwise OR between address and val, returns old value.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Performs atomicOr from multiple threads on the same address.
+ *  - Uses only one device and launches one kernel.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/atomicOr.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_SameAddress", "", int, unsigned int, unsigned long long) {
   Bitwise::SingleDeviceSingleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(1, sizeof(TestType));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Performs atomicOr from multiple threads on adjacent addresses.
+ *  - Uses only one device and launches one kernel.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/atomicOr.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Adjacent_Addresses", "", int, unsigned int, unsigned long long) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
@@ -35,6 +67,18 @@ TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Adjacent_Addresses", "", int, unsigne
   Bitwise::SingleDeviceSingleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(warp_size, sizeof(TestType));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Performs atomicOr from multiple threads on the scaterred addresses.
+ *  - Uses only one device and launches one kernel.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/atomicOr.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Scattered_Addresses", "", int, unsigned int, unsigned long long) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
@@ -43,10 +87,34 @@ TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Scattered_Addresses", "", int, unsign
   Bitwise::SingleDeviceSingleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(warp_size, cache_line_size);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Performs atomicOr from multiple threads on the same address.
+ *  - Uses only one device and launches multiple kernels.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/atomicOr.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Multi_Kernel_Same_Address", "", int, unsigned int, unsigned long long) {
   Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(2, 1, sizeof(TestType));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Performs atomicOr from multiple threads on adjacent addresses.
+ *  - Uses only one device and launches multiple kernels.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/atomicOr.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Multi_Kernel_Adjacent_Addresses", "", int, unsigned int, unsigned long long) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
@@ -54,6 +122,18 @@ TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Multi_Kernel_Adjacent_Addresses", "",
   Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(2, warp_size, sizeof(TestType));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Performs atomicOr from multiple threads on the scaterred addresses.
+ *  - Uses only one device and launches multiple kernels.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/atomicOr.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Multi_Kernel_Scattered_Addresses", "", int, unsigned int, unsigned long long) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
@@ -62,6 +142,18 @@ TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Multi_Kernel_Scattered_Addresses", ""
   Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(2, warp_size, cache_line_size);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Compiles atomicAnd with invalid parameters.
+ *  - Compiles the source with RTC.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/atomicOr.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_atomicOr_Negative_Parameters_RTC") {
   hiprtcProgram program{};
 

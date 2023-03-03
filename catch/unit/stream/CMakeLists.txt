@@ -15,6 +15,7 @@ set(TEST_SRC
     hipStreamQuery.cc
     hipDeviceGetStreamPriorityRange.cc
     hipStreamACb_StrmSyncTiming.cc
+    hipLaunchHostFunc.cc
 )
 
 if(HIP_PLATFORM MATCHES "amd")

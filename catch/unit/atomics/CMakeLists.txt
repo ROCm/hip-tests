@@ -19,8 +19,6 @@
 # THE SOFTWARE.
 
 set(TEST_SRC
-    atomicAdd.cc
-    atomicAdd_system.cc
     atomicExch.cc
     atomicExch_system.cc
 )
@@ -37,7 +35,14 @@ elseif(HIP_PLATFORM MATCHES "amd")
                         LINKER_LIBS hiprtc)
 endif()
 
-add_test(NAME Unit_atomicAdd_Negative_Parameters
+add_test(NAME Unit_atomicExch_Negative_Parameters
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/compileAndCaptureOutput.py
          ${CMAKE_CURRENT_SOURCE_DIR}
-         atomicAdd_negative_kernels.cc 18)
+         ${HIP_PLATFORM}
+         atomicExch_negative_kernels.cc 40)
+
+add_test(NAME Unit_atomicExch_system_Negative_Parameters
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR}
+         ${HIP_PLATFORM}
+         atomicExch_system_negative_kernels.cc 40)

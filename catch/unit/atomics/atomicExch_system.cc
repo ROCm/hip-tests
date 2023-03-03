@@ -23,6 +23,37 @@ THE SOFTWARE.
 #include "atomicExch_common.hh"
 #include "atomicExch_system_negative_kernels_rtc.hh"
 
+/**
+ * @addtogroup atomicExch_system atomicExch_system
+ * @{
+ * @ingroup AtomicsTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Executes a kernel two times concurrently on two devices wherein all threads will perform
+ * an atomic exchange into a runtime determined memory location. Each thread will exchange its own
+ * grid wide linear index + offset into the memory location, storing the return value into a
+ * separate output array slot corresponding to it. Once complete, the union of output array and
+ * exchange memory is validated to contain all values in the range [0, number_of_threads +
+ * number_of_exchange_memory_slots). Several memory access patterns are tested:
+ *      -# All threads exchange to a single memory location
+ *      -# Each thread exchanges into an array containing warp_size elements, using tid % warp_size
+ * for indexing
+ *      -# Same as the above, but the exchange elements are spread out by L1 cache line size bytes.
+ *
+ *    - The test is run for:
+ *      - All overloads of atomicExch_system
+ *      - hipMallocManaged, hipHostMalloc and hipHostRegister allocated exchange memory
+ *      - Several grid and block dimension combinations
+ * Test source
+ * ------------------------
+ *    - unit/atomics/atomicExch_system.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_atomicExch_system_Positive_Peer_GPUs", "", int, unsigned int,
                    unsigned long long, float, double) {
   int warp_size = 0;
@@ -42,6 +73,33 @@ TEMPLATE_TEST_CASE("Unit_atomicExch_system_Positive_Peer_GPUs", "", int, unsigne
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Executes a kernel on a single device wherein all threads will perform an atomic exchange
+ * into a runtime determined memory location. Each thread will exchange its own grid wide linear
+ * index + offset into the memory location, storing the return value into a separate output array
+ * slot corresponding to it. While the kernel is running, the host performs atomic exchanges, in 4
+ * threads, into the same memory location(s). Once complete, the union of output array, exchange
+ * memory, and host output is validated to contain all values in the range [0, number_of_threads +
+ * number_of_exchange_memory_slots + number_of_host_iterations). Several memory access patterns are
+ * tested:
+ *      -# All threads exchange to a single memory location
+ *      -# Each thread exchanges into an array containing warp_size elements, using tid % warp_size
+ * for indexing
+ *      -# Same as the above, but the exchange elements are spread out by L1 cache line size bytes.
+ *
+ *    - The test is run for:
+ *      - All overloads of atomicExch_system
+ *      - hipMallocManaged, hipHostMalloc and hipHostRegister allocated exchange memory
+ *      - Several grid and block dimension combinations
+ * Test source
+ * ------------------------
+ *    - unit/atomics/atomicExch_system.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_atomicExch_system_Positive_Host_And_GPU", "", int, unsigned int,
                    unsigned long long, float, double) {
   int warp_size = 0;
@@ -63,6 +121,33 @@ TEMPLATE_TEST_CASE("Unit_atomicExch_system_Positive_Host_And_GPU", "", int, unsi
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Executes a kernel two times concurrently on two devices wherein all threads will perform
+ * an atomic exchange into a runtime determined memory location. Each thread will exchange its own
+ * grid wide linear index + offset into the memory location, storing the return value into a
+ * separate output array slot corresponding to it. While the kernels are running, the
+ * host performs atomic exchanges, in 4 threads, into the same memory location(s). Once complete,
+ * the union of output array, exchange memory, and host output is validated to contain all values in
+ * the range [0, number_of_threads + number_of_exchange_memory_slots + number_of_host_iterations).
+ * Several memory access patterns are tested:
+ *      -# All threads exchange to a single memory location
+ *      -# Each thread exchanges into an array containing warp_size elements, using tid % warp_size
+ * for indexing
+ *      -# Same as the above, but the exchange elements are spread out by L1 cache line size bytes.
+ *
+ *    - The test is run for:
+ *      - All overloads of atomicExch_system
+ *      - hipMallocManaged, hipHostMalloc and hipHostRegister allocated exchange memory
+ *      - Several grid and block dimension combinations
+ * Test source
+ * ------------------------
+ *    - unit/atomics/atomicExch_system.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_atomicExch_system_Positive_Host_And_Peer_GPUs", "", int, unsigned int,
                    unsigned long long, float, double) {
   int warp_size = 0;
@@ -84,6 +169,18 @@ TEMPLATE_TEST_CASE("Unit_atomicExch_system_Positive_Host_And_Peer_GPUs", "", int
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - RTCs kernels that pass combinations of arguments of invalid types for all overloads of
+ * atomicExch_system
+ * Test source
+ * ------------------------
+ *    - unit/atomics/atomicExch_system.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_atomicExch_system_Negative_Parameters_RTC") {
   hiprtcProgram program{};
 

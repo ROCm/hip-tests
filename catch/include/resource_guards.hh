@@ -29,30 +29,10 @@ enum class LinearAllocs {
   hipHostMalloc,
   hipMalloc,
   hipMallocManaged,
-  noAlloc
 };
-
-inline std::string to_string(const LinearAllocs allocation_type) {
-  switch (allocation_type) {
-    case LinearAllocs::malloc:
-      return "host pageable";
-    case LinearAllocs::mallocAndRegister:
-      return "registered";
-    case LinearAllocs::hipHostMalloc:
-      return "host pinned";
-    case LinearAllocs::hipMalloc:
-      return "device malloc";
-    case LinearAllocs::hipMallocManaged:
-      return "managed";
-    default:
-      return "unknown alloc type";
-  }
-}
 
 template <typename T> class LinearAllocGuard {
  public:
-  LinearAllocGuard() = default;
-
   LinearAllocGuard(const LinearAllocs allocation_type, const size_t size,
                    const unsigned int flags = 0u)
       : allocation_type_{allocation_type} {
@@ -75,36 +55,15 @@ template <typename T> class LinearAllocGuard {
       case LinearAllocs::hipMallocManaged:
         HIP_CHECK(hipMallocManaged(reinterpret_cast<void**>(&ptr_), size, flags ? flags : 1u));
         host_ptr_ = ptr_;
-        break;
-      case LinearAllocs::noAlloc:
-        break;
     }
   }
 
   LinearAllocGuard(const LinearAllocGuard&) = delete;
-
-  LinearAllocGuard(LinearAllocGuard&& o)
-      : allocation_type_{o.allocation_type_}, ptr_{o.ptr_}, host_ptr_{o.host_ptr_} {
-    o.allocation_type_ = LinearAllocs::noAlloc;
-    o.ptr_ = nullptr;
-    o.host_ptr_ = nullptr;
-  }
-
-  LinearAllocGuard& operator=(LinearAllocGuard&& o) {
-    allocation_type_ = o.allocation_type_;
-    ptr_ = o.ptr_;
-    host_ptr_ = o.host_ptr_;
-
-    o.allocation_type_ = LinearAllocs::noAlloc;
-    o.ptr_ = nullptr;
-    o.host_ptr_ = nullptr;
-  }
+  LinearAllocGuard(LinearAllocGuard&&) = delete;
 
   ~LinearAllocGuard() {
     // No Catch macros, don't want to possibly throw in the destructor
     switch (allocation_type_) {
-      case LinearAllocs::noAlloc:
-        break;
       case LinearAllocs::malloc:
         free(ptr_);
         break;
@@ -126,7 +85,7 @@ template <typename T> class LinearAllocGuard {
   T* host_ptr() const { return host_ptr_; }
 
  private:
-  LinearAllocs allocation_type_ = LinearAllocs::noAlloc;
+  const LinearAllocs allocation_type_;
   T* ptr_ = nullptr;
   T* host_ptr_ = nullptr;
 };
@@ -241,10 +200,7 @@ enum class Streams { nullstream, perThread, created, withFlags, withPriority };
 
 class StreamGuard {
  public:
-  StreamGuard() = default;
-
-  StreamGuard(const Streams stream_type, unsigned int flags = hipStreamDefault, int priority = 0)
-      : stream_type_{stream_type}, flags_{flags}, priority_{priority} {
+  StreamGuard(const Streams stream_type, unsigned int flags = hipStreamDefault, int priority = 0) : stream_type_{stream_type}, flags_{flags}, priority_{priority} {
     switch (stream_type_) {
       case Streams::nullstream:
         stream_ = nullptr;
@@ -263,28 +219,7 @@ class StreamGuard {
   }
 
   StreamGuard(const StreamGuard&) = delete;
-
-  StreamGuard(StreamGuard&& o)
-      : stream_type_{o.stream_type_}, flags_{o.flags_}, priority_{o.priority_}, stream_{o.stream_} {
-    o.stream_type_ = Streams::nullstream;
-    o.flags_ = 0u;
-    o.priority_ = 0;
-    o.stream_ = nullptr;
-  }
-
-  StreamGuard& operator=(StreamGuard&& o) {
-    stream_type_ = o.stream_type_;
-    flags_ = o.flags_;
-    priority_ = o.priority_;
-    stream_ = o.stream_;
-
-    o.stream_type_ = Streams::nullstream;
-    o.flags_ = 0u;
-    o.priority_ = 0;
-    o.stream_ = nullptr;
-
-    return *this;
-  }
+  StreamGuard(StreamGuard&&) = delete;
 
   ~StreamGuard() {
     if (stream_type_ == Streams::created) {
@@ -295,23 +230,23 @@ class StreamGuard {
   hipStream_t stream() const { return stream_; }
 
  private:
-  Streams stream_type_ = Streams::nullstream;
-  unsigned int flags_ = 0u;
-  int priority_ = 0;
-  hipStream_t stream_ = nullptr;
+  const Streams stream_type_;
+  unsigned int flags_;
+  int priority_;
+  hipStream_t stream_;
 };
 
 class EventsGuard {
- public:
+public:
   EventsGuard(size_t N) : events_(N) {
-    for (auto& e : events_) HIP_CHECK(hipEventCreate(&e));
+    for (auto &e : events_) HIP_CHECK(hipEventCreate(&e));
   }
 
   EventsGuard(const EventsGuard&) = delete;
   EventsGuard(EventsGuard&&) = delete;
 
   ~EventsGuard() {
-    for (auto& e : events_) static_cast<void>(hipEventDestroy(e));
+    for (auto &e : events_) static_cast<void>(hipEventDestroy(e));
   }
 
   hipEvent_t& operator[](int index) { return events_[index]; }
@@ -320,21 +255,21 @@ class EventsGuard {
 
   std::vector<hipEvent_t>& event_list() { return events_; }
 
- private:
+private:
   std::vector<hipEvent_t> events_;
 };
 
 class StreamsGuard {
- public:
+public:
   StreamsGuard(size_t N) : streams_(N) {
-    for (auto& s : streams_) HIP_CHECK(hipStreamCreate(&s));
+    for (auto &s : streams_) HIP_CHECK(hipStreamCreate(&s));
   }
 
   StreamsGuard(const StreamsGuard&) = delete;
   StreamsGuard(StreamsGuard&&) = delete;
 
   ~StreamsGuard() {
-    for (auto& s : streams_) static_cast<void>(hipStreamDestroy(s));
+    for (auto &s : streams_) static_cast<void>(hipStreamDestroy(s));
   }
 
   hipStream_t& operator[](int index) { return streams_[index]; }
@@ -343,6 +278,6 @@ class StreamsGuard {
 
   std::vector<hipStream_t>& stream_list() { return streams_; }
 
- private:
+private:
   std::vector<hipStream_t> streams_;
 };

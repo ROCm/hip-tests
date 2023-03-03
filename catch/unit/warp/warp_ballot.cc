@@ -26,7 +26,7 @@ THE SOFTWARE.
  * @{
  * @ingroup WarpTest
  * `unsigned long long int __ballot(int predicate)` -
- * Contains unit test for warp vote ballot function
+ * Contains unit test for warp ballot function
  */
 
 namespace cg = cooperative_groups;
@@ -88,7 +88,7 @@ class WarpBallot : public WarpTest<WarpBallot, uint64_t> {
 /**
  * Test Description
  * ------------------------
- *  - Validates the warp vote ballot function behavior. Threads are deactivated based on the passed
+ *  - Validates the warp ballot function behavior. Threads are deactivated based on the passed
  * active mask. The predicate for each thread is determined according to the generated predicate
  * mask.
  * Test source
@@ -97,6 +97,7 @@ class WarpBallot : public WarpTest<WarpBallot, uint64_t> {
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
+ *  - Device supports warp ballot
  */
 TEST_CASE("Unit_Warp_Ballot_Positive_Basic") {
   int device;

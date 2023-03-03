@@ -40,5 +40,55 @@ THE SOFTWARE.
  * @defgroup AtomicsTest Device Atomics
  * @{
  * This section describes tests for the Device Atomic APIs.
+ */
+
+/**
+ * @addtogroup atomicMin atomicMin
+ * @{
+ * @ingroup AtomicsTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Compiles atomicMin with invalid parameters.
+ *  - Compiles the source with specialized Python tool.
+ *    -# Utilizes sub-process to invoke compilation of faulty source.
+ *    -# Performs post-processing of compiler output and counts errors.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_atomicMin_Negative_Parameters") {}
+/**
+ * End doxygen group atomicMin.
+ * @}
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Compiles atomicMax with invalid parameters.
+ *  - Compiles the source with specialized Python tool.
+ *    -# Utilizes sub-process to invoke compilation of faulty source.
+ *    -# Performs post-processing of compiler output and counts errors.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_atomicMax_Negative_Parameters") {}
+/**
+ * End doxygen group atomicMax.
+ * @}
+ */
+
+/**
+ * End doxygen group AtomicsTest.
  * @}
  */

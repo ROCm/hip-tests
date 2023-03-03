@@ -71,8 +71,7 @@ template <typename T> class WarpShfl : public WarpTest<WarpShfl<T>, T> {
           rank_in_block / this->warp_size_;
       const std::bitset<sizeof(uint64_t) * 8> active_mask(this->active_masks_[mask_idx]);
 
-      if (!active_mask.test(rank_in_warp) ||
-          (!active_mask.test((rank_in_warp + src_offset))) ||
+      if (!active_mask.test(rank_in_warp) || (!active_mask.test((rank_in_warp + src_offset))) ||
           (rank_in_block + src_offset >= this->grid_.threads_in_block_count_)) {
         return std::nullopt;
       }

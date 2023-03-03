@@ -96,6 +96,7 @@ class WarpAny : public WarpTest<WarpAny, int> {
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
+ *  - Device supports warp vote
  */
 TEST_CASE("Unit_Warp_Vote_Any_Positive_Basic") {
   int device;

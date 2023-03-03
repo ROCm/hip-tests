@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-// Test groups are named based on the group names from hip_api_runtime.h, with adding "Test" suffix
+#include <fstream>
+#include <filesystem>
+#include "hipAPIGroup.h"
 
-/**
- * @defgroup CallbackTest Callback Activity APIs
- * @{
- * This section describes tests for the callback/Activity of HIP runtime API.
- * @}
- */
-
-/**
- * @defgroup GraphTest Graph Management
- * @{
- * This section describes the graph management types & functions of HIP runtime API.
- * @}
- */
-
-/**
- * @defgroup AtomicsTest Device Atomics
- * @{
- * This section describes tests for the Device Atomic APIs.
- * @}
- */
+void findAPICallInFile(HipAPI& hip_api, std::string test_module_file);
+void findAPITestCaseInFile(HipAPI& hip_api, std::string test_module_file);
+void searchForAPI(HipAPI& hip_api, std::vector<std::string>& test_module_files);
+std::vector<HipAPI> extractHipAPIs(std::string& hip_api_header_file, std::vector<std::string>& api_group_names, bool start_groups);
+std::vector<std::string> extractTestModuleFiles(std::string& tests_root_directory);
+std::string findAbsolutePathOfFile(std::string file_path);

@@ -36,6 +36,8 @@ inline std::string to_string(const LinearAllocs allocation_type) {
   switch (allocation_type) {
     case LinearAllocs::malloc:
       return "host pageable";
+    case LinearAllocs::mallocAndRegister:
+      return "registered";
     case LinearAllocs::hipHostMalloc:
       return "host pinned";
     case LinearAllocs::hipMalloc:

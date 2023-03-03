@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-// Test groups are named based on the group names from hip_api_runtime.h, with adding "Test" suffix
+#include "hipAPICoverageUtils.h"
 
-/**
- * @defgroup CallbackTest Callback Activity APIs
- * @{
- * This section describes tests for the callback/Activity of HIP runtime API.
- * @}
- */
+class BasicAPIStats {
+ public:
+  int number_of_called_apis;
+  int number_of_not_called_apis;
+  int number_of_deprecated_apis;
+  int total_number_of_api_calls;
+  int total_number_of_test_cases;
+  int total_number_of_apis;
+  float tests_coverage_percentage;
+  BasicAPIStats(std::vector<HipAPIGroup>& hip_api_groups);
+  float getLowCoverageLimit() const;
+  float getMediumCoverageLimit() const;
+};
 
-/**
- * @defgroup GraphTest Graph Management
- * @{
- * This section describes the graph management types & functions of HIP runtime API.
- * @}
- */
-
-/**
- * @defgroup AtomicsTest Device Atomics
- * @{
- * This section describes tests for the Device Atomic APIs.
- * @}
- */
+void generateXMLReportFiles(std::vector<HipAPI>& hip_apis, std::vector<HipAPIGroup>& hip_api_groups);
+void generateHTMLReportFiles(std::vector<HipAPI>& hip_apis, std::vector<HipAPIGroup>& hip_api_groups,
+  std::string tests_root_directory, std::string hipApiHeaderFile, std::string hip_rtc_header_file);

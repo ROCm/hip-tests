@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2022 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,26 +18,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-set(TEST_SRC
-    atomicAdd.cc
-    atomicAdd_system.cc
-    atomicExch.cc
-    atomicExch_system.cc
-)
+CC=g++
+CPPFLAGS=-std=c++17
+SRC=mainCoverage.cpp hipAPI.cpp hipAPIGroup.cpp reportGenerators.cpp hipAPICoverageUtils.cpp
+OBJ=generateHipAPICoverage
 
-if(HIP_PLATFORM MATCHES "nvidia")
-    hip_add_exe_to_target(NAME AtomicsTest
-                        TEST_SRC ${TEST_SRC}
-                        TEST_TARGET_NAME build_tests
-                        LINKER_LIBS nvrtc)
-elseif(HIP_PLATFORM MATCHES "amd")
-    hip_add_exe_to_target(NAME AtomicsTest
-                        TEST_SRC ${TEST_SRC}
-                        TEST_TARGET_NAME build_tests
-                        LINKER_LIBS hiprtc)
-endif()
+default_target: all
+.PHONY : default_target
 
-add_test(NAME Unit_atomicAdd_Negative_Parameters
-         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/compileAndCaptureOutput.py
-         ${CMAKE_CURRENT_SOURCE_DIR}
-         atomicAdd_negative_kernels.cc 18)
+all: ${SRC}
+	${CC} ${CPPFLAGS} $^ -o ${OBJ}
+
+clean:
+	rm ${OBJ}
+	rm *.xml
+	rm -r ./coverageReportHTML/testModules
+	rm -r ./coverageReportHTML/testAPIs
+	rm ./coverageReportHTML/*.html
+.PHONY : clean

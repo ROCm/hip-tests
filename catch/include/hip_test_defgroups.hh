@@ -69,6 +69,12 @@ TEST_CASE("Unit_atomicMin_Negative_Parameters") {}
  */
 
 /**
+ * @addtogroup atomicMax atomicMax
+ * @{
+ * @ingroup AtomicsTest
+ */
+
+/**
  * Test Description
  * ------------------------
  *  - Compiles atomicMax with invalid parameters.

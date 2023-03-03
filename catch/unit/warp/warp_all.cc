@@ -105,6 +105,7 @@ class WarpAll : public WarpTest<WarpAll, int> {
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
+ *  - Device supports warp vote
  */
 TEST_CASE("Unit_Warp_Vote_All_Positive_Basic") {
   int device;
@@ -116,5 +117,6 @@ TEST_CASE("Unit_Warp_Vote_All_Positive_Basic") {
     HipTest::HIP_SKIP_TEST("Device doesn't support Warp Vote!");
     return;
   }
+
   WarpAll().run();
 }

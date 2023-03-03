@@ -65,7 +65,7 @@ template <typename T> class WarpShflUp : public WarpTest<WarpShflUp<T>, T> {
       const int target = rank_in_block % width_ - delta_;
       if (!active_mask.test(rank_in_warp) ||
           (target >= 0 && !active_mask.test(rank_in_warp - delta_))) {
-        return 0;
+        return std::nullopt;
       }
 
       return (target < 0 ? i : i - delta_) % this->warp_size_;

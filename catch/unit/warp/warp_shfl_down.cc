@@ -66,7 +66,7 @@ template <typename T> class WarpShflDown : public WarpTest<WarpShflDown<T>, T> {
       if (!active_mask.test(rank_in_warp) ||
           (target < width_ && !active_mask.test(rank_in_warp + delta_)) ||
           (target < width_ && rank_in_block + delta_ >= this->grid_.threads_in_block_count_)) {
-        return 0;
+        return std::nullopt;
       }
 
       return (target >= width_ ? i : i + delta_) % this->warp_size_;
@@ -86,7 +86,7 @@ template <typename T> class WarpShflDown : public WarpTest<WarpShflDown<T>, T> {
  * passed active mask. The test is run for all overloads of shfl_down.
  * Test source
  * ------------------------
- *  - unit/warp/warp_shfl_up.cc
+ *  - unit/warp/warp_shfl_down.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2

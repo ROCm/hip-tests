@@ -24,10 +24,11 @@ set(TEST_SRC
     hipApiName.cc
     hipGetStreamDeviceId.cc
     hipKernelNameRef.cc
-    hipKernelNameRefByPtr.cc
 )
 
 if(UNIX)
+    set(TEST_SRC ${TEST_SRC} hipKernelNameRefByPtr.cc)
+
     add_custom_target(SimpleKernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
                       ${CMAKE_CURRENT_SOURCE_DIR}/SimpleKernel.cc
                       -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/callback/SimpleKernel.code

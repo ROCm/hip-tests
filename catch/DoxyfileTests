@@ -2156,7 +2156,11 @@ INCLUDE_FILE_PATTERNS  =
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
 PREDEFINED             = TEMPLATE_TEST_CASE(x)=x() \
-                         TEST_CASE(x)=x()
+                         TEST_CASE(x)=x() \
+                         __linux__ \
+                         HT_AMD \
+                         HT_NVIDIA \
+                         __HIP_PLATFORM_NVCC__
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The

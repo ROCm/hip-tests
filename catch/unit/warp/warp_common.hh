@@ -80,6 +80,15 @@ inline uint64_t get_active_predicate(uint64_t predicate, size_t partition_size) 
   return active_predicate;
 }
 
+inline int generate_width(int warp_size) {
+  int exponent = 0;
+  while (warp_size >>= 1) {
+    ++exponent;
+  }
+
+  return GENERATE_COPY(map([](int e) { return 1 << e; }, range(1, exponent + 1)));
+}
+
 template <typename Derived, typename T> class WarpTest {
  public:
   WarpTest() : warp_size_{get_warp_size()} {}
@@ -102,7 +111,6 @@ template <typename Derived, typename T> class WarpTest {
     active_masks_.resize(warps_in_grid);
     std::generate(active_masks_.begin(), active_masks_.end(),
                   [] { return GenerateRandomInteger(0ul, std::numeric_limits<uint64_t>().max()); });
-
     HIP_CHECK(hipMemcpy(active_masks_dev.ptr(), active_masks_.data(),
                         warps_in_grid * sizeof(uint64_t), hipMemcpyHostToDevice));
     cast_to_derived().launch_kernel(arr_dev.ptr(), active_masks_dev.ptr());

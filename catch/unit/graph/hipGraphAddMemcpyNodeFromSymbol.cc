@@ -25,7 +25,6 @@ THE SOFTWARE.
 #include <hip_test_defgroups.hh>
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
-#include <numeric>
 
 #include "graph_memcpy_to_from_symbol_common.hh"
 #include "graph_tests_common.hh"

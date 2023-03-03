@@ -40,11 +40,12 @@ namespace Bitwise {
 
   constexpr auto kMask = 0xAAAA;
   constexpr auto kTestValue = 0x4545;
+  constexpr auto kAndTestValue = 0xFFFF;
 
   template <typename TestType, AtomicOperation operation>
   __host__ __device__ TestType GetTestValue() {
     if constexpr (operation == AtomicOperation::kAnd || operation == AtomicOperation::kAndSystem) {
-      return std::numeric_limits<TestType>::max();
+      return kAndTestValue;
     }
 
     return kTestValue;
@@ -199,9 +200,6 @@ namespace Bitwise {
 
   template <typename TestType, AtomicOperation operation, bool use_shared_mem>
   void TestCore(const TestParams& p) {
-    const unsigned int flags =
-        p.alloc_type == LinearAllocs::mallocAndRegister ? hipHostRegisterMapped : 0u;
-
     const auto old_vals_alloc_size = p.kernel_count * p.ThreadCount() * sizeof(TestType);
     std::vector<LinearAllocGuard<TestType>> old_vals_devs;
     std::vector<StreamGuard> streams;
@@ -228,7 +226,6 @@ namespace Bitwise {
       HIP_CHECK(hipMemcpy(&mem_ptr[i], &test_value, sizeof(TestType), hipMemcpyHostToDevice));
     }
 
-    const auto shared_mem_size = use_shared_mem ? mem_alloc_size : 0u;
     for (auto i = 0u; i < p.num_devices; ++i) {
       for (auto j = 0u; j < p.kernel_count; ++j) {
         const auto& stream = streams[i * p.kernel_count + j].stream();

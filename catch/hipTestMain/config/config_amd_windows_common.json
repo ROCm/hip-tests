@@ -114,6 +114,7 @@
 	   "Unit_hipStreamValue_Wait64_Blocking_NoMask_Nor",
  	   "Unit_hipStreamQuery_WithFinishedWork",
 	   "Unit_hipLaunchHostFunc_Graph",
-	   "Unit_hipLaunchHostFunc_KernelHost"
+	   "Unit_hipLaunchHostFunc_KernelHost",
+	   "Unit_hipStreamSetCaptureDependencies_Positive_Functional"
 	]
 }

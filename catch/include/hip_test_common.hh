@@ -141,24 +141,20 @@ static void initHipCtx(hipCtx_t* pcontext) {
 #endif
 
 static inline bool IsGfx11() {
-#if defined(HT_NVIDIA)
+#if HT_NVIDIA
   return false;
-#elif defined(HT_AMD)
+#elif HT_AMD
   int device = -1;
   hipDeviceProp_t props{};
   HIP_CHECK(hipGetDevice(&device));
   HIP_CHECK(hipGetDeviceProperties(&props, device));
-
    // Get GCN Arch Name and compare to check if it is gfx11
   std::string arch = std::string(props.gcnArchName);
-  auto pos = arch.find(":");
+  auto pos = arch.find("gfx11");
   if (pos != std::string::npos)
-    arch = arch.substr(0, pos);
-
-  if(arch.size() >= 5)
-    arch = arch.substr(0,5);
-
-  return (arch == std::string("gfx11")) ? true : false;
+    return true;
+  else
+    return false;
 #else
   std::cout<<"Have to be either Nvidia or AMD platform, asserting"<<std::endl;
   assert(false);

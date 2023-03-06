@@ -76,6 +76,12 @@ list(GET VERSION_LIST 2 HIP_VERSION_PATCH_GITHASH)
 string(REPLACE "-" ";" VERSION_LIST ${HIP_VERSION_PATCH_GITHASH})
 list(GET VERSION_LIST 0 HIP_VERSION_PATCH)
 
+if(DEFINED ENV{ROCM_LIBPATCH_VERSION})
+   set(HIP_PACKAGING_VERSION_PATCH ${HIP_VERSION_PATCH}.$ENV{ROCM_LIBPATCH_VERSION})
+else()
+   set(HIP_PACKAGING_VERSION_PATCH ${HIP_VERSION_PATCH}-${HIP_VERSION_GITHASH})
+endif()
+
 if(NOT DEFINED CATCH2_PATH)
     if(DEFINED ENV{CATCH2_PATH})
         set(CATCH2_PATH $ENV{CATCH2_PATH} CACHE STRING "Catch2 Path")
@@ -229,14 +235,14 @@ add_custom_target(build_tests)
 
 
 # Tests folder
-#add_subdirectory(unit ${CATCH_BUILD_DIR}/unit)
+add_subdirectory(unit ${CATCH_BUILD_DIR}/unit)
 add_subdirectory(ABM ${CATCH_BUILD_DIR}/ABM)
 add_subdirectory(kernels ${CATCH_BUILD_DIR}/kernels)
 add_subdirectory(hipTestMain ${CATCH_BUILD_DIR}/hipTestMain)
-#add_subdirectory(stress ${CATCH_BUILD_DIR}/stress)
-#add_subdirectory(TypeQualifiers ${CATCH_BUILD_DIR}/TypeQualifiers)
+add_subdirectory(stress ${CATCH_BUILD_DIR}/stress)
+add_subdirectory(TypeQualifiers ${CATCH_BUILD_DIR}/TypeQualifiers)
 if(UNIX)
-#   add_subdirectory(multiproc ${CATCH_BUILD_DIR}/multiproc)
+   add_subdirectory(multiproc ${CATCH_BUILD_DIR}/multiproc)
 endif()
 add_subdirectory(performance ${CATCH_BUILD_DIR}/performance)
 

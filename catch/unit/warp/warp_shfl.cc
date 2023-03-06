@@ -99,6 +99,7 @@ template <typename T> class WarpShfl : public WarpTest<WarpShfl<T>, T> {
  *  - HIP_VERSION >= 5.2
  *  - Device supports warp shuffle
  */
+ #if HT_NVIDIA // EXSWHTEC-274
 TEMPLATE_TEST_CASE("Unit_Warp_Shfl_Positive_Basic", "", int, unsigned int, long, unsigned long,
                    long long, unsigned long long, float, double) {
   int device;
@@ -113,3 +114,4 @@ TEMPLATE_TEST_CASE("Unit_Warp_Shfl_Positive_Basic", "", int, unsigned int, long,
 
   WarpShfl<TestType>().run();
 }
+#endif

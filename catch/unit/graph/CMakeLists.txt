@@ -65,7 +65,9 @@ set(TEST_SRC
   hipStreamBeginCapture.cc
   hipStreamBeginCapture_old.cc
   hipStreamIsCapturing.cc
+  hipStreamIsCapturing_old.cc
   hipStreamGetCaptureInfo.cc
+  hipStreamGetCaptureInfo_old.cc
   hipStreamEndCapture.cc
   hipStreamEndCapture_old.cc
   hipGraphMemcpyNodeSetParamsFromSymbol_old.cc
@@ -90,6 +92,7 @@ set(TEST_SRC
   hipStreamUpdateCaptureDependencies.cc
   hipThreadExchangeStreamCaptureMode.cc
   hipLaunchHostFunc.cc
+  hipStreamGetCaptureInfo_v2_old.cc
   hipUserObjectCreate.cc
   hipGraphDebugDotPrint.cc
   hipGraphCloneComplx.cc

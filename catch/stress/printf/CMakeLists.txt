@@ -4,6 +4,6 @@ set(TEST_SRC
     Stress_printf_SimpleKernels.cc
 )
 
-hip_add_exe_to_target(NAME printf
+hip_add_exe_to_target(NAME printf_stress
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME stress_test)

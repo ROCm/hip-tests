@@ -21,17 +21,17 @@ ifeq ($(OS),Windows_NT)
  $(error Makefile is not supported on windows platform. Please use cmake instead to build sample.)
 endif
 ROCM_PATH?= $(wildcard /opt/rocm/)
-HIP_PATH?= $(wildcard $(ROCM_PATH)/hip)
+HIP_PATH?= $(ROCM_PATH)
 ifeq (,$(HIP_PATH))
 	HIP_PATH=../../..
 endif
 
 HIPCC=$(HIP_PATH)/bin/hipcc
-CLANG=$(HIP_PATH)/../llvm/bin/clang
-LLVM_MC=$(HIP_PATH)/../llvm/bin/llvm-mc
-CLANG_OFFLOAD_BUNDLER=$(HIP_PATH)/../llvm/bin/clang-offload-bundler
-LLVM_AS=$(HIP_PATH)/../llvm/bin/llvm-as
-LLVM_DIS=$(HIP_PATH)/../llvm/bin/llvm-dis
+CLANG=$(HIP_PATH)/llvm/bin/clang
+LLVM_MC=$(HIP_PATH)/llvm/bin/llvm-mc
+CLANG_OFFLOAD_BUNDLER=$(HIP_PATH)/llvm/bin/clang-offload-bundler
+LLVM_AS=$(HIP_PATH)/llvm/bin/llvm-as
+LLVM_DIS=$(HIP_PATH)/llvm/bin/llvm-dis
 
 SRCS=square.cpp
 

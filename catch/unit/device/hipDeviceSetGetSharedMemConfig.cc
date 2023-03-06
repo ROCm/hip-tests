@@ -43,13 +43,8 @@ TEST_CASE("Unit_hipDeviceSetSharedMemConfig_Positive_Basic") {
 }
 
 TEST_CASE("Unit_hipDeviceSetSharedMemConfig_Negative_Parameters") {
-#if HT_AMD
-  HIP_CHECK_ERROR(hipDeviceSetSharedMemConfig(static_cast<hipSharedMemConfig>(-1)),
-                  hipErrorNotSupported);
-#elif HT_NVIDIA
   HIP_CHECK_ERROR(hipDeviceSetSharedMemConfig(static_cast<hipSharedMemConfig>(-1)),
                   hipErrorInvalidValue);
-#endif
 }
 
 TEST_CASE("Unit_hipDeviceGetSharedMemConfig_Positive_Default") {

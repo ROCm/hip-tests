@@ -16,14 +16,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <hip_test_common.hh>
-#include <hip/hip_cooperative_groups.h>
+#include "cooperative_groups_common.hh"
 
+#include <cpu_grid.h>
 #include <resource_guards.hh>
 #include <utils.hh>
-
-#include "cooperative_groups_common.hh"
-#include "cpu_grid.h"
 
 /**
  * @addtogroup multi_grid_group multi_grid_group

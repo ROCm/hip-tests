@@ -30,10 +30,6 @@ constexpr size_t kWarpSize = 64;
 #endif
 }  // namespace
 
-#define ASSERT_EQUAL(lhs, rhs) HIP_ASSERT(lhs == rhs)
-#define ASSERT_LE(lhs, rhs) HIPASSERT(lhs <= rhs)
-#define ASSERT_GE(lhs, rhs) HIPASSERT(lhs >= rhs)
-
 constexpr int MaxGPUs = 8;
 
 __device__ inline unsigned int thread_rank_in_grid() {

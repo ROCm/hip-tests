@@ -21,9 +21,12 @@ THE SOFTWARE.
 
 #include <optional>
 
+#include <hip_test_common.hh>
 #include <hip/hip_runtime_api.h>
 
 struct CPUGrid {
+  CPUGrid() = default;
+
   CPUGrid(const dim3 grid_dim, const dim3 block_dim)
       : grid_dim_{grid_dim},
         block_dim_{block_dim},
@@ -68,11 +71,11 @@ struct CPUGrid {
     return thread_idx;
   }
 
-  const dim3 grid_dim_;
-  const dim3 block_dim_;
-  const unsigned int block_count_;
-  const unsigned int threads_in_block_count_;
-  const unsigned int thread_count_;
+  dim3 grid_dim_;
+  dim3 block_dim_;
+  unsigned int block_count_;
+  unsigned int threads_in_block_count_;
+  unsigned int thread_count_;
 };
 
 struct CPUMultiGrid {

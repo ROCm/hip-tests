@@ -17,13 +17,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include "cooperative_groups_common.hh"
-#include "cpu_grid.h"
 
 #include <cmd_options.hh>
-#include <hip_test_common.hh>
-#include <hip/hip_cooperative_groups.h>
+#include <cpu_grid.h>
 #include <resource_guards.hh>
-
 
 /**
  * @addtogroup coalesced_group coalesced_group

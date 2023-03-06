@@ -30,6 +30,9 @@ THE SOFTWARE.
 #include "graph_memset_node_test_common.hh"
 #include "graph_tests_common.hh"
 
+#define SIZE 1024
+static char memSetVal = 'a';
+
 /**
  * @addtogroup hipGraphAddMemsetNode hipGraphAddMemsetNode
  * @{

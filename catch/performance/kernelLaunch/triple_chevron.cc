@@ -39,11 +39,11 @@ class TripleChevronBenchmark
     if constexpr (kernel_type == KernelType::kNull) {
       NullKernel<<<1, 1>>>();
     } else if constexpr (kernel_type == KernelType::kSmall) {
-      SmallKernel<<<1, 1>>>(small_kernel_args);
+      KernelWithSmallArgs<<<1, 1>>>(small_kernel_args, nullptr);
     } else if constexpr (kernel_type == KernelType::kMedium) {
-      MediumKernel<<<1, 1>>>(medium_kernel_args);
+      KernelWithMediumArgs<<<1, 1>>>(medium_kernel_args, nullptr);
     } else if constexpr (kernel_type == KernelType::kLarge) {
-      LargeKernel<<<1, 1>>>(large_kernel_args);
+      KernelWithLargeArgs<<<1, 1>>>(large_kernel_args, nullptr);
     } else
       ;
   }

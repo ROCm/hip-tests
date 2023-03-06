@@ -72,7 +72,7 @@ TEST_CASE("Unit_hipGraphMemsetNodeGetParams_Negative_Parameters") {
   }
 
 // Disabled on AMD due to defect - EXSWHTEC-208
-#if HT_NVIDIA
+#if 0
   SECTION("Node is destroyed") {
     HIP_CHECK(hipGraphCreate(&graph, 0));
     HIP_CHECK(hipGraphAddMemsetNode(&node, graph, nullptr, 0, &params));

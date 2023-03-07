@@ -46,3 +46,21 @@ add_test(NAME Unit_atomicAdd_Negative_Parameters
          ${CMAKE_CURRENT_SOURCE_DIR}
          ${HIP_PLATFORM}
          atomicAdd_negative_kernels.cc 48)
+
+add_test(NAME Unit_atomicSub_Negative_Parameters
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR}
+         ${HIP_PLATFORM}
+         atomicSub_negative_kernels.cc 48)
+
+add_test(NAME Unit_atomicInc_Negative_Parameters
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR}
+         ${HIP_PLATFORM}
+         atomicInc_negative_kernels.cc 8)
+
+add_test(NAME Unit_atomicDec_Negative_Parameters
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR}
+         ${HIP_PLATFORM}
+         atomicDec_negative_kernels.cc 8)

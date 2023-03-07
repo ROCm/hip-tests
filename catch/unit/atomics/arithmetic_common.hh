@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -155,7 +155,8 @@ template <typename TestType, AtomicOperation operation>
 std::tuple<std::vector<TestType>, std::vector<TestType>> TestKernelHostRef(const TestParams& p) {
   const auto val = GetTestValue<TestType, operation>();
 
-  const auto total_thread_count = p.num_devices * p.kernel_count * p.ThreadCount();
+  const auto total_thread_count = p.num_devices * p.kernel_count * p.ThreadCount() +
+      p.host_thread_count * p.HostIterationsPerThread();
 
   std::vector<TestType> res_vals(p.width);
   std::vector<TestType> old_vals;
@@ -240,16 +241,16 @@ void HostAtomicOperation(const unsigned int iterations, TestType* mem, TestType*
 }
 
 template <typename TestType, AtomicOperation operation>
-void PerformHostAtomicOperation(const unsigned int thread_count, const unsigned int iterations,
-                                TestType* mem, TestType* const old_vals, const TestParams& p) {
-  if (thread_count == 0) {
+void PerformHostAtomicOperation(const TestParams& p, TestType* mem, TestType* const old_vals) {
+  if (p.host_thread_count == 0) {
     return;
   }
 
-  const auto host_base_val = p.num_devices * p.kernel_count * p.ThreadCount() + p.width;
+  const auto host_base_val = p.num_devices * p.kernel_count * p.ThreadCount();
 
   std::vector<std::thread> threads;
-  for (auto i = 0u; i < thread_count; ++i) {
+  for (auto i = 0u; i < p.host_thread_count; ++i) {
+    const auto iterations = p.HostIterationsPerThread();
     const auto thread_base_val = host_base_val + i * iterations;
     threads.push_back(std::thread(HostAtomicOperation<TestType, operation>, iterations, mem,
                                   old_vals + thread_base_val, p.width, p.pitch, thread_base_val));
@@ -279,10 +280,8 @@ void TestCore(const TestParams& p) {
   const auto mem_alloc_size = p.width * p.pitch;
   LinearAllocGuard<TestType> mem_dev(p.alloc_type, mem_alloc_size, flags);
 
-  const auto host_iters_per_thread = p.HostIterationsPerThread();
-
   std::vector<TestType> old_vals(p.num_devices * p.kernel_count * p.ThreadCount() +
-                                 p.host_thread_count * host_iters_per_thread);
+                                 p.host_thread_count * p.HostIterationsPerThread());
   std::vector<TestType> res_vals(p.width);
 
   TestType* const mem_ptr =
@@ -298,8 +297,7 @@ void TestCore(const TestParams& p) {
     }
   }
 
-  PerformHostAtomicOperation<TestType, operation>(p.host_thread_count, host_iters_per_thread,
-                                                  mem_dev.host_ptr(), old_vals.data(), p);
+  PerformHostAtomicOperation<TestType, operation>(p, mem_dev.host_ptr(), old_vals.data());
 
   for (auto i = 0u; i < p.num_devices; ++i) {
     const auto device_offset = i * p.kernel_count * p.ThreadCount();

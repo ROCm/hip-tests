@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,44 +24,96 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 
-TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_Positive_Same_Address", "", float, double) {
-  SingleDeviceSingleKernelTest<TestType, AtomicOperation::kUnsafeAdd>(1, sizeof(TestType));
-}
+/**
+ * @addtogroup unsafeAtomicAdd unsafeAtomicAdd
+ * @{
+ * @ingroup AtomicsTest
+ */
 
-TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_Positive_Adjacent_Addresses", "", float, double) {
-  int warp_size = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
-
-  SingleDeviceSingleKernelTest<TestType, AtomicOperation::kUnsafeAdd>(warp_size, sizeof(TestType));
-}
-
-TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_Positive_Scattered_Addresses", "", float, double) {
+/**
+ * Test Description
+ * ------------------------
+ *    - Executes a single kernel on a single device wherein all threads will perform an atomic
+ * addition on a target memory location. Each thread will add the same value to the memory location,
+ * storing the return value into a separate output array slot corresponding to it. Once complete,
+ * the output array and target memory is validated to contain all the expected values. Several
+ * memory access patterns are tested:
+ *      -# All threads exchange to a single, compile time deducible, memory location
+ *      -# Each thread targets an array containing warp_size elements, using tid % warp_size
+ *         for indexing
+ *      -# Same as the above, but the elements are spread out by L1 cache line size bytes.
+ *
+ *    - The test is run for:
+ *      - All overloads of unsafeAtomicAdd
+ *      - hipMalloc, hipMallocManaged, hipHostMalloc and hipHostRegister allocated memory
+ *      - Shared memory
+ *      - Several grid and block dimension combinations (only one block is used for shared memory).
+ * Test source
+ * ------------------------
+ *    - unit/atomics/unsafeAtomicAdd.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_Positive", "", float, double) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  SingleDeviceSingleKernelTest<TestType, AtomicOperation::kUnsafeAdd>(warp_size, cache_line_size);
-}
+  SECTION("Same address") {
+    SingleDeviceSingleKernelTest<TestType, AtomicOperation::kUnsafeAdd>(1, sizeof(TestType));
+  }
 
-TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_Positive_Multi_Kernel_Same_Address", "", float, double) {
-  SingleDeviceMultipleKernelTest<TestType, AtomicOperation::kUnsafeAdd>(2, 1, sizeof(TestType));
-}
-
-TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_Positive_Multi_Kernel_Adjacent_Addresses", "", float,
-                   double) {
-  int warp_size = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
-
-  SingleDeviceMultipleKernelTest<TestType, AtomicOperation::kUnsafeAdd>(2, warp_size,
+  SECTION("Adjacent addresses") {
+    SingleDeviceSingleKernelTest<TestType, AtomicOperation::kUnsafeAdd>(warp_size,
                                                                         sizeof(TestType));
+  }
+
+  SECTION("Scattered addresses") {
+    SingleDeviceSingleKernelTest<TestType, AtomicOperation::kUnsafeAdd>(warp_size, cache_line_size);
+  }
 }
 
-TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_Positive_Multi_Kernel_Scattered_Addresses", "", float,
-                   double) {
+/**
+ * Test Description
+ * ------------------------
+ *    - Executes a kernel two times concurrently on a single device wherein all threads will perform
+ * an atomic addition on a target memory location. Each thread will add the same value to the memory
+ * location, storing the return value into a separate output array slot corresponding to it. Once
+ * complete, the output array and target memory is validated to contain all the expected values.
+ * Several memory access patterns are tested:
+ *      -# All threads exchange to a single, compile time deducible, memory location
+ *      -# Each thread targets an array containing warp_size elements, using tid % warp_size
+ *         for indexing
+ *      -# Same as the above, but the elements are spread out by L1 cache line size bytes.
+ *
+ *    - The test is run for:
+ *      - All overloads of unsafeAtomicAdd
+ *      - hipMalloc, hipMallocManaged, hipHostMalloc and hipHostRegister allocated memory
+ *      - Several grid and block dimension combinations.
+ * Test source
+ * ------------------------
+ *    - unit/atomics/unsafeAtomicAdd.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_Positive_Multi_Kernel", "", float, double) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  SingleDeviceMultipleKernelTest<TestType, AtomicOperation::kUnsafeAdd>(2, warp_size,
-                                                                        cache_line_size);
+  SECTION("Same address") {
+    SingleDeviceMultipleKernelTest<TestType, AtomicOperation::kUnsafeAdd>(2, 1, sizeof(TestType));
+  }
+
+  SECTION("Adjacent addresses") {
+    SingleDeviceMultipleKernelTest<TestType, AtomicOperation::kUnsafeAdd>(2, warp_size,
+                                                                          sizeof(TestType));
+  }
+
+  SECTION("Scattered addresses") {
+    SingleDeviceMultipleKernelTest<TestType, AtomicOperation::kUnsafeAdd>(2, warp_size,
+                                                                          cache_line_size);
+  }
 }

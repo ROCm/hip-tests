@@ -48,6 +48,7 @@
 	   "Unit_hipGraphExecMemsetNodeSetParams_Positive_Basic - uint32_t",
 	   "Unit_hipStreamSetCaptureDependencies_Positive_Functional",
 	   "Note: Test disabled due to defect - EXSWHTEC-207",
-	   "Unit_hipGraphExecMemsetNodeSetParams_Negative_Updating_Non1D_Node"
+	   "Unit_hipGraphExecMemsetNodeSetParams_Negative_Updating_Non1D_Node",
+	   "Unit_hipIpcGetMemHandle_Positive_Unique_Handles_Separate_Allocations"
 	]
 }

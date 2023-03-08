@@ -96,6 +96,7 @@
 		"Unit_hipMemGetAddressRange_Negative",
 		"Unit_hipStreamValue_Wait64_Blocking_NoMask_Nor",
 		"Unit_hipLaunchHostFunc_Graph",
-		"Unit_hipLaunchHostFunc_KernelHost"
+		"Unit_hipLaunchHostFunc_KernelHost",
+		"Unit_hipDeviceGetUuid_Positive"
 	]
 }

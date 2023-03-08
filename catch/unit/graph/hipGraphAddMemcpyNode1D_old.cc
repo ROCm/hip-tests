@@ -20,26 +20,24 @@ THE SOFTWARE.
 /**
 Testcase Scenarios :
 Functional -
-1) Add 1D memcpy node to graph and verify memcpy operation is success for all memcpy kinds(H2D, D2H and D2D).
- Memcpy nodes are added and assigned to default device.
-2) Allocate memory on default device(Dev 0), Perform memcpy operation for 1D arrays on Peer device(Dev 1) and
- verify the results.
-
+1) Add 1D memcpy node to graph and verify memcpy operation is success for all memcpy kinds(H2D, D2H
+and D2D). Memcpy nodes are added and assigned to default device. 2) Allocate memory on default
+device(Dev 0), Perform memcpy operation for 1D arrays on Peer device(Dev 1) and verify the results.
 Negative -
 1) Pass pGraphNode as nullptr and check if api returns error.
 2) When graph is un-initialized argument(skipping graph creation), api should return error code.
 3) Passing pDependencies as nullptr, api should return success.
-4) When numDependencies is max(size_t) and pDependencies is not valid ptr, api expected to return error code.
-5) When pDependencies is nullptr, but numDependencies is non-zero, api expected to return error.
-6) When destination ptr  is nullptr, api expected to return error code.
-7) When source ptr is nullptr, api expected to return error code.
-8) If count is more than allocated size for source and destination ptr, error code is returned.
-9) If count is less than or equal to allocated size of source and destination ptr, api should return success.
+4) When numDependencies is max(size_t) and pDependencies is not valid ptr, api expected to return
+error code. 5) When pDependencies is nullptr, but numDependencies is non-zero, api expected to
+return error. 6) When destination ptr  is nullptr, api expected to return error code. 7) When source
+ptr is nullptr, api expected to return error code. 8) If count is more than allocated size for
+source and destination ptr, error code is returned. 9) If count is less than or equal to allocated
+size of source and destination ptr, api should return success.
 */
 
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
-#include <resource_guards.hh>
+
 
 static void validateMemcpyNode1DArray(bool peerAccess) {
   constexpr int SIZE{32};
@@ -71,16 +69,16 @@ static void validateMemcpyNode1DArray(bool peerAccess) {
   }
 
   // Host to Device (harray1D -> devArray1)
-  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D, graph, nullptr, 0,
-                     devArray1, harray1D, numBytes, hipMemcpyHostToDevice));
+  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D, graph, nullptr, 0, devArray1, harray1D, numBytes,
+                                    hipMemcpyHostToDevice));
 
   // Device to Device (devArray1 -> devArray2)
-  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyD2D, graph, &memcpyH2D, 1,
-                     devArray2, devArray1, numBytes, hipMemcpyDeviceToDevice));
+  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyD2D, graph, &memcpyH2D, 1, devArray2, devArray1,
+                                    numBytes, hipMemcpyDeviceToDevice));
 
   // Device to host (devArray2 -> harray1Dres)
-  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyD2H, graph, &memcpyD2D, 1,
-                     harray1Dres, devArray2, numBytes, hipMemcpyDeviceToHost));
+  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyD2H, graph, &memcpyD2D, 1, harray1Dres, devArray2,
+                                    numBytes, hipMemcpyDeviceToHost));
 
   // Instantiate and launch the graph
   HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
@@ -91,7 +89,7 @@ static void validateMemcpyNode1DArray(bool peerAccess) {
   for (int i = 0; i < SIZE; i++) {
     if (harray1D[i] != harray1Dres[i]) {
       INFO("harray1D: " << harray1D[i] << " harray1Dres: " << harray1Dres[i]
-            << " mismatch at : " << i);
+                        << " mismatch at : " << i);
       REQUIRE(false);
     }
   }
@@ -113,9 +111,7 @@ static void validateMemcpyNode1DArray(bool peerAccess) {
  * are performed from device(1).
  */
 TEST_CASE("Unit_hipGraphAddMemcpyNode1D_Functional") {
-  SECTION("Memcpy with 1D array on default device") {
-    validateMemcpyNode1DArray(false);
-  }
+  SECTION("Memcpy with 1D array on default device") { validateMemcpyNode1DArray(false); }
 
   SECTION("Memcpy with 1D array on peer device") {
     int numDevices{}, peerAccess{};
@@ -132,66 +128,111 @@ TEST_CASE("Unit_hipGraphAddMemcpyNode1D_Functional") {
   }
 }
 
+
 /**
  * Negative Test for API hipGraphAddMemcpyNode1D
  */
 TEST_CASE("Unit_hipGraphAddMemcpyNode1D_Negative") {
   constexpr size_t N = 1024;
   constexpr size_t Nbytes = N * sizeof(int);
-  LinearAllocGuard<void> A_d(LinearAllocs::hipMalloc, Nbytes);
-  LinearAllocGuard<void> A_h(LinearAllocs::hipMalloc, Nbytes);
-
+  int *A_d, *A_h;
   hipGraph_t graph;
+  hipGraphNode_t memcpyNode{};
+  hipError_t ret;
+
+  HIP_CHECK(hipMalloc(&A_d, Nbytes));
+  HIP_CHECK(hipMalloc(&A_h, Nbytes));
   HIP_CHECK(hipGraphCreate(&graph, 0));
 
-  hipGraphNode_t memcpyNode{};
-
   SECTION("Pass pGraphNode as nullptr") {
-    HIP_CHECK_ERROR(hipGraphAddMemcpyNode1D(nullptr, graph, nullptr, 0, A_d.ptr(),
-                                            A_h.ptr(), Nbytes, hipMemcpyHostToDevice),
-                    hipErrorInvalidValue);
+    ret = hipGraphAddMemcpyNode1D(nullptr, graph, nullptr, 0, A_d, A_h, Nbytes,
+                                  hipMemcpyHostToDevice);
+    REQUIRE(hipErrorInvalidValue == ret);
   }
-
   SECTION("Pass graph as nullptr") {
-    HIP_CHECK_ERROR(hipGraphAddMemcpyNode1D(&memcpyNode, nullptr, nullptr, 0,
-                                            A_d.ptr(), A_h.ptr(), Nbytes,
-                                            hipMemcpyHostToDevice),
-                    hipErrorInvalidValue);
+    ret = hipGraphAddMemcpyNode1D(&memcpyNode, nullptr, nullptr, 0, A_d, A_h, Nbytes,
+                                  hipMemcpyHostToDevice);
+    REQUIRE(hipErrorInvalidValue == ret);
   }
-
+  SECTION("Pass pDependencies as nullptr") {
+    ret = hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr, 0, A_d, A_h, Nbytes,
+                                  hipMemcpyHostToDevice);
+    REQUIRE(hipSuccess == ret);
+  }
   SECTION("Pass numDependencies is max and pDependencies is not valid ptr") {
-    HIP_CHECK_ERROR(hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr,
-                                            INT_MAX, A_d.ptr(), A_h.ptr(), Nbytes,
-                                            hipMemcpyHostToDevice),
-                    hipErrorInvalidValue);
+    ret = hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr, INT_MAX, A_d, A_h, Nbytes,
+                                  hipMemcpyHostToDevice);
+    REQUIRE(hipErrorInvalidValue == ret);
   }
-
   SECTION("Pass pDependencies as nullptr, but numDependencies is non-zero") {
-    HIP_CHECK_ERROR(hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr, 9, A_d.ptr(),
-                                            A_h.ptr(), Nbytes, hipMemcpyHostToDevice),
-                    hipErrorInvalidValue);
+    ret = hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr, 9, A_d, A_h, Nbytes,
+                                  hipMemcpyHostToDevice);
+    REQUIRE(hipErrorInvalidValue == ret);
   }
-
   SECTION("Pass destination ptr as nullptr") {
-    HIP_CHECK_ERROR(hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr, 0,
-                                            nullptr, A_h.ptr(), Nbytes,
-                                            hipMemcpyHostToDevice),
-                    hipErrorInvalidValue);
+    ret = hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr, 0, nullptr, A_h, Nbytes,
+                                  hipMemcpyHostToDevice);
+    REQUIRE(hipErrorInvalidValue == ret);
   }
-
   SECTION("Pass source ptr as nullptr") {
-    HIP_CHECK_ERROR(hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr, 0, A_d.ptr(),
-                                            nullptr, Nbytes,
-                                            hipMemcpyHostToDevice),
-                    hipErrorInvalidValue);
+    ret = hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr, 0, A_d, nullptr, Nbytes,
+                                  hipMemcpyHostToDevice);
+    REQUIRE(hipErrorInvalidValue == ret);
   }
-
   SECTION("Pass count as more than allocated size for source ptr") {
-    HIP_CHECK_ERROR(hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr, 0, A_d.ptr(),
-                                            A_h.ptr(), Nbytes + 10,
-                                            hipMemcpyHostToDevice),
-                    hipErrorInvalidValue);
+    ret = hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr, 0, A_d, A_h, Nbytes + 10,
+                                  hipMemcpyHostToDevice);
+    REQUIRE(hipErrorInvalidValue == ret);
   }
+  SECTION("Pass count as less than allocated size for destination ptr") {
+    ret = hipGraphAddMemcpyNode1D(&memcpyNode, graph, nullptr, 0, A_d, A_h, Nbytes - 10,
+                                  hipMemcpyHostToDevice);
+    REQUIRE(hipSuccess == ret);
+  }
+  HIP_CHECK(hipFree(A_d));
+  HIP_CHECK(hipFree(A_h));
+  HIP_CHECK(hipGraphDestroy(graph));
+}
 
+TEST_CASE("Unit_hipGraphAddMemcpyNode1D_Negative_Basic") {
+  constexpr size_t N = 1024;
+  constexpr size_t Nbytes = N * sizeof(int);
+  int *A_d, *B_d, *C_d, *A_h, *B_h, *C_h;
+
+  hipGraphNode_t memcpy_A, memcpy_B, memcpy_C;
+  hipError_t ret;
+  hipGraph_t graph;
+
+  HipTest::initArrays(&A_d, &B_d, &C_d, &A_h, &B_h, &C_h, N, false);
+
+  HIP_CHECK(hipGraphCreate(&graph, 0));
+  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpy_A, graph, nullptr, 0, A_d, A_h, Nbytes,
+                                    hipMemcpyHostToDevice));
+
+  //  Pass memcpy direction as hipMemcpyDeviceToHost and
+  //  source pointer as host and destination pointer as device pointer
+  ret = hipGraphAddMemcpyNode1D(&memcpy_B, graph, nullptr, 0, B_d, B_h, Nbytes,
+                                hipMemcpyDeviceToHost);
+  REQUIRE(hipErrorInvalidValue == ret);
+
+  //  Pass memcpy direction as hipMemcpyHostToDevice and
+  //  source pointer as device and destination pointer as host pointer
+  ret = hipGraphAddMemcpyNode1D(&memcpy_C, graph, nullptr, 0, C_h, C_d, Nbytes,
+                                hipMemcpyHostToDevice);
+  REQUIRE(hipErrorInvalidValue == ret);
+
+  //  Pass memcpy direction as hipMemcpyDeviceToDevice and
+  //  pass source pointer as device and destination pointer as host pointer
+  ret = hipGraphAddMemcpyNode1D(&memcpy_C, graph, nullptr, 0, C_h, C_d, Nbytes,
+                                hipMemcpyDeviceToDevice);
+  REQUIRE(hipErrorInvalidValue == ret);
+
+  //  Pass memcpy direction as hipMemcpyDeviceToDevice and
+  //  pass source pointer as host and destination pointer as device pointer
+  ret = hipGraphAddMemcpyNode1D(&memcpy_C, graph, nullptr, 0, C_d, C_h, Nbytes,
+                                hipMemcpyDeviceToDevice);
+  REQUIRE(hipErrorInvalidValue == ret);
+
+  HipTest::freeArrays(A_d, B_d, C_d, A_h, B_h, C_h, false);
   HIP_CHECK(hipGraphDestroy(graph));
 }

@@ -136,6 +136,8 @@ TEST_CASE("Unit_hipGraphAddHostNode_ClonedGraphwithHostNode") {
   HIP_CHECK(hipGraphCreate(&graph, 0));
   hipGraphNode_t memcpyH2D_A, memcpyH2D_C,
                  memcpyD2H_AC;
+  hipGraphNode_t cloned_memcpyH2D_A, cloned_memcpyH2D_C,
+                 cloned_memcpyD2H_AC;
   hipStream_t streamForGraph;
   HIP_CHECK(hipStreamCreate(&streamForGraph));
   HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_A, graph, nullptr,
@@ -151,6 +153,13 @@ TEST_CASE("Unit_hipGraphAddHostNode_ClonedGraphwithHostNode") {
   hipGraph_t clonedgraph;
   HIP_CHECK(hipGraphClone(&clonedgraph, graph));
 
+  HIP_CHECK(hipGraphNodeFindInClone(&cloned_memcpyH2D_A, memcpyH2D_A,
+                                    clonedgraph));
+  HIP_CHECK(hipGraphNodeFindInClone(&cloned_memcpyH2D_C, memcpyH2D_C,
+                                    clonedgraph));
+  HIP_CHECK(hipGraphNodeFindInClone(&cloned_memcpyD2H_AC, memcpyD2H_AC,
+                                    clonedgraph));
+
   hipGraphNode_t hostNode;
   hipHostNodeParams hostParams = {0, 0};
   hostParams.fn = callbackfunc;
@@ -159,10 +168,12 @@ TEST_CASE("Unit_hipGraphAddHostNode_ClonedGraphwithHostNode") {
                                  nullptr,
                                  0, &hostParams));
 
-  HIP_CHECK(hipGraphAddDependencies(graph, &memcpyH2D_A,
-                                    &memcpyD2H_AC, 1));
-  HIP_CHECK(hipGraphAddDependencies(graph, &memcpyH2D_C,
-                                    &memcpyD2H_AC, 1));
+  HIP_CHECK(hipGraphAddDependencies(clonedgraph, &cloned_memcpyH2D_A,
+                                    &cloned_memcpyD2H_AC, 1));
+  HIP_CHECK(hipGraphAddDependencies(clonedgraph, &cloned_memcpyH2D_C,
+                                    &cloned_memcpyD2H_AC, 1));
+  HIP_CHECK(hipGraphAddDependencies(clonedgraph, &cloned_memcpyD2H_AC,
+                                    &hostNode, 1));
 
   // Instantiate and launch the cloned graph
   HIP_CHECK(hipGraphInstantiate(&graphExec, clonedgraph, nullptr, nullptr, 0));

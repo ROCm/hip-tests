@@ -237,6 +237,7 @@ void MemcpySyncBehaviorCheck(F memcpy_func, const bool should_sync,
   LaunchDelayKernel(std::chrono::milliseconds{100}, kernel_stream);
   HIP_CHECK(memcpy_func());
   if (should_sync) {
+    HIP_CHECK(hipStreamSynchronize(kernel_stream));
     HIP_CHECK(hipStreamQuery(kernel_stream));
   } else {
     HIP_CHECK_ERROR(hipStreamQuery(kernel_stream), hipErrorNotReady);

@@ -134,6 +134,7 @@ TEST_CASE("Unit_hipTextureMipmapRef2D_Negative_Parameters") {
   CHECK_IMAGE_SUPPORT
 
 #ifdef _WIN32
+  hipError_t ret;
   unsigned int width = 64;
   unsigned int height = 64;
   unsigned int mipmap_level = 1;

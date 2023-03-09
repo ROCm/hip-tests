@@ -47,12 +47,10 @@ TEST_CASE("Unit_hipOccupancyMaxActiveBlocksPerMultiprocessor_Negative_Parameters
       },
       blockSize);
 
-#if HT_NVIDIA  // EXSWHTEC-219
   SECTION("Kernel function is NULL") {
     HIP_CHECK_ERROR(hipOccupancyMaxActiveBlocksPerMultiprocessor(&numBlocks, NULL, blockSize, 0),
                     hipErrorInvalidDeviceFunction);
   }
-#endif
 }
 
 TEST_CASE("Unit_hipOccupancyMaxActiveBlocksPerMultiprocessor_Positive_RangeValidation") {

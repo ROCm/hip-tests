@@ -42,14 +42,12 @@ TEST_CASE("Unit_hipModuleOccupancyMaxPotentialBlockSizeWithFlags_Negative_Parame
                                                             hipOccupancyDefault);
   });
 
-#if HT_NVIDIA // EXSWHTEC-219
   SECTION("Flag is invalid") {
     // Only default flag is supported
     HIP_CHECK_ERROR(
         hipModuleOccupancyMaxPotentialBlockSizeWithFlags(&gridSize, &blockSize, function, 0, 0, 2),
         hipErrorInvalidValue);
   }
-#endif
 
   HIP_CHECK(hipModuleUnload(module));
 }

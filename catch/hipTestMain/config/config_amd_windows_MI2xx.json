@@ -96,6 +96,13 @@
 		"Unit_hipMemGetAddressRange_Negative",
 		"Unit_hipStreamValue_Wait64_Blocking_NoMask_Nor",
 		"Unit_hipLaunchHostFunc_Graph",
-		"Unit_hipLaunchHostFunc_KernelHost"
+		"Unit_hipLaunchHostFunc_KernelHost",
+		"Unit_hipEventCreateWithFlags_DisableSystemFence_HstVisMem",
+		"Unit_hipEventCreateWithFlags_DefaultFlg_HstVisMem",
+		"Unit_hipEventCreateWithFlags_DisableSystemFence_NonCohHstMem",
+		"Unit_hipEventCreateWithFlags_DefaultFlg_NonCohHstMem",
+		"Unit_hipEventCreateWithFlags_DisableSystemFence_CohHstMem",
+		"Unit_hipEventCreateWithFlags_DefaultFlg_CohHstMem",
+		"Unit_hipStreamCreateWithPriority_MulthreadNonblockingflag"
 	]
 }

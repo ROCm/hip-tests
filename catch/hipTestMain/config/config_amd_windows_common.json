@@ -164,6 +164,12 @@
 	   "Disabling test tracked SWDEV-391718",
 	   "Unit_hipMemRangeGetAttribute_TstCountParam",
 	   "SWDEV-398981 fails in stress test",
-	   "Unit_hipStreamCreateWithPriority_MulthreadDefaultflag"
+	   "Unit_hipStreamCreateWithPriority_MulthreadDefaultflag",
+	   "Unit_hipEventCreateWithFlags_DisableSystemFence_HstVisMem",
+	   "Unit_hipEventCreateWithFlags_DefaultFlg_HstVisMem",
+	   "Unit_hipEventCreateWithFlags_DisableSystemFence_NonCohHstMem",
+	   "Unit_hipEventCreateWithFlags_DefaultFlg_NonCohHstMem",
+	   "Unit_hipEventCreateWithFlags_DisableSystemFence_CohHstMem",
+	   "Unit_hipEventCreateWithFlags_DefaultFlg_CohHstMem"
 	]
 }

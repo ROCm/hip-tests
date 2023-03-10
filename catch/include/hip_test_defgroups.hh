@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2021 - 2023 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -40,5 +40,12 @@ THE SOFTWARE.
  * @defgroup ShflTest warp shuffle function Management
  * @{
  * This section describes the warp shuffle types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup EventTest Event Management
+ * @{
+ * This section describes the event management types & functions of HIP runtime API.
  * @}
  */

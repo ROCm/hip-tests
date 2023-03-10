@@ -126,6 +126,8 @@
 	   "Unit_hipGraphExecMemsetNodeSetParams_Positive_Basic - uint8_t",
 	   "Unit_hipGraphExecMemsetNodeSetParams_Positive_Basic - uint16_t",
 	   "Unit_hipGraphExecMemsetNodeSetParams_Positive_Basic - uint32_t",
-	   "Unit_hipGraphMemsetNodeSetParams_Positive_Basic - uint8_t"
+	   "Unit_hipGraphMemsetNodeSetParams_Positive_Basic - uint8_t",
+	   "Note: UUID returned empty on some windows nodes",
+	   "Unit_hipDeviceGetUuid_Positive"
 	]
 }

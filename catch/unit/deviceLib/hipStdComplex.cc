@@ -24,7 +24,6 @@ THE SOFTWARE.
 
 // Tolerance for error
 const double tolerance = 1e-6;
-const bool verbose = false;
 
 #define LEN 64
 
@@ -117,14 +116,15 @@ void test() {
       hipLaunchKernelGGL(kernel<FloatT>, dim3(1), dim3(LEN), 0, 0,
                                                    Ad, Bd, Cd, CK);
       HIP_CHECK(hipMemcpy(C, Cd, sizeof(ComplexT)*LEN, hipMemcpyDeviceToHost));
+      bool pass = true;
       for (int i = 0; i < LEN; i++) {
         ComplexT Expected = calc(A[i], B[i], CK);
         FloatT error = abs(C[i] - Expected);
         if (abs(Expected) > tolerance)
           error /= abs(Expected);
-        bool pass = error < tolerance;
+        pass &= error < tolerance;
       }
-      return true;
+      return pass;
     };
 
 #define OP(x) assert(test_fun(CK_##x));

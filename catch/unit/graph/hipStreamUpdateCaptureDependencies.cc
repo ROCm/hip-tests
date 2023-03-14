@@ -34,7 +34,7 @@ THE SOFTWARE.
  * update the set of dependencies in a capturing stream
  */
 
-static __global__ void vectorSet(const float* A_d, float* B_d, int64_t NELEM) {
+static __global__ void vectorSet(const float* A_d, float* B_d, size_t NELEM) {
   size_t offset = (blockIdx.x * blockDim.x + threadIdx.x);
   size_t stride = blockDim.x * gridDim.x;
 
@@ -159,7 +159,7 @@ static void UpdateStreamCaptureDependenciesSet(hipStream_t stream,
   HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < kLaunchIters; i++) {
+  for (size_t i = 0; i < kLaunchIters; i++) {
     std::fill_n(A_h.host_ptr(), N, static_cast<float>(i));
     std::fill_n(C_h.host_ptr(), N, static_cast<float>(i));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
@@ -275,7 +275,7 @@ static void UpdateStreamCaptureDependenciesAdd(hipStream_t stream,
   HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < kLaunchIters; i++) {
+  for (size_t i = 0; i < kLaunchIters; i++) {
     std::fill_n(A_h.host_ptr(), N, static_cast<float>(i));
     std::fill_n(C_h.host_ptr(), N, static_cast<float>(i));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
@@ -367,7 +367,7 @@ TEST_CASE("Unit_hipStreamUpdateCaptureDependencies_Positive_Parameters") {
   const hipStreamUpdateCaptureDependenciesFlags flag =
       GENERATE(hipStreamAddCaptureDependencies, hipStreamSetCaptureDependencies);
 
-  HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
+  HIP_CHECK(hipStreamBeginCapture(stream, captureMode)); //hipStreamCaptureModeGlobal));
 
   HIP_CHECK(hipStreamUpdateCaptureDependencies(stream, nullptr, 0, flag));
 

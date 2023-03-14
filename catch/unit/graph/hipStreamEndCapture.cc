@@ -194,7 +194,7 @@ TEST_CASE("Unit_hipStreamEndCapture_Positive_Thread") {
   HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < kLaunchIters; i++) {
+  for (size_t i = 0; i < kLaunchIters; i++) {
     std::fill_n(A_h.host_ptr(), N, static_cast<float>(i));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
     HIP_CHECK(hipStreamSynchronize(stream));

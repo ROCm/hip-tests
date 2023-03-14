@@ -40,7 +40,7 @@ void checkStreamCaptureInfo_v2(hipStreamCaptureMode mode, hipStream_t stream) {
   hipGraph_t graph{nullptr}, capInfoGraph{nullptr};
   hipGraphExec_t graphExec{nullptr};
   const hipGraphNode_t* nodelist{};
-  int numDepsCreated = 0;
+  size_t numDepsCreated = 0;
   hipStreamCaptureStatus captureStatus{hipStreamCaptureStatusNone};
   hipGraphNodeType type(hipGraphNodeTypeEmpty);
   unsigned long long capSequenceID = 0;  // NOLINT
@@ -119,7 +119,7 @@ void checkStreamCaptureInfo_v2(hipStreamCaptureMode mode, hipStream_t stream) {
   REQUIRE(graphExec != nullptr);
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < kLaunchIters; i++) {
+  for (size_t i = 0; i < kLaunchIters; i++) {
     std::fill_n(A_h.host_ptr(), N, static_cast<float>(i));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
     HIP_CHECK(hipStreamSynchronize(stream));
@@ -221,7 +221,9 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_v2_Positive_UniqueID") {
  */
 TEST_CASE("Unit_hipStreamGetCaptureInfo_v2_Negative_Parameters") {
   hipGraph_t capInfoGraph{};
+#if HT_NVIDIA
   hipStreamCaptureStatus captureStatus;
+#endif
   unsigned long long capSequenceID;  // NOLINT
   size_t numDependencies;
   const hipGraphNode_t* nodelist{};

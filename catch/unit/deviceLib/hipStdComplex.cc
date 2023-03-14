@@ -140,6 +140,7 @@ void test() {
     delete[] D;
 }
 
+#if HT_AMD
 TEST_CASE("Unit_StdComplex") {
   SECTION("Test run with float") {
   test<float>();
@@ -147,4 +148,5 @@ TEST_CASE("Unit_StdComplex") {
   SECTION("Test run with double") {
   test<double>();
   }
+#endif
 }

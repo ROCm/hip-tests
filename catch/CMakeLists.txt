@@ -9,51 +9,45 @@ project(hiptests)
 # flag to generate standalone exe per src file.
 message(STATUS "STANDALONE_TESTS : ${STANDALONE_TESTS}")
 
-# Check if platform and compiler are set
-if(HIP_PLATFORM STREQUAL "amd")
-    if(HIP_COMPILER STREQUAL "nvcc")
-        message(FATAL_ERROR "Unexpected HIP_COMPILER:${HIP_COMPILER} is set for HIP_PLATFOR:amd")
-    endif()
-elseif(HIP_PLATFORM STREQUAL "nvidia")
-    if(DEFINED HIP_COMPILER AND NOT HIP_COMPILER STREQUAL "nvcc")
-        message(FATAL_ERROR "Unexpected HIP_COMPILER: ${HIP_COMPILER} is set for HIP_PLATFORM:nvidia")
-    endif()
-else()
+# Check if platform is set
+if(NOT HIP_PLATFORM STREQUAL "amd" AND NOT HIP_PLATFORM STREQUAL "nvidia")
     message(FATAL_ERROR "Unexpected HIP_PLATFORM: " ${HIP_PLATFORM})
 endif()
 
-if (WIN32)
+if(WIN32)
     set(EXT ".bat")
 endif()
 
-# Read -DROCM_Path and env{ROCM_PATH}
-if(NOT DEFINED ROCM_PATH)
-    if(DEFINED ENV{ROCM_PATH})
-        set(ROCM_PATH $ENV{ROCM_PATH} CACHE STRING "ROCM Path")
+if(HIP_PLATFORM STREQUAL "amd")
+   if(UNIX AND DEFINED ROCM_PATH)
+      # Read -DROCM_PATH and set CXX_FLAGS for amd platform only
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --rocm-path=${ROCM_PATH}")
+   endif()
+
+   if(DEFINED HIP_PATH)
+      # Read -DHIP_PATH and set CXX_FLAGS for amd platform only
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --hip-path=${HIP_PATH}")
+   endif()
+endif()
+
+# Read -DHIP_PATH
+# If not set read env{HIP_PATH} only on Windows
+if(WIN32)
+    if(NOT DEFINED HIP_PATH)
+        if(DEFINED ENV{HIP_PATH})
+            set(HIP_PATH $ENV{HIP_PATH} CACHE STRING "HIP Path")
+        endif()
     endif()
 endif()
 
-# Read -DHIP_Path and env{HIP_PATH}
 if(NOT DEFINED HIP_PATH)
-    if(DEFINED ENV{HIP_PATH})
-        set(HIP_PATH $ENV{HIP_PATH} CACHE STRING "HIP Path")
-    endif()
-endif()
-
-# both are not set
-if(NOT DEFINED HIP_PATH AND NOT DEFINED ROCM_PATH)
-    set(HIP_PATH "/opt/rocm")
-    set(ROCM_PATH "/opt/rocm")
-elseif(DEFINED HIP_PATH AND NOT DEFINED ROCM_PATH)
-    execute_process(COMMAND ${HIP_PATH}/bin/hipconfig${EXT} --rocmpath
-                OUTPUT_VARIABLE ROCM_PATH
-                OUTPUT_STRIP_TRAILING_WHITESPACE)
-elseif(DEFINED ROCM_PATH AND NOT DEFINED HIP_PATH)
-    set(HIP_PATH ${ROCM_PATH})
+   if(DEFINED ROCM_PATH)
+      set(HIP_PATH ${ROCM_PATH})
+   else()
+      set(HIP_PATH "/opt/rocm")
+   endif()
 endif()
 message(STATUS "HIP_PATH: ${HIP_PATH}")
-message(STATUS "ROCM_PATH: ${ROCM_PATH}")
-
 
 set(CMAKE_CXX_COMPILER "${HIP_PATH}/bin/hipcc${EXT}")
 set(CMAKE_C_COMPILER "${HIP_PATH}/bin/hipcc${EXT}")
@@ -62,10 +56,6 @@ execute_process(COMMAND ${HIPCONFIG_EXECUTABLE} --version
                 OUTPUT_VARIABLE HIP_VERSION
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-if(HIP_PLATFORM STREQUAL "amd")
-    # prioritize -DROCM_PATH over env{ROCM_PATH} for amd platform only
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --rocm-path=${ROCM_PATH}")
-endif()
 # enforce c++17
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++17")
 
@@ -155,8 +145,8 @@ if (WIN32)
   SET(CMAKE_CXX_RESPONSE_FILE_LINK_FLAG "")
 endif()
 
-if(HIP_PLATFORM MATCHES "amd" AND HIP_COMPILER MATCHES "clang")
-    add_compile_options(-Wall -Wextra -pedantic -Werror -Wno-deprecated)
+if(HIP_PLATFORM STREQUAL "amd")
+    add_compile_options(-Wall -Wextra -Werror -Wno-deprecated)
 endif()
 
 cmake_policy(PUSH)
@@ -178,10 +168,8 @@ message(STATUS "CMAKE HIP ARCHITECTURES: ${CMAKE_HIP_ARCHITECTURES}")
 # That results in hipcc building the test for gfx803 (the default target)
 # preference to pass arch -
 # OFFLOAD_ARCH_STR
-# ENV{HCC_AMDGPU_TARGET}
 # rocm_agent_enumerator
 if(NOT DEFINED OFFLOAD_ARCH_STR
-   AND NOT DEFINED ENV{HCC_AMDGPU_TARGET}
    AND EXISTS "${ROCM_PATH}/bin/rocm_agent_enumerator"
    AND HIP_PLATFORM STREQUAL "amd" AND UNIX)
     execute_process(COMMAND ${ROCM_PATH}/bin/rocm_agent_enumerator
@@ -208,10 +196,6 @@ endif()
 
 if(DEFINED OFFLOAD_ARCH_STR)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OFFLOAD_ARCH_STR} ")
-elseif(DEFINED ENV{HCC_AMDGPU_TARGET})
-    # hipcc pl script appends it to the options
-    set(OFFLOAD_ARCH_STR "--offload-arch=$ENV{HCC_AMDGPU_TARGET}")
-    set(HIP_GPU_ARCH_LIST $ENV{HCC_AMDGPU_TARGET})
 endif()
 message(STATUS "Using offload arch string: ${OFFLOAD_ARCH_STR}")
 
@@ -240,7 +224,7 @@ set(_subdirs ${_autogen} "subdirs(..)\n")
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/CTestTestfile.cmake ${_subdirs})
 
 # Enable device lambda on nvidia platforms
-if(HIP_COMPILER MATCHES "nvcc")
+if(HIP_PLATFORM STREQUAL "nvidia")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --extended-lambda")
 endif()
 

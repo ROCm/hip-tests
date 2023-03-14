@@ -1,5 +1,5 @@
 
-# Copyright (c) 2020 - 2022 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2020 - 2023 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -29,17 +29,10 @@ project(hipVulkan)
 cmake_minimum_required(VERSION 3.10)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake;${CMAKE_MODULE_PATH}")
 
-if (NOT DEFINED ROCM_PATH )
-     set ( ROCM_PATH "/opt/rocm"  CACHE STRING "Default ROCM installation directory." )
-endif ()
-
-# Search for rocm in common locations
-list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/hip ${ROCM_PATH})
-
 # need to set rocm_path for windows
 # since clang and hip are two different folders during build/install step
 if (WIN32 AND HIPINFO_INTERNAL_BUILD)
-     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --rocm-path=${HIP_PATH}")
+     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --rocm-path=${CMAKE_PREFIX_PATH}")
 endif()
 
 
@@ -85,7 +78,7 @@ set(CMAKE_BUILD_TYPE Release)
 
 # Create the excutable
 add_executable(hipVulkan VulkanBaseApp.cpp VulkanBaseApp.h main.cpp SineWaveSimulation.cpp SineWaveSimulation.h linmath.h)
-include_directories(${HIP_PATH}/include)
+include_directories(${CMAKE_PREFIX_PATH}/include)
 include_directories(${GLFW_PATH}/include)
 
 # Link with HIP

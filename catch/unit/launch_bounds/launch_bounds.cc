@@ -21,7 +21,7 @@ THE SOFTWARE.
 #include "launch_bounds_negative_kernels_rtc.hh"
 
 #define MAX_THREADS_PER_BLOCK 128
-#define MIN_WARPS_PER_MULTIPROCESSOR 2147483647
+#define MIN_WARPS_PER_MULTIPROCESSOR 2
 
 __launch_bounds__(MAX_THREADS_PER_BLOCK, MIN_WARPS_PER_MULTIPROCESSOR)
 __global__ void SumKernel(int* sum) {
@@ -42,7 +42,11 @@ template<bool out_of_bounds> void LaunchBoundsWrapper(const int threads_per_bloc
   SumKernel<<<block_size, threads_per_block>>>(A_d);
 
   if constexpr (out_of_bounds) {
-    HIP_CHECK_ERROR(hipGetLastError(), hipErrorLaunchFailure);
+    #if HT_AMD
+      HIP_CHECK_ERROR(hipGetLastError(), hipErrorLaunchFailure);
+    #else
+      HIP_CHECK_ERROR(hipGetLastError(), hipErrorInvalidValue);
+    #endif
   } else {
     HIP_CHECK(hipGetLastError());
   }
@@ -73,7 +77,18 @@ TEST_CASE("Unit_Kernel_Launch_bounds_Negative_OutOfBounds") {
 TEST_CASE("Unit_Kernel_Launch_bounds_Negative_Parameters_RTC") {
   hiprtcProgram program{};
 
-  const auto program_source = kMinWarpsNotInt;
+  #if HT_AMD
+    const auto program_source = GENERATE(kMaxThreadsZero,
+                                         kMaxThreadsNegative,
+                                         kMinWarpsNegative,
+                                         kMaxThreadsNotInt,
+                                         kMinWarpsNotInt);
+  #else
+    // Aligned with CUDA behavior and expected behavior on NVIDIA
+    const auto program_source = GENERATE(kMaxThreadsNotInt,
+                                         kMinWarpsNotInt);
+  #endif
+
   HIPRTC_CHECK(hiprtcCreateProgram(&program, program_source, "launch_bounds_negative.cc", 0, nullptr, nullptr));
   hiprtcResult result{hiprtcCompileProgram(program, 0, nullptr)};
 

@@ -56,13 +56,11 @@ bool p_atomicNoRet = false;
 
 template <typename T>
 __global__ void atomicnoret_manywaves(T* C_d) {
-  size_t tid = (blockIdx.x * blockDim.x + threadIdx.x);
   atomicAddNoRet(C_d, INCREMENT_VALUE);
 }
 
 template <typename T>
 __global__ void atomic_manywaves(T* C_d) {
-  size_t tid = (hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x);
   atomicAdd(C_d, INCREMENT_VALUE);
 }
 
@@ -95,7 +93,7 @@ bool atomictest_manywaves(const T& initial_val) {
   // Copy result from device to host
   HIP_CHECK(hipMemcpy(hOData, dOData, memSize, hipMemcpyDeviceToHost));
   REQUIRE(hOData[0] == initial_val+
-                      (INCREMENT_VALUE*(ThreadsperBlock*numBlocks)));
+                      static_cast<T>(INCREMENT_VALUE*(ThreadsperBlock*numBlocks)));
 
   // Cleanup memory
   free(hOData);

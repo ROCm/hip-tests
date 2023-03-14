@@ -71,7 +71,7 @@ void checkStreamCaptureInfo(hipStreamCaptureMode mode, hipStream_t stream) {
   REQUIRE(graphExec != nullptr);
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < kLaunchIters; i++) {
+  for (size_t i = 0; i < kLaunchIters; i++) {
     std::fill_n(A_h.host_ptr(), N, static_cast<float>(i));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
     HIP_CHECK(hipStreamSynchronize(stream));
@@ -166,7 +166,9 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_Positive_UniqueID") {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamGetCaptureInfo_Negative_Parameters") {
+#if HT_NVIDIA
   hipStreamCaptureStatus cStatus;
+#endif
   unsigned long long capSequenceID;  // NOLINT
   const auto stream_type = GENERATE(Streams::perThread, Streams::created);
   StreamGuard stream_guard(stream_type);

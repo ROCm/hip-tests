@@ -20,6 +20,8 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 
+#if CUDA_VERSION < CUDA_12000
+
 typedef float T;
 
 // Texture reference for 2D Layered texture
@@ -107,3 +109,6 @@ TEST_CASE("Unit_hipSimpleTexture2DLayered_Check") {
   free(hData);
   free(hOutputData);
 }
+
+#endif // CUDA_VERSION < CUDA_12000
+

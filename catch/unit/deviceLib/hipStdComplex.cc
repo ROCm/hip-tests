@@ -148,5 +148,5 @@ TEST_CASE("Unit_StdComplex") {
   SECTION("Test run with double") {
   test<double>();
   }
-#endif
 }
+#endif

@@ -42,11 +42,15 @@ template<bool out_of_bounds> void LaunchBoundsWrapper(const int threads_per_bloc
   SumKernel<<<block_size, threads_per_block>>>(A_d);
 
   if constexpr (out_of_bounds) {
-    #if HT_AMD
-      HIP_CHECK_ERROR(hipGetLastError(), hipErrorLaunchFailure);
-    #else
-      HIP_CHECK_ERROR(hipGetLastError(), hipErrorInvalidValue);
-    #endif
+    if (threads_per_block < 0) {
+      HIP_CHECK_ERROR(hipGetLastError(), hipErrorInvalidConfiguration);
+    } else {
+      #if HT_AMD
+        HIP_CHECK_ERROR(hipGetLastError(), hipErrorLaunchFailure);
+      #else
+        HIP_CHECK_ERROR(hipGetLastError(), hipErrorInvalidValue);
+      #endif
+    }
   } else {
     HIP_CHECK(hipGetLastError());
   }
@@ -70,7 +74,10 @@ TEST_CASE("Unit_Kernel_Launch_bounds_Positive_Basic") {
 }
 
 TEST_CASE("Unit_Kernel_Launch_bounds_Negative_OutOfBounds") {
-  auto threads_per_block = GENERATE(MAX_THREADS_PER_BLOCK + 1, 2 * MAX_THREADS_PER_BLOCK);
+  auto threads_per_block = GENERATE(-1 * MAX_THREADS_PER_BLOCK,
+                                    -1,
+                                    MAX_THREADS_PER_BLOCK + 1,
+                                    2 * MAX_THREADS_PER_BLOCK);
   LaunchBoundsWrapper<true>(threads_per_block);
 }
 

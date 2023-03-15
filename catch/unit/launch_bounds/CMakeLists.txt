@@ -34,8 +34,14 @@ elseif(HIP_PLATFORM MATCHES "amd")
                           LINKER_LIBS hiprtc)
 endif()
 
-add_test(NAME Unit_Kernel_Launch_bounds_Negative_Parameters
+add_test(NAME Unit_Kernel_Launch_bounds_Negative_Parameters_CompilerError
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/compileAndCaptureOutput.py
          ${CMAKE_CURRENT_SOURCE_DIR}
          ${HIP_PLATFORM}
-         launch_bounds_negative_kernels.cc)
+         launch_bounds_compiler_error_kernels.cc)
+
+add_test(NAME Unit_Kernel_Launch_bounds_Negative_Parameters_ParseError
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR}
+         ${HIP_PLATFORM}
+         launch_bounds_parse_error_kernels.cc)

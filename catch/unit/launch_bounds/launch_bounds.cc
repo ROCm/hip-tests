@@ -97,8 +97,16 @@ TEST_CASE("Unit_Kernel_Launch_bounds_Negative_Parameters_RTC") {
   HIPRTC_CHECK(hiprtcGetProgramLogSize(program, &log_size));
   std::string log(log_size, ' ');
   HIPRTC_CHECK(hiprtcGetProgramLog(program, log.data()));
-  std::cout << log << std::endl;
+  int error_count{0};
+  std::string error_message{"error:"};
+  
+  size_t n_pos = log.find(error_message, 0);
+  while(n_pos != std::string::npos) {
+    ++error_count;
+    n_pos = log.find(error_message, n_pos + 1);
+  }
 
   HIPRTC_CHECK(hiprtcDestroyProgram(&program));
+  REQUIRE(error_count > 0);
   HIPRTC_CHECK_ERROR(result, HIPRTC_ERROR_COMPILATION);
 }

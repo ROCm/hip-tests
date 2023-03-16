@@ -20,6 +20,15 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include "launch_bounds_negative_kernels_rtc.hh"
 
+/**
+ * @addtogroup launchBounds launchBounds
+ * @{
+ * @ingroup LaunchBoundsTest
+ * `__launch_bounds__(MAX_THREADS_PER_BLOCK, MIN_WARPS_PER_EXECUTION_UNIT)` -
+ * allows the application to provide usage hints that influence the resources (primarily registers) used by the generated code.
+ * It is a function attribute that must be attached to a global function.
+ */
+
 #define MAX_THREADS_PER_BLOCK 128
 #define MIN_WARPS_PER_MULTIPROCESSOR 2
 
@@ -42,15 +51,11 @@ template<bool out_of_bounds> void LaunchBoundsWrapper(const int threads_per_bloc
   SumKernel<<<block_size, threads_per_block>>>(A_d);
 
   if constexpr (out_of_bounds) {
-    if (threads_per_block < 0) {
-      HIP_CHECK_ERROR(hipGetLastError(), hipErrorInvalidConfiguration);
-    } else {
-      #if HT_AMD
-        HIP_CHECK_ERROR(hipGetLastError(), hipErrorLaunchFailure);
-      #else
-        HIP_CHECK_ERROR(hipGetLastError(), hipErrorInvalidValue);
-      #endif
-    }
+    #if HT_AMD
+      HIP_CHECK_ERROR(hipGetLastError(), hipErrorLaunchFailure);
+    #else
+      HIP_CHECK_ERROR(hipGetLastError(), hipErrorInvalidValue);
+    #endif
   } else {
     HIP_CHECK(hipGetLastError());
   }
@@ -68,11 +73,41 @@ template<bool out_of_bounds> void LaunchBoundsWrapper(const int threads_per_bloc
   HIP_CHECK(hipFree(A_d));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes simple addition kernel and validates results.
+ *  - The number of threads per block used to launch the kernel
+ *    are complied with the `__launch_bounds__`:
+ *      -# Number of threads per block are less than or equal to the configured maximum value.
+ *      -# Different values are assigned and kernel functionality is validated.
+ * Test source
+ * ------------------------
+ *  - unit/launch_bounds/launch_bounds.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Kernel_Launch_bounds_Positive_Basic") {
   auto threads_per_block = GENERATE(1, MAX_THREADS_PER_BLOCK / 2, MAX_THREADS_PER_BLOCK);
   LaunchBoundsWrapper<false>(threads_per_block);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that the kernels will not be launched if the number of threads
+ *    per block is larger than configured with `__launch_bounds__`:
+ *    -# Expected output:
+ *      - return `hipErrorLaunchFailure` on AMD.
+ *      - return `hipErrorInvalidValue` on NVIDIA.
+ * Test source
+ * ------------------------
+ *  - unit/launch_bounds/launch_bounds.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Kernel_Launch_bounds_Negative_OutOfBounds") {
   auto threads_per_block = GENERATE(-1 * MAX_THREADS_PER_BLOCK,
                                     -1,
@@ -81,6 +116,25 @@ TEST_CASE("Unit_Kernel_Launch_bounds_Negative_OutOfBounds") {
   LaunchBoundsWrapper<true>(threads_per_block);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# Compiles kernels that are not created appropriately:
+ *      - Maximum number of threads is 0
+ *      - Maximum number of threads is negative
+ *      - Minimum number of warps is negative
+ *      - Maximum number of threads is not integer value
+ *      - Mimimum number of warps is not integer value
+ *    -# Expected output: compiler error
+ *  - Uses RTC for compilation.
+ * Test source
+ * ------------------------
+ *  - unit/launch_bounds/launch_bounds.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Kernel_Launch_bounds_Negative_Parameters_RTC") {
   hiprtcProgram program{};
 

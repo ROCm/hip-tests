@@ -35,3 +35,60 @@ THE SOFTWARE.
  * This section describes the graph management types & functions of HIP runtime API.
  * @}
  */
+
+/**
+ * @defgroup LaunchBoundsTest Launch Bounds
+ * @{
+ * This section describes tests for the launch bounds kernel attribute.
+ */
+
+/**
+ * @addtogroup launchBounds launchBounds
+ * @{
+ * @ingroup LaunchBoundsTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# Compiles kernels that are not created appropriately:
+ *      - Maximum number of threads is 0
+ *      - Maximum number of threads is not integer value
+ *      - Mimimum number of warps is not integer value
+ *    -# Expected output: compiler error
+ * Test source
+ * ------------------------
+ *  - unit/launch_bounds/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_Kernel_Launch_bounds_Negative_Parameters_CompilerError") {}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# Compiles kernels that are not created appropriately:
+ *      - Maximum number of threads is negative
+ *      - Mimimum number of warps is negative
+ *  - Validates handling of invalid arguments:
+ *    -# Expected output: parse error
+ * Test source
+ * ------------------------
+ *  - unit/launch_bounds/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_Kernel_Launch_bounds_Negative_Parameters_ParseError") {}
+
+/**
+ * End doxygen group launchBounds.
+ * @}
+ */
+/**
+ * End doxygen group LaunchBoundsTest.
+ * @}
+ */

@@ -1,0 +1,74 @@
+/*
+Copyright (c) 2021 Advanced Micro Devices, Inc. All rights reserved.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+
+#include <hip_test_common.hh>
+#include <csetjmp>
+#include <csignal>
+
+jmp_buf env_ignore_abort;
+volatile int abort_raised_flag = 0;
+
+void on_sigabrt(int signum) {
+  signal(signum, SIG_DFL);
+  abort_raised_flag = 1;
+  longjmp(env_ignore_abort, 1);
+}
+
+void try_and_catch_abort(void (*func)()) {
+  if (!setjmp(env_ignore_abort)) {
+    signal(SIGABRT, &on_sigabrt);
+    (*func)();
+    signal(SIGABRT, SIG_DFL);
+  }
+}
+
+__global__ void AssertPassKernel() {
+  const int tid = threadIdx.x + blockIdx.x * blockDim.x;
+  // expected always to be true
+  assert(tid >= 0); 
+}
+
+__global__ void AssertFailKernel() {
+  const int tid = threadIdx.x + blockIdx.x * blockDim.x;
+  // expected to fail for the even thread indices
+  assert(tid % 2 == 1);
+}
+
+template<bool should_abort> void LaunchAssertKernel() {
+  const int num_blocks = 2;
+  const int num_threads = 16;
+
+  if constexpr (should_abort) {
+    AssertFailKernel<<<num_blocks, num_threads, 0, 0>>>();
+  } else {
+    AssertPassKernel<<<num_blocks, num_threads, 0, 0>>>();
+  }
+
+  HIP_CHECK(hipDeviceSynchronize());
+}
+
+TEST_CASE("Unit_Assert_Positive_Basic_KernelPass") {
+  try_and_catch_abort(&LaunchAssertKernel<false>);
+  REQUIRE(abort_raised_flag == 0);
+}
+
+TEST_CASE("Unit_Assert_Positive_Basic_KernelFail") {
+  try_and_catch_abort(&LaunchAssertKernel<true>);
+  REQUIRE(abort_raised_flag == 1);
+}

@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2022 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,25 +18,31 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-add_subdirectory(rtc)
-add_subdirectory(deviceLib)
-add_subdirectory(graph)
-add_subdirectory(memory)
-add_subdirectory(stream)
-add_subdirectory(event)
-add_subdirectory(occupancy)
-add_subdirectory(device)
-add_subdirectory(printf)
-add_subdirectory(texture)
-add_subdirectory(streamperthread)
-add_subdirectory(kernel)
-add_subdirectory(multiThread)
-add_subdirectory(compiler)
-add_subdirectory(errorHandling)
-add_subdirectory(cooperativeGrps)
-if(HIP_PLATFORM STREQUAL "amd")
-#add_subdirectory(clock)
-# Vulkan interop APIs currently undefined for Nvidia
-add_subdirectory(vulkan_interop)
+set(TEST_SRC
+    static_assert.cc
+    assert.cc
+)
+
+if(HIP_PLATFORM MATCHES "nvidia")
+    hip_add_exe_to_target(NAME AssertionTest
+                          TEST_SRC ${TEST_SRC}
+                          TEST_TARGET_NAME build_tests
+                          LINKER_LIBS nvrtc)
+elseif(HIP_PLATFORM MATCHES "amd")
+    hip_add_exe_to_target(NAME AssertionTest
+                          TEST_SRC ${TEST_SRC}
+                          TEST_TARGET_NAME build_tests
+                          LINKER_LIBS hiprtc)
 endif()
-add_subdirectory(assertion)
+
+add_test(NAME Unit_StaticAssert_Positive_Basic
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR}
+         ${HIP_PLATFORM}
+         static_assert_kernels_positive.cc 2)
+
+add_test(NAME Unit_StaticAssert_Negative_Basic
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR}
+         ${HIP_PLATFORM}
+         static_assert_kernels_negative.cc 2)

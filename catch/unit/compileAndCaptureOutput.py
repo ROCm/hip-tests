@@ -23,8 +23,9 @@ import subprocess
 import sys
 import unittest
 
-class LaunchBoundsCompile(unittest.TestCase):
+class CompileAndCapture(unittest.TestCase):
   path = None
+  expected_error_count = None
   file = None
   error_string = None
   platform = None
@@ -33,6 +34,7 @@ class LaunchBoundsCompile(unittest.TestCase):
     self.error_string = 'error:'
     self.assertFalse(self.path == None)
     self.assertFalse(self.file == None)
+    self.assertFalse(self.expected_error_count == None)
     self.assertTrue(self.platform == 'amd' or self.platform == 'nvidia')
 
   def test_atomic(self):
@@ -53,13 +55,18 @@ class LaunchBoundsCompile(unittest.TestCase):
     compiler_output = subprocess.run(compiler_args, stderr=subprocess.PIPE)
     # Get the compiler output in the stdout if -V flag is raised during ctest invocation.
     print(compiler_output.stderr.decode('UTF-8'))
-    self.assertGreater(compiler_output.stderr.decode('UTF-8').count(self.error_string), 0)
+    if self.expected_error_count < 0:
+      self.assertGreater(compiler_output.stderr.decode('UTF-8').count(self.error_string), 0)
+    else:
+      self.assertEqual(compiler_output.stderr.decode('UTF-8').count(self.error_string),
+                       self.expected_error_count)
 
 if __name__ == '__main__':
-  if len(sys.argv) == 4:
-    LaunchBoundsCompile.path = sys.argv[1]
-    LaunchBoundsCompile.platform = sys.argv[2]
-    LaunchBoundsCompile.file = sys.argv[3]
+  if len(sys.argv) == 5:
+    CompileAndCapture.path = sys.argv[1]
+    CompileAndCapture.platform = sys.argv[2]
+    CompileAndCapture.file = sys.argv[3]
+    CompileAndCapture.expected_error_count = int(sys.argv[4])
   # Unittest looks at the same argv's as the __main__ and doesn't know how
   # to handle arguments other than the executable (0). Therefore passing only
   # executable as the argv for unittest module.

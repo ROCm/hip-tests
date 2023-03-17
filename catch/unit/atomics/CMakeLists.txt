@@ -40,19 +40,19 @@ elseif(HIP_PLATFORM MATCHES "amd")
 endif()
 
 add_test(NAME Unit_atomicAnd_Negative_Parameters
-         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/compileAndCaptureOutput.py
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
          ${CMAKE_CURRENT_SOURCE_DIR}
          ${HIP_PLATFORM}
          atomicAnd_negative_kernels.cc 40)
 
 add_test(NAME Unit_atomicOr_Negative_Parameters
-         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/compileAndCaptureOutput.py
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
          ${CMAKE_CURRENT_SOURCE_DIR}
          ${HIP_PLATFORM}
          atomicOr_negative_kernels.cc 40)
 
 add_test(NAME Unit_atomicXor_Negative_Parameters
-         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/compileAndCaptureOutput.py
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
          ${CMAKE_CURRENT_SOURCE_DIR}
          ${HIP_PLATFORM}
          atomicXor_negative_kernels.cc 40)

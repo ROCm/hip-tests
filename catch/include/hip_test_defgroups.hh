@@ -42,3 +42,34 @@ THE SOFTWARE.
  * This section describes tests for the Device Atomic APIs.
  * @}
  */
+
+ /**
+ * @addtogroup atomicExch atomicExch
+ * @{
+ * @ingroup AtomicsTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Compiles atomicExch with invalid parameters.
+ *  - Compiles the source with specialized Python tool.
+ *    -# Utilizes sub-process to invoke compilation of faulty source.
+ *    -# Performs post-processing of compiler output and counts errors.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_atomicExch_Negative_Parameters") {}
+/**
+ * End doxygen group atomicExch.
+ * @}
+ */
+
+/**
+ * End doxygen group AtomicsTest.
+ * @}
+ */

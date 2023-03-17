@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2022 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@ import subprocess
 import sys
 import unittest
 
-class AtomicsCompile(unittest.TestCase):
+class CompileAndCapture(unittest.TestCase):
   path = None
   expected_error_count = None
   file = None
@@ -55,15 +55,18 @@ class AtomicsCompile(unittest.TestCase):
     compiler_output = subprocess.run(compiler_args, stderr=subprocess.PIPE)
     # Get the compiler output in the stdout if -V flag is raised during ctest invocation.
     print(compiler_output.stderr.decode('UTF-8'))
-    self.assertEqual(compiler_output.stderr.decode('UTF-8').count(self.error_string),
-                     self.expected_error_count)
+    if self.expected_error_count < 0:
+      self.assertGreater(compiler_output.stderr.decode('UTF-8').count(self.error_string), 0)
+    else:
+      self.assertEqual(compiler_output.stderr.decode('UTF-8').count(self.error_string),
+                       self.expected_error_count)
 
 if __name__ == '__main__':
   if len(sys.argv) == 5:
-    AtomicsCompile.path = sys.argv[1]
-    AtomicsCompile.platform = sys.argv[2]
-    AtomicsCompile.file = sys.argv[3]
-    AtomicsCompile.expected_error_count = int(sys.argv[4])
+    CompileAndCapture.path = sys.argv[1]
+    CompileAndCapture.platform = sys.argv[2]
+    CompileAndCapture.file = sys.argv[3]
+    CompileAndCapture.expected_error_count = int(sys.argv[4])
   # Unittest looks at the same argv's as the __main__ and doesn't know how
   # to handle arguments other than the executable (0). Therefore passing only
   # executable as the argv for unittest module.

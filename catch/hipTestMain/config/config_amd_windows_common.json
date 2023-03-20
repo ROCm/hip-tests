@@ -110,6 +110,8 @@
 	   "NOTE: The following test is disabled due to defect - EXSWHTEC-241",
 	   "Unit_hipFuncGetAttributes_Negative_Parameters",
 	   "NOTE: The following test is disabled due to defect - EXSWHTEC-242",
-	   "Unit_hipFuncGetAttributes_Positive_Basic"
+	   "Unit_hipFuncGetAttributes_Positive_Basic",
+	   "NOTE: The following test is disabled due to defect - EXSWHTEC-243",
+	   "Unit_hipExtLaunchKernel_Negative_Parameters"
 	]
 }

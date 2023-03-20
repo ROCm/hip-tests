@@ -35,3 +35,10 @@ THE SOFTWARE.
  * This section describes the graph management types & functions of HIP runtime API.
  * @}
  */
+
+/**
+ * @defgroup MathTest Math Device Functions
+ * @{
+ * This section describes tests for device math functions of HIP runtime API.
+ * @}
+ */

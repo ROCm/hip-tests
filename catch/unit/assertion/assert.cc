@@ -21,6 +21,14 @@ THE SOFTWARE.
 #include <csetjmp>
 #include <csignal>
 
+/**
+ * @addtogroup assert assert
+ * @{
+ * @ingroup AssertionTest
+ * `void assert(int expression)` -
+ * Stops the kernel execution if expression is equal to zero.
+ */
+
 jmp_buf env_ignore_abort;
 volatile int abort_raised_flag = 0;
 
@@ -63,11 +71,37 @@ template<bool should_abort> void LaunchAssertKernel() {
   HIP_CHECK(hipDeviceSynchronize());
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Launches kernels with asserts that have an expression equal to 1.
+ *  - Expects that SIGABRT is not raised and kernels have executed successfully.
+ * Test source
+ * ------------------------
+ *  - unit/assertion/assert.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Assert_Positive_Basic_KernelPass") {
   try_and_catch_abort(&LaunchAssertKernel<false>);
   REQUIRE(abort_raised_flag == 0);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Launches kernels with asserts that have an expression equal to 0.
+ *  - Expects that SIGABRT is raised and kernels have been stopped.
+ *  - The HIP runtime also aborts the host code, so this test case uses signal handlers
+ *    to avoid host code abortion.
+ * Test source
+ * ------------------------
+ *  - unit/assertion/assert.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Assert_Positive_Basic_KernelFail") {
   try_and_catch_abort(&LaunchAssertKernel<true>);
   REQUIRE(abort_raised_flag == 1);

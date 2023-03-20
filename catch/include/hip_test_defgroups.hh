@@ -35,3 +35,55 @@ THE SOFTWARE.
  * This section describes the graph management types & functions of HIP runtime API.
  * @}
  */
+
+/**
+ * @defgroup AssertionTest Assertions
+ * @{
+ * This section describes tests for the assertion function within the device code.
+ * @}
+ */
+
+/**
+ * @addtogroup static_assert static_assert
+ * @{
+ * @ingroup AssertionTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Compiles kernels with static_assert calls:
+ *    -# Expected that static_assert passes and compilation is successful.
+ *    -# Expected that static_assert fails and compilation has errors.
+ * Test source
+ * ------------------------
+ *  - unit/assertion/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_StaticAssert_Positive_Basic") {}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Passes invalidly formed expressions to static_assert calls.
+ *  - Uses expressions that are not constexpr and values that are not known during compilation.
+ * Test source
+ * ------------------------
+ *  - unit/assertion/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_StaticAssert_Negative_Basic")
+
+/**
+ * End doxygen group static_assert.
+ * @}
+ */
+
+/**
+ * End doxygen group AssertionTest.
+ * @}
+ */

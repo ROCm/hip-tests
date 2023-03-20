@@ -20,6 +20,14 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include "static_assert_kernels_rtc.hh"
 
+/**
+ * @addtogroup static_assert static_assert
+ * @{
+ * @ingroup AssertionTest
+ * `void static_assert(constexpr expression, const char* message)` -
+ * Stops the compilation if expression is equal to zero, and displays the specified message.
+ */
+
 void StaticAssertWrapper(const char* program_source) {
   hiprtcProgram program{};
 
@@ -47,10 +55,37 @@ void StaticAssertWrapper(const char* program_source) {
   REQUIRE(error_count == expected_error_count);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Compiles kernels with static_assert calls:
+ *    -# Expected that static_assert passes and compilation is successful.
+ *    -# Expected that static_assert fails and compilation has errors.
+ *  - Uses RTC to perform compilation.
+ * Test source
+ * ------------------------
+ *  - unit/assertion/static_assert.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_StaticAssert_Positive_Basic_RTC") {
   StaticAssertWrapper(kStaticAssert_Positive);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Passes invalidly formed expressions to static_assert calls.
+ *  - Uses expressions that are not constexpr and values that are not known during compilation.
+ *  - Uses RTC to perform compilation.
+ * Test source
+ * ------------------------
+ *  - unit/assertion/static_assert.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_StaticAssert_Negative_Basic_RTC") {
   StaticAssertWrapper(kStaticAssert_Negative);
 }

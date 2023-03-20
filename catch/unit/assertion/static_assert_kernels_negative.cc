@@ -19,12 +19,12 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 
-__global__ void StaticAssertErrorKernel3() {
+__global__ void StaticAssertErrorKernel1() {
   const int tid = threadIdx.x + blockIdx.x * blockDim.x;
   static_assert(tid % 2 == 1);
 }
 
-__global__ void StaticAssertErrorKernel4() {
+__global__ void StaticAssertErrorKernel2() {
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
   static_assert(++tid > 2);
 }

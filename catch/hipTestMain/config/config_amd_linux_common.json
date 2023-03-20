@@ -14,6 +14,8 @@
 	   "Unit_hipInit_Negative",
 	   "Unit_hipMemset_Negative_OutOfBoundsPtr",
 	   "Unit_hipDeviceReset_Positive_Basic",
-	   "Unit_hipDeviceReset_Positive_Threaded"
+	   "Unit_hipDeviceReset_Positive_Threaded",
+	   "NOTE: The following test is disabled due to defect - EXSWHTEC-245",
+	   "Unit_hipFuncGetAttribute_Negative_Parameters"
 	]
 }

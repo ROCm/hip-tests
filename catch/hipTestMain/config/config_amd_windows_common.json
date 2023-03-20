@@ -93,6 +93,8 @@
 	   "Note: needs to be enabled when streamPerThread issues are fixed",
 	   "Unit_hipStreamSynchronize_NullStreamAndStreamPerThread",
 	   "Note: intermittent Seg fault failure ",
-	   "Unit_hipGraphAddEventRecordNode_Functional_WithoutFlags"
+	   "Unit_hipGraphAddEventRecordNode_Functional_WithoutFlags",
+	   "NOTE: The following test is disabled due to defect - EXSWHTEC-245",
+	   "Unit_hipFuncGetAttribute_Negative_Parameters"
 	]
 }

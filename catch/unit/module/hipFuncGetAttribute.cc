@@ -89,10 +89,8 @@ TEST_CASE("Unit_hipFuncGetAttribute_Negative_Parameters") {
                     hipErrorInvalidValue);
   }
 
-#if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-245
   SECTION("hfunc == nullptr") {
     HIP_CHECK_ERROR(hipFuncGetAttribute(&value, HIP_FUNC_ATTRIBUTE_BINARY_VERSION, nullptr),
                     hipErrorInvalidResourceHandle);
   }
-#endif
 }

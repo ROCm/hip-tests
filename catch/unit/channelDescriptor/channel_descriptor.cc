@@ -195,7 +195,7 @@ TEMPLATE_TEST_CASE("Unit_ChannelDescriptor_Positive_Basic_4D", "", uchar4, char4
 }
 
 TEMPLATE_TEST_CASE("Unit_ChannelDescriptor_Positive_FormatNone", "",short, int, long, long long,
-          signed long long, unsigned long long) {
+                   signed long long, unsigned long long) {
   hipChannelFormatDesc channel_desc{};
   const hipChannelFormatDesc referent_channel_desc{0, 0, 0, 0, hipChannelFormatKindNone};
   channel_desc = hipCreateChannelDesc<TestType>();

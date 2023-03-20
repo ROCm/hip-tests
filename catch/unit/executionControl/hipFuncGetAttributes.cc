@@ -45,9 +45,7 @@ TEST_CASE("Unit_hipFuncGetAttributes_Positive_Basic") {
 
   SECTION("cacheModeCA") { REQUIRE((attr.cacheModeCA == 0 || attr.cacheModeCA == 1)); }
 
-#if HT_NVIDIA  // Disabled on AMD due to defect - EXSWHTEC-242
   SECTION("constSizeBytes") { REQUIRE(attr.constSizeBytes == kConstSizeBytes); }
-#endif
 
   SECTION("maxThreadsPerBlock") {
     REQUIRE(attr.maxThreadsPerBlock == GetDeviceAttribute(hipDeviceAttributeMaxThreadsPerBlock, 0));

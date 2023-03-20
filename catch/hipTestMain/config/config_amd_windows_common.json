@@ -106,6 +106,8 @@
 	   "Unit_hipFuncSetCacheConfig_Negative_Not_Supported",
 	   "Unit_hipFuncSetSharedMemConfig_Negative_Not_Supported",
 	   "Unit_hipFuncSetAttribute_Positive_MaxDynamicSharedMemorySize_Not_Supported",
-	   "Unit_hipFuncSetAttribute_Positive_PreferredSharedMemoryCarveout_Not_Supported"
+	   "Unit_hipFuncSetAttribute_Positive_PreferredSharedMemoryCarveout_Not_Supported",
+	   "NOTE: The following test is disabled due to defect - EXSWHTEC-241",
+	   "Unit_hipFuncGetAttributes_Negative_Parameters"
 	]
 }

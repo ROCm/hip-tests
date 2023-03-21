@@ -54,3 +54,29 @@ TEMPLATE_TEST_CASE("Unit_ChannelDescriptor_Positive_FormatNone", "", short, int,
   ChannelDescriptorTestNone<TestType> channel_desc_test;
   channel_desc_test.Run();
 }
+
+TEST_CASE("Unit_ChannelDescriptor_Positive_16BitFloatingPoint") {
+  int size = static_cast<int>(sizeof(unsigned short) * 8);
+  hipChannelFormatKind kind = hipChannelFormatKindFloat;
+  hipChannelFormatDesc channel_desc{};
+  hipChannelFormatDesc referent_channel_desc{};
+
+  SECTION("hipCreateChannelDescHalf") {
+    referent_channel_desc = {size, 0, 0, 0, kind};
+    channel_desc = hipCreateChannelDescHalf();
+  }
+  SECTION("hipCreateChannelDescHalf1") {
+    referent_channel_desc = {size, 0, 0, 0, kind};
+    channel_desc = hipCreateChannelDescHalf1();
+  }
+  SECTION("hipCreateChannelDescHalf2") {
+    referent_channel_desc = {size, size, 0, 0, kind};
+    channel_desc = hipCreateChannelDescHalf2();
+  }
+
+  REQUIRE(channel_desc.x == referent_channel_desc.x);
+  REQUIRE(channel_desc.y == referent_channel_desc.y);
+  REQUIRE(channel_desc.z == referent_channel_desc.z);
+  REQUIRE(channel_desc.w == referent_channel_desc.w);
+  REQUIRE(channel_desc.f == referent_channel_desc.f);
+}

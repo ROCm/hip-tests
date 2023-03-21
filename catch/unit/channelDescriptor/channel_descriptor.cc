@@ -20,8 +20,8 @@ THE SOFTWARE.
 #include "channel_descriptor_common.hh"
 
 TEMPLATE_TEST_CASE("Unit_ChannelDescriptor_Positive_Basic_1D", "", char, unsigned char, uchar1,
-                   signed char, char1, unsigned short, ushort1, signed short, short1,
-                   unsigned int, uint1, signed int, int1, float, float1, unsigned long, ulong1,
+                   signed char, char1, unsigned short, ushort1, short, signed short, short1,
+                   int, unsigned int, uint1, signed int, int1, float, float1, long, unsigned long, ulong1,
                    signed long, long1) {
   ChannelDescriptorTest1D<TestType> channel_desc_test;
   channel_desc_test.Run();
@@ -47,10 +47,9 @@ TEMPLATE_TEST_CASE("Unit_ChannelDescriptor_Positive_Basic_4D", "", uchar4, char4
   channel_desc_test.Run();
 }
 
-TEMPLATE_TEST_CASE("Unit_ChannelDescriptor_Positive_FormatNone", "", short, int, long, long long,
-                   signed long long, unsigned long long, longlong1, longlong2, longlong3, longlong4,
-                   ulonglong1, ulonglong2, ulonglong3, ulonglong4,
-                   double1, double2, double3, double4) {
+TEMPLATE_TEST_CASE("Unit_ChannelDescriptor_Positive_FormatNone", "", long long, signed long long,
+                   unsigned long long, longlong1, longlong2, longlong3, longlong4, ulonglong1,
+                   ulonglong2, ulonglong3, ulonglong4, double1, double2, double3, double4) {
   ChannelDescriptorTestNone<TestType> channel_desc_test;
   channel_desc_test.Run();
 }

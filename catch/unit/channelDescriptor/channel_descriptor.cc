@@ -47,7 +47,7 @@ TEMPLATE_TEST_CASE("Unit_ChannelDescriptor_Positive_Basic_4D", "", uchar4, char4
   channel_desc_test.Run();
 }
 
-TEMPLATE_TEST_CASE("Unit_ChannelDescriptor_Positive_FormatNone", "",short, int, long, long long,
+TEMPLATE_TEST_CASE("Unit_ChannelDescriptor_Positive_FormatNone", "", short, int, long, long long,
                    signed long long, unsigned long long) {
   ChannelDescriptorTestNone<TestType> channel_desc_test;
   channel_desc_test.Run();

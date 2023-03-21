@@ -68,6 +68,7 @@ template<typename T> class ChannelDescriptorTest1D : public ChannelDescriptorTes
  protected:
   void SetSizeAndKind() {
     if (std::is_same<char, T>::value) {
+      std::cout << "1" << std::endl;
       this->size = static_cast<int>(sizeof(char) * 8);
       this->kind = hipChannelFormatKindSigned;
     } else if (std::is_same<unsigned char, T>::value || std::is_same<uchar1, T>::value) {
@@ -79,13 +80,15 @@ template<typename T> class ChannelDescriptorTest1D : public ChannelDescriptorTes
     } else if (std::is_same<unsigned short, T>::value || std::is_same<ushort1, T>::value) {
       this->size = static_cast<int>(sizeof(unsigned short) * 8);
       this->kind = hipChannelFormatKindUnsigned;
-    } else if (std::is_same<signed short, T>::value || std::is_same<short1, T>::value) {
+    } else if (std::is_same<short, T>::value || std::is_same<signed short, T>::value ||
+               std::is_same<short1, T>::value) {
       this->size = static_cast<int>(sizeof(signed short) * 8);
       this->kind = hipChannelFormatKindSigned;
     } else if (std::is_same<unsigned int, T>::value || std::is_same<uint1, T>::value) {
       this->size = static_cast<int>(sizeof(unsigned int) * 8);
       this->kind = hipChannelFormatKindUnsigned;
-    } else if (std::is_same<signed int, T>::value || std::is_same<int1, T>::value) {
+    } else if (std::is_same<int, T>::value || std::is_same<signed int, T>::value ||
+               std::is_same<int1, T>::value) {
       this->size = static_cast<int>(sizeof(signed int) * 8);
       this->kind = hipChannelFormatKindSigned;
     } else if (std::is_same<float, T>::value || std::is_same<float1, T>::value) {
@@ -94,7 +97,8 @@ template<typename T> class ChannelDescriptorTest1D : public ChannelDescriptorTes
     } else if (std::is_same<unsigned long, T>::value || std::is_same<ulong1, T>::value) {
       this->size = static_cast<int>(sizeof(unsigned long) * 8);
       this->kind = hipChannelFormatKindUnsigned;
-    } else if (std::is_same<signed long, T>::value || std::is_same<long1, T>::value) {
+    } else if (std::is_same<long, T>::value || std::is_same<signed long, T>::value ||
+               std::is_same<long1, T>::value) {
       this->size = static_cast<int>(sizeof(signed long) * 8);
       this->kind = hipChannelFormatKindSigned;
     }

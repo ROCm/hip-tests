@@ -210,7 +210,7 @@ if(DEFINED OFFLOAD_ARCH_STR)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OFFLOAD_ARCH_STR} ")
 elseif(DEFINED ENV{HCC_AMDGPU_TARGET})
     # hipcc pl script appends it to the options
-    set(OFFLOAD_ARCH_STR " --offload-arch=$ENV{HCC_AMDGPU_TARGET}")
+    set(OFFLOAD_ARCH_STR "--offload-arch=$ENV{HCC_AMDGPU_TARGET}")
     set(HIP_GPU_ARCH_LIST $ENV{HCC_AMDGPU_TARGET})
 endif()
 message(STATUS "Using offload arch string: ${OFFLOAD_ARCH_STR}")

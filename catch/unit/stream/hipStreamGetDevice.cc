@@ -38,19 +38,27 @@ TEST_CASE("Unit_hipStreamGetDevice_Usecase") {
   REQUIRE(device_count != 0);  // atleast 1 device
 
   SECTION("Null Stream") {
+    CTX_CREATE();
+
     hipDevice_t device_from_stream, device_from_ordinal;
     HIP_CHECK(hipStreamGetDevice(nullptr, &device_from_stream));
 
     HIP_CHECK(hipDeviceGet(&device_from_ordinal, 0));  // default device
     REQUIRE(device_from_stream == device_from_ordinal);
+
+    CTX_DESTROY();
   }
 
   SECTION("Stream Per Thread") {
+    CTX_CREATE();
+
     hipDevice_t device_from_stream, device_from_ordinal;
     HIP_CHECK(hipStreamGetDevice(hipStreamPerThread, &device_from_stream));
 
     HIP_CHECK(hipDeviceGet(&device_from_ordinal, 0));  // default device
     REQUIRE(device_from_stream == device_from_ordinal);
+
+    CTX_DESTROY();
   }
 
   SECTION("Created Stream") {

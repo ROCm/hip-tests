@@ -27,55 +27,55 @@ TEMPLATE_TEST_CASE("Unit_ChannelDescriptor_Positive_Basic_1D", "", char, unsigne
   channel_desc_test.Run();
 }
 
-// TEMPLATE_TEST_CASE("Unit_ChannelDescriptor_Positive_Basic_2D", "", uchar2, char2, ushort2, short2,
-//                    uint2, int2, float2, ulong2, long2) {
-//   ChannelDescriptorTest2D<TestType> channel_desc_test;
-//   channel_desc_test.Run();
-// }
+TEMPLATE_TEST_CASE("Unit_ChannelDescriptor_Positive_Basic_2D", "", uchar2, char2, ushort2, short2,
+                   uint2, int2, float2, ulong2, long2) {
+  ChannelDescriptorTest2D<TestType> channel_desc_test;
+  channel_desc_test.Run();
+}
 
-// #ifndef __GNUC__
-// TEMPLATE_TEST_CASE("Unit_ChannelDescriptor_Positive_Basic_3D", "", uchar3, char3, ushort3, short3,
-//                    uint3, int3, float3, ulong3, long3) {
-//   ChannelDescriptorTest3D<TestType> channel_desc_test;
-//   channel_desc_test.Run();
-// }
-// #endif
+#ifndef __GNUC__
+TEMPLATE_TEST_CASE("Unit_ChannelDescriptor_Positive_Basic_3D", "", uchar3, char3, ushort3, short3,
+                   uint3, int3, float3, ulong3, long3) {
+  ChannelDescriptorTest3D<TestType> channel_desc_test;
+  channel_desc_test.Run();
+}
+#endif
 
-// TEMPLATE_TEST_CASE("Unit_ChannelDescriptor_Positive_Basic_4D", "", uchar4, char4, ushort4, short4,
-//                    uint4, int4, float4, ulong4, long4) {
-//   ChannelDescriptorTest4D<TestType> channel_desc_test;
-//   channel_desc_test.Run();
-// }
+TEMPLATE_TEST_CASE("Unit_ChannelDescriptor_Positive_Basic_4D", "", uchar4, char4, ushort4, short4,
+                   uint4, int4, float4, ulong4, long4) {
+  ChannelDescriptorTest4D<TestType> channel_desc_test;
+  channel_desc_test.Run();
+}
 
-// TEMPLATE_TEST_CASE("Unit_ChannelDescriptor_Positive_FormatNone", "", long long, signed long long,
-//                    unsigned long long, longlong1, longlong2, longlong3, longlong4, ulonglong1,
-//                    ulonglong2, ulonglong3, ulonglong4, double1, double2, double3, double4) {
-//   ChannelDescriptorTestNone<TestType> channel_desc_test;
-//   channel_desc_test.Run();
-// }
+TEMPLATE_TEST_CASE("Unit_ChannelDescriptor_Positive_FormatNone", "", long long, signed long long,
+                   unsigned long long, longlong1, longlong2, longlong3, longlong4, ulonglong1,
+                   ulonglong2, ulonglong3, ulonglong4, double1, double2, double3, double4) {
+  ChannelDescriptorTestNone<TestType> channel_desc_test;
+  channel_desc_test.Run();
+}
 
-// TEST_CASE("Unit_ChannelDescriptor_Positive_16BitFloatingPoint") {
-//   int size = static_cast<int>(sizeof(unsigned short) * 8);
-//   hipChannelFormatKind kind = hipChannelFormatKindFloat;
-//   hipChannelFormatDesc channel_desc{};
-//   hipChannelFormatDesc referent_channel_desc{};
+TEST_CASE("Unit_ChannelDescriptor_Positive_16BitFloatingPoint") {
+  int size = static_cast<int>(sizeof(unsigned short) * 8);
+  hipChannelFormatKind kind = hipChannelFormatKindFloat;
+  hipChannelFormatDesc channel_desc{};
+  hipChannelFormatDesc referent_channel_desc{};
 
-//   SECTION("hipCreateChannelDescHalf") {
-//     referent_channel_desc = {size, 0, 0, 0, kind};
-//     channel_desc = hipCreateChannelDescHalf();
-//   }
-//   SECTION("hipCreateChannelDescHalf1") {
-//     referent_channel_desc = {size, 0, 0, 0, kind};
-//     channel_desc = hipCreateChannelDescHalf1();
-//   }
-//   SECTION("hipCreateChannelDescHalf2") {
-//     referent_channel_desc = {size, size, 0, 0, kind};
-//     channel_desc = hipCreateChannelDescHalf2();
-//   }
+  SECTION("hipCreateChannelDescHalf") {
+    referent_channel_desc = {size, 0, 0, 0, kind};
+    channel_desc = hipCreateChannelDescHalf();
+  }
+  SECTION("hipCreateChannelDescHalf1") {
+    referent_channel_desc = {size, 0, 0, 0, kind};
+    channel_desc = hipCreateChannelDescHalf1();
+  }
+  SECTION("hipCreateChannelDescHalf2") {
+    referent_channel_desc = {size, size, 0, 0, kind};
+    channel_desc = hipCreateChannelDescHalf2();
+  }
 
-//   REQUIRE(channel_desc.x == referent_channel_desc.x);
-//   REQUIRE(channel_desc.y == referent_channel_desc.y);
-//   REQUIRE(channel_desc.z == referent_channel_desc.z);
-//   REQUIRE(channel_desc.w == referent_channel_desc.w);
-//   REQUIRE(channel_desc.f == referent_channel_desc.f);
-// }
+  REQUIRE(channel_desc.x == referent_channel_desc.x);
+  REQUIRE(channel_desc.y == referent_channel_desc.y);
+  REQUIRE(channel_desc.z == referent_channel_desc.z);
+  REQUIRE(channel_desc.w == referent_channel_desc.w);
+  REQUIRE(channel_desc.f == referent_channel_desc.f);
+}

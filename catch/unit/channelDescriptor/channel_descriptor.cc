@@ -54,6 +54,7 @@ TEMPLATE_TEST_CASE("Unit_ChannelDescriptor_Positive_FormatNone", "", long long, 
   channel_desc_test.Run();
 }
 
+#if HT_AMD
 TEST_CASE("Unit_ChannelDescriptor_Positive_16BitFloatingPoint") {
   int size = static_cast<int>(sizeof(unsigned short) * 8);
   hipChannelFormatKind kind = hipChannelFormatKindFloat;
@@ -79,3 +80,4 @@ TEST_CASE("Unit_ChannelDescriptor_Positive_16BitFloatingPoint") {
   REQUIRE(channel_desc.w == referent_channel_desc.w);
   REQUIRE(channel_desc.f == referent_channel_desc.f);
 }
+#endif

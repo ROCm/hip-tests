@@ -68,7 +68,6 @@ template<typename T> class ChannelDescriptorTest1D : public ChannelDescriptorTes
  protected:
   void SetSizeAndKind() {
     if (std::is_same<char, T>::value) {
-      std::cout << "1" << std::endl;
       this->size = static_cast<int>(sizeof(char) * 8);
       this->kind = hipChannelFormatKindSigned;
     } else if (std::is_same<unsigned char, T>::value || std::is_same<uchar1, T>::value) {

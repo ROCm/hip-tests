@@ -21,9 +21,9 @@ THE SOFTWARE.
 #include "launch_bounds_negative_kernels_rtc.hh"
 
 /**
- * @addtogroup launchBounds launchBounds
+ * @addtogroup LaunchBounds Launch Bounds
  * @{
- * @ingroup LaunchBoundsTest
+ * @ingroup DeviceLanguageTest
  * `__launch_bounds__(MAX_THREADS_PER_BLOCK, MIN_WARPS_PER_EXECUTION_UNIT)` -
  * allows the application to provide usage hints that influence the resources (primarily registers) used by the generated code.
  * It is a function attribute that must be attached to a global function.

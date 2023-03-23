@@ -37,15 +37,15 @@ THE SOFTWARE.
  */
 
 /**
- * @defgroup LaunchBoundsTest Launch Bounds
+ * @defgroup DeviceLanguageTest Device Language
  * @{
- * This section describes tests for the launch bounds kernel attribute.
+ * This section describes tests for the Device Language API.
  */
 
 /**
- * @addtogroup launchBounds launchBounds
+ * @addtogroup LaunchBounds Launch Bounds
  * @{
- * @ingroup LaunchBoundsTest
+ * @ingroup DeviceLanguageTest
  */
 
 /**
@@ -85,10 +85,11 @@ TEST_CASE("Unit_Kernel_Launch_bounds_Negative_Parameters_CompilerError") {}
 TEST_CASE("Unit_Kernel_Launch_bounds_Negative_Parameters_ParseError") {}
 
 /**
- * End doxygen group launchBounds.
+ * End doxygen group LaunchBounds.
  * @}
  */
+
 /**
- * End doxygen group LaunchBoundsTest.
+ * End doxygen group DeviceLanguageTest.
  * @}
  */

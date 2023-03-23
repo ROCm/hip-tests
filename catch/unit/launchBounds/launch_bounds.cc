@@ -51,11 +51,15 @@ template<bool out_of_bounds> void LaunchBoundsWrapper(const int threads_per_bloc
   SumKernel<<<block_size, threads_per_block>>>(A_d);
 
   if constexpr (out_of_bounds) {
+    if (threads_per_block < 0) {
+      HIP_CHECK_ERROR(hipGetLastError(), hipErrorInvalidConfiguration);
+    } else {
     #if HT_AMD
       HIP_CHECK_ERROR(hipGetLastError(), hipErrorLaunchFailure);
     #else
       HIP_CHECK_ERROR(hipGetLastError(), hipErrorInvalidValue);
     #endif
+    }
   } else {
     HIP_CHECK(hipGetLastError());
   }

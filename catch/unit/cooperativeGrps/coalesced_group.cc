@@ -25,7 +25,7 @@ THE SOFTWARE.
 /**
  * @addtogroup coalesced_group coalesced_group
  * @{
- * @ingroup CooperativeGroupsTest
+ * @ingroup DeviceLanguageTest
  * Contains unit tests for all coalesced_group basic APIs
  */
 

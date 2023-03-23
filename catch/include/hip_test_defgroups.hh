@@ -37,16 +37,15 @@ THE SOFTWARE.
  */
 
 /**
- * @defgroup AssertionTest Assertions
+ * @defgroup DeviceLanguageTest Device Language
  * @{
- * This section describes tests for the assertion function within the device code.
- * @}
+ * This section describes tests for the Device Language API.
  */
 
 /**
- * @addtogroup static_assert static_assert
+ * @addtogroup StaticAssert Static Assert
  * @{
- * @ingroup AssertionTest
+ * @ingroup DeviceLanguageTest
  */
 
 /**
@@ -79,11 +78,11 @@ TEST_CASE("Unit_StaticAssert_Positive_Basic") {}
 TEST_CASE("Unit_StaticAssert_Negative_Basic")
 
 /**
- * End doxygen group static_assert.
+ * End doxygen group StaticAssert.
  * @}
  */
 
 /**
- * End doxygen group AssertionTest.
+ * End doxygen group DeviceLanguageTest.
  * @}
  */

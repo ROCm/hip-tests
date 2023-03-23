@@ -22,9 +22,9 @@ THE SOFTWARE.
 #include <csignal>
 
 /**
- * @addtogroup assert assert
+ * @addtogroup Assert Assert
  * @{
- * @ingroup AssertionTest
+ * @ingroup DeviceLanguageTest 
  * `void assert(int expression)` -
  * Stops the kernel execution if expression is equal to zero.
  */

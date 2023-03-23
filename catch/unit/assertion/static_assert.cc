@@ -21,9 +21,9 @@ THE SOFTWARE.
 #include "static_assert_kernels_rtc.hh"
 
 /**
- * @addtogroup static_assert static_assert
+ * @addtogroup StaticAssert Static Assert
  * @{
- * @ingroup AssertionTest
+ * @ingroup DeviceLanguageTest 
  * `void static_assert(constexpr expression, const char* message)` -
  * Stops the compilation if expression is equal to zero, and displays the specified message.
  */

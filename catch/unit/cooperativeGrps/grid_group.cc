@@ -25,7 +25,7 @@ THE SOFTWARE.
 /**
  * @addtogroup grid_group grid_group
  * @{
- * @ingroup CooperativeGroupsTest
+ * @ingroup DeviceLanguageTest
  * Contains unit tests for all grid_group APIs
  */
 

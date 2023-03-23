@@ -20,7 +20,7 @@ THE SOFTWARE.
 #include "channel_descriptor_common.hh"
 
 /**
- * @addtogroup ChannelDescriptor Channel Descriptor
+ * @addtogroup hipCreateChannelDesc hipCreateChannelDesc
  * @{
  * @ingroup DeviceLanguageTest
  * `hipCreateChannelDesc<T>()` -

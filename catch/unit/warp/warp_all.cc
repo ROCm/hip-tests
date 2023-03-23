@@ -24,7 +24,7 @@ THE SOFTWARE.
 /**
  * @addtogroup all all
  * @{
- * @ingroup WarpTest
+ * @ingroup DeviceLanguageTest
  * `int __all(int predicate)` -
  * Contains unit test for warp vote all function
  */

@@ -32,7 +32,7 @@ THE SOFTWARE.
 /**
  * @addtogroup coalesced_group_tile coalesced_group_tile
  * @{
- * @ingroup CooperativeGroupsTest
+ * @ingroup DeviceLanguageTest
  * Contains unit tests for partitioning of coalesced groups into tiled partitions
  */
 

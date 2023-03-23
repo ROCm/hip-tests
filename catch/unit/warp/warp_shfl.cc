@@ -24,7 +24,7 @@ THE SOFTWARE.
 /**
  * @addtogroup shfl shfl
  * @{
- * @ingroup WarpTest
+ * @ingroup DeviceLanguageTest
  * `T __shfl(T var, int src_lane, int width = warpSize)` -
  * Contains unit test for warp shfl function
  */

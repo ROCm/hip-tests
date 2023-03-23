@@ -24,7 +24,7 @@ THE SOFTWARE.
 /**
  * @addtogroup shfl_xor shfl_xor
  * @{
- * @ingroup WarpTest
+ * @ingroup DeviceLanguageTest
  * `T __shfl_xor(T var, int lane_mask, int width = warpSize)` -
  * Contains unit test for warp shfl_xor function
  */

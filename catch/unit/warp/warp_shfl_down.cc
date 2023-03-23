@@ -24,7 +24,7 @@ THE SOFTWARE.
 /**
  * @addtogroup shfl_down shfl_down
  * @{
- * @ingroup WarpTest
+ * @ingroup DeviceLanguageTest
  * `T __shfl_down(T var, unsigned int lane_delta, int width = warpSize)` -
  * Contains unit test for warp shfl_down function
  */

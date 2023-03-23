@@ -35,3 +35,10 @@ THE SOFTWARE.
  * This section describes the graph management types & functions of HIP runtime API.
  * @}
  */
+
+/**
+ * @defgroup ChannelDescriptorTest Channel Descriptor
+ * @{
+ * This section describes tests for the create channel descriptor API.
+ * @}
+ */

@@ -22,7 +22,7 @@ THE SOFTWARE.
 #include <csignal>
 
 /**
- * @addtogroup Assert Assert
+ * @addtogroup assert assert
  * @{
  * @ingroup DeviceLanguageTest 
  * `void assert(int expression)` -

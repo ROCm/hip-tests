@@ -21,7 +21,7 @@ THE SOFTWARE.
 #include "static_assert_kernels_rtc.hh"
 
 /**
- * @addtogroup StaticAssert Static Assert
+ * @addtogroup static_assert static_assert
  * @{
  * @ingroup DeviceLanguageTest 
  * `void static_assert(constexpr expression, const char* message)` -

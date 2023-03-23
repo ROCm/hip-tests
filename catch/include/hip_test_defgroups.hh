@@ -43,7 +43,7 @@ THE SOFTWARE.
  */
 
 /**
- * @addtogroup StaticAssert Static Assert
+ * @addtogroup static_assert static_assert
  * @{
  * @ingroup DeviceLanguageTest
  */
@@ -78,7 +78,7 @@ TEST_CASE("Unit_StaticAssert_Positive_Basic") {}
 TEST_CASE("Unit_StaticAssert_Negative_Basic")
 
 /**
- * End doxygen group StaticAssert.
+ * End doxygen group static_assert.
  * @}
  */
 

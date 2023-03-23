@@ -37,8 +37,8 @@ THE SOFTWARE.
  */
 
 /**
- * @defgroup WarpTest Warp Functions
+ * @defgroup DeviceLanguageTest Device Language
  * @{
- * This section describes tests for warp functions API's of the HIP runtime.
+ * This section describes tests for the Device Language API.
  * @}
  */

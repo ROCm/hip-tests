@@ -24,7 +24,7 @@ THE SOFTWARE.
 /**
  * @addtogroup any any
  * @{
- * @ingroup WarpTest
+ * @ingroup DeviceLanguageTest
  * `int __any(int predicate)` -
  * Contains unit test for warp vote any function
  */

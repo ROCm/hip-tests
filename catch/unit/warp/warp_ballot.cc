@@ -24,7 +24,7 @@ THE SOFTWARE.
 /**
  * @addtogroup ballot ballot
  * @{
- * @ingroup WarpTest
+ * @ingroup DeviceLanguageTest
  * `unsigned long long int __ballot(int predicate)` -
  * Contains unit test for warp ballot function
  */

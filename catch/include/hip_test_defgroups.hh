@@ -37,8 +37,8 @@ THE SOFTWARE.
  */
 
 /**
- * @defgroup ChannelDescriptorTest Channel Descriptor
+ * @defgroup DeviceLanguageTest Device Language
  * @{
- * This section describes tests for the create channel descriptor API.
+ * This section describes tests for the Device Language API.
  * @}
  */

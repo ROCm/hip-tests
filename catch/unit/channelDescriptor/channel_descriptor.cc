@@ -20,9 +20,9 @@ THE SOFTWARE.
 #include "channel_descriptor_common.hh"
 
 /**
- * @addtogroup APIName APIName
+ * @addtogroup ChannelDescriptor Channel Descriptor
  * @{
- * @ingroup ChannelDescriptorTest
+ * @ingroup DeviceLanguageTest
  * `hipCreateChannelDesc<T>()` -
  * Creates a dedicated channel descriptor based on passed built-in or vector type T.
  */

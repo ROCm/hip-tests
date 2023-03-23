@@ -31,7 +31,7 @@ THE SOFTWARE.
 /**
  * @addtogroup thread_block thread_block
  * @{
- * @ingroup CooperativeGroupsTest
+ * @ingroup DeviceLanguageTest
  * Contains unit tests for all thread_block APIs
  */
 

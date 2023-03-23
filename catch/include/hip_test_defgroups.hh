@@ -37,8 +37,8 @@ THE SOFTWARE.
  */
 
 /**
- * @defgroup CooperativeGroupsTest Cooperative Groups 
+ * @defgroup DeviceLanguageTest Device Language
  * @{
- * This section describes tests for cooperative groups API's of the HIP runtime.
+ * This section describes tests for the Device Language API.
  * @}
  */

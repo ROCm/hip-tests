@@ -18,8 +18,6 @@
 	   "Unit_hipKernelNameRef_Negative_Parameters",
 	   "Unit_hipMemAdvise_AccessedBy_All_Devices",
 	   "Unit_hipMemAdvise_No_Flag_Interference",
-	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep",
-	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ClonedGrph",
 	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ChldNode",
 	   "Unit_hipMemGetAddressRange_Negative",
 	   "Unit_hipMemRangeGetAttribute_Positive_AccessedBy_Basic",

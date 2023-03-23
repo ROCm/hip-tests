@@ -32,7 +32,7 @@ THE SOFTWARE.
 /**
  * @addtogroup thread_block_tile thread_block_tile
  * @{
- * @ingroup CooperativeGroupsTest
+ * @ingroup DeviceLanguageTest
  * Contains unit tests for all thread_block_tile APIs and dynamic block partitioning
  */
 

@@ -39,4 +39,4 @@ if(HIP_PLATFORM STREQUAL "amd")
 # Vulkan interop APIs currently undefined for Nvidia
 add_subdirectory(vulkan_interop)
 endif()
-add_subdirectory(launch_bounds)
+add_subdirectory(launchBounds)

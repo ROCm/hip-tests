@@ -21,7 +21,7 @@ THE SOFTWARE.
 #include "launch_bounds_negative_kernels_rtc.hh"
 
 /**
- * @addtogroup LaunchBounds Launch Bounds
+ * @addtogroup launch_bounds launch_bounds
  * @{
  * @ingroup DeviceLanguageTest
  * `__launch_bounds__(MAX_THREADS_PER_BLOCK, MIN_WARPS_PER_EXECUTION_UNIT)` -

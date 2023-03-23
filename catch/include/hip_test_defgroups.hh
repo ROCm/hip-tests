@@ -43,7 +43,7 @@ THE SOFTWARE.
  */
 
 /**
- * @addtogroup LaunchBounds Launch Bounds
+ * @addtogroup launch_bounds launch_bounds
  * @{
  * @ingroup DeviceLanguageTest
  */
@@ -85,7 +85,7 @@ TEST_CASE("Unit_Kernel_Launch_bounds_Negative_Parameters_CompilerError") {}
 TEST_CASE("Unit_Kernel_Launch_bounds_Negative_Parameters_ParseError") {}
 
 /**
- * End doxygen group LaunchBounds.
+ * End doxygen group launch_bounds.
  * @}
  */
 

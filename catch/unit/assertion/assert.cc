@@ -24,7 +24,7 @@ THE SOFTWARE.
 /**
  * @addtogroup assert assert
  * @{
- * @ingroup DeviceLanguageTest 
+ * @ingroup DeviceLanguageTest
  * `void assert(int expression)` -
  * Stops the kernel execution if expression is equal to zero.
  */
@@ -49,7 +49,7 @@ void try_and_catch_abort(void (*func)()) {
 __global__ void AssertPassKernel() {
   const int tid = threadIdx.x + blockIdx.x * blockDim.x;
   // expected always to be true
-  assert(tid >= 0); 
+  assert(tid >= 0);
 }
 
 __global__ void AssertFailKernel() {
@@ -58,7 +58,7 @@ __global__ void AssertFailKernel() {
   assert(tid % 2 == 1);
 }
 
-template<bool should_abort> void LaunchAssertKernel() {
+template <bool should_abort> void LaunchAssertKernel() {
   const int num_blocks = 2;
   const int num_threads = 16;
 

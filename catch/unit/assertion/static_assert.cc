@@ -23,7 +23,7 @@ THE SOFTWARE.
 /**
  * @addtogroup static_assert static_assert
  * @{
- * @ingroup DeviceLanguageTest 
+ * @ingroup DeviceLanguageTest
  * `void static_assert(constexpr expression, const char* message)` -
  * Stops the compilation if expression is equal to zero, and displays the specified message.
  */
@@ -31,7 +31,8 @@ THE SOFTWARE.
 void StaticAssertWrapper(const char* program_source) {
   hiprtcProgram program{};
 
-  HIPRTC_CHECK(hiprtcCreateProgram(&program, program_source, "static_assert_rtc.cc", 0, nullptr, nullptr));
+  HIPRTC_CHECK(
+      hiprtcCreateProgram(&program, program_source, "static_assert_rtc.cc", 0, nullptr, nullptr));
   hiprtcResult result{hiprtcCompileProgram(program, 0, nullptr)};
 
   // Get the compile log and count compiler error messages
@@ -69,9 +70,7 @@ void StaticAssertWrapper(const char* program_source) {
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_StaticAssert_Positive_Basic_RTC") {
-  StaticAssertWrapper(kStaticAssert_Positive);
-}
+TEST_CASE("Unit_StaticAssert_Positive_Basic_RTC") { StaticAssertWrapper(kStaticAssert_Positive); }
 
 /**
  * Test Description
@@ -86,6 +85,4 @@ TEST_CASE("Unit_StaticAssert_Positive_Basic_RTC") {
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_StaticAssert_Negative_Basic_RTC") {
-  StaticAssertWrapper(kStaticAssert_Negative);
-}
+TEST_CASE("Unit_StaticAssert_Negative_Basic_RTC") { StaticAssertWrapper(kStaticAssert_Negative); }

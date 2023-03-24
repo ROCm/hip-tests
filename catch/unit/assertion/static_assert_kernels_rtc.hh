@@ -23,8 +23,8 @@ THE SOFTWARE.
 Positive and negative kernels used for the static_assert Test Cases that are using RTC.
 */
 
-static constexpr auto kStaticAssert_Positive {
-  R"(
+static constexpr auto kStaticAssert_Positive{
+    R"(
     __global__ void StaticAssertPassKernel1() {
       static_assert(sizeof(int) < sizeof(long), "[StaticAssertPassKernel1]");
     }
@@ -40,11 +40,10 @@ static constexpr auto kStaticAssert_Positive {
     __global__ void StaticAssertFailKernel2() {
       static_assert(10 < 5, "[StaticAssertFailKernel2]");
     }
-  )"
-};
+  )"};
 
-static constexpr auto kStaticAssert_Negative {
-  R"(
+static constexpr auto kStaticAssert_Negative{
+    R"(
     __global__ void StaticAssertErrorKernel1() {
       const int tid = threadIdx.x + blockIdx.x * blockDim.x;
       static_assert(tid % 2 == 1, "[StaticAssertErrorKernel1]");
@@ -54,5 +53,4 @@ static constexpr auto kStaticAssert_Negative {
       int tid = threadIdx.x + blockIdx.x * blockDim.x;
       static_assert(++tid > 2, "[StaticAssertErrorKernel2]");
     }
-  )"
-};
+  )"};

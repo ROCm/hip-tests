@@ -24,6 +24,8 @@ class TexObjectTestWrapper {
  private:
   float* host_data_;
   bool ommit_destroy_;
+  hipCtx_t ctx_;
+  hipDevice_t device_;
 
  public:
   hipTextureObject_t texture_object = 0;
@@ -40,6 +42,11 @@ class TexObjectTestWrapper {
     int i;
     size = width * sizeof(float);
 
+    HIP_CHECK(hipInit(0));
+    HIP_CHECK(hipDeviceGet(&device_, 0));
+    HIP_CHECK(hipDevicePrimaryCtxRetain(&ctx_, device_));
+    HIP_CHECK(hipCtxPushCurrent(ctx_));
+
     host_data_ = (float*)malloc(size);
     memset(host_data_, 0, size);
 
@@ -49,7 +56,7 @@ class TexObjectTestWrapper {
 
     memset(&array_desc, 0, sizeof(array_desc));
     array_desc.Format = HIP_AD_FORMAT_FLOAT;
-    array_desc.NumChannels = 1;
+    array_desc.NumChannels = 2;
     array_desc.Width = width;
     array_desc.Height = 0;
 
@@ -89,6 +96,9 @@ class TexObjectTestWrapper {
     }
     HIP_CHECK(hipArrayDestroy(array_member));
     free(host_data_);
+
+    HIP_CHECK(hipCtxPopCurrent(&ctx_));
+    HIP_CHECK(hipDevicePrimaryCtxRelease(device_));
   }
 };
 
@@ -107,7 +117,6 @@ TEST_CASE("Unit_hipGetTexObjectResourceDesc_positive") {
   REQUIRE(check_desc.resType == tex_obj_wrapper.res_desc.resType);
   REQUIRE(check_desc.res.array.hArray == tex_obj_wrapper.res_desc.res.array.hArray);
 }
-
 
 TEST_CASE("Unit_hipGetTexObjectResourceDesc_Negative_Parameters") {
   CHECK_IMAGE_SUPPORT;
@@ -128,9 +137,7 @@ TEST_CASE("Unit_hipGetTexObjectResourceDesc_Negative_Parameters") {
   }
 }
 
-
 /* hipTexObjectGetResourceViewDesc tests */
-#if HT_AMD
 TEST_CASE("Unit_hipGetTexObjectResourceViewDesc_positive") {
   CHECK_IMAGE_SUPPORT;
 
@@ -144,9 +151,7 @@ TEST_CASE("Unit_hipGetTexObjectResourceViewDesc_positive") {
   REQUIRE(check_desc.format == tex_obj_wrapper.res_view_desc.format);
   REQUIRE(check_desc.width == tex_obj_wrapper.res_view_desc.width);
 }
-#endif
 
-#if HT_AMD
 TEST_CASE("Unit_hipGetTexObjectResourceViewDesc_Negative_Parameters") {
   CHECK_IMAGE_SUPPORT;
   TexObjectTestWrapper tex_obj_wrapper(true);
@@ -165,10 +170,8 @@ TEST_CASE("Unit_hipGetTexObjectResourceViewDesc_Negative_Parameters") {
         hipErrorInvalidValue);
   }
 }
-#endif
 
 /* hipTexObjectGetTextureDesc tests */
-
 
 TEST_CASE("Unit_hipGetTexObjectTextureDesc_positive") {
   CHECK_IMAGE_SUPPORT;
@@ -183,7 +186,6 @@ TEST_CASE("Unit_hipGetTexObjectTextureDesc_positive") {
   REQUIRE(check_desc.filterMode == tex_obj_wrapper.tex_desc.filterMode);
   REQUIRE(check_desc.flags == tex_obj_wrapper.tex_desc.flags);
 }
-
 
 TEST_CASE("Unit_hipGetTexObjectTextureDesc_Negative_Parameters") {
   CHECK_IMAGE_SUPPORT;

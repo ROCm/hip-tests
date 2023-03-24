@@ -18,11 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-set(TEST_SRC
-    static_assert.cc
-    assert.cc
-)
-
 if(HIP_PLATFORM MATCHES "nvidia")
     set(TEST_SRC
         assert.cc

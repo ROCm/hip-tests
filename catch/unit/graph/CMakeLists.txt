@@ -104,6 +104,7 @@ set(TEST_SRC
   hipGraphDestroy.cc
   hipGraphExecDestroy.cc
   hipGraphUpload.cc
+  hipGraphKernelNodeCopyAttributes.cc
 )
 
 hip_add_exe_to_target(NAME GraphsTest

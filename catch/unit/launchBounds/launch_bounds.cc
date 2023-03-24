@@ -25,20 +25,21 @@ THE SOFTWARE.
  * @{
  * @ingroup DeviceLanguageTest
  * `__launch_bounds__(MAX_THREADS_PER_BLOCK, MIN_WARPS_PER_EXECUTION_UNIT)` -
- * allows the application to provide usage hints that influence the resources (primarily registers) used by the generated code.
- * It is a function attribute that must be attached to a global function.
+ * allows the application to provide usage hints that influence the resources (primarily registers)
+ * used by the generated code. It is a function attribute that must be attached to a global
+ * function.
  */
 
 #define MAX_THREADS_PER_BLOCK 128
 #define MIN_WARPS_PER_MULTIPROCESSOR 2
 
-__launch_bounds__(MAX_THREADS_PER_BLOCK, MIN_WARPS_PER_MULTIPROCESSOR)
-__global__ void SumKernel(int* sum) {
+__launch_bounds__(MAX_THREADS_PER_BLOCK, MIN_WARPS_PER_MULTIPROCESSOR) __global__
+    void SumKernel(int* sum) {
   const int tid = threadIdx.x + blockIdx.x * blockDim.x;
   atomicAdd(sum, tid);
 }
 
-template<bool out_of_bounds> void LaunchBoundsWrapper(const int threads_per_block) {
+template <bool out_of_bounds> void LaunchBoundsWrapper(const int threads_per_block) {
   auto block_size = GENERATE(1, 32, 128);
   int* A_d;
   int* A_h;
@@ -54,11 +55,11 @@ template<bool out_of_bounds> void LaunchBoundsWrapper(const int threads_per_bloc
     if (threads_per_block < 0) {
       HIP_CHECK_ERROR(hipGetLastError(), hipErrorInvalidConfiguration);
     } else {
-    #if HT_AMD
+#if HT_AMD
       HIP_CHECK_ERROR(hipGetLastError(), hipErrorLaunchFailure);
-    #else
+#else
       HIP_CHECK_ERROR(hipGetLastError(), hipErrorInvalidValue);
-    #endif
+#endif
     }
   } else {
     HIP_CHECK(hipGetLastError());
@@ -113,9 +114,7 @@ TEST_CASE("Unit_Kernel_Launch_bounds_Positive_Basic") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_Kernel_Launch_bounds_Negative_OutOfBounds") {
-  auto threads_per_block = GENERATE(-1 * MAX_THREADS_PER_BLOCK,
-                                    -1,
-                                    MAX_THREADS_PER_BLOCK + 1,
+  auto threads_per_block = GENERATE(-1 * MAX_THREADS_PER_BLOCK, -1, MAX_THREADS_PER_BLOCK + 1,
                                     2 * MAX_THREADS_PER_BLOCK);
   LaunchBoundsWrapper<true>(threads_per_block);
 }
@@ -142,19 +141,16 @@ TEST_CASE("Unit_Kernel_Launch_bounds_Negative_OutOfBounds") {
 TEST_CASE("Unit_Kernel_Launch_bounds_Negative_Parameters_RTC") {
   hiprtcProgram program{};
 
-  #if HT_AMD
-    const auto program_source = GENERATE(kMaxThreadsZero,
-                                         kMaxThreadsNegative,
-                                         kMinWarpsNegative,
-                                         kMaxThreadsNotInt,
-                                         kMinWarpsNotInt);
-  #else
-    // Aligned with CUDA behavior and expected behavior on NVIDIA
-    const auto program_source = GENERATE(kMaxThreadsNotInt,
-                                         kMinWarpsNotInt);
-  #endif
+#if HT_AMD
+  const auto program_source = GENERATE(kMaxThreadsZero, kMaxThreadsNegative, kMinWarpsNegative,
+                                       kMaxThreadsNotInt, kMinWarpsNotInt);
+#else
+  // Aligned with CUDA behavior and expected behavior on NVIDIA
+  const auto program_source = GENERATE(kMaxThreadsNotInt, kMinWarpsNotInt);
+#endif
 
-  HIPRTC_CHECK(hiprtcCreateProgram(&program, program_source, "launch_bounds_negative.cc", 0, nullptr, nullptr));
+  HIPRTC_CHECK(hiprtcCreateProgram(&program, program_source, "launch_bounds_negative.cc", 0,
+                                   nullptr, nullptr));
   hiprtcResult result{hiprtcCompileProgram(program, 0, nullptr)};
 
   // Get the compile log.
@@ -164,9 +160,9 @@ TEST_CASE("Unit_Kernel_Launch_bounds_Negative_Parameters_RTC") {
   HIPRTC_CHECK(hiprtcGetProgramLog(program, log.data()));
   int error_count{0};
   std::string error_message{"error:"};
-  
+
   size_t n_pos = log.find(error_message, 0);
-  while(n_pos != std::string::npos) {
+  while (n_pos != std::string::npos) {
     ++error_count;
     n_pos = log.find(error_message, n_pos + 1);
   }

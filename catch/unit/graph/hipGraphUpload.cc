@@ -287,7 +287,6 @@ TEST_CASE("Unit_hipGraphUpload_Negative_Parameters") {
     REQUIRE(hipSuccess == ret);
   }
   SECTION("graphExec is destroyed"){
-    int number = 5;
     hipGraphExec_t graph_exec;
     hipGraph_t graph;
 

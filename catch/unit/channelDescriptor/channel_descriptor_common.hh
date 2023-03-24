@@ -19,14 +19,9 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 
-enum class ChannelDimension {
-  OneDim,
-  TwoDim,
-  ThreeDim,
-  FourDim
-};
+enum class ChannelDimension { OneDim, TwoDim, ThreeDim, FourDim };
 
-template<typename T> class ChannelDescriptorTestShell { 
+template <typename T> class ChannelDescriptorTestShell {
  protected:
   int size;
   hipChannelFormatKind kind;
@@ -56,12 +51,13 @@ template<typename T> class ChannelDescriptorTestShell {
     REQUIRE(channel_desc.f == referent_channel_desc.f);
   }
 
-  ChannelDescriptorTestShell(const ChannelDimension dimension): size(0), kind(hipChannelFormatKindNone), dimension(dimension) {}
+  ChannelDescriptorTestShell(const ChannelDimension dimension)
+      : size(0), kind(hipChannelFormatKindNone), dimension(dimension) {}
   ChannelDescriptorTestShell(const ChannelDescriptorTestShell&) = delete;
   ChannelDescriptorTestShell(ChannelDescriptorTestShell&&) = delete;
 };
 
-template<typename T> class ChannelDescriptorTest1D : public ChannelDescriptorTestShell<T> {
+template <typename T> class ChannelDescriptorTest1D : public ChannelDescriptorTestShell<T> {
  public:
   ChannelDescriptorTest1D() : ChannelDescriptorTestShell<T>(ChannelDimension::OneDim) {}
 
@@ -104,7 +100,7 @@ template<typename T> class ChannelDescriptorTest1D : public ChannelDescriptorTes
   }
 };
 
-template<typename T> class ChannelDescriptorTest2D : public ChannelDescriptorTestShell<T> {
+template <typename T> class ChannelDescriptorTest2D : public ChannelDescriptorTestShell<T> {
  public:
   ChannelDescriptorTest2D() : ChannelDescriptorTestShell<T>(ChannelDimension::TwoDim) {}
 
@@ -115,7 +111,7 @@ template<typename T> class ChannelDescriptorTest2D : public ChannelDescriptorTes
       this->kind = hipChannelFormatKindUnsigned;
     } else if (std::is_same<char2, T>::value) {
       this->size = static_cast<int>(sizeof(signed char) * 8);
-      this->kind = hipChannelFormatKindSigned;  
+      this->kind = hipChannelFormatKindSigned;
     } else if (std::is_same<ushort2, T>::value) {
       this->size = static_cast<int>(sizeof(unsigned short) * 8);
       this->kind = hipChannelFormatKindUnsigned;
@@ -142,7 +138,7 @@ template<typename T> class ChannelDescriptorTest2D : public ChannelDescriptorTes
 };
 
 #ifndef __GNUC__
-template<typename T> class ChannelDescriptorTest3D : public ChannelDescriptorTestShell<T> {
+template <typename T> class ChannelDescriptorTest3D : public ChannelDescriptorTestShell<T> {
  public:
   ChannelDescriptorTest3D() : ChannelDescriptorTestShell<T>(ChannelDimension::ThreeDim) {}
 
@@ -153,7 +149,7 @@ template<typename T> class ChannelDescriptorTest3D : public ChannelDescriptorTes
       this->kind = hipChannelFormatKindUnsigned;
     } else if (std::is_same<char3, T>::value) {
       this->size = static_cast<int>(sizeof(signed char) * 8);
-      this->kind = hipChannelFormatKindSigned;  
+      this->kind = hipChannelFormatKindSigned;
     } else if (std::is_same<ushort3, T>::value) {
       this->size = static_cast<int>(sizeof(unsigned short) * 8);
       this->kind = hipChannelFormatKindUnsigned;
@@ -180,7 +176,7 @@ template<typename T> class ChannelDescriptorTest3D : public ChannelDescriptorTes
 };
 #endif
 
-template<typename T> class ChannelDescriptorTest4D : public ChannelDescriptorTestShell<T> {
+template <typename T> class ChannelDescriptorTest4D : public ChannelDescriptorTestShell<T> {
  public:
   ChannelDescriptorTest4D() : ChannelDescriptorTestShell<T>(ChannelDimension::FourDim) {}
 
@@ -191,7 +187,7 @@ template<typename T> class ChannelDescriptorTest4D : public ChannelDescriptorTes
       this->kind = hipChannelFormatKindUnsigned;
     } else if (std::is_same<char4, T>::value) {
       this->size = static_cast<int>(sizeof(signed char) * 8);
-      this->kind = hipChannelFormatKindSigned;  
+      this->kind = hipChannelFormatKindSigned;
     } else if (std::is_same<ushort4, T>::value) {
       this->size = static_cast<int>(sizeof(unsigned short) * 8);
       this->kind = hipChannelFormatKindUnsigned;
@@ -217,7 +213,7 @@ template<typename T> class ChannelDescriptorTest4D : public ChannelDescriptorTes
   }
 };
 
-template<typename T> class ChannelDescriptorTestNone : public ChannelDescriptorTestShell<T> {
+template <typename T> class ChannelDescriptorTestNone : public ChannelDescriptorTestShell<T> {
  public:
   ChannelDescriptorTestNone() : ChannelDescriptorTestShell<T>(ChannelDimension::OneDim) {}
 

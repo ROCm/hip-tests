@@ -46,9 +46,9 @@ THE SOFTWARE.
  *  - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_ChannelDescriptor_Positive_Basic_1D", "", char, unsigned char, uchar1,
-                   signed char, char1, unsigned short, ushort1, short, signed short, short1,
-                   int, unsigned int, uint1, signed int, int1, float, float1, long, unsigned long, ulong1,
-                   signed long, long1) {
+                   signed char, char1, unsigned short, ushort1, short, signed short, short1, int,
+                   unsigned int, uint1, signed int, int1, float, float1, long, unsigned long,
+                   ulong1, signed long, long1) {
   ChannelDescriptorTest1D<TestType> channel_desc_test;
   channel_desc_test.Run();
 }

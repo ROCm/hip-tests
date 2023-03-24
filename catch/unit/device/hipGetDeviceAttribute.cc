@@ -441,7 +441,7 @@ constexpr AttributeToStringMap<57> kCommonAttributes{{
 }};
 
 #if HT_NVIDIA
-constexpr AttributeToStringMap<34> kCudaOnlyAttributes{
+constexpr AttributeToStringMap<33> kCudaOnlyAttributes{
     {{hipDeviceAttributeAccessPolicyMaxWindowSize, "hipDeviceAttributeAccessPolicyMaxWindowSize"},
      {hipDeviceAttributeAsyncEngineCount, "hipDeviceAttributeAsyncEngineCount"},
      {hipDeviceAttributeCanUseHostPointerForRegisteredMem,

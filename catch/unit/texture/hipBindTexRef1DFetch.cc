@@ -19,6 +19,8 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 
+#if CUDA_VERSION < CUDA_12000
+
 #define N 512
 
 texture<float, 1, hipReadModeElementType> tex;
@@ -79,3 +81,7 @@ TEST_CASE("Unit_hipBindTexture_tex1DfetchVerification") {
   HIP_CHECK(hipFree(texBuf));
   HIP_CHECK(hipFree(devBuf));
 }
+
+
+#endif // CUDA_VERSION < CUDA_12000
+

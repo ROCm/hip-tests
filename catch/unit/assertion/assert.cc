@@ -96,9 +96,11 @@ TEST_CASE("Unit_Assert_Positive_Basic_KernelPass") {
  * Test Description
  * ------------------------
  *  - Launches kernels with asserts that have an expression equal to 0.
- *  - Expects that SIGABRT is raised and kernels have been stopped.
- *  - The HIP runtime also aborts the host code, so this test case uses signal handlers
- *    to avoid host code abortion.
+ *  - Expects that SIGABRT is raised and kernels have been stopped on AMD.
+ *    - The HIP runtime also aborts the host code, so this test case uses signal handlers
+ *      to avoid host code abortion.
+ *  - Expects that `hipErrorAssert` is returned from `hipDeviceSynchronize` on NVIDIA.
+ *    - The host code is not aborted.
  * Test source
  * ------------------------
  *  - unit/assertion/assert.cc

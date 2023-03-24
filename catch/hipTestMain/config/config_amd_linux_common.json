@@ -20,7 +20,6 @@
 	   "Unit_hipMemAdvise_No_Flag_Interference",
 	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep",
 	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ClonedGrph",
-	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ChldNode",
 	   "Unit_hipMemGetAddressRange_Negative",
 	   "Unit_hipMemRangeGetAttribute_Positive_AccessedBy_Basic",
 	   "Unit_hipMemRangeGetAttribute_Positive_AccessedBy_Partial_Range",

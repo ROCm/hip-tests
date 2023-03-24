@@ -64,11 +64,15 @@ template <bool should_abort> void LaunchAssertKernel() {
 
   if constexpr (should_abort) {
     AssertFailKernel<<<num_blocks, num_threads, 0, 0>>>();
+#if HT_AMD
+    HIP_CHECK(hipDeviceSynchronize());
+#else
+    HIP_CHECK_ERROR(hipDeviceSynchronize(), hipErrorAssert);
+#endif
   } else {
     AssertPassKernel<<<num_blocks, num_threads, 0, 0>>>();
+    HIP_CHECK(hipDeviceSynchronize());
   }
-
-  HIP_CHECK(hipDeviceSynchronize());
 }
 
 /**

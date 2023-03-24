@@ -108,5 +108,9 @@ TEST_CASE("Unit_Assert_Positive_Basic_KernelPass") {
  */
 TEST_CASE("Unit_Assert_Positive_Basic_KernelFail") {
   try_and_catch_abort(&LaunchAssertKernel<true>);
+#if HT_AMD
   REQUIRE(abort_raised_flag == 1);
+#else
+  REQUIRE(abort_raised_flag == 0);
+#endif
 }

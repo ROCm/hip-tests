@@ -21,8 +21,12 @@ THE SOFTWARE.
 
 #pragma once
 
+#include <hip/hip_cooperative_groups.h>
+
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
+
+namespace cg = cooperative_groups;
 
 #define MATH_SINGLE_ARG_KERNEL_DEF(func_name)                                                      \
   template <typename T>                                                                            \
@@ -161,3 +165,11 @@ struct EqValidator {
     REQUIRE(actual_val == ref_val);
   }
 };
+
+template <typename T> struct RefType {};
+
+template <> struct RefType<float> { using type = double; };
+
+template <> struct RefType<double> { using type = long double; };
+
+template <typename T> using RefType_t = typename RefType<T>::type;

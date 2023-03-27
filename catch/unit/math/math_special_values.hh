@@ -19,13 +19,56 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "math_common.hh"
-#include <float.h>
+#pragma once
 
-const double specialValuesDouble[] = {
-    -NAN,
-    -INFINITY,
-    -DBL_MAX,
+#include <array>
+#include <limits>
+
+/*-----------------------------------------------------------------------------
+   HEX_FLT, HEXT_DBL, HEX_LDBL -- Create hex floating point literal of type
+   float, double, long double respectively. Arguments:
+
+      sm    -- sign of number,
+      int   -- integer part of mantissa (without `0x' prefix),
+      fract -- fractional part of mantissa (without decimal point and `L' or
+            `LL' suffixes),
+      se    -- sign of exponent,
+      exp   -- absolute value of (binary) exponent.
+
+   Example:
+
+      double yhi = HEX_DBL(+, 1, 5555555555555, -, 2); // 0x1.5555555555555p-2
+
+   Note:
+
+      We have to pass signs as separate arguments because gcc pass negative
+   integer values (e. g. `-2') into a macro as two separate tokens, so
+   `HEX_FLT(1, 0, -2)' produces result `0x1.0p- 2' (note a space between minus
+   and two) which is not a correct floating point literal.
+-----------------------------------------------------------------------------*/
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
+// If compiler does not support hex floating point literals:
+#define HEX_FLT(sm, int, fract, se, exp)                                                           \
+  sm ldexpf((float)(0x##int##fract##UL),                                                           \
+            se exp + ilogbf((float)0x##int) - ilogbf((float)(0x##int##fract##UL)))
+#define HEX_DBL(sm, int, fract, se, exp)                                                           \
+  sm ldexp((double)(0x##int##fract##ULL),                                                          \
+           se exp + ilogb((double)0x##int) - ilogb((double)(0x##int##fract##ULL)))
+#define HEX_LDBL(sm, int, fract, se, exp)                                                          \
+  sm ldexpl((long double)(0x##int##fract##ULL),                                                    \
+            se exp + ilogbl((long double)0x##int) - ilogbl((long double)(0x##int##fract##ULL)))
+#else
+// If compiler supports hex floating point literals: just concatenate all the
+// parts into a literal.
+#define HEX_FLT(sm, int, fract, se, exp) sm 0x##int##.##fract##p##se##exp##F
+#define HEX_DBL(sm, int, fract, se, exp) sm 0x##int##.##fract##p##se##exp
+#define HEX_LDBL(sm, int, fract, se, exp) sm 0x##int##.##fract##p##se##exp##L
+#endif
+
+inline constexpr std::array kSpecialValuesDouble{
+    -std::numeric_limits<double>::quiet_NaN(),
+    -std::numeric_limits<double>::infinity(),
+    -std::numeric_limits<double>::max(),
     HEX_DBL(-, 1, 0000000000001, +, 64),
     HEX_DBL(-, 1, 0, +, 64),
     HEX_DBL(-, 1, fffffffffffff, +, 63),
@@ -60,7 +103,7 @@ const double specialValuesDouble[] = {
     -0.25,
     HEX_DBL(-, 1, fffffffffffff, -, 3),
     HEX_DBL(-, 1, 0000000000001, -, 1022),
-    -DBL_MIN,
+    -std::numeric_limits<double>::min(),
     HEX_DBL(-, 0, fffffffffffff, -, 1022),
     HEX_DBL(-, 0, 0000000000fff, -, 1022),
     HEX_DBL(-, 0, 00000000000fe, -, 1022),
@@ -77,9 +120,9 @@ const double specialValuesDouble[] = {
     HEX_DBL(-, 0, 0000000000001, -, 1022),
     -0.0,
 
-    +NAN,
-    +INFINITY,
-    +DBL_MAX,
+    std::numeric_limits<double>::quiet_NaN(),
+    std::numeric_limits<double>::infinity(),
+    std::numeric_limits<double>::max(),
     HEX_DBL(+, 1, 0000000000001, +, 64),
     HEX_DBL(+, 1, 0, +, 64),
     HEX_DBL(+, 1, fffffffffffff, +, 63),
@@ -114,7 +157,7 @@ const double specialValuesDouble[] = {
     +0.25,
     HEX_DBL(+, 1, fffffffffffff, -, 3),
     HEX_DBL(+, 1, 0000000000001, -, 1022),
-    +DBL_MIN,
+    +std::numeric_limits<double>::min(),
     HEX_DBL(+, 0, fffffffffffff, -, 1022),
     HEX_DBL(+, 0, 0000000000fff, -, 1022),
     HEX_DBL(+, 0, 00000000000fe, -, 1022),
@@ -132,13 +175,10 @@ const double specialValuesDouble[] = {
     +0.0,
 };
 
-const size_t specialValuesDoubleCount =
-    sizeof(specialValuesDouble) / sizeof(specialValuesDouble[0]);
-
-const float specialValuesFloat[] = {
-    -NAN,
-    -INFINITY,
-    -FLT_MAX,
+inline constexpr std::array kSpecialValuesFloat{
+    -std::numeric_limits<float>::quiet_NaN(),
+    -std::numeric_limits<float>::infinity(),
+    -std::numeric_limits<float>::max(),
     HEX_FLT(-, 1, 000002, +, 64),
     HEX_FLT(-, 1, 0, +, 64),
     HEX_FLT(-, 1, fffffe, +, 63),
@@ -173,7 +213,7 @@ const float specialValuesFloat[] = {
     -0.25f,
     HEX_FLT(-, 1, fffffe, -, 3),
     HEX_FLT(-, 1, 000002, -, 126),
-    -FLT_MIN,
+    -std::numeric_limits<float>::min(),
     HEX_FLT(-, 0, fffffe, -, 126),
     HEX_FLT(-, 0, 000ffe, -, 126),
     HEX_FLT(-, 0, 0000fe, -, 126),
@@ -186,9 +226,9 @@ const float specialValuesFloat[] = {
     HEX_FLT(-, 0, 000002, -, 126),
     -0.0f,
 
-    +NAN,
-    +INFINITY,
-    +FLT_MAX,
+    std::numeric_limits<float>::quiet_NaN(),
+    std::numeric_limits<float>::infinity(),
+    std::numeric_limits<float>::max(),
     HEX_FLT(+, 1, 000002, +, 64),
     HEX_FLT(+, 1, 0, +, 64),
     HEX_FLT(+, 1, fffffe, +, 63),
@@ -223,7 +263,7 @@ const float specialValuesFloat[] = {
     +0.25f,
     HEX_FLT(+, 1, fffffe, -, 3),
     HEX_FLT(+, 1, 000002, -, 126),
-    +FLT_MIN,
+    +std::numeric_limits<float>::min(),
     HEX_FLT(+, 0, fffffe, -, 126),
     HEX_FLT(+, 0, 000ffe, -, 126),
     HEX_FLT(+, 0, 0000fe, -, 126),
@@ -236,6 +276,3 @@ const float specialValuesFloat[] = {
     HEX_FLT(+, 0, 000002, -, 126),
     +0.0f,
 };
-
-const size_t specialValuesFloatCount =
-    sizeof(specialValuesFloat) / sizeof(specialValuesFloat[0]);

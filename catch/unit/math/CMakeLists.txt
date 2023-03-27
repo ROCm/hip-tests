@@ -18,10 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-set(COMMON_SHARED_SRC math_special_values.cc)
-
 set(TEST_SRC
-  math_root.cc
 )
 
 hip_add_exe_to_target(NAME MathsTest

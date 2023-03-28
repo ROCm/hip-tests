@@ -29,7 +29,7 @@ namespace cg = cooperative_groups;
 
 MATH_SINGLE_ARG_KERNEL_DEF(sqrt)
 
-TEMPLATE_TEST_CASE("Unit_Math_sqrt", "", float, double) {
+TEMPLATE_TEST_CASE("Unit_Math_sqrt_Positive", "", float, double) {
   using T = RefType_t<TestType>;
   T (*ref)(T) = sqrt;
   const auto& special_vals = std::get<SpecialVals<TestType>>(kSpecialValRegistry);
@@ -39,20 +39,18 @@ TEMPLATE_TEST_CASE("Unit_Math_sqrt", "", float, double) {
 
 MATH_SINGLE_ARG_KERNEL_DEF(rsqrt)
 
-template <typename T> T rsqrt_ref(T arg) {
-  return 1. / sqrt(arg);
-}
-
-TEMPLATE_TEST_CASE("Unit_Math_rsqrt", "", float, double) {
+TEMPLATE_TEST_CASE("Unit_Math_rsqrt_Positive", "", float, double) {
   using T = RefType_t<TestType>;
+  auto rsqrt_ref = [](T arg) -> T { return 1. / sqrt(arg); };
+  T (*ref)(T) = rsqrt_ref;
   const auto& special_vals = std::get<SpecialVals<TestType>>(kSpecialValRegistry);
-  MathTest(ULPValidator{2}, 1u, special_vals.size, rsqrt_kernel<TestType>, rsqrt_ref<T>, special_vals.size,
+  MathTest(ULPValidator{2}, 1u, special_vals.size, rsqrt_kernel<TestType>, ref, special_vals.size,
            special_vals.data);
 }
 
 MATH_SINGLE_ARG_KERNEL_DEF(cbrt)
 
-TEMPLATE_TEST_CASE("Unit_Math_cbrt", "", float, double) {
+TEMPLATE_TEST_CASE("Unit_Math_cbrt_Positive", "", float, double) {
   using T = RefType_t<TestType>;
   T (*ref)(T) = cbrt;
   const auto& special_vals = std::get<SpecialVals<TestType>>(kSpecialValRegistry);
@@ -62,20 +60,18 @@ TEMPLATE_TEST_CASE("Unit_Math_cbrt", "", float, double) {
 
 MATH_SINGLE_ARG_KERNEL_DEF(rcbrt)
 
-template <typename T> T rcbrt_ref(T arg) {
-  return 1. / cbrt(arg);
-}
-
-TEMPLATE_TEST_CASE("Unit_Math_rcbrt", "", float, double) {
+TEMPLATE_TEST_CASE("Unit_Math_rcbrt_Positive", "", float, double) {
   using T = RefType_t<TestType>;
+  auto rcbrt_ref = [](T arg) -> T { return 1. / cbrt(arg); };
+  T (*ref)(T) = rcbrt_ref;
   const auto& special_vals = std::get<SpecialVals<TestType>>(kSpecialValRegistry);
-  MathTest(ULPValidator{1}, 1u, special_vals.size, rcbrt_kernel<TestType>, rcbrt_ref<T>, special_vals.size,
+  MathTest(ULPValidator{1}, 1u, special_vals.size, rcbrt_kernel<TestType>, ref, special_vals.size,
            special_vals.data);
 }
 
 MATH_DOUBLE_ARG_KERNEL_DEF(hypot)
 
-TEMPLATE_TEST_CASE("Unit_Math_hypot", "", float, double) {
+TEMPLATE_TEST_CASE("Unit_Math_hypot_Positive", "", float, double) {
   using T = RefType_t<TestType>;
   T (*ref)(T, T) = hypot;
   const auto& special_vals = std::get<SpecialVals<TestType>>(kSpecialValRegistry);
@@ -89,17 +85,63 @@ TEMPLATE_TEST_CASE("Unit_Math_hypot", "", float, double) {
 
 MATH_DOUBLE_ARG_KERNEL_DEF(rhypot)
 
-template <typename T> T rhypot_ref(T arg1, T arg2) {
-  return 1. / hypot(arg1, arg2);
-}
-
-TEMPLATE_TEST_CASE("Unit_Math_rhypot", "", float, double) {
+TEMPLATE_TEST_CASE("Unit_Math_rhypot_Positive", "", float, double) {
   using T = RefType_t<TestType>;
+  auto rhypot_ref = [](T arg1, T arg2) -> T { return 1. / hypot(arg1, arg2); };
+  T (*ref)(T, T) = rhypot_ref;
   const auto& special_vals = std::get<SpecialVals<TestType>>(kSpecialValRegistry);
   TestType arg1[special_vals.size];
   for (int i = 0; i < special_vals.size; i++) {
     std::fill_n(arg1, special_vals.size, special_vals.data[i]);
-    MathTest(ULPValidator{2}, 1u, special_vals.size, rhypot_kernel<TestType>, rhypot_ref<T>, special_vals.size,
+    MathTest(ULPValidator{2}, 1u, special_vals.size, rhypot_kernel<TestType>, ref, special_vals.size,
             arg1, special_vals.data);
+  }
+}
+
+MATH_TRIPLE_ARG_KERNEL_DEF(norm3d)
+
+TEMPLATE_TEST_CASE("Unit_Math_norm3d_Positive", "", float, double) {
+  using T = RefType_t<TestType>;
+  auto norm3d_ref = [](T arg1, T arg2, T arg3) -> T {
+    if (std::isinf(arg1) || std::isinf(arg2) || std::isinf(arg3)) {
+      return std::numeric_limits<T>::infinity();
+    }
+    return sqrt(arg1 * arg1 + arg2 * arg2 + arg3 * arg3);
+  };
+  T (*ref)(T, T, T) = norm3d_ref;
+  const auto& special_vals = std::get<SpecialVals<TestType>>(kSpecialValRegistry);
+  TestType arg1[special_vals.size];
+  TestType arg2[special_vals.size];
+  for (int i = 0; i < special_vals.size; i++) {
+    std::fill_n(arg1, special_vals.size, special_vals.data[i]);
+    for (int j = 0; j < special_vals.size; j++) {
+      std::fill_n(arg2, special_vals.size, special_vals.data[i]);
+      MathTest(ULPValidator{3}, 1u, special_vals.size, norm3d_kernel<TestType>, ref, special_vals.size,
+              arg1, arg2, special_vals.data);
+    }
+  }
+}
+
+MATH_TRIPLE_ARG_KERNEL_DEF(rnorm3d)
+
+TEMPLATE_TEST_CASE("Unit_Math_rnorm3d_Positive", "", float, double) {
+  using T = RefType_t<TestType>;
+  auto rnorm3d_ref = [](T arg1, T arg2, T arg3) -> T {
+    if (std::isinf(arg1) || std::isinf(arg2) || std::isinf(arg3)) {
+      return 0;
+    }
+    return 1. / sqrt(arg1 * arg1 + arg2 * arg2 + arg3 * arg3);
+  };
+  T (*ref)(T, T, T) = rnorm3d_ref;
+  const auto& special_vals = std::get<SpecialVals<TestType>>(kSpecialValRegistry);
+  TestType arg1[special_vals.size];
+  TestType arg2[special_vals.size];
+  for (int i = 0; i < special_vals.size; i++) {
+    std::fill_n(arg1, special_vals.size, special_vals.data[i]);
+    for (int j = 0; j < special_vals.size; j++) {
+      std::fill_n(arg2, special_vals.size, special_vals.data[i]);
+      MathTest(ULPValidator{2}, 1u, special_vals.size, rnorm3d_kernel<TestType>, ref, special_vals.size,
+              arg1, arg2, special_vals.data);
+    }
   }
 }

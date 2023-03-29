@@ -276,3 +276,12 @@ inline constexpr std::array kSpecialValuesFloat{
     HEX_FLT(+, 0, 000002, -, 126),
     +0.0f,
 };
+
+template <typename T> struct SpecialVals {
+  const T* const data;
+  const size_t size;
+};
+
+inline constexpr auto kSpecialValRegistry =
+    std::make_tuple(SpecialVals<float>{kSpecialValuesFloat.data(), kSpecialValuesFloat.size()},
+                    SpecialVals<double>{kSpecialValuesDouble.data(), kSpecialValuesDouble.size()});

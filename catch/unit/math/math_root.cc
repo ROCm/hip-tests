@@ -22,8 +22,9 @@ THE SOFTWARE.
 #include "math_special_values.hh"
 
 #include <hip/hip_cooperative_groups.h>
-#include <math.h>
 #include <cmath>
+#include <math.h>
+#include <type_traits>
 
 namespace cg = cooperative_groups;
 
@@ -32,8 +33,9 @@ MATH_SINGLE_ARG_KERNEL_DEF(sqrt)
 TEMPLATE_TEST_CASE("Unit_Math_sqrt_Positive", "", float, double) {
   using T = RefType_t<TestType>;
   T (*ref)(T) = sqrt;
+  int64_t ulps = std::is_same_v<TestType, float> ? 1 : 1;
   const auto& special_vals = std::get<SpecialVals<TestType>>(kSpecialValRegistry);
-  MathTest(ULPValidator{1}, 1u, special_vals.size, sqrt_kernel<TestType>, ref, special_vals.size,
+  MathTest(ULPValidator{ulps}, 1u, special_vals.size, sqrt_kernel<TestType>, ref, special_vals.size,
            special_vals.data);
 }
 
@@ -43,8 +45,9 @@ TEMPLATE_TEST_CASE("Unit_Math_rsqrt_Positive", "", float, double) {
   using T = RefType_t<TestType>;
   auto rsqrt_ref = [](T arg) -> T { return 1. / sqrt(arg); };
   T (*ref)(T) = rsqrt_ref;
+  int64_t ulps = std::is_same_v<TestType, float> ? 2 : 1;
   const auto& special_vals = std::get<SpecialVals<TestType>>(kSpecialValRegistry);
-  MathTest(ULPValidator{2}, 1u, special_vals.size, rsqrt_kernel<TestType>, ref, special_vals.size,
+  MathTest(ULPValidator{ulps}, 1u, special_vals.size, rsqrt_kernel<TestType>, ref, special_vals.size,
            special_vals.data);
 }
 
@@ -75,10 +78,11 @@ TEMPLATE_TEST_CASE("Unit_Math_hypot_Positive", "", float, double) {
   using T = RefType_t<TestType>;
   T (*ref)(T, T) = hypot;
   const auto& special_vals = std::get<SpecialVals<TestType>>(kSpecialValRegistry);
+  int64_t ulps = std::is_same_v<TestType, float> ? 3 : 2;
   TestType arg1[special_vals.size];
   for (int i = 0; i < special_vals.size; i++) {
     std::fill_n(arg1, special_vals.size, special_vals.data[i]);
-    MathTest(ULPValidator{3}, 1u, special_vals.size, hypot_kernel<TestType>, ref, special_vals.size,
+    MathTest(ULPValidator{ulps}, 1u, special_vals.size, hypot_kernel<TestType>, ref, special_vals.size,
             arg1, special_vals.data);
   }
 }
@@ -90,10 +94,11 @@ TEMPLATE_TEST_CASE("Unit_Math_rhypot_Positive", "", float, double) {
   auto rhypot_ref = [](T arg1, T arg2) -> T { return 1. / hypot(arg1, arg2); };
   T (*ref)(T, T) = rhypot_ref;
   const auto& special_vals = std::get<SpecialVals<TestType>>(kSpecialValRegistry);
+  int64_t ulps = std::is_same_v<TestType, float> ? 2 : 1;
   TestType arg1[special_vals.size];
   for (int i = 0; i < special_vals.size; i++) {
     std::fill_n(arg1, special_vals.size, special_vals.data[i]);
-    MathTest(ULPValidator{2}, 1u, special_vals.size, rhypot_kernel<TestType>, ref, special_vals.size,
+    MathTest(ULPValidator{ulps}, 1u, special_vals.size, rhypot_kernel<TestType>, ref, special_vals.size,
             arg1, special_vals.data);
   }
 }
@@ -109,6 +114,7 @@ TEMPLATE_TEST_CASE("Unit_Math_norm3d_Positive", "", float, double) {
     return sqrt(arg1 * arg1 + arg2 * arg2 + arg3 * arg3);
   };
   T (*ref)(T, T, T) = norm3d_ref;
+  int64_t ulps = std::is_same_v<TestType, float> ? 3 : 2;
   const auto& special_vals = std::get<SpecialVals<TestType>>(kSpecialValRegistry);
   TestType arg1[special_vals.size];
   TestType arg2[special_vals.size];
@@ -116,7 +122,7 @@ TEMPLATE_TEST_CASE("Unit_Math_norm3d_Positive", "", float, double) {
     std::fill_n(arg1, special_vals.size, special_vals.data[i]);
     for (int j = 0; j < special_vals.size; j++) {
       std::fill_n(arg2, special_vals.size, special_vals.data[i]);
-      MathTest(ULPValidator{3}, 1u, special_vals.size, norm3d_kernel<TestType>, ref, special_vals.size,
+      MathTest(ULPValidator{ulps}, 1u, special_vals.size, norm3d_kernel<TestType>, ref, special_vals.size,
               arg1, arg2, special_vals.data);
     }
   }
@@ -133,6 +139,7 @@ TEMPLATE_TEST_CASE("Unit_Math_rnorm3d_Positive", "", float, double) {
     return 1. / sqrt(arg1 * arg1 + arg2 * arg2 + arg3 * arg3);
   };
   T (*ref)(T, T, T) = rnorm3d_ref;
+  int64_t ulps = std::is_same_v<TestType, float> ? 2 : 1;
   const auto& special_vals = std::get<SpecialVals<TestType>>(kSpecialValRegistry);
   TestType arg1[special_vals.size];
   TestType arg2[special_vals.size];
@@ -140,7 +147,7 @@ TEMPLATE_TEST_CASE("Unit_Math_rnorm3d_Positive", "", float, double) {
     std::fill_n(arg1, special_vals.size, special_vals.data[i]);
     for (int j = 0; j < special_vals.size; j++) {
       std::fill_n(arg2, special_vals.size, special_vals.data[i]);
-      MathTest(ULPValidator{2}, 1u, special_vals.size, rnorm3d_kernel<TestType>, ref, special_vals.size,
+      MathTest(ULPValidator{ulps}, 1u, special_vals.size, rnorm3d_kernel<TestType>, ref, special_vals.size,
               arg1, arg2, special_vals.data);
     }
   }

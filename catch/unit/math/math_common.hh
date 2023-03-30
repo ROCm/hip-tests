@@ -87,10 +87,12 @@ namespace cg = cooperative_groups;
     }                                                                                              \
   }
 
-template <typename T, typename RT, typename Validator, typename... Ts, typename... RTs, size_t... I>
-void MathTestImpl(Validator validator, const size_t grid_dim, const size_t block_dim,
-                  void (*const kernel)(T*, const size_t, Ts*...), RT (*const ref_func)(RTs...),
-                  const size_t num_args, std::index_sequence<I...> is, const Ts*... xss) {
+template <bool parallel = true, typename T, typename RT, typename ValidatorBuilder, typename... Ts,
+          typename... RTs, size_t... I>
+void MathTestImpl(const ValidatorBuilder& validator_builder, const size_t grid_dim,
+                  const size_t block_dim, void (*const kernel)(T*, const size_t, Ts*...),
+                  RT (*const ref_func)(RTs...), const size_t num_args, std::index_sequence<I...> is,
+                  const Ts*... xss) {
   struct LAWrapper {
     LAWrapper(const size_t size, const T* const init_vals)
         : la_{LinearAllocs::hipMalloc, size, 0u} {
@@ -111,60 +113,115 @@ void MathTestImpl(Validator validator, const size_t grid_dim, const size_t block
   std::vector<T> y(num_args);
   HIP_CHECK(hipMemcpy(y.data(), y_dev.ptr(), num_args * sizeof(T), hipMemcpyDeviceToHost));
 
-  for (auto i = 0u; i < num_args; ++i) {
-    validator(y[i], static_cast<T>(ref_func(static_cast<RT>(xss[i])...)));
+  if constexpr (!parallel) {
+    for (auto i = 0u; i < num_args; ++i) {
+      REQUIRE_THAT(y[i], validator_builder(static_cast<T>(ref_func(static_cast<RT>(xss[i])...))));
+    }
+    return;
   }
+
+  std::atomic<bool> fail_flag{false};
+  std::mutex ss_mtx;
+  std::stringstream ss;
+
+  const auto tf = [&, validator_builder](size_t iters, size_t base_idx) mutable {
+    for (auto i = 0; i < iters; ++i) {
+      if (fail_flag.load(std::memory_order_relaxed)) {
+        return;
+      }
+
+      const auto actual_val = y[base_idx + i];
+      const auto ref_val = static_cast<T>(ref_func(static_cast<RT>(xss[base_idx + i])...));
+      const auto validator = validator_builder(ref_val);
+      if (!validator.match(actual_val)) {
+        fail_flag.store(true, std::memory_order_relaxed);
+        // Several threads might have passed the first check, but failed validation. On the chance
+        // of this happening, access to the string stream must be serialized.
+        {
+          std::lock_guard{ss_mtx};
+          ss << std::to_string(actual_val) << ' ' << validator.describe() << '\n';
+        }
+        return;
+      }
+    }
+  };
+
+  // This will be replaced by a proper thread-pool implementation
+  std::vector<std::thread> threads;
+  const auto core_count = std::thread::hardware_concurrency();
+  const auto chunk_size = num_args / core_count;
+  const auto tail = num_args % core_count;
+  auto base_idx = 0u;
+  for (auto i = 0u; i < core_count; ++i) {
+    const auto iters = i < tail ? chunk_size + 1 : chunk_size;
+    threads.emplace_back(tf, iters, base_idx);
+    base_idx += iters;
+  }
+
+  for (auto& t : threads) {
+    t.join();
+  }
+
+  INFO(ss.str());
+  REQUIRE(!fail_flag);
 }
 
-template <typename T, typename RT, typename Validator, typename... Ts, typename... RTs>
-void MathTest(Validator validator, const size_t grid_dims, const size_t block_dims,
-              void (*const kernel)(T*, const size_t, Ts*...), RT (*const ref_func)(RTs...),
-              const size_t num_args, const Ts*... xss) {
-  MathTestImpl(validator, grid_dims, block_dims, kernel, ref_func, num_args,
-               std::index_sequence_for<Ts...>{}, xss...);
+template <bool parallel = true, typename T, typename RT, typename ValidatorBuilder, typename... Ts,
+          typename... RTs>
+void MathTest(const ValidatorBuilder& validator_builder, const size_t grid_dims,
+              const size_t block_dims, void (*const kernel)(T*, const size_t, Ts*...),
+              RT (*const ref_func)(RTs...), const size_t num_args, const Ts*... xss) {
+  MathTestImpl<parallel>(validator_builder, grid_dims, block_dims, kernel, ref_func, num_args,
+                         std::index_sequence_for<Ts...>{}, xss...);
 }
 
-struct ULPValidator {
-  template <typename T> void operator()(const T actual_val, const T ref_val) const {
-    if (std::isnan(ref_val)) {
-      REQUIRE(std::isnan(actual_val));
-    } else {
-      REQUIRE_THAT(actual_val, Catch::WithinULP(ref_val, ulps));
+template <typename T, typename Matcher> class ValidatorBase : public Catch::MatcherBase<T> {
+ public:
+  template <typename... Ts>
+  ValidatorBase(T target, Ts&&... args) : matcher_{std::forward<Ts>(args)...}, target_{target} {}
+
+  bool match(const T& val) const override {
+    if (std::isnan(target_)) {
+      return std::isnan(val);
     }
+
+    return matcher_.match(val);
   }
 
-  const int64_t ulps;
-};
-
-struct AbsValidator {
-  template <typename T> void operator()(const T actual_val, const T ref_val) const {
-    if (std::isnan(ref_val)) {
-      REQUIRE(std::isnan(actual_val));
-    } else {
-      REQUIRE_THAT(actual_val, Catch::WithinAbs(ref_val, margin));
+  virtual std::string describe() const override {
+    if (std::isnan(target_)) {
+      return "is not NaN";
     }
+
+    return matcher_.describe();
   }
 
-  const double margin;
+ private:
+  Matcher matcher_;
+  T target_;
+  bool nan = false;
 };
 
-template <typename T> struct RelValidator {
-  void operator()(const T actual_val, const T ref_val) const {
-    if (std::isnan(ref_val)) {
-      REQUIRE(std::isnan(actual_val));
-    } else {
-      REQUIRE_THAT(actual_val, Catch::WithinRel(ref_val, margin));
-    }
-  }
-
-  const T margin;
+template <typename T> auto ULPValidatorGenerator(int64_t ulps) {
+  return [=](T target) {
+    return ValidatorBase<T, Catch::Matchers::Floating::WithinUlpsMatcher>{
+        target, Catch::WithinULP(target, ulps)};
+  };
 };
 
-struct EqValidator {
-  template <typename T> void operator()(const T actual_val, const T ref_val) const {
-    REQUIRE(actual_val == ref_val);
-  }
-};
+template <typename T> auto AbsValidatorBuilderFactory(double margin) {
+  return [=](T target) {
+    return ValidatorBase<T, Catch::Matchers::Floating::WithinAbsMatcher>{
+        target, Catch::WithinAbs(target, margin)};
+  };
+}
+
+template <typename T> auto RelValidatorBuilderFactory(T margin) {
+  return [=](T target) {
+    return ValidatorBase<T, Catch::Matchers::Floating::WithinRelMatcher>{
+        target, Catch::WithinRel(target, margin)};
+  };
+}
 
 template <typename T> struct RefType {};
 

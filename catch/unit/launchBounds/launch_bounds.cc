@@ -30,10 +30,10 @@ THE SOFTWARE.
  * function.
  */
 
-#define MAX_THREADS_PER_BLOCK 128
-#define MIN_WARPS_PER_MULTIPROCESSOR 2
+constexpr int kMaxThreadsPerBlock = 128;
+constexpr int kMinWarpsPerMultiprocessor = 2;
 
-__launch_bounds__(MAX_THREADS_PER_BLOCK, MIN_WARPS_PER_MULTIPROCESSOR) __global__
+__launch_bounds__(kMaxThreadsPerBlock, kMinWarpsPerMultiprocessor) __global__
     void SumKernel(int* sum) {
   const int tid = threadIdx.x + blockIdx.x * blockDim.x;
   atomicAdd(sum, tid);
@@ -94,7 +94,7 @@ template <bool out_of_bounds> void LaunchBoundsWrapper(const int threads_per_blo
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_Kernel_Launch_bounds_Positive_Basic") {
-  auto threads_per_block = GENERATE(1, MAX_THREADS_PER_BLOCK / 2, MAX_THREADS_PER_BLOCK);
+  auto threads_per_block = GENERATE(1, kMaxThreadsPerBlock / 2, kMaxThreadsPerBlock);
   LaunchBoundsWrapper<false>(threads_per_block);
 }
 
@@ -114,8 +114,8 @@ TEST_CASE("Unit_Kernel_Launch_bounds_Positive_Basic") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_Kernel_Launch_bounds_Negative_OutOfBounds") {
-  auto threads_per_block = GENERATE(-1 * MAX_THREADS_PER_BLOCK, -1, MAX_THREADS_PER_BLOCK + 1,
-                                    2 * MAX_THREADS_PER_BLOCK);
+  auto threads_per_block =
+      GENERATE(-1 * kMaxThreadsPerBlock, -1, kMaxThreadsPerBlock + 1, 2 * kMaxThreadsPerBlock);
   LaunchBoundsWrapper<true>(threads_per_block);
 }
 

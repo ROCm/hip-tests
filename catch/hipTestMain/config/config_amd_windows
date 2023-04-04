@@ -20,7 +20,6 @@
         "Unit_hipMalloc3D_ValidatePitch",
         "Unit_hipMemAllocPitch_ValidatePitch",
         "Unit_hipGraphExecMemcpyNodeSetParamsToSymbol_Functional",
-        "Unit_hipMallocManaged_OverSubscription",
         "Unit_hipMallocManaged_CoherentTstWthAdvise",
         "Unit_hipMallocManaged_Advanced",
         "Unit_hipMemRangeGetAttribute_TstCountParam",

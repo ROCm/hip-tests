@@ -217,7 +217,6 @@ TEST_CASE("Unit_hipMallocManaged_MultiChunkMultiDevice") {
 }
 
 // The following tests oversubscription hipMallocManaged() api
-// Currently disabled.
 TEST_CASE("Unit_hipMallocManaged_OverSubscription") {
   auto managed = HmmAttrPrint();
   if (managed != 1) {
@@ -225,15 +224,22 @@ TEST_CASE("Unit_hipMallocManaged_OverSubscription") {
     return;
   }
 
+  #if HT_AMD
+    int isPageableHMM = 0;
+    HIP_CHECK(hipDeviceGetAttribute(&isPageableHMM,
+                                    hipDeviceAttributePageableMemoryAccess, 0));
+    if (!isPageableHMM) {
+      SUCCEED("Running on a system  where all the memory requested in hipMallocManged "
+              "is allocated on the host.\nThis can cause instability because of out of memory failures.\n"
+              "Hence skipping the test with Pass result.\n");
+      return;
+    }
+  #endif
+
   void* A = nullptr;
   size_t total = 0, free = 0;
   HIP_CHECK(hipMemGetInfo(&free, &total));
-  // ToDo: In case of HMM, memory over-subscription is allowed.  Hence, relook
-  // into how out of memory can be tested.
-  // Demanding more mem size than available
-#if HT_AMD
-  HIP_CHECK_ERROR(hipMallocManaged(&A, (free + 1), hipMemAttachGlobal), hipErrorOutOfMemory);
-#endif
+  HIP_CHECK(hipMallocManaged(&A, (free + 1), hipMemAttachGlobal));
 }
 
 // The following test does negative testing of hipMallocManaged() api

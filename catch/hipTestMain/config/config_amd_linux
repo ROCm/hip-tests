@@ -30,7 +30,6 @@
     "DisabledTests": [
     #if defined COMMON
         "Unit_hipStreamPerThread_DeviceReset_1",
-        "Unit_hipMallocManaged_OverSubscription",
         "Unit_hipDeviceGetSharedMemConfig_Positive_Basic",
         "Unit_hipDeviceGetSharedMemConfig_Positive_Threaded",
         "Unit_hipDeviceGetCacheConfig_Positive_Basic",
@@ -172,7 +171,6 @@
     #endif
     #if defined MI2XX
         "Unit_hipStreamPerThread_DeviceReset_1",
-        "Unit_hipMallocManaged_OverSubscription",
         "Unit_hipDeviceGetPCIBusId_Negative_PartialFill",
         "Unit_hipInit_Negative",
         "Unit_hipMemGetAddressRange_Negative",

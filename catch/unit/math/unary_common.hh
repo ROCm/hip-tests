@@ -157,3 +157,19 @@ void UnaryDoublePrecisionTest(void (*kernel)(double* const, const size_t, double
 
   SECTION("Brute force") { UnaryDoublePrecisionBruteForceTest<RT>(kernel, ref, validator_builder); }
 }
+
+#define MATH_UNARY_WITHIN_ULP_TEST_DEF(kern_name, ref_func, sp_ulp, dp_ulp)                        \
+  MATH_UNARY_KERNEL_DEF(kern_name)                                                                 \
+                                                                                                   \
+  TEST_CASE("Unit_Device_" #kern_name "_Accuracy_Positive - float") {                              \
+    UnarySinglePrecisionTest(kern_name##_kernel<float>, ref_func,                                  \
+                             ULPValidatorBuilderFactory<float>(sp_ulp));                           \
+  }                                                                                                \
+                                                                                                   \
+  TEST_CASE("Unit_Device_" #kern_name "_Accuracy_Positive - double") {                             \
+    UnaryDoublePrecisionTest(kern_name##_kernel<double>, ref_func,                                 \
+                             ULPValidatorBuilderFactory<double>(dp_ulp));                          \
+  }
+
+#define MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(func_name, sp_ulp, dp_ulp)                          \
+  MATH_UNARY_WITHIN_ULP_TEST_DEF(func_name, std::func_name, sp_ulp, dp_ulp)

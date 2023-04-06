@@ -68,7 +68,8 @@ template <typename T, typename... Ts> class MathTest {
       : kernel_{kernel},
         xss_dev_(LinearAllocGuard<Ts>(LinearAllocs::hipMalloc, max_num_args * sizeof(Ts))...),
         y_dev_{LinearAllocs::hipMalloc, max_num_args * sizeof(T)},
-        y_{LinearAllocs::hipHostMalloc, max_num_args * sizeof(T)} {}
+        y_{LinearAllocs::hipHostMalloc, max_num_args * sizeof(T)} {
+  }
 
 
   template <bool parallel = true, typename RT, typename ValidatorBuilder, typename... RTs>
@@ -96,12 +97,12 @@ template <typename T, typename... Ts> class MathTest {
                std::index_sequence<I...> is, const Ts*... xss) {
     const auto xss_tup = std::make_tuple(xss...);
 
-    constexpr auto f = [](auto* dst, const auto* const src, const size_t size) {
+    constexpr auto f = [](auto dst, auto src, size_t size) {
       HIP_CHECK(hipMemcpy(dst, src, size, hipMemcpyHostToDevice))
     };
 
     ((f(std::get<I>(xss_dev_).ptr(), std::get<I>(xss_tup),
-        num_args * sizeof(std::get<I>(xss_tup)))),
+        num_args * sizeof(*std::get<I>(xss_tup)))),
      ...);
 
     kernel_<<<grid_dim, block_dim>>>(y_dev_.ptr(), num_args, std::get<I>(xss_dev_).ptr()...);

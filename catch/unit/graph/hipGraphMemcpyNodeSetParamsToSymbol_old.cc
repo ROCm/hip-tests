@@ -234,6 +234,8 @@ void hipGraphMemcpyNodeSetParamsToSymbol_GlobalMem(bool useConstDeviceVar) {
   HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
   HIP_CHECK(hipGraphLaunch(graphExec, 0));
 
+  HIP_CHECK(hipStreamSynchronize(0));
+
   // Validating the result
   for (int i = 0; i < SIZE; i++) {
     if (B_h[i] != A_h[i]) {

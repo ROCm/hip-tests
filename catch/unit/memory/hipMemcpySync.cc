@@ -162,7 +162,7 @@ static void runMemcpyTests(hipStream_t stream, bool async, allocType type, memTy
   checkForSync(stream, async, type, fromHost);
   // verify
   HIP_CHECK(hipStreamSynchronize(stream));
-  verifyData(aPtr.first, testValue, data, type, memType);
+  verifyData(aPtr.first, testValue, data, type, memType, stream);
   if (type == allocType::devRegistered) {
     freeStuff(aPtr.second, type);
   } else {

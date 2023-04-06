@@ -50,8 +50,8 @@ void runAsyncTests(hipStream_t stream, allocType type, memType memType, MultiDDa
   memsetCheck(aPtr.first, testValue2, memType, data2, stream);
 
   HIP_CHECK(hipStreamSynchronize(stream));
-  verifyData(aPtr.first, testValue1, data1, type, memType);
-  verifyData(aPtr.first, testValue2, data2, type, memType);
+  verifyData(aPtr.first, testValue1, data1, type, memType, stream);
+  verifyData(aPtr.first, testValue2, data2, type, memType, stream);
 
 
   if (type == allocType::devRegistered) {

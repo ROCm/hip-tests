@@ -23,7 +23,7 @@ THE SOFTWARE.
 #pragma once
 #include <memory>
 #include <hip_test_common.hh>
-
+#include <utils.hh>
 
 namespace mem_utils {
 
@@ -362,7 +362,7 @@ template <typename T> static inline void freeStuff(T* aPtr, allocType type) {
  */
 template <typename T>
 static inline void verifyData(T* aPtr, size_t value, MultiDData& data, allocType type,
-                              memType memType) {
+                              memType memType, hipStream_t stream) {
   std::unique_ptr<T[]> hostPtr = std::make_unique<T[]>(data.getCount());
   switch (type) {
     case allocType::deviceMalloc:

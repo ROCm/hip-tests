@@ -21,6 +21,7 @@ THE SOFTWARE.
 */
 
 #include <hip_test_common.hh>
+#include <utils.hh>
 /*
  * These testcases verify that synchronous memset functions are asynchronous with respect to the
  * host except when the target is pinned host memory or a Unified Memory region
@@ -274,13 +275,16 @@ static void devRegisteredCopy(memSetType memType, T* aPtr, T* hostMem, size_t da
 // Copies device data to host and checks that each element is equal to the
 // specified value
 template <typename T>
-void verifyData(T* aPtr, size_t value, MultiDData& data, allocType type, memSetType memType) {
+void verifyData(T* aPtr, size_t value, MultiDData& data, allocType type, memSetType memType, hipStream_t stream) {
   auto dataH = data.height == 0 ? 1 : data.height;
   auto dataD = data.depth == 0 ? 1 : data.depth;
   std::unique_ptr<T[]> hostPtr = std::make_unique<T[]>(data.pitch * dataH * dataD / sizeof(T));
   switch (type) {
     case allocType::deviceMalloc:
       deviceMallocCopy(memType, aPtr, hostPtr.get(), data.width, dataH, dataD, data.pitch);
+      if (DeviceAttributesSupport(0, hipDeviceAttributePageableMemoryAccess)) {
+        HIP_CHECK(hipStreamSynchronize(stream));
+      }
       break;
     case allocType::devRegistered:
       devRegisteredCopy(memType, aPtr, hostPtr.get(), data.width, dataH, dataD, data.pitch);
@@ -416,7 +420,7 @@ void runTests(allocType type, memSetType memsetType, MultiDData data, hipStream_
   }
 
   HIP_CHECK(hipStreamSynchronize(stream));
-  verifyData(aPtr.first, testValue, data, type, memsetType);
+  verifyData(aPtr.first, testValue, data, type, memsetType, stream);
 
   if (type == allocType::devRegistered) {
     freeStuff(aPtr.second, type);

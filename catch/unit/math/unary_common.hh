@@ -54,7 +54,7 @@ void UnarySinglePrecisionBruteForceTest(F kernel, RF ref_func,
       std::min(GetMaxAllowedDeviceMemoryUsage() / (sizeof(float) * 2), stop);
   LinearAllocGuard<float> values{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(float)};
 
-  MathTest<float, double, 1> math_test(max_batch_size);
+  MathTest<float, RT, 1> math_test(max_batch_size);
 
   auto batch_size = max_batch_size;
   uint32_t val = 0u;
@@ -145,15 +145,15 @@ void UnaryDoublePrecisionSpecialValuesTest(F kernel, RF ref_func,
 template <typename RT = double, typename ValidatorBuilder>
 void UnarySinglePrecisionTest(void (*kernel)(float* const, const size_t, float* const),
                               RT (*ref)(RT), const ValidatorBuilder& validator_builder) {
-  SECTION("Brute force") { UnarySinglePrecisionBruteForceTest(kernel, ref, validator_builder); }
+  SECTION("Brute force") { UnarySinglePrecisionBruteForceTest<RT>(kernel, ref, validator_builder); }
 }
 
 template <typename RT = long double, typename ValidatorBuilder>
 void UnaryDoublePrecisionTest(void (*kernel)(double* const, const size_t, double* const),
                               RT (*ref)(RT), const ValidatorBuilder& validator_builder) {
   SECTION("Special values") {
-    UnaryDoublePrecisionSpecialValuesTest(kernel, ref, validator_builder);
+    UnaryDoublePrecisionSpecialValuesTest<RT>(kernel, ref, validator_builder);
   }
 
-  SECTION("Brute force") { UnaryDoublePrecisionBruteForceTest(kernel, ref, validator_builder); }
+  SECTION("Brute force") { UnaryDoublePrecisionBruteForceTest<RT>(kernel, ref, validator_builder); }
 }

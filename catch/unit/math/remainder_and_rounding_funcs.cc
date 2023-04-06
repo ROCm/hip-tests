@@ -71,3 +71,49 @@ TEST_CASE("Unit_Device_roundf_Accuracy_Positive") {
 TEST_CASE("Unit_Device_round_Accuracy_Positive") {
   UnaryDoublePrecisionTest(round_kernel<double>, std::round, ULPValidatorBuilderFactory<double>(0));
 }
+
+
+MATH_UNARY_KERNEL_DEF(rint)
+
+TEST_CASE("Unit_Device_rintf_Accuracy_Positive") {
+  UnarySinglePrecisionTest(rint_kernel<float>, std::rint, ULPValidatorBuilderFactory<float>(0));
+}
+
+TEST_CASE("Unit_Device_rint_Accuracy_Positive") {
+  UnaryDoublePrecisionTest(rint_kernel<double>, std::rint, ULPValidatorBuilderFactory<double>(0));
+}
+
+
+MATH_UNARY_KERNEL_DEF(nearbyint)
+
+TEST_CASE("Unit_Device_nearbyintf_Accuracy_Positive") {
+  UnarySinglePrecisionTest(nearbyint_kernel<float>, std::nearbyint,
+                           ULPValidatorBuilderFactory<float>(0));
+}
+
+TEST_CASE("Unit_Device_nearbyint_Accuracy_Positive") {
+  UnaryDoublePrecisionTest(nearbyint_kernel<double>, std::nearbyint,
+                           ULPValidatorBuilderFactory<double>(0));
+}
+
+
+MATH_UNARY_KERNEL_DEF(ceil)
+
+TEST_CASE("Unit_Device_ceilf_Accuracy_Positive") {
+  UnarySinglePrecisionTest(ceil_kernel<float>, std::ceil, ULPValidatorBuilderFactory<float>(0));
+}
+
+TEST_CASE("Unit_Device_ceil_Accuracy_Positive") {
+  UnaryDoublePrecisionTest(ceil_kernel<double>, std::ceil, ULPValidatorBuilderFactory<double>(0));
+}
+
+
+MATH_UNARY_KERNEL_DEF(floor)
+
+TEST_CASE("Unit_Device_floorf_Accuracy_Positive") {
+  UnarySinglePrecisionTest(floor_kernel<float>, std::floor, ULPValidatorBuilderFactory<float>(0));
+}
+
+TEST_CASE("Unit_Device_floor_Accuracy_Positive") {
+  UnaryDoublePrecisionTest(floor_kernel<double>, std::floor, ULPValidatorBuilderFactory<double>(0));
+}

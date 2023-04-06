@@ -24,68 +24,33 @@ THE SOFTWARE.
 
 #include <boost/math/special_functions.hpp>
 
-#define UNARY_TRIG_TEST_DEF(func_name, sp_ulp, dp_ulp)                                             \
-  MATH_UNARY_KERNEL_DEF(func_name)                                                                 \
-                                                                                                   \
-  TEST_CASE("Unit_Device_" #func_name "f_Accuracy_Positive") {                                     \
-    UnarySinglePrecisionTest(func_name##_kernel<float>, std::func_name,                            \
-                             ULPValidatorBuilderFactory<float>(sp_ulp));                           \
-  }                                                                                                \
-                                                                                                   \
-  TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive") {                                      \
-    UnaryDoublePrecisionTest(func_name##_kernel<double>, std::func_name,                           \
-                             ULPValidatorBuilderFactory<double>(dp_ulp));                          \
-  }
+MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(sin, 2, 2)
 
-UNARY_TRIG_TEST_DEF(sin, 2, 2)
+MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(cos, 2, 2)
 
-UNARY_TRIG_TEST_DEF(cos, 2, 2)
+MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(tan, 4, 2)
 
-UNARY_TRIG_TEST_DEF(tan, 4, 2)
+MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(asin, 2, 2)
 
-UNARY_TRIG_TEST_DEF(asin, 2, 2)
+MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(acos, 2, 2)
 
-UNARY_TRIG_TEST_DEF(acos, 2, 2)
+MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(atan, 2, 2)
 
-UNARY_TRIG_TEST_DEF(atan, 2, 2)
+MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(sinh, 3, 2)
 
-UNARY_TRIG_TEST_DEF(sinh, 3, 2)
+MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(cosh, 2, 1)
 
-UNARY_TRIG_TEST_DEF(cosh, 2, 1)
+MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(tanh, 2, 1)
 
-UNARY_TRIG_TEST_DEF(tanh, 2, 1)
+MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(asinh, 3, 2)
 
-UNARY_TRIG_TEST_DEF(asinh, 3, 2)
+MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(acosh, 4, 2)
 
-UNARY_TRIG_TEST_DEF(acosh, 4, 2)
+MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(atanh, 3, 2)
 
-UNARY_TRIG_TEST_DEF(atanh, 3, 2)
+MATH_UNARY_WITHIN_ULP_TEST_DEF(sinpi, boost::math::sin_pi, 2, 2);
 
-
-MATH_UNARY_KERNEL_DEF(sinpi)
-
-TEST_CASE("Unit_Device_sinpif_Accuracy_Positive") {
-  UnarySinglePrecisionTest(sinpi_kernel<float>, boost::math::sin_pi<double>,
-                           ULPValidatorBuilderFactory<float>(2));
-}
-
-TEST_CASE("Unit_Device_sinpi_Accuracy_Positive") {
-  UnaryDoublePrecisionTest(sinpi_kernel<double>, boost::math::sin_pi<long double>,
-                           ULPValidatorBuilderFactory<double>(2));
-}
-
-
-MATH_UNARY_KERNEL_DEF(cospi)
-
-TEST_CASE("Unit_Device_cospif_Accuracy_Positive") {
-  UnarySinglePrecisionTest(cospi_kernel<float>, boost::math::cos_pi<double>,
-                           ULPValidatorBuilderFactory<float>(2));
-}
-
-TEST_CASE("Unit_Device_cospi_Accuracy_Positive") {
-  UnaryDoublePrecisionTest(cospi_kernel<double>, boost::math::cos_pi<long double>,
-                           ULPValidatorBuilderFactory<double>(2));
-}
+MATH_UNARY_WITHIN_ULP_TEST_DEF(cospi, boost::math::cos_pi, 2, 2);
 
 
 MATH_BINARY_KERNEL_DEF(atan2)

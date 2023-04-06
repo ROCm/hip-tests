@@ -62,20 +62,11 @@ namespace cg = cooperative_groups;
     }                                                                                              \
   }
 
-
-// Ts all the same, but can be different than T
 template <typename T, typename... Ts> class MathTest {
-  using ArgType = std::tuple_element_t<0, std::tuple<Ts...>>;
-
-  static_assert(sizeof...(Ts) != 0);
-  static_assert((std::is_same_v<ArgType, Ts> && ...));
-
-  static constexpr auto N = sizeof...(Ts);
-
  public:
   MathTest(void (*kernel)(T*, const size_t, Ts*...), const size_t max_num_args)
       : kernel_{kernel},
-        xss_dev_(CreateArray(max_num_args * sizeof(ArgType))),
+        xss_dev_(LinearAllocGuard<Ts>(LinearAllocs::hipMalloc, max_num_args * sizeof(Ts))...),
         y_dev_{LinearAllocs::hipMalloc, max_num_args * sizeof(T)},
         y_{LinearAllocs::hipHostMalloc, max_num_args * sizeof(T)} {}
 
@@ -92,7 +83,7 @@ template <typename T, typename... Ts> class MathTest {
 
  private:
   void (*kernel_)(T*, const size_t, Ts*...);
-  std::array<LinearAllocGuard<ArgType>, N> xss_dev_;
+  std::tuple<LinearAllocGuard<Ts>...> xss_dev_;
   LinearAllocGuard<T> y_dev_;
   LinearAllocGuard<T> y_;
   std::atomic<bool> fail_flag_{false};
@@ -103,16 +94,17 @@ template <typename T, typename... Ts> class MathTest {
   void RunImpl(const ValidatorBuilder& validator_builder, const size_t grid_dim,
                const size_t block_dim, RT (*const ref_func)(RTs...), const size_t num_args,
                std::index_sequence<I...> is, const Ts*... xss) {
-    const std::array<const ArgType*, N> xss_arr{xss...};
+    const auto xss_tup = std::make_tuple(xss...);
 
-    auto f = [&, this](int i) {
-      HIP_CHECK(hipMemcpy(xss_dev_[i].ptr(), xss_arr[i], num_args * sizeof(ArgType),
-                          hipMemcpyHostToDevice));
+    constexpr auto f = [](auto* dst, const auto* const src, const size_t size) {
+      HIP_CHECK(hipMemcpy(dst, src, size, hipMemcpyHostToDevice))
     };
 
-    ((f(I)), ...);
+    ((f(std::get<I>(xss_dev_).ptr(), std::get<I>(xss_tup),
+        num_args * sizeof(std::get<I>(xss_tup)))),
+     ...);
 
-    kernel_<<<grid_dim, block_dim>>>(y_dev_.ptr(), num_args, xss_dev_[I].ptr()...);
+    kernel_<<<grid_dim, block_dim>>>(y_dev_.ptr(), num_args, std::get<I>(xss_dev_).ptr()...);
     HIP_CHECK(hipGetLastError());
 
     HIP_CHECK(hipMemcpy(y_.ptr(), y_dev_.ptr(), num_args * sizeof(T), hipMemcpyDeviceToHost));
@@ -144,8 +136,8 @@ template <typename T, typename... Ts> class MathTest {
 
         if (!validator.match(actual_val)) {
           fail_flag_.store(true, std::memory_order_relaxed);
-          // Several threads might have passed the first check, but failed validation. On the chance
-          // of this happening, access to the string stream must be serialized.
+          // Several threads might have passed the first check, but failed validation. On the
+          // chance of this happening, access to the string stream must be serialized.
           const auto log =
               MakeLogMessage(actual_val, xss[base_idx + i]...) + validator.describe() + "\n";
           {
@@ -181,16 +173,6 @@ template <typename T, typename... Ts> class MathTest {
     ((ss << " " << args), ...) << "\n" << actual_val << " ";
 
     return ss.str();
-  }
-
-  template <std::size_t... Is>
-  constexpr std::array<LinearAllocGuard<ArgType>, N> CreateArrayImpl(std::size_t size,
-                                                                     std::index_sequence<Is...>) {
-    return {{(static_cast<void>(Is), LinearAllocGuard<ArgType>{LinearAllocs::hipMalloc, size})...}};
-  }
-
-  constexpr std::array<LinearAllocGuard<ArgType>, N> CreateArray(std::size_t size) {
-    return CreateArrayImpl(size, std::make_index_sequence<N>());
   }
 };
 

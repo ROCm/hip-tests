@@ -91,7 +91,9 @@ void UnarySinglePrecisionBruteForceTest(F kernel, RF ref_func,
 
 template <typename RT = RefType_t<double>, typename F, typename RF, typename ValidatorBuilder>
 void UnaryDoublePrecisionBruteForceTest(F kernel, RF ref_func,
-                                        const ValidatorBuilder& validator_builder) {
+                                        const ValidatorBuilder& validator_builder,
+                                        const double a = std::numeric_limits<double>::lowest(),
+                                        const double b = std::numeric_limits<double>::max()) {
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
   const uint64_t num_iterations = GetTestIterationCount();
   const auto max_batch_size =
@@ -112,10 +114,9 @@ void UnaryDoublePrecisionBruteForceTest(F kernel, RF ref_func,
     for (auto i = 0u; i < num_threads; ++i) {
       const auto sub_batch_size = min_sub_batch_size + (i < tail);
       thread_pool.Post([=, &values] {
-        const auto generator = [] {
+        const auto generator = [=] {
           static thread_local std::mt19937 rng(std::random_device{}());
-          std::uniform_real_distribution<double> unif_dist(std::numeric_limits<double>::lowest(),
-                                                           std::numeric_limits<double>::max());
+          std::uniform_real_distribution<double> unif_dist(a, b);
           return unif_dist(rng);
         };
         std::generate(values.ptr() + base_idx, values.ptr() + base_idx + sub_batch_size, generator);

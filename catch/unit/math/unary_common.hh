@@ -51,10 +51,10 @@ void UnarySinglePrecisionBruteForceTest(F kernel, RF ref_func,
   // Possible point of optimization: reuse the input array to store the outputs
   uint64_t stop = std::numeric_limits<uint32_t>::max() + 1ul;
   const auto max_batch_size =
-      std::min(GetMaxAllowedDeviceMemoryUsage() / (sizeof(float) * 2), stop);
+      std::min(GetMaxAllowedDeviceMemoryUsage() / (sizeof(float) + sizeof(RT)), stop);
   LinearAllocGuard<float> values{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(float)};
 
-  MathTest<float, RT, 1> math_test(max_batch_size);
+  MathTest math_test(kernel, max_batch_size);
 
   auto batch_size = max_batch_size;
   uint32_t val = 0u;
@@ -85,8 +85,7 @@ void UnarySinglePrecisionBruteForceTest(F kernel, RF ref_func,
 
     thread_pool.Wait();
 
-    math_test.Run(validator_builder, grid_size, block_size, kernel, ref_func, batch_size,
-                  values.ptr());
+    math_test.Run(validator_builder, grid_size, block_size, ref_func, batch_size, values.ptr());
   }
 }
 
@@ -96,10 +95,10 @@ void UnaryDoublePrecisionBruteForceTest(F kernel, RF ref_func,
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
   const uint64_t num_iterations = GetTestIterationCount();
   const auto max_batch_size =
-      std::min(GetMaxAllowedDeviceMemoryUsage() / (sizeof(double) * 2), num_iterations);
+      std::min(GetMaxAllowedDeviceMemoryUsage() / (sizeof(double) + sizeof(RT)), num_iterations);
   LinearAllocGuard<double> values{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(double)};
 
-  MathTest<double, RT, 1> math_test(max_batch_size);
+  MathTest math_test(kernel, max_batch_size);
 
   auto batch_size = max_batch_size;
   const auto num_threads = thread_pool.thread_count();
@@ -126,8 +125,7 @@ void UnaryDoublePrecisionBruteForceTest(F kernel, RF ref_func,
 
     thread_pool.Wait();
 
-    math_test.Run(validator_builder, grid_size, block_size, kernel, ref_func, batch_size,
-                  values.ptr());
+    math_test.Run(validator_builder, grid_size, block_size, ref_func, batch_size, values.ptr());
   }
 }
 
@@ -137,9 +135,9 @@ void UnaryDoublePrecisionSpecialValuesTest(F kernel, RF ref_func,
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
   const auto values = std::get<SpecialVals<double>>(kSpecialValRegistry);
 
-  MathTest<double, RT, 1> math_test(values.size);
-  math_test.template Run<false>(validator_builder, grid_size, block_size, kernel, ref_func,
-                                values.size, values.data);
+  MathTest math_test(kernel, values.size);
+  math_test.template Run<false>(validator_builder, grid_size, block_size, ref_func, values.size,
+                                values.data);
 }
 
 template <typename RT = double, typename ValidatorBuilder>

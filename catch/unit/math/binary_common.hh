@@ -54,7 +54,7 @@ void BinaryBruteForceTest(F kernel, RF ref_func, const ValidatorBuilder& validat
   LinearAllocGuard<T> x1s{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(T)};
   LinearAllocGuard<T> x2s{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(T)};
 
-  MathTest<T, RT, 2> math_test(max_batch_size);
+  MathTest math_test(kernel, max_batch_size);
 
   auto batch_size = max_batch_size;
   const auto num_threads = thread_pool.thread_count();
@@ -82,7 +82,7 @@ void BinaryBruteForceTest(F kernel, RF ref_func, const ValidatorBuilder& validat
 
     thread_pool.Wait();
 
-    math_test.Run(validator_builder, grid_size, block_size, kernel, ref_func, batch_size, x1s.ptr(),
+    math_test.Run(validator_builder, grid_size, block_size, ref_func, batch_size, x1s.ptr(),
                   x2s.ptr());
   }
 }

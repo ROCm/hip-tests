@@ -62,8 +62,8 @@ template <typename T> class LinearAllocGuard {
 
   LinearAllocGuard(LinearAllocGuard&& o)
       : allocation_type_{o.allocation_type_}, ptr_{o.ptr_}, host_ptr_{o.host_ptr_} {
-    ptr_ = nullptr;
-    host_ptr_ = nullptr;
+    o.ptr_ = nullptr;
+    o.host_ptr_ = nullptr;
   }
 
   ~LinearAllocGuard() {

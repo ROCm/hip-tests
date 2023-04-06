@@ -62,48 +62,49 @@ namespace cg = cooperative_groups;
     }                                                                                              \
   }
 
-
-template <typename T, typename RT, size_t N> class MathTest {
+template <typename T, typename... Ts> class MathTest {
  public:
-  MathTest(const size_t max_num_args)
-      : xss_dev_(CreateArray(max_num_args * sizeof(T))),
+  MathTest(void (*kernel)(T*, const size_t, Ts*...), const size_t max_num_args)
+      : kernel_{kernel},
+        xss_dev_(LinearAllocGuard<Ts>(LinearAllocs::hipMalloc, max_num_args * sizeof(Ts))...),
         y_dev_{LinearAllocs::hipMalloc, max_num_args * sizeof(T)},
         y_{LinearAllocs::hipHostMalloc, max_num_args * sizeof(T)} {}
 
 
-  template <bool parallel = true, typename ValidatorBuilder, typename... Ts, typename... RTs>
+  template <bool parallel = true, typename RT, typename ValidatorBuilder, typename... RTs>
   void Run(const ValidatorBuilder& validator_builder, const size_t grid_dims,
-           const size_t block_dims, void (*const kernel)(T*, const size_t, Ts*...),
-           RT (*const ref_func)(RTs...), const size_t num_args, const Ts*... xss) {
+           const size_t block_dims, RT (*const ref_func)(RTs...), const size_t num_args,
+           const Ts*... xss) {
     fail_flag_.store(false);
     error_info_.clear();
-    RunImpl<parallel>(validator_builder, grid_dims, block_dims, kernel, ref_func, num_args,
+    RunImpl<parallel>(validator_builder, grid_dims, block_dims, ref_func, num_args,
                       std::index_sequence_for<Ts...>{}, xss...);
   }
 
  private:
-  std::array<LinearAllocGuard<T>, N> xss_dev_;
+  void (*kernel_)(T*, const size_t, Ts*...);
+  std::tuple<LinearAllocGuard<Ts>...> xss_dev_;
   LinearAllocGuard<T> y_dev_;
   LinearAllocGuard<T> y_;
   std::atomic<bool> fail_flag_{false};
   std::mutex mtx_;
   std::string error_info_;
 
-  template <bool parallel, typename ValidatorBuilder, typename... Ts, typename... RTs, size_t... I>
+  template <bool parallel, typename RT, typename ValidatorBuilder, typename... RTs, size_t... I>
   void RunImpl(const ValidatorBuilder& validator_builder, const size_t grid_dim,
-               const size_t block_dim, void (*const kernel)(T*, const size_t, Ts*...),
-               RT (*const ref_func)(RTs...), const size_t num_args, std::index_sequence<I...> is,
-               const Ts*... xss) {
-    const std::array<const T*, N> xss_arr{xss...};
+               const size_t block_dim, RT (*const ref_func)(RTs...), const size_t num_args,
+               std::index_sequence<I...> is, const Ts*... xss) {
+    const auto xss_tup = std::make_tuple(xss...);
 
-    auto f = [&, this](int i) {
-      HIP_CHECK(
-          hipMemcpy(xss_dev_[i].ptr(), xss_arr[i], num_args * sizeof(T), hipMemcpyHostToDevice));
+    constexpr auto f = [](auto* dst, const auto* const src, const size_t size) {
+      HIP_CHECK(hipMemcpy(dst, src, size, hipMemcpyHostToDevice))
     };
 
-    ((f(I)), ...);
+    ((f(std::get<I>(xss_dev_).ptr(), std::get<I>(xss_tup),
+        num_args * sizeof(std::get<I>(xss_tup)))),
+     ...);
 
-    kernel<<<grid_dim, block_dim>>>(y_dev_.ptr(), num_args, xss_dev_[I].ptr()...);
+    kernel_<<<grid_dim, block_dim>>>(y_dev_.ptr(), num_args, std::get<I>(xss_dev_).ptr()...);
     HIP_CHECK(hipGetLastError());
 
     HIP_CHECK(hipMemcpy(y_.ptr(), y_dev_.ptr(), num_args * sizeof(T), hipMemcpyDeviceToHost));
@@ -112,7 +113,7 @@ template <typename T, typename RT, size_t N> class MathTest {
     if constexpr (!parallel) {
       for (auto i = 0u; i < num_args; ++i) {
         const auto actual_val = y_.ptr()[i];
-        const auto ref_val = static_cast<T>(ref_func(static_cast<RT>(xss[i])...));
+        const auto ref_val = static_cast<T>(ref_func(xss[i]...));
         const auto validator = validator_builder(ref_val);
 
         if (!validator.match(actual_val)) {
@@ -130,13 +131,13 @@ template <typename T, typename RT, size_t N> class MathTest {
         if (fail_flag_.load(std::memory_order_relaxed)) return;
 
         const auto actual_val = y_.ptr()[base_idx + i];
-        const auto ref_val = static_cast<T>(ref_func(static_cast<RT>(xss[base_idx + i])...));
+        const auto ref_val = static_cast<T>(ref_func(xss[base_idx + i]...));
         const auto validator = validator_builder(ref_val);
 
         if (!validator.match(actual_val)) {
           fail_flag_.store(true, std::memory_order_relaxed);
-          // Several threads might have passed the first check, but failed validation. On the chance
-          // of this happening, access to the string stream must be serialized.
+          // Several threads might have passed the first check, but failed validation. On the
+          // chance of this happening, access to the string stream must be serialized.
           const auto log =
               MakeLogMessage(actual_val, xss[base_idx + i]...) + validator.describe() + "\n";
           {
@@ -172,16 +173,6 @@ template <typename T, typename RT, size_t N> class MathTest {
     ((ss << " " << args), ...) << "\n" << actual_val << " ";
 
     return ss.str();
-  }
-
-  template <std::size_t... Is>
-  constexpr std::array<LinearAllocGuard<T>, N> CreateArrayImpl(std::size_t size,
-                                                               std::index_sequence<Is...>) {
-    return {{(static_cast<void>(Is), LinearAllocGuard<T>{LinearAllocs::hipMalloc, size})...}};
-  }
-
-  constexpr std::array<LinearAllocGuard<T>, N> CreateArray(std::size_t size) {
-    return CreateArrayImpl(size, std::make_index_sequence<N>());
   }
 };
 

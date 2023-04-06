@@ -21,159 +21,169 @@ THE SOFTWARE.
 
 #pragma once
 
-#include <hip/hip_cooperative_groups.h>
-
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
 
+#include <hip/hip_cooperative_groups.h>
+
+#include "thread_pool.hh"
+
 namespace cg = cooperative_groups;
 
-#define MATH_SINGLE_ARG_KERNEL_DEF(func_name)                                                      \
-  template <typename T>                                                                            \
-  __global__ void func_name##_kernel(T* const ys, const size_t num_xs, T* const xs) {              \
-    const auto tid = cg::this_grid().thread_rank();                                                \
-                                                                                                   \
-    if (tid < num_xs) {                                                                            \
-      if constexpr (std::is_same_v<float, T>) {                                                    \
-        ys[tid] = func_name##f(xs[tid]);                                                           \
-      } else if constexpr (std::is_same_v<double, T>) {                                            \
-        ys[tid] = func_name(xs[tid]);                                                              \
-      }                                                                                            \
-    }                                                                                              \
-  }
-
-#define MATH_DOUBLE_ARG_KERNEL_DEF(func_name)                                                      \
-  template <typename T>                                                                            \
-  __global__ void func_name##_kernel(T* const ys, const size_t num_xs, T* const x1s,               \
-                                     T* const x2s) {                                               \
-    const auto tid = cg::this_grid().thread_rank();                                                \
-                                                                                                   \
-    if (tid < num_xs) {                                                                            \
-      if constexpr (std::is_same_v<float, T>) {                                                    \
-        ys[tid] = func_name##f(x1s[tid], x2s[tid]);                                                \
-      } else if constexpr (std::is_same_v<double, T>) {                                            \
-        ys[tid] = func_name(x1s[tid], x2s[tid]);                                                   \
-      }                                                                                            \
-    }                                                                                              \
-  }
-
-#define MATH_TRIPLE_ARG_KERNEL_DEF(func_name)                                                      \
+#define MATH_TERNARY_KERNEL_DEF(func_name)                                                         \
   template <typename T>                                                                            \
   __global__ void func_name##_kernel(T* const ys, const size_t num_xs, T* const x1s, T* const x2s, \
                                      T* const x3s) {                                               \
     const auto tid = cg::this_grid().thread_rank();                                                \
+    const auto stride = cg::this_grid().size();                                                    \
                                                                                                    \
-    if (tid < num_xs) {                                                                            \
+    for (auto i = tid; i < num_xs; i += stride) {                                                  \
       if constexpr (std::is_same_v<float, T>) {                                                    \
-        ys[tid] = func_name##f(x1s[tid], x2s[tid], x3s[tid]);                                      \
+        ys[i] = func_name##f(x1s[i], x2s[i], x3s[i]);                                              \
       } else if constexpr (std::is_same_v<double, T>) {                                            \
-        ys[tid] = func_name(x1s[tid], x2s[tid], x3s[tid]);                                         \
+        ys[i] = func_name(x1s[i], x2s[i], x3s[i]);                                                 \
       }                                                                                            \
     }                                                                                              \
   }
 
-#define MATH_QUADRUPLE_ARG_KERNEL_DEF(func_name)                                                   \
+#define MATH_QUATERNARY_KERNEL_DEF(func_name)                                                      \
   template <typename T>                                                                            \
   __global__ void func_name##_kernel(T* const ys, const size_t num_xs, T* const x1s, T* const x2s, \
                                      T* const x3s, T* const x4s) {                                 \
     const auto tid = cg::this_grid().thread_rank();                                                \
+    const auto stride = cg::this_grid().size();                                                    \
                                                                                                    \
-    if (tid < num_xs) {                                                                            \
+    for (auto i = tid; i < num_xs; i += stride) {                                                  \
       if constexpr (std::is_same_v<float, T>) {                                                    \
-        ys[tid] = func_name##f(x1s[tid], x2s[tid], x3s[tid], x4s[tid]);                            \
+        ys[i] = func_name##f(x1s[i], x2s[i], x3s[i], x4s[i]);                                      \
       } else if constexpr (std::is_same_v<double, T>) {                                            \
-        ys[tid] = func_name(x1s[tid], x2s[tid], x3s[tid], x4s[tid]);                               \
+        ys[i] = func_name(x1s[i], x2s[i], x3s[i], x4s[i]);                                         \
       }                                                                                            \
     }                                                                                              \
   }
 
-template <bool parallel = true, typename T, typename RT, typename ValidatorBuilder, typename... Ts,
-          typename... RTs, size_t... I>
-void MathTestImpl(const ValidatorBuilder& validator_builder, const size_t grid_dim,
-                  const size_t block_dim, void (*const kernel)(T*, const size_t, Ts*...),
-                  RT (*const ref_func)(RTs...), const size_t num_args, std::index_sequence<I...> is,
-                  const Ts*... xss) {
-  struct LAWrapper {
-    LAWrapper(const size_t size, const T* const init_vals)
-        : la_{LinearAllocs::hipMalloc, size, 0u} {
-      HIP_CHECK(hipMemcpy(ptr(), init_vals, size, hipMemcpyHostToDevice));
-    }
 
-    T* ptr() { return la_.ptr(); }
+template <typename T, typename RT, size_t N> class MathTest {
+ public:
+  MathTest(const size_t max_num_args)
+      : xss_dev_(CreateArray(max_num_args * sizeof(T))),
+        y_dev_{LinearAllocs::hipMalloc, max_num_args * sizeof(T)},
+        y_{LinearAllocs::hipHostMalloc, max_num_args * sizeof(T)} {}
 
-    LinearAllocGuard<T> la_;
-  };
 
-  std::array xss_dev{LAWrapper(num_args * sizeof(T), xss)...};
-
-  LinearAllocGuard<T> y_dev{LinearAllocs::hipMalloc, num_args * sizeof(T)};
-  kernel<<<grid_dim, block_dim>>>(y_dev.ptr(), num_args, xss_dev[I].ptr()...);
-  HIP_CHECK(hipGetLastError());
-
-  std::vector<T> y(num_args);
-  HIP_CHECK(hipMemcpy(y.data(), y_dev.ptr(), num_args * sizeof(T), hipMemcpyDeviceToHost));
-
-  if constexpr (!parallel) {
-    for (auto i = 0u; i < num_args; ++i) {
-      REQUIRE_THAT(y[i], validator_builder(static_cast<T>(ref_func(static_cast<RT>(xss[i])...))));
-    }
-    return;
+  template <bool parallel = true, typename ValidatorBuilder, typename... Ts, typename... RTs>
+  void Run(const ValidatorBuilder& validator_builder, const size_t grid_dims,
+           const size_t block_dims, void (*const kernel)(T*, const size_t, Ts*...),
+           RT (*const ref_func)(RTs...), const size_t num_args, const Ts*... xss) {
+    fail_flag_.store(false);
+    error_info_.clear();
+    RunImpl<parallel>(validator_builder, grid_dims, block_dims, kernel, ref_func, num_args,
+                      std::index_sequence_for<Ts...>{}, xss...);
   }
 
-  std::atomic<bool> fail_flag{false};
-  std::mutex ss_mtx;
-  std::stringstream ss;
+ private:
+  std::array<LinearAllocGuard<T>, N> xss_dev_;
+  LinearAllocGuard<T> y_dev_;
+  LinearAllocGuard<T> y_;
+  std::atomic<bool> fail_flag_{false};
+  std::mutex mtx_;
+  std::string error_info_;
 
-  const auto tf = [&, validator_builder](size_t iters, size_t base_idx) mutable {
-    for (auto i = 0; i < iters; ++i) {
-      if (fail_flag.load(std::memory_order_relaxed)) {
-        return;
-      }
+  template <bool parallel, typename ValidatorBuilder, typename... Ts, typename... RTs, size_t... I>
+  void RunImpl(const ValidatorBuilder& validator_builder, const size_t grid_dim,
+               const size_t block_dim, void (*const kernel)(T*, const size_t, Ts*...),
+               RT (*const ref_func)(RTs...), const size_t num_args, std::index_sequence<I...> is,
+               const Ts*... xss) {
+    const std::array<const T*, N> xss_arr{xss...};
 
-      const auto actual_val = y[base_idx + i];
-      const auto ref_val = static_cast<T>(ref_func(static_cast<RT>(xss[base_idx + i])...));
-      const auto validator = validator_builder(ref_val);
-      if (!validator.match(actual_val)) {
-        fail_flag.store(true, std::memory_order_relaxed);
-        // Several threads might have passed the first check, but failed validation. On the chance
-        // of this happening, access to the string stream must be serialized.
-        {
-          std::lock_guard{ss_mtx};
-          ss << std::to_string(actual_val) << ' ' << validator.describe() << '\n';
+    auto f = [&, this](int i) {
+      HIP_CHECK(
+          hipMemcpy(xss_dev_[i].ptr(), xss_arr[i], num_args * sizeof(T), hipMemcpyHostToDevice));
+    };
+
+    ((f(I)), ...);
+
+    kernel<<<grid_dim, block_dim>>>(y_dev_.ptr(), num_args, xss_dev_[I].ptr()...);
+    HIP_CHECK(hipGetLastError());
+
+    HIP_CHECK(hipMemcpy(y_.ptr(), y_dev_.ptr(), num_args * sizeof(T), hipMemcpyDeviceToHost));
+    HIP_CHECK(hipStreamSynchronize(nullptr));
+
+    if constexpr (!parallel) {
+      for (auto i = 0u; i < num_args; ++i) {
+        const auto actual_val = y_.ptr()[i];
+        const auto ref_val = static_cast<T>(ref_func(static_cast<RT>(xss[i])...));
+        const auto validator = validator_builder(ref_val);
+
+        if (!validator.match(actual_val)) {
+          const auto log = MakeLogMessage(actual_val, xss[i]...) + validator.describe() + "\n";
+          INFO(log);
+          REQUIRE(false);
         }
-        return;
       }
+
+      return;
     }
-  };
 
-  // This will be replaced by a proper thread-pool implementation
-  std::vector<std::thread> threads;
-  const auto core_count = std::thread::hardware_concurrency();
-  const auto chunk_size = num_args / core_count;
-  const auto tail = num_args % core_count;
-  auto base_idx = 0u;
-  for (auto i = 0u; i < core_count; ++i) {
-    const auto iters = i < tail ? chunk_size + 1 : chunk_size;
-    threads.emplace_back(tf, iters, base_idx);
-    base_idx += iters;
+    const auto task = [&, this](size_t iters, size_t base_idx) {
+      for (auto i = 0u; i < iters; ++i) {
+        if (fail_flag_.load(std::memory_order_relaxed)) return;
+
+        const auto actual_val = y_.ptr()[base_idx + i];
+        const auto ref_val = static_cast<T>(ref_func(static_cast<RT>(xss[base_idx + i])...));
+        const auto validator = validator_builder(ref_val);
+
+        if (!validator.match(actual_val)) {
+          fail_flag_.store(true, std::memory_order_relaxed);
+          // Several threads might have passed the first check, but failed validation. On the chance
+          // of this happening, access to the string stream must be serialized.
+          const auto log =
+              MakeLogMessage(actual_val, xss[base_idx + i]...) + validator.describe() + "\n";
+          {
+            std::lock_guard lg{mtx_};
+            error_info_ += log;
+          }
+          return;
+        }
+      }
+    };
+
+    const auto task_count = thread_pool.thread_count();
+    const auto chunk_size = num_args / task_count;
+    const auto tail = num_args % task_count;
+
+    auto base_idx = 0u;
+    for (auto i = 0u; i < task_count; ++i) {
+      const auto iters = chunk_size + (i < tail);
+      thread_pool.Post([=, &task] { task(iters, base_idx); });
+      base_idx += iters;
+    }
+
+    thread_pool.Wait();
+
+    INFO(error_info_);
+    REQUIRE(!fail_flag_);
   }
 
-  for (auto& t : threads) {
-    t.join();
+  template <typename... Args> std::string MakeLogMessage(T actual_val, Args... args) {
+    std::stringstream ss;
+    ss << "Input value(s): " << std::scientific
+       << std::setprecision(std::numeric_limits<T>::max_digits10 - 1);
+    ((ss << " " << args), ...) << "\n" << actual_val << " ";
+
+    return ss.str();
   }
 
-  INFO(ss.str());
-  REQUIRE(!fail_flag);
-}
+  template <std::size_t... Is>
+  constexpr std::array<LinearAllocGuard<T>, N> CreateArrayImpl(std::size_t size,
+                                                               std::index_sequence<Is...>) {
+    return {{(static_cast<void>(Is), LinearAllocGuard<T>{LinearAllocs::hipMalloc, size})...}};
+  }
 
-template <bool parallel = true, typename T, typename RT, typename ValidatorBuilder, typename... Ts,
-          typename... RTs>
-void MathTest(const ValidatorBuilder& validator_builder, const size_t grid_dims,
-              const size_t block_dims, void (*const kernel)(T*, const size_t, Ts*...),
-              RT (*const ref_func)(RTs...), const size_t num_args, const Ts*... xss) {
-  MathTestImpl<parallel>(validator_builder, grid_dims, block_dims, kernel, ref_func, num_args,
-                         std::index_sequence_for<Ts...>{}, xss...);
-}
+  constexpr std::array<LinearAllocGuard<T>, N> CreateArray(std::size_t size) {
+    return CreateArrayImpl(size, std::make_index_sequence<N>());
+  }
+};
 
 template <typename T, typename Matcher> class ValidatorBase : public Catch::MatcherBase<T> {
  public:
@@ -202,7 +212,7 @@ template <typename T, typename Matcher> class ValidatorBase : public Catch::Matc
   bool nan = false;
 };
 
-template <typename T> auto ULPValidatorGenerator(int64_t ulps) {
+template <typename T> auto ULPValidatorBuilderFactory(int64_t ulps) {
   return [=](T target) {
     return ValidatorBase<T, Catch::Matchers::Floating::WithinUlpsMatcher>{
         target, Catch::WithinULP(target, ulps)};
@@ -230,3 +240,22 @@ template <> struct RefType<float> { using type = double; };
 template <> struct RefType<double> { using type = long double; };
 
 template <typename T> using RefType_t = typename RefType<T>::type;
+
+template <typename F> auto GetOccupancyMaxPotentialBlockSize(F kernel) {
+  int grid_size = 0, block_size = 0;
+  HIP_CHECK(hipOccupancyMaxPotentialBlockSize(&grid_size, &block_size, kernel, 0, 0));
+  return std::make_tuple(grid_size, block_size);
+}
+
+inline size_t GetMaxAllowedDeviceMemoryUsage() {
+  // TODO - Add setting of allowed memory from the command line
+  // If the cmd option is set, return that, otherwise return 80% of available
+  hipDeviceProp_t props;
+  HIP_CHECK(hipGetDeviceProperties(&props, 0));
+  return props.totalGlobalMem * 0.8;
+}
+
+inline uint64_t GetTestIterationCount() {
+  // TODO - Add setting of iteration count from the command line
+  return std::numeric_limits<uint32_t>::max() + 1ul;
+}

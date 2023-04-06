@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2023-2024 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -191,3 +191,55 @@ endif()
 
 add_executable(hipGetFuncBySymbol_exe EXCLUDE_FROM_ALL hipGetFuncBySymbol_exe.cc)
 add_dependencies(build_tests hipGetFuncBySymbol_exe)
+# Common Tests - Test independent of all platforms
+set(TEST_SRC
+  hipFuncSetAttribute.cc
+  hipFuncGetAttributes.cc
+  hipFuncSetSharedMemConfig.cc
+  hipManagedKeyword.cc
+  hipModule.cc
+  hipModuleLoadMultProcessOnMultGPU.cc
+)
+set(AMD_TEST_SRC
+    hipExtLaunchKernelGGL.cc
+    hipExtLaunchMultiKernelMultiDevice.cc
+)
+
+if(HIP_PLATFORM MATCHES "amd")
+  set(TEST_SRC ${TEST_SRC} ${AMD_TEST_SRC})
+endif()
+
+hip_add_exe_to_target(NAME module
+                      TEST_SRC ${TEST_SRC}
+                      TEST_TARGET_NAME build_tests)
+
+add_custom_target(managed_kernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/managed_kernel.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../module/managed_kernel.code -I${HIP_PATH}/include -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
+
+hip_add_exe_to_target(NAME managedKernel
+                      TEST_SRC ${LINUX_TEST_SRC}
+                      TEST_TARGET_NAME build_tests
+                      LINKER_LIBS ${CMAKE_DL_LIBS})
+
+add_custom_target(vcpy_kernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/vcpy_kernel.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../module/vcpy_kernel.code -I${HIP_PATH}/include -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
+
+hip_add_exe_to_target(NAME VcpyKernel
+                      TEST_SRC ${LINUX_TEST_SRC}
+                      TEST_TARGET_NAME build_tests
+                      LINKER_LIBS ${CMAKE_DL_LIBS})
+
+add_custom_target(matmul.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/matmul.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../module/matmul.code -I${HIP_PATH}/include -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
+
+hip_add_exe_to_target(NAME matmul
+                      TEST_SRC ${LINUX_TEST_SRC}
+                      TEST_TARGET_NAME build_tests
+                      LINKER_LIBS ${CMAKE_DL_LIBS})
+
+add_custom_target(kernel_composite_test.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/kernel_composite_test.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../module/kernel_composite_test.code -I${HIP_PATH}/include -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
+
+add_executable(testhipModuleLoadUnloadFunc_exe EXCLUDE_FROM_ALL testhipModuleLoadUnloadFunc_exe.cc)
+
+hip_add_exe_to_target(NAME compositeKernel
+                      TEST_SRC ${LINUX_TEST_SRC}
+                      TEST_TARGET_NAME build_tests
+                      LINKER_LIBS ${CMAKE_DL_LIBS})
+add_dependencies(module managed_kernel.code vcpy_kernel.code matmul.code kernel_composite_test.code testhipModuleLoadUnloadFunc_exe)

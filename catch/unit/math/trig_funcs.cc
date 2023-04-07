@@ -24,45 +24,36 @@ THE SOFTWARE.
 
 #include <boost/math/special_functions.hpp>
 
-MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(sin, 2, 2)
 
-MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(cos, 2, 2)
+MATH_UNARY_WITHIN_ULP_TEST_DEF(sin, std::sin, 2, 2);
 
-MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(tan, 4, 2)
+MATH_UNARY_WITHIN_ULP_TEST_DEF(cos, std::cos, 2, 2)
 
-MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(asin, 2, 2)
+MATH_UNARY_WITHIN_ULP_TEST_DEF(tan, std::tan, 4, 2)
 
-MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(acos, 2, 2)
+MATH_UNARY_WITHIN_ULP_TEST_DEF(asin, std::asin, 2, 2)
 
-MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(atan, 2, 2)
+MATH_UNARY_WITHIN_ULP_TEST_DEF(acos, std::acos, 2, 2)
 
-MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(sinh, 3, 2)
+MATH_UNARY_WITHIN_ULP_TEST_DEF(atan, std::atan, 2, 2)
 
-MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(cosh, 2, 1)
+MATH_UNARY_WITHIN_ULP_TEST_DEF(sinh, std::sinh, 3, 2)
 
-MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(tanh, 2, 1)
+MATH_UNARY_WITHIN_ULP_TEST_DEF(cosh, std::cosh, 2, 1)
 
-MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(asinh, 3, 2)
+MATH_UNARY_WITHIN_ULP_TEST_DEF(tanh, std::tanh, 2, 1)
 
-MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(acosh, 4, 2)
+MATH_UNARY_WITHIN_ULP_TEST_DEF(asinh, std::asinh, 3, 2)
 
-MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(atanh, 3, 2)
+MATH_UNARY_WITHIN_ULP_TEST_DEF(acosh, std::acosh, 4, 2)
+
+MATH_UNARY_WITHIN_ULP_TEST_DEF(atanh, std::atanh, 3, 2)
 
 MATH_UNARY_WITHIN_ULP_TEST_DEF(sinpi, boost::math::sin_pi, 2, 2);
 
 MATH_UNARY_WITHIN_ULP_TEST_DEF(cospi, boost::math::cos_pi, 2, 2);
 
-
-MATH_BINARY_KERNEL_DEF(atan2)
-
-TEMPLATE_TEST_CASE("Unit_Device_atan2_Accuracy_Positive", "", float, double) {
-  using RT = RefType_t<TestType>;
-  RT (*ref)(RT, RT) = std::atan2;
-  const auto ulp = std::is_same_v<float, TestType> ? 3 : 2;
-
-  BinaryFloatingPointTest<TestType>(atan2_kernel<TestType>, ref,
-                                    ULPValidatorBuilderFactory<TestType>(2));
-}
+MATH_BINARY_WITHIN_ULP_TEST_DEF(atan2, std::atan2, 3, 2);
 
 
 template <typename T>
@@ -82,26 +73,15 @@ __global__ void sincos_kernel(std::pair<T, T>* const ys, const size_t num_xs, T*
 template <typename T> std::pair<T, T> sincos(T x) { return {std::sin(x), std::cos(x)}; }
 
 TEST_CASE("Unit_Device_sincos_Accuracy_Positive - float") {
-  SECTION("Brute force") {
-    UnarySinglePrecisionBruteForceTest(
-        sincos_kernel<float>, sincos<double>,
-        PairValidatorBuilderFactory<float>(ULPValidatorBuilderFactory<float>(2)));
-  }
+  UnarySinglePrecisionTest(
+      sincos_kernel<float>, sincos<double>,
+      PairValidatorBuilderFactory<float>(ULPValidatorBuilderFactory<float>(2)));
 }
 
 TEST_CASE("Unit_Device_sincos_Accuracy_Positive - double") {
   const auto validator_builder =
-      PairValidatorBuilderFactory<float>(ULPValidatorBuilderFactory<float>(2));
-
-  SECTION("Special values") {
-    UnaryDoublePrecisionSpecialValuesTest(sincos_kernel<double>, sincos<long double>,
-                                          validator_builder);
-  }
-
-  SECTION("Brute force") {
-    UnaryDoublePrecisionBruteForceTest(sincos_kernel<double>, sincos<long double>,
-                                       validator_builder);
-  }
+      PairValidatorBuilderFactory<double>(ULPValidatorBuilderFactory<double>(2));
+  UnaryDoublePrecisionTest(sincos_kernel<double>, sincos<long double>, validator_builder);
 }
 
 
@@ -124,24 +104,13 @@ template <typename T> std::pair<T, T> sincospi(T x) {
 }
 
 TEST_CASE("Unit_Device_sincospi_Accuracy_Positive - float") {
-  SECTION("Brute force") {
-    UnarySinglePrecisionBruteForceTest(
-        sincospi_kernel<float>, sincospi<double>,
-        PairValidatorBuilderFactory<float>(ULPValidatorBuilderFactory<float>(2)));
-  }
+  UnarySinglePrecisionTest(
+      sincospi_kernel<float>, sincospi<double>,
+      PairValidatorBuilderFactory<float>(ULPValidatorBuilderFactory<float>(2)));
 }
 
 TEST_CASE("Unit_Device_sincospi_Accuracy_Positive - double") {
   const auto validator_builder =
-      PairValidatorBuilderFactory<float>(ULPValidatorBuilderFactory<float>(2));
-
-  SECTION("Special values") {
-    UnaryDoublePrecisionSpecialValuesTest(sincospi_kernel<double>, sincospi<long double>,
-                                          validator_builder);
-  }
-
-  SECTION("Brute force") {
-    UnaryDoublePrecisionBruteForceTest(sincospi_kernel<double>, sincospi<long double>,
-                                       validator_builder);
-  }
+      PairValidatorBuilderFactory<double>(ULPValidatorBuilderFactory<double>(2));
+  UnaryDoublePrecisionTest(sincospi_kernel<double>, sincospi<long double>, validator_builder);
 }

@@ -82,6 +82,9 @@ else()
    set(HIP_PACKAGING_VERSION_PATCH ${HIP_VERSION_PATCH}-${HIP_VERSION_GITHASH})
 endif()
 
+
+find_package(Boost 1.70.0)
+
 if(NOT DEFINED CATCH2_PATH)
     if(DEFINED ENV{CATCH2_PATH})
         set(CATCH2_PATH $ENV{CATCH2_PATH} CACHE STRING "Catch2 Path")
@@ -119,6 +122,7 @@ include_directories(
     "./kernels"
     ${HIP_PATH}/include
     ${JSON_PARSER}
+    ${Boost_INCLUDE_DIRS}
 )
 
 option(RTC_TESTING "Run tests using HIP RTC to compile the kernels" OFF)

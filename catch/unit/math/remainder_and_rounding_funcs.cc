@@ -22,98 +22,114 @@ THE SOFTWARE.
 #include "unary_common.hh"
 #include "binary_common.hh"
 
-MATH_BINARY_KERNEL_DEF(fmod)
 
-TEMPLATE_TEST_CASE("Unit_Device_fmod_Accuracy_Positive", "", float, double) {
+MATH_BINARY_WITHIN_ULP_TEST_DEF(fmod, std::fmod, 0, 0)
+
+MATH_BINARY_WITHIN_ULP_TEST_DEF(remainder, std::remainder, 0, 0)
+
+MATH_BINARY_WITHIN_ULP_TEST_DEF(fdim, std::fdim, 0, 0)
+
+
+MATH_UNARY_WITHIN_ULP_TEST_DEF(trunc, std::trunc, 0, 0)
+
+MATH_UNARY_WITHIN_ULP_TEST_DEF(round, std::round, 0, 0)
+
+MATH_UNARY_WITHIN_ULP_TEST_DEF(rint, std::rint, 0, 0)
+
+MATH_UNARY_WITHIN_ULP_TEST_DEF(nearbyint, std::nearbyint, 0, 0)
+
+MATH_UNARY_WITHIN_ULP_TEST_DEF(ceil, std::ceil, 0, 0)
+
+MATH_UNARY_WITHIN_ULP_TEST_DEF(floor, std::floor, 0, 0)
+
+
+#define LONG_CONVERSION_FUNCTION_TEST_DEF(kern_name, ref_func, lt)                                 \
+  MATH_UNARY_KERNEL_DEF(kern_name)                                                                 \
+                                                                                                   \
+  TEST_CASE("Unit_Device_" #kern_name "_Accuracy_Positive - float") {                              \
+    lt (*ref)(double) = ref_func;                                                                  \
+    UnarySinglePrecisionRangeTest(kern_name##_kernel<float, lt>, ref,                              \
+                                  EqValidatorBuilderFactory<lt>(),                                 \
+                                  static_cast<float>(std::numeric_limits<lt>::lowest()),           \
+                                  static_cast<float>(std::numeric_limits<lt>::max()));             \
+  }                                                                                                \
+                                                                                                   \
+  TEST_CASE("Unit_Device_" #kern_name "_Accuracy_Positive - double") {                             \
+    lt (*ref)(long double) = ref_func;                                                             \
+    UnaryDoublePrecisionBruteForceTest(kern_name##_kernel<double, lt>, ref,                        \
+                                       EqValidatorBuilderFactory<lt>(),                            \
+                                       static_cast<double>(std::numeric_limits<lt>::lowest()),     \
+                                       static_cast<double>(std::numeric_limits<lt>::max()));       \
+  }
+
+LONG_CONVERSION_FUNCTION_TEST_DEF(lrint, std::lrint, long)
+
+LONG_CONVERSION_FUNCTION_TEST_DEF(lround, std::lround, long)
+
+LONG_CONVERSION_FUNCTION_TEST_DEF(llrint, std::llrint, long long)
+
+LONG_CONVERSION_FUNCTION_TEST_DEF(llround, std::llround, long long)
+
+
+template <typename T>
+__global__ void remquo_kernel(std::pair<T, int>* const ys, const size_t num_xs, T* const x1s,
+                              T* const x2s) {
+  const auto tid = cg::this_grid().thread_rank();
+  const auto stride = cg::this_grid().size();
+
+  for (auto i = tid; i < num_xs; i += stride) {
+    if constexpr (std::is_same_v<float, T>) {
+      ys[i].first = remquof(x1s[i], x2s[i], &ys[i].second);
+    } else if constexpr (std::is_same_v<double, T>) {
+      ys[i].first = remquo(x1s[i], x2s[i], &ys[i].second);
+    }
+  }
+}
+
+template <typename T> std::pair<T, int> remquo_wrapper(T x1, T x2) {
+  std::pair<T, int> ret;
+  ret.first = std::remquo(x1, x2, &ret.second);
+  return ret;
+}
+
+TEMPLATE_TEST_CASE("Unit_Device_remquo_Accuracy_Positive", "", float, double) {
   using RT = RefType_t<TestType>;
-  RT (*ref)(RT, RT) = std::fmod;
-  BinaryBruteForceTest<TestType, RT>(fmod_kernel<TestType>, ref,
-                                     ULPValidatorBuilderFactory<TestType>(0));
+  std::pair<RT, int> (*ref)(RT, RT) = remquo_wrapper;
+  const auto ulp_builder = ULPValidatorBuilderFactory<TestType>(0);
+  const auto eq_builder = EqValidatorBuilderFactory<int>();
+
+  BinaryFloatingPointTest(remquo_kernel<TestType>, ref,
+                          PairValidatorBuilderFactory<TestType, int>(ulp_builder, eq_builder));
 }
 
+template <typename T>
+__global__ void modf_kernel(std::pair<T, T>* const ys, const size_t num_xs, T* const xs) {
+  const auto tid = cg::this_grid().thread_rank();
+  const auto stride = cg::this_grid().size();
 
-MATH_BINARY_KERNEL_DEF(remainder)
-
-TEMPLATE_TEST_CASE("Unit_Device_remainder_Accuracy_Positive", "", float, double) {
-  using RT = RefType_t<TestType>;
-  RT (*ref)(RT, RT) = std::remainder;
-  BinaryBruteForceTest<TestType, RT>(remainder_kernel<TestType>, ref,
-                                     ULPValidatorBuilderFactory<TestType>(0));
+  for (auto i = tid; i < num_xs; i += stride) {
+    if constexpr (std::is_same_v<float, T>) {
+      ys[i].first = modff(xs[i], &ys[i].second);
+    } else if constexpr (std::is_same_v<double, T>) {
+      ys[i].first = modf(xs[i], &ys[i].second);
+    }
+  }
 }
 
-MATH_BINARY_KERNEL_DEF(fdim)
-
-TEMPLATE_TEST_CASE("Unit_Device_fdim_Accuracy_Positive", "", float, double) {
-  using RT = RefType_t<TestType>;
-  RT (*ref)(RT, RT) = std::fdim;
-  BinaryBruteForceTest<TestType, RT>(fdim_kernel<TestType>, ref,
-                                     ULPValidatorBuilderFactory<TestType>(0));
+template <typename T> std::pair<T, T> modf_wrapper(T x) {
+  std::pair<T, T> ret;
+  ret.first = std::modf(x, &ret.second);
+  return ret;
 }
 
-
-MATH_UNARY_KERNEL_DEF(trunc)
-
-TEST_CASE("Unit_Device_truncf_Accuracy_Positive") {
-  UnarySinglePrecisionTest(trunc_kernel<float>, std::trunc, ULPValidatorBuilderFactory<float>(0));
+TEST_CASE("Unit_Device_modf_Accuracy_Positive - float") {
+  UnarySinglePrecisionTest(
+      modf_kernel<float>, modf_wrapper<double>,
+      PairValidatorBuilderFactory<float>(ULPValidatorBuilderFactory<float>(0)));
 }
 
-TEST_CASE("Unit_Device_trunc_Accuracy_Positive") {
-  UnaryDoublePrecisionTest(trunc_kernel<double>, std::trunc, ULPValidatorBuilderFactory<double>(0));
-}
-
-
-MATH_UNARY_KERNEL_DEF(round)
-
-TEST_CASE("Unit_Device_roundf_Accuracy_Positive") {
-  UnarySinglePrecisionTest(round_kernel<float>, std::round, ULPValidatorBuilderFactory<float>(0));
-}
-
-TEST_CASE("Unit_Device_round_Accuracy_Positive") {
-  UnaryDoublePrecisionTest(round_kernel<double>, std::round, ULPValidatorBuilderFactory<double>(0));
-}
-
-
-MATH_UNARY_KERNEL_DEF(rint)
-
-TEST_CASE("Unit_Device_rintf_Accuracy_Positive") {
-  UnarySinglePrecisionTest(rint_kernel<float>, std::rint, ULPValidatorBuilderFactory<float>(0));
-}
-
-TEST_CASE("Unit_Device_rint_Accuracy_Positive") {
-  UnaryDoublePrecisionTest(rint_kernel<double>, std::rint, ULPValidatorBuilderFactory<double>(0));
-}
-
-
-MATH_UNARY_KERNEL_DEF(nearbyint)
-
-TEST_CASE("Unit_Device_nearbyintf_Accuracy_Positive") {
-  UnarySinglePrecisionTest(nearbyint_kernel<float>, std::nearbyint,
-                           ULPValidatorBuilderFactory<float>(0));
-}
-
-TEST_CASE("Unit_Device_nearbyint_Accuracy_Positive") {
-  UnaryDoublePrecisionTest(nearbyint_kernel<double>, std::nearbyint,
-                           ULPValidatorBuilderFactory<double>(0));
-}
-
-
-MATH_UNARY_KERNEL_DEF(ceil)
-
-TEST_CASE("Unit_Device_ceilf_Accuracy_Positive") {
-  UnarySinglePrecisionTest(ceil_kernel<float>, std::ceil, ULPValidatorBuilderFactory<float>(0));
-}
-
-TEST_CASE("Unit_Device_ceil_Accuracy_Positive") {
-  UnaryDoublePrecisionTest(ceil_kernel<double>, std::ceil, ULPValidatorBuilderFactory<double>(0));
-}
-
-
-MATH_UNARY_KERNEL_DEF(floor)
-
-TEST_CASE("Unit_Device_floorf_Accuracy_Positive") {
-  UnarySinglePrecisionTest(floor_kernel<float>, std::floor, ULPValidatorBuilderFactory<float>(0));
-}
-
-TEST_CASE("Unit_Device_floor_Accuracy_Positive") {
-  UnaryDoublePrecisionTest(floor_kernel<double>, std::floor, ULPValidatorBuilderFactory<double>(0));
+TEST_CASE("Unit_Device_modf_Accuracy_Positive - double") {
+  UnaryDoublePrecisionTest(
+      modf_kernel<double>, modf_wrapper<long double>,
+      PairValidatorBuilderFactory<double>(ULPValidatorBuilderFactory<double>(0)));
 }

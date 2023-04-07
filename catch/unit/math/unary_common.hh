@@ -43,15 +43,13 @@ namespace cg = cooperative_groups;
     }                                                                                              \
   }
 
-template <typename RT = RefType_t<float>, typename F, typename RF, typename ValidatorBuilder>
-void UnarySinglePrecisionBruteForceTest(F kernel, RF ref_func,
+template <typename T, typename RT, typename RTArg, typename ValidatorBuilder>
+void UnarySinglePrecisionBruteForceTest(kernel_sig<T, float> kernel, ref_sig<RT, RTArg> ref_func,
                                         const ValidatorBuilder& validator_builder) {
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
-  // Divide by two on account of an output device array being allocated beside the input array.
-  // Possible point of optimization: reuse the input array to store the outputs
   uint64_t stop = std::numeric_limits<uint32_t>::max() + 1ul;
   const auto max_batch_size =
-      std::min(GetMaxAllowedDeviceMemoryUsage() / (sizeof(float) + sizeof(RT)), stop);
+      std::min(GetMaxAllowedDeviceMemoryUsage() / (sizeof(float) + sizeof(T)), stop);
   LinearAllocGuard<float> values{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(float)};
 
   MathTest math_test(kernel, max_batch_size);
@@ -89,15 +87,15 @@ void UnarySinglePrecisionBruteForceTest(F kernel, RF ref_func,
   }
 }
 
-template <typename RT = RefType_t<double>, typename F, typename RF, typename ValidatorBuilder>
-void UnaryDoublePrecisionBruteForceTest(F kernel, RF ref_func,
+template <typename T, typename RT, typename RTArg, typename ValidatorBuilder>
+void UnaryDoublePrecisionBruteForceTest(kernel_sig<T, double> kernel, ref_sig<RT, RTArg> ref_func,
                                         const ValidatorBuilder& validator_builder,
                                         const double a = std::numeric_limits<double>::lowest(),
                                         const double b = std::numeric_limits<double>::max()) {
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
   const uint64_t num_iterations = GetTestIterationCount();
   const auto max_batch_size =
-      std::min(GetMaxAllowedDeviceMemoryUsage() / (sizeof(double) + sizeof(RT)), num_iterations);
+      std::min(GetMaxAllowedDeviceMemoryUsage() / (sizeof(double) + sizeof(T)), num_iterations);
   LinearAllocGuard<double> values{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(double)};
 
   MathTest math_test(kernel, max_batch_size);
@@ -130,8 +128,9 @@ void UnaryDoublePrecisionBruteForceTest(F kernel, RF ref_func,
   }
 }
 
-template <typename RT = RefType_t<double>, typename F, typename RF, typename ValidatorBuilder>
-void UnaryDoublePrecisionSpecialValuesTest(F kernel, RF ref_func,
+template <typename T, typename RT, typename RTArg, typename ValidatorBuilder>
+void UnaryDoublePrecisionSpecialValuesTest(kernel_sig<T, double> kernel,
+                                           ref_sig<RT, RTArg> ref_func,
                                            const ValidatorBuilder& validator_builder) {
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
   const auto values = std::get<SpecialVals<double>>(kSpecialValRegistry);
@@ -141,32 +140,34 @@ void UnaryDoublePrecisionSpecialValuesTest(F kernel, RF ref_func,
                                 values.data);
 }
 
-template <typename RT = double, typename ValidatorBuilder>
-void UnarySinglePrecisionTest(void (*kernel)(float* const, const size_t, float* const),
-                              RT (*ref)(RT), const ValidatorBuilder& validator_builder) {
-  SECTION("Brute force") { UnarySinglePrecisionBruteForceTest<RT>(kernel, ref, validator_builder); }
+template <typename T, typename RT, typename RTArg, typename ValidatorBuilder>
+void UnarySinglePrecisionTest(kernel_sig<T, float> kernel, ref_sig<RT, RTArg> ref,
+                              const ValidatorBuilder& validator_builder) {
+  SECTION("Brute force") { UnarySinglePrecisionBruteForceTest(kernel, ref, validator_builder); }
 }
 
-template <typename RT = long double, typename ValidatorBuilder>
-void UnaryDoublePrecisionTest(void (*kernel)(double* const, const size_t, double* const),
-                              RT (*ref)(RT), const ValidatorBuilder& validator_builder) {
+template <typename T, typename RT, typename RTArg, typename ValidatorBuilder>
+void UnaryDoublePrecisionTest(kernel_sig<T, double> kernel, ref_sig<RT, RTArg> ref,
+                              const ValidatorBuilder& validator_builder) {
   SECTION("Special values") {
-    UnaryDoublePrecisionSpecialValuesTest<RT>(kernel, ref, validator_builder);
+    UnaryDoublePrecisionSpecialValuesTest(kernel, ref, validator_builder);
   }
 
-  SECTION("Brute force") { UnaryDoublePrecisionBruteForceTest<RT>(kernel, ref, validator_builder); }
+  SECTION("Brute force") { UnaryDoublePrecisionBruteForceTest(kernel, ref, validator_builder); }
 }
 
 #define MATH_UNARY_WITHIN_ULP_TEST_DEF(kern_name, ref_func, sp_ulp, dp_ulp)                        \
   MATH_UNARY_KERNEL_DEF(kern_name)                                                                 \
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Accuracy_Positive - float") {                              \
-    UnarySinglePrecisionTest(kern_name##_kernel<float>, ref_func,                                  \
+    double (*ref)(double) = ref_func;                                                              \
+    UnarySinglePrecisionTest(kern_name##_kernel<float>, ref,                                       \
                              ULPValidatorBuilderFactory<float>(sp_ulp));                           \
   }                                                                                                \
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Accuracy_Positive - double") {                             \
-    UnaryDoublePrecisionTest(kern_name##_kernel<double>, ref_func,                                 \
+    long double (*ref)(long double) = ref_func;                                                    \
+    UnaryDoublePrecisionTest(kern_name##_kernel<double>, ref,                                      \
                              ULPValidatorBuilderFactory<double>(dp_ulp));                          \
   }
 

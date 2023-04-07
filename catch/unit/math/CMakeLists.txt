@@ -19,7 +19,7 @@
 # THE SOFTWARE.
 
 set(TEST_SRC
-  math_pow.cc
+  pow_funcs.cc
 )
 
 hip_add_exe_to_target(NAME MathsTest

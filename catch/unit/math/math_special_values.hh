@@ -283,14 +283,6 @@ inline constexpr std::array kSpecialValuesInt{
     -0x04000001, -1465264071, -1488522147, std::numeric_limits<int>::min(), -std::numeric_limits<int>::max()
 };
 
-
-inline constexpr std::array<long, 30> kSpecialValuesLong{
-    0l, 1l, 2l, 3l, 126l, 127l, 128l, 1022l, 1023l, 1024l, 0x02000001l, 0x04000001l, 1465264071l,
-    1488522147l, std::numeric_limits<long>::max(), -1l, -2l, -3l, -126l, -127l, -128l, -1022l,
-    -1023l, -11024, -0x02000001l, -0x04000001l, -1465264071l, -1488522147l,
-    std::numeric_limits<long>::min(), -std::numeric_limits<long>::max()
-};
-
 template <typename T> struct SpecialVals {
   const T* const data;
   const size_t size;

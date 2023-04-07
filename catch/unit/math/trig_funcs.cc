@@ -59,6 +59,89 @@ TEMPLATE_TEST_CASE("Unit_Device_atan2_Accuracy_Positive", "", float, double) {
   using RT = RefType_t<TestType>;
   RT (*ref)(RT, RT) = std::atan2;
   const auto ulp = std::is_same_v<float, TestType> ? 3 : 2;
-  BinaryBruteForceTest<TestType, RT>(atan2_kernel<TestType>, ref,
-                                     ULPValidatorBuilderFactory<TestType>(ulp));
+
+  BinaryFloatingPointTest<TestType>(atan2_kernel<TestType>, ref,
+                                    ULPValidatorBuilderFactory<TestType>(2));
+}
+
+
+template <typename T>
+__global__ void sincos_kernel(std::pair<T, T>* const ys, const size_t num_xs, T* const xs) {
+  const auto tid = cg::this_grid().thread_rank();
+  const auto stride = cg::this_grid().size();
+
+  for (auto i = tid; i < num_xs; i += stride) {
+    if constexpr (std::is_same_v<float, T>) {
+      sincosf(xs[i], &ys[i].first, &ys[i].second);
+    } else if constexpr (std::is_same_v<double, T>) {
+      sincos(xs[i], &ys[i].first, &ys[i].second);
+    }
+  }
+}
+
+template <typename T> std::pair<T, T> sincos(T x) { return {std::sin(x), std::cos(x)}; }
+
+TEST_CASE("Unit_Device_sincos_Accuracy_Positive - float") {
+  SECTION("Brute force") {
+    UnarySinglePrecisionBruteForceTest(
+        sincos_kernel<float>, sincos<double>,
+        PairValidatorBuilderFactory<float>(ULPValidatorBuilderFactory<float>(2)));
+  }
+}
+
+TEST_CASE("Unit_Device_sincos_Accuracy_Positive - double") {
+  const auto validator_builder =
+      PairValidatorBuilderFactory<float>(ULPValidatorBuilderFactory<float>(2));
+
+  SECTION("Special values") {
+    UnaryDoublePrecisionSpecialValuesTest(sincos_kernel<double>, sincos<long double>,
+                                          validator_builder);
+  }
+
+  SECTION("Brute force") {
+    UnaryDoublePrecisionBruteForceTest(sincos_kernel<double>, sincos<long double>,
+                                       validator_builder);
+  }
+}
+
+
+template <typename T>
+__global__ void sincospi_kernel(std::pair<T, T>* const ys, const size_t num_xs, T* const xs) {
+  const auto tid = cg::this_grid().thread_rank();
+  const auto stride = cg::this_grid().size();
+
+  for (auto i = tid; i < num_xs; i += stride) {
+    if constexpr (std::is_same_v<float, T>) {
+      sincospif(xs[i], &ys[i].first, &ys[i].second);
+    } else if constexpr (std::is_same_v<double, T>) {
+      sincospi(xs[i], &ys[i].first, &ys[i].second);
+    }
+  }
+}
+
+template <typename T> std::pair<T, T> sincospi(T x) {
+  return {boost::math::sin_pi(x), boost::math::cos_pi(x)};
+}
+
+TEST_CASE("Unit_Device_sincospi_Accuracy_Positive - float") {
+  SECTION("Brute force") {
+    UnarySinglePrecisionBruteForceTest(
+        sincospi_kernel<float>, sincospi<double>,
+        PairValidatorBuilderFactory<float>(ULPValidatorBuilderFactory<float>(2)));
+  }
+}
+
+TEST_CASE("Unit_Device_sincospi_Accuracy_Positive - double") {
+  const auto validator_builder =
+      PairValidatorBuilderFactory<float>(ULPValidatorBuilderFactory<float>(2));
+
+  SECTION("Special values") {
+    UnaryDoublePrecisionSpecialValuesTest(sincospi_kernel<double>, sincospi<long double>,
+                                          validator_builder);
+  }
+
+  SECTION("Brute force") {
+    UnaryDoublePrecisionBruteForceTest(sincospi_kernel<double>, sincospi<long double>,
+                                       validator_builder);
+  }
 }

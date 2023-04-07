@@ -87,7 +87,7 @@ template <typename T> class EqValidator : public Catch::MatcherBase<T> {
   T target_;
 };
 
-template <typename T> auto EqValidatorBuilderFactor() {
+template <typename T> auto EqValidatorBuilderFactory() {
   return [](T val) { return EqValidator<T>(val); };
 }
 

@@ -31,38 +31,6 @@ THE SOFTWARE.
 
 namespace cg = cooperative_groups;
 
-#define MATH_TERNARY_KERNEL_DEF(func_name)                                                         \
-  template <typename T>                                                                            \
-  __global__ void func_name##_kernel(T* const ys, const size_t num_xs, T* const x1s, T* const x2s, \
-                                     T* const x3s) {                                               \
-    const auto tid = cg::this_grid().thread_rank();                                                \
-    const auto stride = cg::this_grid().size();                                                    \
-                                                                                                   \
-    for (auto i = tid; i < num_xs; i += stride) {                                                  \
-      if constexpr (std::is_same_v<float, T>) {                                                    \
-        ys[i] = func_name##f(x1s[i], x2s[i], x3s[i]);                                              \
-      } else if constexpr (std::is_same_v<double, T>) {                                            \
-        ys[i] = func_name(x1s[i], x2s[i], x3s[i]);                                                 \
-      }                                                                                            \
-    }                                                                                              \
-  }
-
-#define MATH_QUATERNARY_KERNEL_DEF(func_name)                                                      \
-  template <typename T>                                                                            \
-  __global__ void func_name##_kernel(T* const ys, const size_t num_xs, T* const x1s, T* const x2s, \
-                                     T* const x3s, T* const x4s) {                                 \
-    const auto tid = cg::this_grid().thread_rank();                                                \
-    const auto stride = cg::this_grid().size();                                                    \
-                                                                                                   \
-    for (auto i = tid; i < num_xs; i += stride) {                                                  \
-      if constexpr (std::is_same_v<float, T>) {                                                    \
-        ys[i] = func_name##f(x1s[i], x2s[i], x3s[i], x4s[i]);                                      \
-      } else if constexpr (std::is_same_v<double, T>) {                                            \
-        ys[i] = func_name(x1s[i], x2s[i], x3s[i], x4s[i]);                                         \
-      }                                                                                            \
-    }                                                                                              \
-  }
-
 template <typename T, typename U>
 std::enable_if_t<std::conjunction_v<std::is_arithmetic<T>, std::is_arithmetic<U>>, std::ostream&>
 operator<<(std::ostream& os, const std::pair<T, U>& p) {

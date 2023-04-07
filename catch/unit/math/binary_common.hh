@@ -46,7 +46,8 @@ namespace cg = cooperative_groups;
 
 template <typename T, typename RT = RefType_t<T>, typename F, typename RF,
           typename ValidatorBuilder>
-void BinaryBruteForceTest(F kernel, RF ref_func, const ValidatorBuilder& validator_builder) {
+void BinaryFloatingPointBruteForceTest(F kernel, RF ref_func,
+                                       const ValidatorBuilder& validator_builder) {
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
   const uint64_t num_iterations = GetTestIterationCount();
   const auto max_batch_size =
@@ -54,7 +55,7 @@ void BinaryBruteForceTest(F kernel, RF ref_func, const ValidatorBuilder& validat
   LinearAllocGuard<T> x1s{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(T)};
   LinearAllocGuard<T> x2s{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(T)};
 
-  MathTest<T, RT, 2> math_test(max_batch_size);
+  MathTest math_test(kernel, max_batch_size);
 
   auto batch_size = max_batch_size;
   const auto num_threads = thread_pool.thread_count();
@@ -82,7 +83,42 @@ void BinaryBruteForceTest(F kernel, RF ref_func, const ValidatorBuilder& validat
 
     thread_pool.Wait();
 
-    math_test.Run(validator_builder, grid_size, block_size, kernel, ref_func, batch_size, x1s.ptr(),
+    math_test.Run(validator_builder, grid_size, block_size, ref_func, batch_size, x1s.ptr(),
                   x2s.ptr());
+  }
+}
+
+template <typename T, typename RT = RefType_t<T>, typename F, typename RF,
+          typename ValidatorBuilder>
+void BinaryFloatingPointSpecialValuesTest(F kernel, RF ref_func,
+                                          const ValidatorBuilder& validator_builder) {
+  const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
+  const auto values = std::get<SpecialVals<T>>(kSpecialValRegistry);
+
+  const auto size = values.size * values.size;
+  LinearAllocGuard<T> x1s{LinearAllocs::hipHostMalloc, size * sizeof(T)};
+  LinearAllocGuard<T> x2s{LinearAllocs::hipHostMalloc, size * sizeof(T)};
+
+  for (auto i = 0u; i < values.size; ++i) {
+    for (auto j = 0u; j < values.size; ++j) {
+      x1s.ptr()[i * values.size + j] = values.data[i];
+      x2s.ptr()[i * values.size + j] = values.data[j];
+    }
+  }
+
+  MathTest math_test(kernel, size);
+  math_test.template Run<false>(validator_builder, grid_size, block_size, ref_func, size, x1s.ptr(),
+                                x2s.ptr());
+}
+
+template <typename T, typename RT = RefType_t<T>, typename F, typename RF,
+          typename ValidatorBuilder>
+void BinaryFloatingPointTest(F kernel, RF ref_func, const ValidatorBuilder& validator_builder) {
+  SECTION("Special values") {
+    BinaryFloatingPointSpecialValuesTest<T, RT>(kernel, ref_func, validator_builder);
+  }
+
+  SECTION("Brute force") {
+    BinaryFloatingPointBruteForceTest<T, RT>(kernel, ref_func, validator_builder);
   }
 }

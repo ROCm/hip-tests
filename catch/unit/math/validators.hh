@@ -71,8 +71,28 @@ template <typename T> auto RelValidatorBuilderFactory(T margin) {
   };
 }
 
+template <typename T> class EqValidator : public Catch::MatcherBase<T> {
+ public:
+  EqValidator(T target) : target_{target} {}
+
+  bool match(const T& val) const override { return target_ == val; }
+
+  virtual std::string describe() const override {
+    std::stringstream ss;
+    ss << " is not equal to " << target_;
+    return ss.str();
+  }
+
+ private:
+  T target_;
+};
+
+template <typename T> auto EqValidatorBuilderFactor() {
+  return [](T val) { return EqValidator<T>(val); };
+}
+
 template <typename T, typename U, typename VBF, typename VBS>
-class PairValidator : public Catch::MatcherBase<std::pair<T, T>> {
+class PairValidator : public Catch::MatcherBase<std::pair<T, U>> {
  public:
   PairValidator(const std::pair<T, U>& target, const VBF& vbf, const VBS& vbs)
       : first_matcher_{vbf(target.first)}, second_matcher_{vbs(target.second)} {}

@@ -29,8 +29,8 @@ THE SOFTWARE.
 namespace cg = cooperative_groups;
 
 #define MATH_BINARY_KERNEL_DEF(func_name)                                                          \
-  template <typename T>                                                                            \
-  __global__ void func_name##_kernel(T* const ys, const size_t num_xs, T* const x1s,               \
+  template <typename T, typename RT = T>                                                           \
+  __global__ void func_name##_kernel(RT* const ys, const size_t num_xs, T* const x1s,              \
                                      T* const x2s) {                                               \
     const auto tid = cg::this_grid().thread_rank();                                                \
     const auto stride = cg::this_grid().size();                                                    \

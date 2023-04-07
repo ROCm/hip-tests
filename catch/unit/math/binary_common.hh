@@ -131,6 +131,6 @@ void BinaryFloatingPointTest(kernel_sig<T, TArg, TArg> kernel, ref_sig<RT, RTArg
     RT (*ref)(RT, RT) = ref_func;                                                                  \
     const auto ulp = std::is_same_v<float, TestType> ? sp_ulp : dp_ulp;                            \
                                                                                                    \
-    BinaryFloatingPointTest(atan2_kernel<TestType>, ref,                                           \
+    BinaryFloatingPointTest(kern_name##_kernel<TestType>, ref,                                     \
                             ULPValidatorBuilderFactory<TestType>(ulp));                            \
   }

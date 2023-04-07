@@ -212,3 +212,7 @@ inline uint64_t GetTestIterationCount() {
   // TODO - Add setting of iteration count from the command line
   return std::numeric_limits<uint32_t>::max() + 1ul;
 }
+
+template <typename T, typename... Ts> using kernel_sig = void (*)(T*, const size_t, Ts*...);
+
+template <typename T, typename... Ts> using ref_sig = T (*)(Ts...);

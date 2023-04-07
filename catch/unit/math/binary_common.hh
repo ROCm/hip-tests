@@ -44,16 +44,18 @@ namespace cg = cooperative_groups;
     }                                                                                              \
   }
 
-template <typename T, typename RT = RefType_t<T>, typename F, typename RF,
-          typename ValidatorBuilder>
-void BinaryFloatingPointBruteForceTest(F kernel, RF ref_func,
-                                       const ValidatorBuilder& validator_builder) {
+template <typename T, typename TArg, typename RT, typename RTArg, typename ValidatorBuilder>
+void BinaryFloatingPointBruteForceTest(kernel_sig<T, TArg, TArg> kernel,
+                                       ref_sig<RT, RTArg, RTArg> ref_func,
+                                       const ValidatorBuilder& validator_builder,
+                                       const TArg a = std::numeric_limits<TArg>::lowest(),
+                                       const TArg b = std::numeric_limits<TArg>::max()) {
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
   const uint64_t num_iterations = GetTestIterationCount();
   const auto max_batch_size =
-      std::min(GetMaxAllowedDeviceMemoryUsage() / (sizeof(T) * 3), num_iterations);
-  LinearAllocGuard<T> x1s{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(T)};
-  LinearAllocGuard<T> x2s{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(T)};
+      std::min(GetMaxAllowedDeviceMemoryUsage() / (sizeof(TArg) * 2 + sizeof(T)), num_iterations);
+  LinearAllocGuard<T> x1s{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(TArg)};
+  LinearAllocGuard<T> x2s{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(TArg)};
 
   MathTest math_test(kernel, max_batch_size);
 
@@ -69,10 +71,9 @@ void BinaryFloatingPointBruteForceTest(F kernel, RF ref_func,
     for (auto i = 0u; i < num_threads; ++i) {
       const auto sub_batch_size = min_sub_batch_size + (i < tail);
       thread_pool.Post([=, &x1s, &x2s] {
-        const auto generator = [] {
+        const auto generator = [=] {
           static thread_local std::mt19937 rng(std::random_device{}());
-          std::uniform_real_distribution<T> unif_dist(std::numeric_limits<double>::lowest(),
-                                                      std::numeric_limits<double>::max());
+          std::uniform_real_distribution<T> unif_dist(a, b);
           return unif_dist(rng);
         };
         std::generate(x1s.ptr() + base_idx, x1s.ptr() + base_idx + sub_batch_size, generator);
@@ -88,16 +89,16 @@ void BinaryFloatingPointBruteForceTest(F kernel, RF ref_func,
   }
 }
 
-template <typename T, typename RT = RefType_t<T>, typename F, typename RF,
-          typename ValidatorBuilder>
-void BinaryFloatingPointSpecialValuesTest(F kernel, RF ref_func,
+template <typename T, typename TArg, typename RT, typename RTArg, typename ValidatorBuilder>
+void BinaryFloatingPointSpecialValuesTest(kernel_sig<T, TArg, TArg> kernel,
+                                          ref_sig<RT, RTArg, RTArg> ref_func,
                                           const ValidatorBuilder& validator_builder) {
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
-  const auto values = std::get<SpecialVals<T>>(kSpecialValRegistry);
+  const auto values = std::get<SpecialVals<TArg>>(kSpecialValRegistry);
 
   const auto size = values.size * values.size;
-  LinearAllocGuard<T> x1s{LinearAllocs::hipHostMalloc, size * sizeof(T)};
-  LinearAllocGuard<T> x2s{LinearAllocs::hipHostMalloc, size * sizeof(T)};
+  LinearAllocGuard<T> x1s{LinearAllocs::hipHostMalloc, size * sizeof(TArg)};
+  LinearAllocGuard<T> x2s{LinearAllocs::hipHostMalloc, size * sizeof(TArg)};
 
   for (auto i = 0u; i < values.size; ++i) {
     for (auto j = 0u; j < values.size; ++j) {
@@ -111,14 +112,25 @@ void BinaryFloatingPointSpecialValuesTest(F kernel, RF ref_func,
                                 x2s.ptr());
 }
 
-template <typename T, typename RT = RefType_t<T>, typename F, typename RF,
-          typename ValidatorBuilder>
-void BinaryFloatingPointTest(F kernel, RF ref_func, const ValidatorBuilder& validator_builder) {
+template <typename T, typename TArg, typename RT, typename RTArg, typename ValidatorBuilder>
+void BinaryFloatingPointTest(kernel_sig<T, TArg, TArg> kernel, ref_sig<RT, RTArg, RTArg> ref_func,
+                             const ValidatorBuilder& validator_builder) {
   SECTION("Special values") {
-    BinaryFloatingPointSpecialValuesTest<T, RT>(kernel, ref_func, validator_builder);
+    BinaryFloatingPointSpecialValuesTest(kernel, ref_func, validator_builder);
   }
 
-  SECTION("Brute force") {
-    BinaryFloatingPointBruteForceTest<T, RT>(kernel, ref_func, validator_builder);
-  }
+  SECTION("Brute force") { BinaryFloatingPointBruteForceTest(kernel, ref_func, validator_builder); }
 }
+
+
+#define MATH_BINARY_WITHIN_ULP_TEST_DEF(kern_name, ref_func, sp_ulp, dp_ulp)                       \
+  MATH_BINARY_KERNEL_DEF(kern_name)                                                                \
+                                                                                                   \
+  TEMPLATE_TEST_CASE("Unit_Device_" #kern_name "_Accuracy_Positive", "", float, double) {          \
+    using RT = RefType_t<TestType>;                                                                \
+    RT (*ref)(RT, RT) = ref_func;                                                                  \
+    const auto ulp = std::is_same_v<float, TestType> ? sp_ulp : dp_ulp;                            \
+                                                                                                   \
+    BinaryFloatingPointTest(atan2_kernel<TestType>, ref,                                           \
+                            ULPValidatorBuilderFactory<TestType>(ulp));                            \
+  }

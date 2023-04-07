@@ -54,8 +54,8 @@ void BinaryFloatingPointBruteForceTest(kernel_sig<T, TArg, TArg> kernel,
   const uint64_t num_iterations = GetTestIterationCount();
   const auto max_batch_size =
       std::min(GetMaxAllowedDeviceMemoryUsage() / (sizeof(TArg) * 2 + sizeof(T)), num_iterations);
-  LinearAllocGuard<T> x1s{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(TArg)};
-  LinearAllocGuard<T> x2s{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(TArg)};
+  LinearAllocGuard<TArg> x1s{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(TArg)};
+  LinearAllocGuard<TArg> x2s{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(TArg)};
 
   MathTest math_test(kernel, max_batch_size);
 
@@ -73,7 +73,7 @@ void BinaryFloatingPointBruteForceTest(kernel_sig<T, TArg, TArg> kernel,
       thread_pool.Post([=, &x1s, &x2s] {
         const auto generator = [=] {
           static thread_local std::mt19937 rng(std::random_device{}());
-          std::uniform_real_distribution<T> unif_dist(a, b);
+          std::uniform_real_distribution<TArg> unif_dist(a, b);
           return unif_dist(rng);
         };
         std::generate(x1s.ptr() + base_idx, x1s.ptr() + base_idx + sub_batch_size, generator);
@@ -97,8 +97,8 @@ void BinaryFloatingPointSpecialValuesTest(kernel_sig<T, TArg, TArg> kernel,
   const auto values = std::get<SpecialVals<TArg>>(kSpecialValRegistry);
 
   const auto size = values.size * values.size;
-  LinearAllocGuard<T> x1s{LinearAllocs::hipHostMalloc, size * sizeof(TArg)};
-  LinearAllocGuard<T> x2s{LinearAllocs::hipHostMalloc, size * sizeof(TArg)};
+  LinearAllocGuard<TArg> x1s{LinearAllocs::hipHostMalloc, size * sizeof(TArg)};
+  LinearAllocGuard<TArg> x2s{LinearAllocs::hipHostMalloc, size * sizeof(TArg)};
 
   for (auto i = 0u; i < values.size; ++i) {
     for (auto j = 0u; j < values.size; ++j) {

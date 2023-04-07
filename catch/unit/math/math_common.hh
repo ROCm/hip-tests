@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include <hip/hip_cooperative_groups.h>
 
 #include "thread_pool.hh"
+#include "validators.hh"
 
 namespace cg = cooperative_groups;
 
@@ -62,14 +63,22 @@ namespace cg = cooperative_groups;
     }                                                                                              \
   }
 
+template <typename T, typename U>
+std::enable_if_t<std::conjunction_v<std::is_arithmetic<T>, std::is_arithmetic<U>>, std::ostream&>
+operator<<(std::ostream& os, const std::pair<T, U>& p) {
+  const auto default_prec = os.precision();
+  return os << "<" << std::setprecision(std::numeric_limits<T>::max_digits10 - 1) << p.first << ", "
+            << std::setprecision(std::numeric_limits<U>::max_digits10 - 1) << p.second << ">"
+            << std::setprecision(default_prec);
+}
+
 template <typename T, typename... Ts> class MathTest {
  public:
   MathTest(void (*kernel)(T*, const size_t, Ts*...), const size_t max_num_args)
       : kernel_{kernel},
         xss_dev_(LinearAllocGuard<Ts>(LinearAllocs::hipMalloc, max_num_args * sizeof(Ts))...),
         y_dev_{LinearAllocs::hipMalloc, max_num_args * sizeof(T)},
-        y_{LinearAllocs::hipHostMalloc, max_num_args * sizeof(T)} {
-  }
+        y_{LinearAllocs::hipHostMalloc, max_num_args * sizeof(T)} {}
 
 
   template <bool parallel = true, typename RT, typename ValidatorBuilder, typename... RTs>
@@ -176,54 +185,6 @@ template <typename T, typename... Ts> class MathTest {
     return ss.str();
   }
 };
-
-template <typename T, typename Matcher> class ValidatorBase : public Catch::MatcherBase<T> {
- public:
-  template <typename... Ts>
-  ValidatorBase(T target, Ts&&... args) : matcher_{std::forward<Ts>(args)...}, target_{target} {}
-
-  bool match(const T& val) const override {
-    if (std::isnan(target_)) {
-      return std::isnan(val);
-    }
-
-    return matcher_.match(val);
-  }
-
-  virtual std::string describe() const override {
-    if (std::isnan(target_)) {
-      return "is not NaN";
-    }
-
-    return matcher_.describe();
-  }
-
- private:
-  Matcher matcher_;
-  T target_;
-  bool nan = false;
-};
-
-template <typename T> auto ULPValidatorBuilderFactory(int64_t ulps) {
-  return [=](T target) {
-    return ValidatorBase<T, Catch::Matchers::Floating::WithinUlpsMatcher>{
-        target, Catch::WithinULP(target, ulps)};
-  };
-};
-
-template <typename T> auto AbsValidatorBuilderFactory(double margin) {
-  return [=](T target) {
-    return ValidatorBase<T, Catch::Matchers::Floating::WithinAbsMatcher>{
-        target, Catch::WithinAbs(target, margin)};
-  };
-}
-
-template <typename T> auto RelValidatorBuilderFactory(T margin) {
-  return [=](T target) {
-    return ValidatorBase<T, Catch::Matchers::Floating::WithinRelMatcher>{
-        target, Catch::WithinRel(target, margin)};
-  };
-}
 
 template <typename T> struct RefType {};
 

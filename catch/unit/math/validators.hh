@@ -71,26 +71,33 @@ template <typename T> auto RelValidatorBuilderFactory(T margin) {
   };
 }
 
-template <typename T, typename ValidatorBuilder>
+template <typename T, typename U, typename VBF, typename VBS>
 class PairValidator : public Catch::MatcherBase<std::pair<T, T>> {
  public:
-  PairValidator(const std::pair<T, T>& target, const ValidatorBuilder& vb)
-      : sin_matcher_{vb(target.first)}, cos_matcher_{vb(target.second)} {}
+  PairValidator(const std::pair<T, U>& target, const VBF& vbf, const VBS& vbs)
+      : first_matcher_{vbf(target.first)}, second_matcher_{vbs(target.second)} {}
 
-  bool match(const std::pair<T, T>& val) const override {
-    return sin_matcher_.match(val.first) && cos_matcher_.match(val.second);
+  bool match(const std::pair<T, U>& val) const override {
+    return first_matcher_.match(val.first) && second_matcher_.match(val.second);
   }
 
   virtual std::string describe() const override {
-    return "<" + sin_matcher_.describe() + ", " + cos_matcher_.describe() + ">";
+    return "<" + first_matcher_.describe() + ", " + second_matcher_.describe() + ">";
   }
 
  private:
-  decltype(std::declval<ValidatorBuilder>()(std::declval<T>())) sin_matcher_;
-  decltype(std::declval<ValidatorBuilder>()(std::declval<T>())) cos_matcher_;
+  decltype(std::declval<VBF>()(std::declval<T>())) first_matcher_;
+  decltype(std::declval<VBS>()(std::declval<U>())) second_matcher_;
 };
 
 template <typename T, typename ValidatorBuilder>
 auto PairValidatorBuilderFactory(const ValidatorBuilder& vb) {
-  return [&](const std::pair<T, T>& t) { return PairValidator<T, ValidatorBuilder>(t, vb); };
+  return [&](const std::pair<T, T>& t) {
+    return PairValidator<T, T, ValidatorBuilder, ValidatorBuilder>(t, vb, vb);
+  };
+}
+
+template <typename T, typename U, typename VBF, typename VBS>
+auto PairValidatorBuilderFactory(const VBF& vbf, const VBS& vbs) {
+  return [&](const std::pair<T, U>& t) { return PairValidator<T, U, VBF, VBS>(t, vbf, vbs); };
 }

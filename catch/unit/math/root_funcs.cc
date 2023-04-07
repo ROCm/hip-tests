@@ -46,7 +46,7 @@ TEST_CASE("Unit_Device_sqrt_Accuracy_Positive") {
   UnaryDoublePrecisionTest<double>(sqrt_kernel<double>, ref, ULPValidatorBuilderFactory<double>(0));
 }
 
-TEST_CASE("Unit_Device_sqrt_sqrtf_Negative") { NegativeTestRTCWrapper<4>(kSqrt); }
+TEST_CASE("Unit_Device_sqrt_sqrtf_Negative_RTC") { NegativeTestRTCWrapper<4>(kSqrt); }
 
 MATH_UNARY_KERNEL_DEF(rsqrt)
 
@@ -62,11 +62,11 @@ TEST_CASE("Unit_Device_rsqrt_Accuracy_Positive") {
   UnaryDoublePrecisionTest(rsqrt_kernel<double>, ref, ULPValidatorBuilderFactory<double>(1));
 }
 
-TEST_CASE("Unit_Device_rsqrt_rsqrtf_Negative") { NegativeTestRTCWrapper<4>(kRsqrt); }
+TEST_CASE("Unit_Device_rsqrt_rsqrtf_Negative_RTC") { NegativeTestRTCWrapper<4>(kRsqrt); }
 
 MATH_UNARY_WITHIN_ULP_TEST_DEF(cbrt, std::cbrt, 1, 1)
 
-TEST_CASE("Unit_Device_cbrt_cbrtf_Negative") { NegativeTestRTCWrapper<4>(kCbrt); }
+TEST_CASE("Unit_Device_cbrt_cbrtf_Negative_RTC") { NegativeTestRTCWrapper<4>(kCbrt); }
 
 MATH_UNARY_KERNEL_DEF(rcbrt)
 
@@ -82,11 +82,11 @@ TEST_CASE("Unit_Device_rcbrt_Accuracy_Positive") {
   UnaryDoublePrecisionTest(rcbrt_kernel<double>, ref, ULPValidatorBuilderFactory<double>(1));
 }
 
-TEST_CASE("Unit_Device_rcbrt_rcbrtf_Negative") { NegativeTestRTCWrapper<4>(kRcbrt); }
+TEST_CASE("Unit_Device_rcbrt_rcbrtf_Negative_RTC") { NegativeTestRTCWrapper<4>(kRcbrt); }
 
 MATH_BINARY_WITHIN_ULP_TEST_DEF(hypot, std::hypot, 3, 2)
 
-TEST_CASE("Unit_Device_hypot_hypotf_Negative") { NegativeTestRTCWrapper<8>(kHypot); }
+TEST_CASE("Unit_Device_hypot_hypotf_Negative_RTC") { NegativeTestRTCWrapper<8>(kHypot); }
 
 MATH_BINARY_KERNEL_DEF(rhypot)
 
@@ -98,7 +98,7 @@ TEMPLATE_TEST_CASE("Unit_Device_rhypot_Accuracy_Positive", "", float, double) {
   BinaryFloatingPointTest(rhypot_kernel<TestType>, ref, ULPValidatorBuilderFactory<TestType>(ulp));
 }
 
-TEST_CASE("Unit_Device_rhypot_rhypotf_Negative") { NegativeTestRTCWrapper<8>(kRhypot); }
+TEST_CASE("Unit_Device_rhypot_rhypotf_Negative_RTC") { NegativeTestRTCWrapper<8>(kRhypot); }
 
 MATH_TERNARY_KERNEL_DEF(norm3d)
 
@@ -115,7 +115,7 @@ TEMPLATE_TEST_CASE("Unit_Device_norm3d_Accuracy_Positive", "", float, double) {
   TernaryFloatingPointTest(norm3d_kernel<TestType>, ref, ULPValidatorBuilderFactory<TestType>(ulp));
 }
 
-TEST_CASE("Unit_Device_norm3d_norm3df_Negative") { NegativeTestRTCWrapper<12>(kNorm3D); }
+TEST_CASE("Unit_Device_norm3d_norm3df_Negative_RTC") { NegativeTestRTCWrapper<12>(kNorm3D); }
 
 MATH_TERNARY_KERNEL_DEF(rnorm3d)
 
@@ -133,7 +133,7 @@ TEMPLATE_TEST_CASE("Unit_Device_rnorm3d_Accuracy_Positive", "", float, double) {
                            ULPValidatorBuilderFactory<TestType>(ulp));
 }
 
-TEST_CASE("Unit_Device_rnorm3d_rnorm3df_Negative") { NegativeTestRTCWrapper<12>(kRnorm3D); }
+TEST_CASE("Unit_Device_rnorm3d_rnorm3df_Negative_RTC") { NegativeTestRTCWrapper<12>(kRnorm3D); }
 
 MATH_QUATERNARY_KERNEL_DEF(norm4d)
 
@@ -151,7 +151,7 @@ TEMPLATE_TEST_CASE("Unit_Device_norm4d_Accuracy_Positive", "", float, double) {
                               ULPValidatorBuilderFactory<TestType>(ulp));
 }
 
-TEST_CASE("Unit_Device_norm4d_norm4d_Negative") { NegativeTestRTCWrapper<16>(kNorm4D); }
+TEST_CASE("Unit_Device_norm4d_norm4d_Negative_RTC") { NegativeTestRTCWrapper<16>(kNorm4D); }
 
 MATH_QUATERNARY_KERNEL_DEF(rnorm4d)
 
@@ -169,7 +169,7 @@ TEMPLATE_TEST_CASE("Unit_Device_rnorm4d_Accuracy_Positive", "", float, double) {
                               ULPValidatorBuilderFactory<TestType>(ulp));
 }
 
-TEST_CASE("Unit_Device_rnorm4d_rnorm4d_Negative") { NegativeTestRTCWrapper<16>(kRnorm4D); }
+TEST_CASE("Unit_Device_rnorm4d_rnorm4d_Negative_RTC") { NegativeTestRTCWrapper<16>(kRnorm4D); }
 
 template <typename T, typename RT = RefType_t<T>, typename F, typename RF,
           typename ValidatorBuilder>
@@ -222,7 +222,7 @@ TEMPLATE_TEST_CASE("Unit_Device_norm_Accuracy_Limited_Positive", "", float, doub
   NormSimpleTest<TestType, RT>(norm_kernel<TestType>, ref, validator_builder);
 }
 
-TEST_CASE("Unit_Device_norm_normf_Negative") { NegativeTestRTCWrapper<18>(kNorm); }
+TEST_CASE("Unit_Device_norm_normf_Negative_RTC") { NegativeTestRTCWrapper<18>(kNorm); }
 
 MATH_NORM_KERNEL_DEF(rnorm)
 
@@ -242,4 +242,4 @@ TEMPLATE_TEST_CASE("Unit_Device_rnorm_Accuracy_Limited_Positive", "", float, dou
   NormSimpleTest<TestType, RT>(rnorm_kernel<TestType>, ref, validator_builder);
 }
 
-TEST_CASE("Unit_Device_rnorm_rnormf_Negative") { NegativeTestRTCWrapper<18>(kRnorm); }
+TEST_CASE("Unit_Device_rnorm_rnormf_Negative_RTC") { NegativeTestRTCWrapper<18>(kRnorm); }

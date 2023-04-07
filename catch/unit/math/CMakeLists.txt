@@ -39,7 +39,7 @@ add_test(NAME Unit_Double_Precision_Intrinsics_Negative
          ${HIP_PLATFORM}
          double_precision_intrinsics_negative_kernels.cc 18)
    
-d_test(NAME Unit_Integer_Intrinsics_Negative
+add_test(NAME Unit_Integer_Intrinsics_Negative
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
          ${CMAKE_CURRENT_SOURCE_DIR}
          ${HIP_PLATFORM}

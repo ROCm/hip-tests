@@ -14,9 +14,10 @@
 // limitations under the License.
 //
 
-// The following code was adapted from the OpenCL-CTS repository:
-// https://github.com/KhronosGroup/OpenCL-CTS/blob/main/test_conformance/math_brute_force/binary_float.cpp
-// https://github.com/KhronosGroup/OpenCL-CTS/blob/main/test_conformance/math_brute_force/binary_double.cpp
+// Disclaimer:
+// This code is based on the work found in OpenCL-CTS authored by The Khronos Group.
+// The original code can be found at https://github.com/KhronosGroup/OpenCL-CTS.
+// We acknowledge the contributions of The Khronos Group to the development of this code.
 
 #pragma once
 

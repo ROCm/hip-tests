@@ -29,8 +29,8 @@ THE SOFTWARE.
 namespace cg = cooperative_groups;
 
 #define MATH_UNARY_KERNEL_DEF(func_name)                                                           \
-  template <typename T>                                                                            \
-  __global__ void func_name##_kernel(T* const ys, const size_t num_xs, T* const xs) {              \
+  template <typename T, typename RT = T>                                                           \
+  __global__ void func_name##_kernel(RT* const ys, const size_t num_xs, T* const xs) {             \
     const auto tid = cg::this_grid().thread_rank();                                                \
     const auto stride = cg::this_grid().size();                                                    \
                                                                                                    \
@@ -88,6 +88,30 @@ void UnarySinglePrecisionBruteForceTest(kernel_sig<T, float> kernel, ref_sig<RT,
 }
 
 template <typename T, typename RT, typename RTArg, typename ValidatorBuilder>
+void UnarySinglePrecisionRangeTest(kernel_sig<T, float> kernel, ref_sig<RT, RTArg> ref_func,
+                                   const ValidatorBuilder& validator_builder, const float a,
+                                   const float b) {
+  const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
+  uint64_t stop = std::numeric_limits<uint32_t>::max() + 1ul;
+  const auto max_batch_size = GetMaxAllowedDeviceMemoryUsage() / (sizeof(float) + sizeof(T));
+  LinearAllocGuard<float> values{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(float)};
+
+  MathTest math_test(kernel, max_batch_size);
+
+  uint32_t val = 0u;
+  const auto num_threads = thread_pool.thread_count();
+
+  size_t inserted = 0u;
+  for (float v = a; v != b; v = std::nextafter(v, b)) {
+    values.ptr()[inserted++] = v;
+    if (inserted < max_batch_size) continue;
+
+    math_test.Run(validator_builder, grid_size, block_size, ref_func, inserted, values.ptr());
+    inserted = 0u;
+  }
+}
+
+template <typename T, typename RT, typename RTArg, typename ValidatorBuilder>
 void UnaryDoublePrecisionBruteForceTest(kernel_sig<T, double> kernel, ref_sig<RT, RTArg> ref_func,
                                         const ValidatorBuilder& validator_builder,
                                         const double a = std::numeric_limits<double>::lowest(),
@@ -114,8 +138,8 @@ void UnaryDoublePrecisionBruteForceTest(kernel_sig<T, double> kernel, ref_sig<RT
       thread_pool.Post([=, &values] {
         const auto generator = [=] {
           static thread_local std::mt19937 rng(std::random_device{}());
-          std::uniform_real_distribution<double> unif_dist(a, b);
-          return unif_dist(rng);
+          std::uniform_real_distribution<long double> unif_dist(a, b);
+          return static_cast<double>(unif_dist(rng));
         };
         std::generate(values.ptr() + base_idx, values.ptr() + base_idx + sub_batch_size, generator);
       });

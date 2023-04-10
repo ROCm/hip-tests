@@ -56,12 +56,12 @@ MATH_ILOGB_KERNEL_DEF(ilogb)
 
 TEST_CASE("Unit_Device_ilogbf_Accuracy_Positive") {
   int (*ref)(double) = std::ilogb;
-  UnarySinglePrecisionTest(ilogb_kernel<float>, ref, EqValidatorBuilderFactor<int>());
+  UnarySinglePrecisionTest(ilogb_kernel<float>, ref, EqValidatorBuilderFactory<int>());
 }
 
 TEST_CASE("Unit_Device_ilogb_Accuracy_Positive") {
   int (*ref)(long double) = std::ilogb;
-  UnaryDoublePrecisionTest(ilogb_kernel<double>, ref, EqValidatorBuilderFactor<int>());
+  UnaryDoublePrecisionTest(ilogb_kernel<double>, ref, EqValidatorBuilderFactory<int>());
 }
 
 TEST_CASE("Unit_Device_ilogb_ilogbf_Negative_RTC") { NegativeTestRTCWrapper<4>(kIlogb); }

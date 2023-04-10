@@ -138,7 +138,7 @@ void SpecialSimpleTest(F kernel, const ValidatorBuilder& validator_builder,
     const auto ref_val = ref[i];
     const auto validator = validator_builder(ref_val);
 
-    if (!validator.match(actual_val)) {
+    if (!validator->match(actual_val)) {
       std::stringstream ss;
       ss << "Input value(s): " << std::scientific << std::setprecision(std::numeric_limits<T>::max_digits10 - 1);
       ss << x[i] << " " << actual_val <<" " << ref_val<<"\n";

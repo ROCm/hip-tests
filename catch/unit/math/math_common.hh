@@ -184,7 +184,7 @@ template <int error_num> void NegativeTestRTCWrapper(const char* program_source)
   hiprtcProgram program{};
 
   HIPRTC_CHECK(
-      hiprtcCreateProgram(&program, program_source, "math_root_rtc.cc", 0, nullptr, nullptr));
+      hiprtcCreateProgram(&program, program_source, "math_test_rtc.cc", 0, nullptr, nullptr));
   hiprtcResult result{hiprtcCompileProgram(program, 0, nullptr)};
 
   // Get the compile log and count compiler error messages

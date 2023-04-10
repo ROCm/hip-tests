@@ -21,6 +21,7 @@ THE SOFTWARE.
 
 #include "unary_common.hh"
 #include "binary_common.hh"
+#include "ternary_common.hh"
 
 MATH_UNARY_WITHIN_ULP_TEST_DEF(fabs, std::fabs, 0, 0)
 
@@ -31,6 +32,8 @@ MATH_BINARY_WITHIN_ULP_TEST_DEF(fmax, std::fmax, 0, 0)
 MATH_BINARY_WITHIN_ULP_TEST_DEF(fmin, std::fmax, 0, 0)
 
 MATH_BINARY_WITHIN_ULP_TEST_DEF(nextafter, std::nextafter, 0, 0)
+
+MATH_TERNARY_WITHIN_ULP_TEST_DEF(fma, std::fma, 0, 0)
 
 __global__ void fdividef_kernel(float* const ys, const size_t num_xs, float* const x1s,
                                 float* const x2s) {

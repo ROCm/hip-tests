@@ -46,12 +46,11 @@ template <typename T> using kernel_bessel_n_sig = void (*)(T*, const size_t, int
 template <typename T> using ref_bessel_n_sig = T (*)(int, T);
 
 template <typename T, typename RT, typename ValidatorBuilder>
-void BesselFloatingPointBruteForceTest(kernel_bessel_n_sig<T> kernel,
-                                       ref_bessel_n_sig<RT> ref_func,
-                                       const ValidatorBuilder& validator_builder,
-                                       int n_input = 0,
-                                       const T a = std::numeric_limits<T>::lowest(),
-                                       const T b = std::numeric_limits<T>::max()) {
+void BesselDoublePrecisionBruteForceTest(kernel_bessel_n_sig<T> kernel,
+                                         ref_bessel_n_sig<RT> ref_func,
+                                         const ValidatorBuilder& validator_builder, int n_input = 0,
+                                         const T a = std::numeric_limits<T>::lowest(),
+                                         const T b = std::numeric_limits<T>::max()) {
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
   const uint64_t num_iterations = GetTestIterationCount();
   const auto max_batch_size =
@@ -92,9 +91,10 @@ void BesselFloatingPointBruteForceTest(kernel_bessel_n_sig<T> kernel,
 }
 
 template <typename ValidatorBuilder>
-void BesselSinglePrecisionRangeTest(kernel_bessel_n_sig<float> kernel, ref_bessel_n_sig<double> ref_func,
-                                   const ValidatorBuilder& validator_builder, int n_input, const float a,
-                                   const float b) {
+void BesselSinglePrecisionRangeTest(kernel_bessel_n_sig<float> kernel,
+                                    ref_bessel_n_sig<double> ref_func,
+                                    const ValidatorBuilder& validator_builder, int n_input,
+                                    const float a, const float b) {
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
   uint64_t stop = std::numeric_limits<uint32_t>::max() + 1ul;
   const auto max_batch_size = GetMaxAllowedDeviceMemoryUsage() / (sizeof(float) * 2 + sizeof(int));
@@ -112,14 +112,15 @@ void BesselSinglePrecisionRangeTest(kernel_bessel_n_sig<float> kernel, ref_besse
     x2s.ptr()[inserted++] = v;
     if (inserted < max_batch_size) continue;
 
-    math_test.Run(validator_builder, grid_size, block_size, ref_func, inserted, x1s.ptr(), x2s.ptr());
+    math_test.Run(validator_builder, grid_size, block_size, ref_func, inserted, x1s.ptr(),
+                  x2s.ptr());
     inserted = 0u;
   }
 }
 
 template <typename T, typename F, typename ValidatorBuilder>
-void SpecialSimpleTest(F kernel, const ValidatorBuilder& validator_builder,
-                       const T* x, const T* ref, size_t num_args) {
+void SpecialSimpleTest(F kernel, const ValidatorBuilder& validator_builder, const T* x,
+                       const T* ref, size_t num_args) {
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
 
   LinearAllocGuard<T> x_dev{LinearAllocs::hipMalloc, num_args * sizeof(T)};
@@ -133,15 +134,16 @@ void SpecialSimpleTest(F kernel, const ValidatorBuilder& validator_builder,
 
   HIP_CHECK(hipMemcpy(y.ptr(), y_dev.ptr(), num_args * sizeof(T), hipMemcpyDeviceToHost));
 
-  for (auto i = 0u; i <  num_args; ++i) {
+  for (auto i = 0u; i < num_args; ++i) {
     const auto actual_val = y.ptr()[i];
     const auto ref_val = ref[i];
     const auto validator = validator_builder(ref_val);
 
     if (!validator->match(actual_val)) {
       std::stringstream ss;
-      ss << "Input value(s): " << std::scientific << std::setprecision(std::numeric_limits<T>::max_digits10 - 1);
-      ss << x[i] << " " << actual_val <<" " << ref_val<<"\n";
+      ss << "Input value(s): " << std::scientific
+         << std::setprecision(std::numeric_limits<T>::max_digits10 - 1);
+      ss << x[i] << " " << actual_val << " " << ref_val << "\n";
       INFO(ss.str());
       REQUIRE(false);
     }

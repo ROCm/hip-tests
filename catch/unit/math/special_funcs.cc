@@ -350,7 +350,7 @@ TEST_CASE("Unit_Device_yn_Accuracy_Limited_Positive") {
   long double (*ref)(int, long double) = _ynl;
 #endif
   int n = GENERATE(5, 25, 120);
-  BesselFloatingPointBruteForceTest(yn_kernel<double>, ref,
+  BesselDoublePrecisionBruteForceTest(yn_kernel<double>, ref,
                                     AbsValidatorBuilderFactory<double>(5.e-12), n, 1.5 * n,
                                     std::numeric_limits<double>::max());
 }
@@ -431,7 +431,7 @@ TEST_CASE("Unit_Device_jn_Accuracy_Limited_Positive") {
   long double (*ref)(int, long double) = _jnl;
 #endif
   int n = GENERATE(5, 25, 120);
-  BesselFloatingPointBruteForceTest(jn_kernel<double>, ref,
+  BesselDoublePrecisionBruteForceTest(jn_kernel<double>, ref,
                                     AbsValidatorBuilderFactory<double>(5.e-12), n, 1.5 * n,
                                     std::numeric_limits<double>::max());
 }

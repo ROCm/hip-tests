@@ -24,8 +24,11 @@ THE SOFTWARE.
 
 #include "unary_common.hh"
 #include "binary_common.hh"
+#include "ternary_common.hh"
 
-#define INTRINSIC_UNARY_DOUBLE_KERNEL_DEF(func_name)                                               \
+/********** Unary Helper Macros **********/
+
+#define MATH_UNARY_DP_KERNEL_DEF(func_name)                                                        \
   __global__ void func_name##_kernel(double* const ys, const size_t num_xs, double* const xs) {    \
     const auto tid = cg::this_grid().thread_rank();                                                \
     const auto stride = cg::this_grid().size();                                                    \
@@ -35,7 +38,33 @@ THE SOFTWARE.
     }                                                                                              \
   }
 
-#define INTRINSIC_BINARY_DOUBLE_KERNEL_DEF(func_name)                                              \
+#define MATH_UNARY_DP_TEST_DEF_IMPL(func_name, ref_func, validator_builder)                        \
+  MATH_UNARY_DP_KERNEL_DEF(func_name)                                                              \
+                                                                                                   \
+  TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive - double") {                             \
+    UnaryDoublePrecisionTest(func_name##_kernel, ref_func, validator_builder);                     \
+  }
+
+#define MATH_UNARY_DP_TEST_DEF(func_name, ref_func)                                                \
+  MATH_UNARY_DP_TEST_DEF_IMPL(func_name, ref_func, func_name##_validator_builder)
+
+#define MATH_UNARY_DP_VALIDATOR_BUILDER_DEF(func_name)                                             \
+  static std::unique_ptr<MatcherBase<double>> func_name##_validator_builder(double target, double x)
+
+/********** __drcp_rn **********/
+
+static double __drcp_rn_ref(double x) { return 1.0 / x; }
+
+MATH_UNARY_DP_TEST_DEF_IMPL(__drcp_rn, __drcp_rn_ref, EqValidatorBuilderFactory<double>());
+
+/********** __dsqrt_rn **********/
+
+MATH_UNARY_DP_TEST_DEF_IMPL(__dsqrt_rn, static_cast<double (*)(double)>(std::sqrt),
+                            EqValidatorBuilderFactory<double>());
+
+/********** Binary Helper Macros **********/
+
+#define MATH_BINARY_DP_KERNEL_DEF(func_name)                                                       \
   __global__ void func_name##_kernel(double* const ys, const size_t num_xs, double* const x1s,     \
                                      double* const x2s) {                                          \
     const auto tid = cg::this_grid().thread_rank();                                                \
@@ -46,32 +75,72 @@ THE SOFTWARE.
     }                                                                                              \
   }
 
-#define INTRINSIC_UNARY_DOUBLE_TEST_DEF(kern_name, ref_func, ulp)                                  \
-  INTRINSIC_UNARY_DOUBLE_KERNEL_DEF(kern_name)                                                     \
+#define MATH_BINARY_DP_TEST_DEF_IMPL(func_name, ref_func, validator_builder)                       \
+  MATH_BINARY_DP_KERNEL_DEF(func_name)                                                             \
                                                                                                    \
-  TEST_CASE("Unit_Device_" #kern_name "_Accuracy_Positive - double") {                             \
-    long double (*ref)(long double) = ref_func;                                                    \
-    UnaryDoublePrecisionTest(kern_name##_kernel, ref, ULPValidatorBuilderFactory<double>(ulp));    \
+  TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive - double") {                             \
+    BinaryFloatingPointTest(func_name##_kernel, ref_func, validator_builder);                      \
   }
 
-#define INTRINSIC_BINARY_DOUBLE_TEST_DEF(kern_name, ref_func, ulp)                                 \
-  INTRINSIC_BINARY_DOUBLE_KERNEL_DEF(kern_name)                                                    \
+#define MATH_BINARY_DP_TEST_DEF(func_name, ref_func)                                               \
+  MATH_BINARY_DP_TEST_IMPL(func_name, ref_func, func_name##_validator_builder)
+
+#define MATH_BINARY_DP_VALIDATOR_BUILDER_DEF(func_name)                                            \
+  static std::unique_ptr<MatcherBase<double>> func_name##_validator_builder(double target,         \
+                                                                            double x1, double x2)
+
+/********** __dadd_rn **********/
+
+static double __dadd_rn_ref(double x1, double x2) { return x1 + x2; }
+
+MATH_BINARY_DP_TEST_DEF_IMPL(__dadd_rn, __dadd_rn_ref, EqValidatorBuilderFactory<double>());
+
+/********** __dsub_rn **********/
+
+static double __dsub_rn_ref(double x1, double x2) { return x1 - x2; }
+
+MATH_BINARY_DP_TEST_DEF_IMPL(__dsub_rn, __dsub_rn_ref, EqValidatorBuilderFactory<double>());
+
+/********** __dmul_rn **********/
+
+static double __dmul_rn_ref(double x1, double x2) { return x1 * x2; }
+
+MATH_BINARY_DP_TEST_DEF_IMPL(__dmul_rn, __dmul_rn_ref, EqValidatorBuilderFactory<double>());
+
+/********** __ddiv_rn **********/
+
+static double __ddiv_rn_ref(double x1, double x2) { return x1 / x2; }
+
+MATH_BINARY_DP_TEST_DEF_IMPL(__ddiv_rn, __ddiv_rn_ref, EqValidatorBuilderFactory<double>());
+
+/********** Ternary Helper Macros **********/
+
+#define MATH_TERNARY_DP_KERNEL_DEF(func_name)                                                      \
+  __global__ void func_name##_kernel(double* const ys, const size_t num_xs, double* const x1s,     \
+                                     double* const x2s, double* const x3s) {                       \
+    const auto tid = cg::this_grid().thread_rank();                                                \
+    const auto stride = cg::this_grid().size();                                                    \
                                                                                                    \
-  TEST_CASE("Unit_Device_" #kern_name "_Accuracy_Positive - double") {                             \
-    long double (*ref)(long double, long double) = ref_func;                                       \
-    BinaryFloatingPointTest(kern_name##_kernel, ref, ULPValidatorBuilderFactory<double>(ulp));     \
+    for (auto i = tid; i < num_xs; i += stride) {                                                  \
+      ys[i] = func_name(x1s[i], x2s[i], x3s[i]);                                                   \
+    }                                                                                              \
   }
 
-template <typename T> T add(T x, T y) { return x + y; }
-INTRINSIC_BINARY_DOUBLE_TEST_DEF(__dadd_rn, add<long double>, 0);
+#define MATH_TERNARY_DP_TEST_DEF_IMPL(func_name, ref_func, validator_builder)                      \
+  MATH_TERNARY_DP_KERNEL_DEF(func_name)                                                            \
+                                                                                                   \
+  TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive - double") {                             \
+    TernaryFloatingPointTest(func_name##_kernel, ref_func, validator_builder);                     \
+  }
 
-template <typename T> T sub(T x, T y) { return x + y; }
-INTRINSIC_BINARY_DOUBLE_TEST_DEF(__dsub_rn, sub<long double>, 0);
+#define MATH_TERNARY_DP_TEST_DEF(func_name, ref_func, validator_builder)                           \
+  MATH_TERNARY_DP_TEST_DEF_IMPL(func_name, ref_func, func_name##_validator_builder)
 
-template <typename T> T mul(T x, T y) { return x * y; }
-INTRINSIC_BINARY_DOUBLE_TEST_DEF(__dmul_rn, mul<long double>, 0);
+#define MATH_TERNARY_DP_VALIDATOR_BUILDER_DEF(func_name)                                           \
+  static std::unique_ptr<MatcherBase<double>> func_name##_validator_builder(                       \
+      double target, double x1, double x2, double x3)
 
-template <typename T> T div(T x, T y) { return x * y; }
-INTRINSIC_BINARY_DOUBLE_TEST_DEF(__ddiv_rn, div<long double>, 0);
+/********** __fma_rn **********/
 
-INTRINSIC_UNARY_DOUBLE_TEST_DEF(__dsqrt_rn, std::sqrt, 0);
+MATH_TERNARY_DP_TEST_DEF_IMPL(__fma_rn, static_cast<double (*)(double, double, double)>(std::fma),
+                              EqValidatorBuilderFactory<double>());

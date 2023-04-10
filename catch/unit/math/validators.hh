@@ -23,7 +23,12 @@ THE SOFTWARE.
 
 #include <catch.hpp>
 
-template <typename T, typename Matcher> class ValidatorBase : public Catch::MatcherBase<T> {
+template <typename T> class MatcherBase : public Catch::MatcherBase<T> {
+ public:
+  virtual std::string describe() const = 0;
+};
+
+template <typename T, typename Matcher> class ValidatorBase : public MatcherBase<T> {
  public:
   template <typename... Ts>
   ValidatorBase(T target, Ts&&... args) : matcher_{std::forward<Ts>(args)...}, target_{target} {}
@@ -51,31 +56,37 @@ template <typename T, typename Matcher> class ValidatorBase : public Catch::Matc
 };
 
 template <typename T> auto ULPValidatorBuilderFactory(int64_t ulps) {
-  return [=](T target) {
-    return ValidatorBase<T, Catch::Matchers::Floating::WithinUlpsMatcher>{
-        target, Catch::WithinULP(target, ulps)};
+  return [=](T target, auto&&... args) {
+    return std::make_unique<ValidatorBase<T, Catch::Matchers::Floating::WithinUlpsMatcher>>(
+        target, Catch::WithinULP(target, ulps));
   };
 };
 
 template <typename T> auto AbsValidatorBuilderFactory(double margin) {
-  return [=](T target) {
-    return ValidatorBase<T, Catch::Matchers::Floating::WithinAbsMatcher>{
-        target, Catch::WithinAbs(target, margin)};
+  return [=](T target, auto&&... args) {
+    return std::make_unique<ValidatorBase<T, Catch::Matchers::Floating::WithinAbsMatcher>>(
+        target, Catch::WithinAbs(target, margin));
   };
 }
 
 template <typename T> auto RelValidatorBuilderFactory(T margin) {
-  return [=](T target) {
-    return ValidatorBase<T, Catch::Matchers::Floating::WithinRelMatcher>{
-        target, Catch::WithinRel(target, margin)};
+  return [=](T target, auto&&... args) {
+    return std::make_unique<ValidatorBase<T, Catch::Matchers::Floating::WithinRelMatcher>>(
+        target, Catch::WithinRel(target, margin));
   };
 }
 
-template <typename T> class EqValidator : public Catch::MatcherBase<T> {
+template <typename T> class EqValidator : public MatcherBase<T> {
  public:
   EqValidator(T target) : target_{target} {}
 
-  bool match(const T& val) const override { return target_ == val; }
+  bool match(const T& val) const override {
+    if (std::isnan(target_)) {
+      return std::isnan(val);
+    }
+
+    return target_ == val;
+  }
 
   virtual std::string describe() const override {
     std::stringstream ss;
@@ -88,11 +99,11 @@ template <typename T> class EqValidator : public Catch::MatcherBase<T> {
 };
 
 template <typename T> auto EqValidatorBuilderFactory() {
-  return [](T val) { return EqValidator<T>(val); };
+  return [](T val, auto&&... args) { return std::make_unique<EqValidator<T>>(val); };
 }
 
 template <typename T, typename U, typename VBF, typename VBS>
-class PairValidator : public Catch::MatcherBase<std::pair<T, U>> {
+class PairValidator : public MatcherBase<std::pair<T, U>> {
  public:
   PairValidator(const std::pair<T, U>& target, const VBF& vbf, const VBS& vbs)
       : first_matcher_{vbf(target.first)}, second_matcher_{vbs(target.second)} {}
@@ -112,12 +123,25 @@ class PairValidator : public Catch::MatcherBase<std::pair<T, U>> {
 
 template <typename T, typename ValidatorBuilder>
 auto PairValidatorBuilderFactory(const ValidatorBuilder& vb) {
-  return [&](const std::pair<T, T>& t) {
-    return PairValidator<T, T, ValidatorBuilder, ValidatorBuilder>(t, vb, vb);
+  return [&](const std::pair<T, T>& t, auto&&... args) {
+    return std::make_unique<PairValidator<T, T, ValidatorBuilder, ValidatorBuilder>>(t, vb, vb);
   };
 }
 
 template <typename T, typename U, typename VBF, typename VBS>
 auto PairValidatorBuilderFactory(const VBF& vbf, const VBS& vbs) {
-  return [&](const std::pair<T, U>& t) { return PairValidator<T, U, VBF, VBS>(t, vbf, vbs); };
+  return [&](const std::pair<T, U>& t, auto&&... args) {
+    return std::make_unique<PairValidator<T, U, VBF, VBS>>(t, vbf, vbs);
+  };
+}
+
+template <typename T> class NopValidator : public MatcherBase<T> {
+ public:
+  bool match(const T& val) const override { return true; }
+
+  virtual std::string describe() const override { return ""; }
+};
+
+template <typename T> auto NopValidatorBuilderFactory() {
+  return [](auto&&... args) { return std::make_unique<NopValidator<T>>(); };
 }

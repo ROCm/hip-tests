@@ -21,6 +21,7 @@
 set(TEST_SRC
     single_precision_intrinsics.cc
     double_precision_intrinsics.cc
+    integer_intrinsics.cc
 )
 
 hip_add_exe_to_target(NAME MathsTest

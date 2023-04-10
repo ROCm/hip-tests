@@ -135,16 +135,16 @@ inline constexpr std::array kSpecialValuesReducedFloat{
     +0.0f,
 };
 
-inline constexpr auto kSpecialValReducedRegistry =
-    std::make_tuple(SpecialVals<float>{kSpecialValuesReducedFloat.data(), kSpecialValuesReducedFloat.size()},
-                    SpecialVals<double>{kSpecialValuesReducedDouble.data(), kSpecialValuesReducedDouble.size()});
+inline constexpr auto kSpecialValReducedRegistry = std::make_tuple(
+    SpecialVals<float>{kSpecialValuesReducedFloat.data(), kSpecialValuesReducedFloat.size()},
+    SpecialVals<double>{kSpecialValuesReducedDouble.data(), kSpecialValuesReducedDouble.size()});
 
 template <typename T, typename TArg, typename RT, typename RTArg, typename ValidatorBuilder>
 void QuaternaryFloatingPointBruteForceTest(kernel_sig<T, TArg, TArg, TArg, TArg> kernel,
-                                       ref_sig<RT, RTArg, RTArg, RTArg, RTArg> ref_func,
-                                       const ValidatorBuilder& validator_builder,
-                                       const TArg a = std::numeric_limits<TArg>::lowest(),
-                                       const TArg b = std::numeric_limits<TArg>::max()) {
+                                           ref_sig<RT, RTArg, RTArg, RTArg, RTArg> ref_func,
+                                           const ValidatorBuilder& validator_builder,
+                                           const TArg a = std::numeric_limits<TArg>::lowest(),
+                                           const TArg b = std::numeric_limits<TArg>::max()) {
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
   const uint64_t num_iterations = GetTestIterationCount();
   const auto max_batch_size =
@@ -170,8 +170,8 @@ void QuaternaryFloatingPointBruteForceTest(kernel_sig<T, TArg, TArg, TArg, TArg>
       thread_pool.Post([=, &x1s, &x2s, &x3s, &x4s] {
         const auto generator = [=] {
           static thread_local std::mt19937 rng(std::random_device{}());
-          std::uniform_real_distribution<TArg> unif_dist(a, b);
-          return unif_dist(rng);
+          std::uniform_real_distribution<RefType_t<TArg>> unif_dist(a, b);
+          return static_cast<TArg>(unif_dist(rng));
         };
         std::generate(x1s.ptr() + base_idx, x1s.ptr() + base_idx + sub_batch_size, generator);
         std::generate(x2s.ptr() + base_idx, x2s.ptr() + base_idx + sub_batch_size, generator);
@@ -190,8 +190,8 @@ void QuaternaryFloatingPointBruteForceTest(kernel_sig<T, TArg, TArg, TArg, TArg>
 
 template <typename T, typename TArg, typename RT, typename RTArg, typename ValidatorBuilder>
 void QuaternaryFloatingPointSpecialValuesTest(kernel_sig<T, TArg, TArg, TArg, TArg> kernel,
-                                          ref_sig<RT, RTArg, RTArg, RTArg, RTArg> ref_func,
-                                          const ValidatorBuilder& validator_builder) {
+                                              ref_sig<RT, RTArg, RTArg, RTArg, RTArg> ref_func,
+                                              const ValidatorBuilder& validator_builder) {
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
   const auto values = std::get<SpecialVals<TArg>>(kSpecialValReducedRegistry);
 
@@ -220,17 +220,20 @@ void QuaternaryFloatingPointSpecialValuesTest(kernel_sig<T, TArg, TArg, TArg, TA
 }
 
 template <typename T, typename TArg, typename RT, typename RTArg, typename ValidatorBuilder>
-void QuaternaryFloatingPointTest(kernel_sig<T, TArg, TArg, TArg, TArg> kernel, ref_sig<RT, RTArg, RTArg, RTArg, RTArg> ref_func,
-                             const ValidatorBuilder& validator_builder) {
+void QuaternaryFloatingPointTest(kernel_sig<T, TArg, TArg, TArg, TArg> kernel,
+                                 ref_sig<RT, RTArg, RTArg, RTArg, RTArg> ref_func,
+                                 const ValidatorBuilder& validator_builder) {
   SECTION("Special values") {
     QuaternaryFloatingPointSpecialValuesTest(kernel, ref_func, validator_builder);
   }
 
-  SECTION("Brute force") { QuaternaryFloatingPointBruteForceTest(kernel, ref_func, validator_builder); }
+  SECTION("Brute force") {
+    QuaternaryFloatingPointBruteForceTest(kernel, ref_func, validator_builder);
+  }
 }
 
 
-#define MATH_QUATERNARY_WITHIN_ULP_TEST_DEF(kern_name, ref_func, sp_ulp, dp_ulp)                      \
+#define MATH_QUATERNARY_WITHIN_ULP_TEST_DEF(kern_name, ref_func, sp_ulp, dp_ulp)                   \
   MATH_QUATERNARY_KERNEL_DEF(kern_name)                                                            \
                                                                                                    \
   TEMPLATE_TEST_CASE("Unit_Device_" #kern_name "_Accuracy_Positive", "", float, double) {          \
@@ -239,5 +242,5 @@ void QuaternaryFloatingPointTest(kernel_sig<T, TArg, TArg, TArg, TArg> kernel, r
     const auto ulp = std::is_same_v<float, TestType> ? sp_ulp : dp_ulp;                            \
                                                                                                    \
     QuaternaryFloatingPointTest(kern_name##_kernel<TestType>, ref,                                 \
-                            ULPValidatorBuilderFactory<TestType>(ulp));                            \
+                                ULPValidatorBuilderFactory<TestType>(ulp));                        \
   }

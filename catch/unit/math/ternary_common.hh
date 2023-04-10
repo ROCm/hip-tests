@@ -74,8 +74,8 @@ void TernaryFloatingPointBruteForceTest(kernel_sig<T, TArg, TArg, TArg> kernel,
       thread_pool.Post([=, &x1s, &x2s, &x3s] {
         const auto generator = [=] {
           static thread_local std::mt19937 rng(std::random_device{}());
-          std::uniform_real_distribution<TArg> unif_dist(a, b);
-          return unif_dist(rng);
+          std::uniform_real_distribution<RefType_t<TArg>> unif_dist(a, b);
+          return static_cast<TArg>(unif_dist(rng));
         };
         std::generate(x1s.ptr() + base_idx, x1s.ptr() + base_idx + sub_batch_size, generator);
         std::generate(x2s.ptr() + base_idx, x2s.ptr() + base_idx + sub_batch_size, generator);

@@ -32,38 +32,6 @@ TEST_CASE("Unit_Device_erf_erff_Negative_RTC") { NegativeTestRTCWrapper<4>(kErf)
 MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(erfc, 4, 5)
 TEST_CASE("Unit_Device_erfc_erfcf_Negative_RTC") { NegativeTestRTCWrapper<4>(kErfc); }
 
-MATH_UNARY_KERNEL_DEF(tgamma)
-
-TEST_CASE("Unit_Device_tgammaf_Accuracy_Limited_Positive") {
-  double (*ref)(double) = std::tgamma;
-  UnarySinglePrecisionRangeTest(tgamma_kernel<float>, ref,
-                                        ULPValidatorBuilderFactory<float>(5), 0, 171);
-}
-
-TEST_CASE("Unit_Device_tgamma_Accuracy_Limited_Positive") {
-  long double (*ref)(long double) = std::tgamma;
-  UnaryDoublePrecisionTest(tgamma_kernel<double>, ref,
-                                   ULPValidatorBuilderFactory<double>(10));
-}
-
-TEST_CASE("Unit_Device_tgamma_tgammaf_Negative_RTC") { NegativeTestRTCWrapper<4>(kTgamma); }
-
-MATH_UNARY_KERNEL_DEF(lgamma)
-
-TEST_CASE("Unit_Device_lgammaf_Accuracy_Limited_Positive") {
-  double (*ref)(double) = std::lgamma;
-  UnarySinglePrecisionRangeTest(lgamma_kernel<float>, ref,
-                                        ULPValidatorBuilderFactory<float>(6), -2, 100);
-}
-
-TEST_CASE("Unit_Device_lgamma_Accuracy_Limited_Positive") {
-  long double (*ref)(long double) = std::lgamma;
-  UnaryDoublePrecisionBruteForceTest(lgamma_kernel<double>, ref,
-                                             ULPValidatorBuilderFactory<double>(4), -2, 100);
-}
-
-TEST_CASE("Unit_Device_lgamma_lgammaf_Negative_RTC") { NegativeTestRTCWrapper<4>(kLgamma); }
-
 MATH_UNARY_KERNEL_DEF(erfcinv)
 
 TEST_CASE("Unit_Device_erfcinvf_Accuracy_Positive") {
@@ -234,6 +202,43 @@ TEST_CASE("Unit_Device_erfcx_Sanity_Positive") {
 
 TEST_CASE("Unit_Device_erfcx_erfcxf_Negative_RTC") { NegativeTestRTCWrapper<4>(kErfcx); }
 
+MATH_UNARY_KERNEL_DEF(tgamma)
+
+TEST_CASE("Unit_Device_tgammaf_Accuracy_Limited_Positive") {
+  double (*ref)(double) = std::tgamma;
+  UnarySinglePrecisionRangeTest(tgamma_kernel<float>, ref, ULPValidatorBuilderFactory<float>(5), 0,
+                                171);
+}
+
+TEST_CASE("Unit_Device_tgamma_Accuracy_Limited_Positive") {
+  long double (*ref)(long double) = std::tgamma;
+  UnaryDoublePrecisionTest(tgamma_kernel<double>, ref, ULPValidatorBuilderFactory<double>(10));
+}
+
+TEST_CASE("Unit_Device_tgamma_tgammaf_Negative_RTC") { NegativeTestRTCWrapper<4>(kTgamma); }
+
+MATH_UNARY_KERNEL_DEF(lgamma)
+
+TEST_CASE("Unit_Device_lgammaf_Accuracy_Limited_Positive") {
+  double (*ref)(double) = std::lgamma;
+  UnarySinglePrecisionRangeTest(lgamma_kernel<float>, ref, ULPValidatorBuilderFactory<float>(6),
+                                std::numeric_limits<float>::lowest(), -10.1);
+  UnarySinglePrecisionRangeTest(lgamma_kernel<float>, ref, ULPValidatorBuilderFactory<float>(6),
+                                -2.2f, std::numeric_limits<float>::max());
+}
+
+TEST_CASE("Unit_Device_lgamma_Accuracy_Limited_Positive") {
+  long double (*ref)(long double) = std::lgamma;
+  UnaryDoublePrecisionBruteForceTest(lgamma_kernel<double>, ref,
+                                     ULPValidatorBuilderFactory<double>(4),
+                                     std::numeric_limits<double>::lowest(), -10.1);
+  UnaryDoublePrecisionBruteForceTest(lgamma_kernel<double>, ref,
+                                     ULPValidatorBuilderFactory<double>(4), -2.2,
+                                     std::numeric_limits<double>::max());
+}
+
+TEST_CASE("Unit_Device_lgamma_lgammaf_Negative_RTC") { NegativeTestRTCWrapper<4>(kLgamma); }
+
 MATH_UNARY_KERNEL_DEF(cyl_bessel_i0)
 
 TEST_CASE("Unit_Device_cyl_bessel_i0f_Accuracy_Limited_Positive") {
@@ -247,7 +252,7 @@ TEST_CASE("Unit_Device_cyl_bessel_i0_Accuracy_Limited_Positive") {
   auto cyl_bessel_i0_ref = [](long double arg) -> long double { return std::cyl_bessel_i(0, arg); };
   long double (*ref)(long double) = cyl_bessel_i0_ref;
   UnaryDoublePrecisionBruteForceTest(cyl_bessel_i0_kernel<double>, ref,
-                                             ULPValidatorBuilderFactory<double>(6), 0, 1000);
+                                     ULPValidatorBuilderFactory<double>(6), 0, 1000);
 }
 
 
@@ -351,8 +356,8 @@ TEST_CASE("Unit_Device_yn_Accuracy_Limited_Positive") {
 #endif
   int n = GENERATE(5, 25, 120);
   BesselDoublePrecisionBruteForceTest(yn_kernel<double>, ref,
-                                    AbsValidatorBuilderFactory<double>(5.e-12), n, 1.5 * n,
-                                    std::numeric_limits<double>::max());
+                                      AbsValidatorBuilderFactory<double>(5.e-12), n, 1.5 * n,
+                                      std::numeric_limits<double>::max());
 }
 
 TEST_CASE("Unit_Device_yn_ynf_Negative_RTC") { NegativeTestRTCWrapper<8>(kYn); }
@@ -365,6 +370,8 @@ TEST_CASE("Unit_Device_j0f_Accuracy_Limited_Positive") {
 #elif _WIN64
   double (*ref)(double) = _j0;
 #endif
+  UnarySinglePrecisionRangeTest(j0_kernel<float>, ref, AbsValidatorBuilderFactory<float>(0.0000022),
+                                std::numeric_limits<float>::lowest(), -8.f);
   UnarySinglePrecisionRangeTest(j0_kernel<float>, ref, ULPValidatorBuilderFactory<float>(9), -8.f,
                                 8.f);
   UnarySinglePrecisionRangeTest(j0_kernel<float>, ref, AbsValidatorBuilderFactory<float>(0.0000022),
@@ -392,6 +399,8 @@ TEST_CASE("Unit_Device_j1f_Accuracy_Limited_Positive") {
 #elif _WIN64
   double (*ref)(double) = _j1;
 #endif
+  UnarySinglePrecisionRangeTest(j1_kernel<float>, ref, AbsValidatorBuilderFactory<float>(0.0000022),
+                                std::numeric_limits<float>::lowest(), -8.f);
   UnarySinglePrecisionRangeTest(j1_kernel<float>, ref, ULPValidatorBuilderFactory<float>(9), -8.f,
                                 8.f);
   UnarySinglePrecisionRangeTest(j1_kernel<float>, ref, AbsValidatorBuilderFactory<float>(0.0000022),
@@ -405,7 +414,7 @@ TEST_CASE("Unit_Device_j1_Accuracy_Limited_Positive") {
   long double (*ref)(long double) = _j1l;
 #endif
   UnaryDoublePrecisionBruteForceTest(
-      j1_kernel<double>, ref, AbsValidatorBuilderFactory<float>(5.e-12),
+      j1_kernel<double>, ref, AbsValidatorBuilderFactory<double>(5.e-12),
       std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max());
 }
 TEST_CASE("Unit_Device_j1_j1f_Negative_RTC") { NegativeTestRTCWrapper<4>(kJ1); }
@@ -419,8 +428,7 @@ TEST_CASE("Unit_Device_jnf_Accuracy_Limited_Positive") {
   double (*ref)(int, double) = _jn;
 #endif
   int n = GENERATE(5, 25, 120);
-  BesselSinglePrecisionRangeTest(jn_kernel<float>, ref,
-                                 AbsValidatorBuilderFactory<float>(0.0000022), n, n,
+  BesselSinglePrecisionRangeTest(jn_kernel, ref, AbsValidatorBuilderFactory<float>(0.0000022), n, n,
                                  std::numeric_limits<float>::max());
 }
 
@@ -431,9 +439,9 @@ TEST_CASE("Unit_Device_jn_Accuracy_Limited_Positive") {
   long double (*ref)(int, long double) = _jnl;
 #endif
   int n = GENERATE(5, 25, 120);
-  BesselDoublePrecisionBruteForceTest(jn_kernel<double>, ref,
-                                    AbsValidatorBuilderFactory<double>(5.e-12), n, 1.5 * n,
-                                    std::numeric_limits<double>::max());
+  BesselDoublePrecisionBruteForceTest(
+      jn_kernel<double>, ref, AbsValidatorBuilderFactory<double>(5.e-12), n,
+      std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max());
 }
 
 TEST_CASE("Unit_Device_jn_jnf_Negative_RTC") { NegativeTestRTCWrapper<8>(kJn); }

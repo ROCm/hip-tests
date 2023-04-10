@@ -112,6 +112,19 @@ THE SOFTWARE.
     }                                                                                              \
   }
 
+// Check that an expression, errorExpr, evaluates to the expected error_t, expectedError.
+#define HIPRTC_CHECK_ERROR(errorExpr, expectedError)                                               \
+  {                                                                                                \
+    auto localError = errorExpr;                                                                   \
+    INFO("Matching Errors: "                                                                       \
+         << "\n    Expected Error: " << hiprtcGetErrorString(expectedError)                        \
+         << "\n    Expected Code: " << expectedError << '\n'                                       \
+         << "                  Actual Error:   " << hiprtcGetErrorString(localError)               \
+         << "\n    Actual Code:   " << localError << "\nStr: " << #errorExpr                       \
+         << "\n    In File: " << __FILE__ << "\n    At line: " << __LINE__);                       \
+    REQUIRE(localError == expectedError);                                                          \
+  }
+
 #define HIPASSERT(condition)                                                                       \
   if (!(condition)) {                                                                              \
     printf("assertion %s at %s:%d \n", #condition, __FILE__, __LINE__);                            \
@@ -148,7 +161,7 @@ static inline bool IsGfx11() {
   hipDeviceProp_t props{};
   HIP_CHECK(hipGetDevice(&device));
   HIP_CHECK(hipGetDeviceProperties(&props, device));
-   // Get GCN Arch Name and compare to check if it is gfx11
+  // Get GCN Arch Name and compare to check if it is gfx11
   std::string arch = std::string(props.gcnArchName);
   auto pos = arch.find("gfx11");
   if (pos != std::string::npos)
@@ -156,7 +169,7 @@ static inline bool IsGfx11() {
   else
     return false;
 #else
-  std::cout<<"Have to be either Nvidia or AMD platform, asserting"<<std::endl;
+  std::cout << "Have to be either Nvidia or AMD platform, asserting" << std::endl;
   assert(false);
 #endif
 }
@@ -291,7 +304,7 @@ void launchKernel(K kernel, Dim numBlocks, Dim numThreads, std::uint32_t memPerB
   launchRTCKernel<Typenames...>(kernel, numBlocks, numThreads, memPerBlock, stream,
                                 std::forward<Args>(packedArgs)...);
 #endif
-HIP_CHECK(hipGetLastError());
+  HIP_CHECK(hipGetLastError());
 }
 
 //---

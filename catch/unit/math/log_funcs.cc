@@ -20,6 +20,7 @@ THE SOFTWARE.
 */
 
 #include "unary_common.hh"
+#include "math_log_negative_kernels_rtc.hh"
 
 #define MATH_ILOGB_KERNEL_DEF(func_name)                                                           \
   template <typename T>                                                                            \
@@ -37,25 +38,30 @@ THE SOFTWARE.
   }
 
 MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(log, 1, 1)
+TEST_CASE("Unit_Device_log_logf_Negative_RTC") { NegativeTestRTCWrapper<4>(kLog); }
 
 MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(log2, 1, 1)
+TEST_CASE("Unit_Device_log2_log2f_Negative_RTC") { NegativeTestRTCWrapper<4>(kLog2); }
 
 MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(log10, 2, 1)
+TEST_CASE("Unit_Device_log10_log10f_Negative_RTC") { NegativeTestRTCWrapper<4>(kLog10); }
 
 MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(log1p, 1, 1)
+TEST_CASE("Unit_Device_log1p_log1pf_Negative_RTC") { NegativeTestRTCWrapper<4>(kLog1p); }
 
 MATH_UNARY_WITHIN_ULP_STL_REF_TEST_DEF(logb, 0, 0)
+TEST_CASE("Unit_Device_logb_logbf_Negative_RTC") { NegativeTestRTCWrapper<4>(kLogb); }
 
 MATH_ILOGB_KERNEL_DEF(ilogb)
 
 TEST_CASE("Unit_Device_ilogbf_Accuracy_Positive") {
   int (*ref)(double) = std::ilogb;
-  UnarySinglePrecisionTest(ilogb_kernel<float>, ref,
-                           EqValidatorBuilderFactor<int>());
+  UnarySinglePrecisionTest(ilogb_kernel<float>, ref, EqValidatorBuilderFactor<int>());
 }
 
 TEST_CASE("Unit_Device_ilogb_Accuracy_Positive") {
   int (*ref)(long double) = std::ilogb;
-  UnaryDoublePrecisionTest(ilogb_kernel<double>, ref,
-                           EqValidatorBuilderFactor<int>());
+  UnaryDoublePrecisionTest(ilogb_kernel<double>, ref, EqValidatorBuilderFactor<int>());
 }
+
+TEST_CASE("Unit_Device_ilogb_ilogbf_Negative_RTC") { NegativeTestRTCWrapper<4>(kIlogb); }

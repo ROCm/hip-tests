@@ -22,9 +22,16 @@ set(TEST_SRC
   root_funcs.cc
 )
 
+if(HIP_PLATFORM MATCHES "nvidia")
+  set(LINKER_LIBS nvrtc)
+elseif(HIP_PLATFORM MATCHES "amd")
+  set(LINKER_LIBS hiprtc)
+endif()
+
 hip_add_exe_to_target(NAME MathsTest
                       TEST_SRC ${TEST_SRC}
-                      TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
+                      TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC}
+                      LINKER_LIBS ${LINKER_LIBS})
 
 add_test(NAME Unit_Device_root_Negative
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py

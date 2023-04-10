@@ -30,7 +30,7 @@ THE SOFTWARE.
 template <typename T> class MatcherBase : public Catch::MatcherBase<T> {
  public:
   virtual std::string describe() const = 0;
-}
+};
 
 template <typename T, typename Matcher>
 class ValidatorBase : public MatcherBase<T> {

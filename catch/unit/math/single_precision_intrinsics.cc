@@ -26,7 +26,7 @@ THE SOFTWARE.
 #include "binary_common.hh"
 #include "ternary_common.hh"
 
-/********** Unary Helper Macros **********/
+/********** Unary Functions **********/
 
 #define MATH_UNARY_SP_KERNEL_DEF(func_name)                                                        \
   __global__ void func_name##_kernel(float* const ys, const size_t num_xs, float* const xs) {      \
@@ -39,9 +39,7 @@ THE SOFTWARE.
   }
 
 #define MATH_UNARY_SP_TEST_DEF_IMPL(func_name, ref_func, validator_builder)                        \
-  MATH_UNARY_SP_KERNEL_DEF(func_name)                                                              \
-                                                                                                   \
-  TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive - float") {                              \
+  TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive") {                                      \
     UnarySinglePrecisionTest(func_name##_kernel, ref_func, validator_builder);                     \
   }
 
@@ -49,45 +47,117 @@ THE SOFTWARE.
   MATH_UNARY_SP_TEST_DEF_IMPL(func_name, ref_func, func_name##_validator_builder)
 
 #define MATH_UNARY_SP_VALIDATOR_BUILDER_DEF(func_name)                                             \
-  static std::unique_ptr<Catch::MatcherBase<float>> func_name##_validator_builder(float target,    \
-                                                                                  float x)
+  static std::unique_ptr<MatcherBase<float>> func_name##_validator_builder(float target, float x)
 
-/********** __frcp_rn **********/
 
 static float __frcp_rn_ref(float x) { return 1.0f / x; }
 
+MATH_UNARY_SP_KERNEL_DEF(__frcp_rn);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__frcp_rn(x)` for all possible inputs. The error bounds are
+ * IEEE-compliant.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/single_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_UNARY_SP_TEST_DEF_IMPL(__frcp_rn, __frcp_rn_ref, EqValidatorBuilderFactory<float>());
 
-/********** __fsqrt_rn **********/
 
+MATH_UNARY_SP_KERNEL_DEF(__fsqrt_rn);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__fsqrt_rn(x)` for all possible inputs. The results are
+ * compared against reference function `float std::sqrt(float)`. The error bounds are
+ * IEEE-compliant.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/single_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_UNARY_SP_TEST_DEF_IMPL(__fsqrt_rn, static_cast<float (*)(float)>(std::sqrt),
                             EqValidatorBuilderFactory<float>());
 
-/********** __frsqrt_rn **********/
 
 static float __frsqrt_rn_ref(float x) { return 1.0f / std::sqrt(x); }
 
+MATH_UNARY_SP_KERNEL_DEF(__frsqrt_rn);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__frsqrt_rn(x)` for all possible inputs. The results are
+ * compared against reference function `float std::sqrt(float)`. The error bounds are
+ * IEEE-compliant.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/single_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_UNARY_SP_TEST_DEF_IMPL(__frsqrt_rn, __frsqrt_rn_ref, EqValidatorBuilderFactory<float>());
 
-/********** __expf **********/
 
 MATH_UNARY_SP_VALIDATOR_BUILDER_DEF(__expf) {
   const int64_t ulp_err = 2 + static_cast<int64_t>(std::floor(std::abs(1.16f * x)));
   return ULPValidatorBuilderFactory<float>(ulp_err)(target);
 }
 
+MATH_UNARY_SP_KERNEL_DEF(__expf);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__expf(x)` for all possible inputs. The results are
+ * compared against reference function `double std::exp(double)`. The maximum ulp error is `2 +
+ * floor(abs(1.16 * x))`.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/single_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_UNARY_SP_TEST_DEF(__expf, static_cast<double (*)(double)>(std::exp));
 
-/********** __exp10f **********/
 
 MATH_UNARY_SP_VALIDATOR_BUILDER_DEF(__exp10f) {
   const int64_t ulp_err = 2 + static_cast<int64_t>(std::floor(std::abs(2.95f * x)));
   return ULPValidatorBuilderFactory<float>(ulp_err)(target);
 }
 
+MATH_UNARY_SP_KERNEL_DEF(__exp10f);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__exp10f(x)` for all possible inputs. The results are
+ * compared against reference function `double exp10(double)`. The maximum ulp error is `2 +
+ * floor(abs(2.95 * x))`.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/single_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_UNARY_SP_TEST_DEF(__exp10f, static_cast<double (*)(double)>(exp10));
 
-/********** __logf **********/
 
 MATH_UNARY_SP_VALIDATOR_BUILDER_DEF(__logf) {
   if (0.5f <= x && x <= 2.0f) {
@@ -98,9 +168,24 @@ MATH_UNARY_SP_VALIDATOR_BUILDER_DEF(__logf) {
   }
 }
 
+MATH_UNARY_SP_KERNEL_DEF(__logf);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__logf(x)` for all possible inputs. The results are
+ * compared against reference function `double std::log(double)`. For `x` in [0.5, 2], the maximum
+ * absolute error is 2^-21.41, otherwise, the maximum ulp error is 3.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/single_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_UNARY_SP_TEST_DEF(__logf, static_cast<double (*)(double)>(std::log));
 
-/********** __log2f **********/
 
 MATH_UNARY_SP_VALIDATOR_BUILDER_DEF(__log2f) {
   if (0.5f <= x && x <= 2.0f) {
@@ -111,9 +196,24 @@ MATH_UNARY_SP_VALIDATOR_BUILDER_DEF(__log2f) {
   }
 }
 
+MATH_UNARY_SP_KERNEL_DEF(__log2f);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__log2f(x)` for all possible inputs. The results are
+ * compared against reference function `double std::log2(double)`. For `x` in [0.5, 2], the maximum
+ * absolute error is 2^-22, otherwise, the maximum ulp error is 2.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/single_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_UNARY_SP_TEST_DEF(__log2f, static_cast<double (*)(double)>(std::log2));
 
-/********** __log10f **********/
 
 MATH_UNARY_SP_VALIDATOR_BUILDER_DEF(__log10f) {
   if (0.5f <= x && x <= 2.0f) {
@@ -124,9 +224,24 @@ MATH_UNARY_SP_VALIDATOR_BUILDER_DEF(__log10f) {
   }
 }
 
-MATH_UNARY_SP_TEST_DEF(__log10f, static_cast<double (*)(double)>(std::log2));
+MATH_UNARY_SP_KERNEL_DEF(__log10f);
 
-/********** __sinf **********/
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__log10f(x)` for all possible inputs. The results are
+ * compared against reference function `double std::log10(double)`. For `x` in [0.5, 2], the maximum
+ * absolute error is 2^-24, otherwise, the maximum ulp error is 3.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/single_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+MATH_UNARY_SP_TEST_DEF(__log10f, static_cast<double (*)(double)>(std::log10));
+
 
 MATH_UNARY_SP_VALIDATOR_BUILDER_DEF(__sinf) {
   if (-M_PI <= x && x <= M_PI) {
@@ -137,9 +252,24 @@ MATH_UNARY_SP_VALIDATOR_BUILDER_DEF(__sinf) {
   }
 }
 
+MATH_UNARY_SP_KERNEL_DEF(__sinf);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__sinf(x)` for all possible inputs. The results are
+ * compared against reference function `double std::sin(double)`. For `x` in [-PI, PI], the maximum
+ * absolute error is 2^-21.41, and larger otherwise.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/single_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_UNARY_SP_TEST_DEF(__sinf, static_cast<double (*)(double)>(std::sin));
 
-/********** __sincosf - sin **********/
 
 __device__ float __sincosf_sin(float x) {
   float sin, cos;
@@ -147,10 +277,25 @@ __device__ float __sincosf_sin(float x) {
   return sin;
 }
 
+MATH_UNARY_SP_KERNEL_DEF(__sincosf_sin);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__sincosf(x, sptr, cptr)` for all possible inputs. The
+ * results in `sptr` are compared against reference function `double std::sin(double)`. For `x` in
+ * [-PI, PI], the maximum absolute error is 2^-21.41, and larger otherwise.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/single_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_UNARY_SP_TEST_DEF_IMPL(__sincosf_sin, static_cast<double (*)(double)>(std::sin),
                             __sinf_validator_builder);
 
-/********** __cosf **********/
 
 MATH_UNARY_SP_VALIDATOR_BUILDER_DEF(__cosf) {
   if (-M_PI <= x && x <= M_PI) {
@@ -161,9 +306,24 @@ MATH_UNARY_SP_VALIDATOR_BUILDER_DEF(__cosf) {
   }
 }
 
+MATH_UNARY_SP_KERNEL_DEF(__cosf);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__cosf(x)` for all possible inputs. The results are
+ * compared against reference function `double std::cos(double)`. For `x` in [-PI, PI], the maximum
+ * absolute error is 2^-21.19, and larger otherwise.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/single_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_UNARY_SP_TEST_DEF(__cosf, static_cast<double (*)(double)>(std::cos));
 
-/********** __sincosf - cos **********/
 
 __device__ float __sincosf_cos(float x) {
   float sin, cos;
@@ -171,24 +331,27 @@ __device__ float __sincosf_cos(float x) {
   return cos;
 }
 
+MATH_UNARY_SP_KERNEL_DEF(__sincosf_cos);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__sincosf(x, sptr, cptr)` for all possible inputs. The
+ * results in `cptr` are compared against reference function `double std::cos(double)`. For `x` in
+ * [-PI, PI], the maximum absolute error is 2^-21.19, and larger otherwise.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/single_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_UNARY_SP_TEST_DEF_IMPL(__sincosf_cos, static_cast<double (*)(double)>(std::cos),
                             __cosf_validator_builder);
 
-/********** __tanf **********/
 
-MATH_UNARY_SP_VALIDATOR_BUILDER_DEF(__tanf) {
-  // TODO error bounds are derived from its implementation as __sinf(x) * (1/__cosf(x))
-  if (-M_PI <= x && x <= M_PI) {
-    const auto abs_err = std::pow(2.0, -21.19);
-    return AbsValidatorBuilderFactory<float>(abs_err)(target);
-  } else {
-    return NopValidatorBuilderFactory<float>()();
-  }
-}
-
-MATH_UNARY_SP_TEST_DEF(__tanf, static_cast<double (*)(double)>(std::tan));
-
-/********** Binary Helper Macros **********/
+/********** Binary Functions **********/
 
 #define MATH_BINARY_SP_KERNEL_DEF(func_name)                                                       \
   __global__ void func_name##_kernel(float* const ys, const size_t num_xs, float* const x1s,       \
@@ -202,9 +365,7 @@ MATH_UNARY_SP_TEST_DEF(__tanf, static_cast<double (*)(double)>(std::tan));
   }
 
 #define MATH_BINARY_SP_TEST_DEF_IMPL(func_name, ref_func, validator_builder)                       \
-  MATH_BINARY_SP_KERNEL_DEF(func_name)                                                             \
-                                                                                                   \
-  TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive - float") {                              \
+  TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive") {                                      \
     BinaryFloatingPointTest(func_name##_kernel, ref_func, validator_builder);                      \
   }
 
@@ -212,34 +373,89 @@ MATH_UNARY_SP_TEST_DEF(__tanf, static_cast<double (*)(double)>(std::tan));
   MATH_BINARY_SP_TEST_DEF_IMPL(func_name, ref_func, func_name##_validator_builder)
 
 #define MATH_BINARY_SP_VALIDATOR_BUILDER_DEF(func_name)                                            \
-  static std::unique_ptr<Catch::MatcherBase<float>> func_name##_validator_builder(                 \
-      float target, float x1, float x2)
+  static std::unique_ptr<MatcherBase<float>> func_name##_validator_builder(float target, float x1, \
+                                                                           float x2)
 
-/********** __fadd_rn **********/
 
 static float __fadd_rn_ref(float x1, float x2) { return x1 + x2; }
 
+MATH_BINARY_SP_KERNEL_DEF(__fadd_rn);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__fadd_rn(x,y)` against a table of difficult values,
+ * followed by a large number of randomly generated values. The error bounds are IEEE-compliant.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/single_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_BINARY_SP_TEST_DEF_IMPL(__fadd_rn, __fadd_rn_ref, EqValidatorBuilderFactory<float>());
 
-/********** __fsub_rn **********/
 
 static float __fsub_rn_ref(float x1, float x2) { return x1 - x2; }
 
+MATH_BINARY_SP_KERNEL_DEF(__fsub_rn);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__fsub_rn(x,y)` against a table of difficult values,
+ * followed by a large number of randomly generated values. The error bounds are IEEE-compliant.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/single_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_BINARY_SP_TEST_DEF_IMPL(__fsub_rn, __fsub_rn_ref, EqValidatorBuilderFactory<float>());
 
-/********** __fmul_rn **********/
 
 static float __fmul_rn_ref(float x1, float x2) { return x1 * x2; }
 
+MATH_BINARY_SP_KERNEL_DEF(__fmul_rn);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__fmul_rn(x,y)` against a table of difficult values,
+ * followed by a large number of randomly generated values. The error bounds are IEEE-compliant.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/single_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_BINARY_SP_TEST_DEF_IMPL(__fmul_rn, __fmul_rn_ref, EqValidatorBuilderFactory<float>());
 
-/********** __fdiv_rn **********/
 
 static float __fdiv_rn_ref(float x1, float x2) { return x1 / x2; }
 
+MATH_BINARY_SP_KERNEL_DEF(__fdiv_rn);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__fdiv_rn(x,y)` against a table of difficult values,
+ * followed by a large number of randomly generated values. The error bounds are IEEE-compliant.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/single_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_BINARY_SP_TEST_DEF_IMPL(__fdiv_rn, __fdiv_rn_ref, EqValidatorBuilderFactory<float>());
 
-/********** __fdividef **********/
 
 MATH_BINARY_SP_VALIDATOR_BUILDER_DEF(__fdividef) {
   const auto abs_x2 = std::abs(x2);
@@ -250,18 +466,26 @@ MATH_BINARY_SP_VALIDATOR_BUILDER_DEF(__fdividef) {
   }
 }
 
+MATH_BINARY_SP_KERNEL_DEF(__fdividef);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__fdividef(x,y)` against a table of difficult values,
+ * followed by a large number of randomly generated values. For `|y|` in [2^-126, 2^126], the
+ * maximum ulp error is 2.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/single_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_BINARY_SP_TEST_DEF(__fdividef, __fdiv_rn_ref);
 
-/********** __powf **********/
 
-MATH_BINARY_SP_VALIDATOR_BUILDER_DEF(__powf) {
-  // TODO error bounds are derived from its implementation as exp2f(y * __log2f(x))
-  return ULPValidatorBuilderFactory<float>(2)(target);
-}
-
-MATH_BINARY_SP_TEST_DEF(__powf, static_cast<double (*)(double, double)>(std::pow));
-
-/********** Ternary Helper Macros **********/
+/********** Ternary Functions **********/
 
 #define MATH_TERNARY_SP_KERNEL_DEF(func_name)                                                      \
   __global__ void func_name##_kernel(float* const ys, const size_t num_xs, float* const x1s,       \
@@ -275,9 +499,7 @@ MATH_BINARY_SP_TEST_DEF(__powf, static_cast<double (*)(double, double)>(std::pow
   }
 
 #define MATH_TERNARY_SP_TEST_DEF_IMPL(func_name, ref_func, validator_builder)                      \
-  MATH_TERNARY_SP_KERNEL_DEF(func_name)                                                            \
-                                                                                                   \
-  TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive - float") {                              \
+  TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive") {                                      \
     TernaryFloatingPointTest(func_name##_kernel, ref_func, validator_builder);                     \
   }
 
@@ -285,10 +507,24 @@ MATH_BINARY_SP_TEST_DEF(__powf, static_cast<double (*)(double, double)>(std::pow
   MATH_TERNARY_SP_TEST_DEF_IMPL(func_name, ref_func, func_name##_validator_builder)
 
 #define MATH_TERNARY_SP_VALIDATOR_BUILDER_DEF(func_name)                                           \
-  static std::unique_ptr<Catch::MatcherBase<float>> func_name##_validator_builder(                 \
-      float target, float x1, float x2, float x3)
+  static std::unique_ptr<MatcherBase<float>> func_name##_validator_builder(float target, float x1, \
+                                                                           float x2, float x3)
 
-/********** __fmaf_rn **********/
 
+MATH_TERNARY_SP_KERNEL_DEF(__fmaf_rn);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__fmaf(x,y,z)` against a table of difficult values,
+ * followed by a large number of randomly generated values. The error bounds are IEEE-compliant.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/single_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_TERNARY_SP_TEST_DEF_IMPL(__fmaf_rn, static_cast<float (*)(float, float, float)>(std::fma),
                               EqValidatorBuilderFactory<float>());

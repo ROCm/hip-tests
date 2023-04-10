@@ -25,6 +25,18 @@ THE SOFTWARE.
 
 __global__ void __brev_kernel(unsigned int* y, unsigned int x) { y[0] = __brev(x); }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Sanity test for `__brev(x)`.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/integer_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device___brev_Sanity_Positive") {
   LinearAllocGuard<unsigned int> y(LinearAllocs::hipMallocManaged, sizeof(unsigned int));
 
@@ -38,6 +50,18 @@ __global__ void __brevll_kernel(unsigned long long int* y, unsigned long long in
   y[0] = __brevll(x);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Sanity test for `__brevll(x)`.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/integer_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device___brevll_Sanity_Positive") {
   LinearAllocGuard<unsigned long long int> y(LinearAllocs::hipMallocManaged,
                                              sizeof(unsigned long long int));
@@ -50,6 +74,18 @@ TEST_CASE("Unit_Device___brevll_Sanity_Positive") {
 
 template <typename T> __global__ void __clz_kernel(T* y, T x) { y[0] = __clz(x); }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Sanity test for `__clz(x)`. Run for `int` and `unsigned int` overloads.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/integer_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_Device___clz_Sanity_Positive", "", int, unsigned int) {
   LinearAllocGuard<TestType> y(LinearAllocs::hipMallocManaged, sizeof(TestType));
 
@@ -69,6 +105,19 @@ TEMPLATE_TEST_CASE("Unit_Device___clz_Sanity_Positive", "", int, unsigned int) {
 
 template <typename T> __global__ void __clzll_kernel(T* y, T x) { y[0] = __clzll(x); }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Sanity test for `__clzll(x)`. Run for `long long int` and `unsigned long long int`
+ * overloads.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/integer_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_Device___clzll_Sanity_Positive", "", long long int,
                    unsigned long long int) {
   LinearAllocGuard<TestType> y(LinearAllocs::hipMallocManaged, sizeof(TestType));
@@ -89,6 +138,18 @@ TEMPLATE_TEST_CASE("Unit_Device___clzll_Sanity_Positive", "", long long int,
 
 template <typename T> __global__ void __ffs_kernel(T* y, T x) { y[0] = __ffs(x); }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Sanity test for `__ffs(x)`. Run for `int` and `unsigned int` overloads.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/integer_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_Device___ffs_Sanity_Positive", "", int, unsigned int) {
   LinearAllocGuard<TestType> y(LinearAllocs::hipMallocManaged, sizeof(TestType));
 
@@ -108,6 +169,19 @@ TEMPLATE_TEST_CASE("Unit_Device___ffs_Sanity_Positive", "", int, unsigned int) {
 
 template <typename T> __global__ void __ffsll_kernel(T* y, T x) { y[0] = __ffsll(x); }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Sanity test for `__ffsll(x)`. Run for `long long int` and `unsigned long long int`
+ * overloads.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/integer_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_Device___ffsll_Sanity_Positive", "", long long int,
                    unsigned long long int) {
   LinearAllocGuard<TestType> y(LinearAllocs::hipMallocManaged, sizeof(TestType));
@@ -128,6 +202,18 @@ TEMPLATE_TEST_CASE("Unit_Device___ffsll_Sanity_Positive", "", long long int,
 
 __global__ void __popc_kernel(unsigned int* y, unsigned int x) { y[0] = __popc(x); }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Sanity test for `__popc(x)`.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/integer_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device___popc_Sanity_Positive") {
   LinearAllocGuard<unsigned int> y(LinearAllocs::hipMallocManaged, sizeof(unsigned int));
 
@@ -149,6 +235,18 @@ __global__ void __popcll_kernel(unsigned long long int* y, unsigned long long in
   y[0] = __popcll(x);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Sanity test for `__popcll(x)`.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/integer_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device___popcll_Sanity_Positive") {
   LinearAllocGuard<unsigned long long int> y(LinearAllocs::hipMallocManaged,
                                              sizeof(unsigned long long int));
@@ -169,6 +267,18 @@ TEST_CASE("Unit_Device___popcll_Sanity_Positive") {
 
 __global__ void __mul24_kernel(int* y, int x1, int x2) { y[0] = __mul24(x1, x2); }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Sanity test for `__mul24(x,y)`.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/integer_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device___mul24_Sanity_Positive") {
   LinearAllocGuard<int> y(LinearAllocs::hipMallocManaged, sizeof(int));
 
@@ -185,6 +295,18 @@ __global__ void __umul24_kernel(unsigned int* y, unsigned int x1, unsigned int x
   y[0] = __umul24(x1, x2);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Sanity test for `__umul24(x,y)`.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/integer_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device___umul24_Sanity_Positive") {
   LinearAllocGuard<unsigned int> y(LinearAllocs::hipMallocManaged, sizeof(unsigned int));
 

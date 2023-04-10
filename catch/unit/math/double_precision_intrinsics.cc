@@ -26,7 +26,7 @@ THE SOFTWARE.
 #include "binary_common.hh"
 #include "ternary_common.hh"
 
-/********** Unary Helper Macros **********/
+/********** Unary Functions **********/
 
 #define MATH_UNARY_DP_KERNEL_DEF(func_name)                                                        \
   __global__ void func_name##_kernel(double* const ys, const size_t num_xs, double* const xs) {    \
@@ -39,9 +39,7 @@ THE SOFTWARE.
   }
 
 #define MATH_UNARY_DP_TEST_DEF_IMPL(func_name, ref_func, validator_builder)                        \
-  MATH_UNARY_DP_KERNEL_DEF(func_name)                                                              \
-                                                                                                   \
-  TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive - double") {                             \
+  TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive") {                                      \
     UnaryDoublePrecisionTest(func_name##_kernel, ref_func, validator_builder);                     \
   }
 
@@ -49,21 +47,52 @@ THE SOFTWARE.
   MATH_UNARY_DP_TEST_DEF_IMPL(func_name, ref_func, func_name##_validator_builder)
 
 #define MATH_UNARY_DP_VALIDATOR_BUILDER_DEF(func_name)                                             \
-  static std::unique_ptr<Catch::MatcherBase<double>> func_name##_validator_builder(double target,  \
-                                                                                   double x)
+  static std::unique_ptr<MatcherBase<double>> func_name##_validator_builder(double target, double x)
 
-/********** __drcp_rn **********/
 
 static double __drcp_rn_ref(double x) { return 1.0 / x; }
 
+MATH_UNARY_DP_KERNEL_DEF(__drcp_rn);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__drcp_rn(x)` against a table of difficult values,
+ * followed by a large number of randomly generated values. The error bounds are
+ * IEEE-compliant.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/double_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_UNARY_DP_TEST_DEF_IMPL(__drcp_rn, __drcp_rn_ref, EqValidatorBuilderFactory<double>());
 
-/********** __dsqrt_rn **********/
 
+MATH_UNARY_DP_KERNEL_DEF(__dsqrt_rn);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__dsqrt_rn(x)` against a table of difficult values,
+ * followed by a large number of randomly generated values. The results are
+ * compared against reference function `double std::sqrt(double)`. The error bounds are
+ * IEEE-compliant.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/double_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_UNARY_DP_TEST_DEF_IMPL(__dsqrt_rn, static_cast<double (*)(double)>(std::sqrt),
                             EqValidatorBuilderFactory<double>());
 
-/********** Binary Helper Macros **********/
+
+/********** Binary Functions **********/
 
 #define MATH_BINARY_DP_KERNEL_DEF(func_name)                                                       \
   __global__ void func_name##_kernel(double* const ys, const size_t num_xs, double* const x1s,     \
@@ -77,9 +106,7 @@ MATH_UNARY_DP_TEST_DEF_IMPL(__dsqrt_rn, static_cast<double (*)(double)>(std::sqr
   }
 
 #define MATH_BINARY_DP_TEST_DEF_IMPL(func_name, ref_func, validator_builder)                       \
-  MATH_BINARY_DP_KERNEL_DEF(func_name)                                                             \
-                                                                                                   \
-  TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive - double") {                             \
+  TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive") {                                      \
     BinaryFloatingPointTest(func_name##_kernel, ref_func, validator_builder);                      \
   }
 
@@ -87,34 +114,91 @@ MATH_UNARY_DP_TEST_DEF_IMPL(__dsqrt_rn, static_cast<double (*)(double)>(std::sqr
   MATH_BINARY_DP_TEST_IMPL(func_name, ref_func, func_name##_validator_builder)
 
 #define MATH_BINARY_DP_VALIDATOR_BUILDER_DEF(func_name)                                            \
-  static std::unique_ptr<Catch::MatcherBase<double>> func_name##_validator_builder(                \
-      double target, double x1, double x2)
+  static std::unique_ptr<MatcherBase<double>> func_name##_validator_builder(double target,         \
+                                                                            double x1, double x2)
 
-/********** __dadd_rn **********/
 
 static double __dadd_rn_ref(double x1, double x2) { return x1 + x2; }
 
+MATH_BINARY_DP_KERNEL_DEF(__dadd_rn);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__dadd_rn(x,y)` against a table of difficult values,
+ * followed by a large number of randomly generated values. The error bounds are IEEE-compliant.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/double_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_BINARY_DP_TEST_DEF_IMPL(__dadd_rn, __dadd_rn_ref, EqValidatorBuilderFactory<double>());
 
-/********** __dsub_rn **********/
 
 static double __dsub_rn_ref(double x1, double x2) { return x1 - x2; }
 
+MATH_BINARY_DP_KERNEL_DEF(__dsub_rn);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__dsub_rn(x,y)` against a table of difficult values,
+ * followed by a large number of randomly generated values. The error bounds are IEEE-compliant.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/double_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_BINARY_DP_TEST_DEF_IMPL(__dsub_rn, __dsub_rn_ref, EqValidatorBuilderFactory<double>());
 
-/********** __dmul_rn **********/
 
 static double __dmul_rn_ref(double x1, double x2) { return x1 * x2; }
 
+MATH_BINARY_DP_KERNEL_DEF(__dmul_rn);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__dmul_rn(x,y)` against a table of difficult values,
+ * followed by a large number of randomly generated values. The error bounds are IEEE-compliant.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/double_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_BINARY_DP_TEST_DEF_IMPL(__dmul_rn, __dmul_rn_ref, EqValidatorBuilderFactory<double>());
 
-/********** __ddiv_rn **********/
 
 static double __ddiv_rn_ref(double x1, double x2) { return x1 / x2; }
 
+MATH_BINARY_DP_KERNEL_DEF(__ddiv_rn);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__ddiv_rn(x,y)` against a table of difficult values,
+ * followed by a large number of randomly generated values. The error bounds are IEEE-compliant.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/double_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_BINARY_DP_TEST_DEF_IMPL(__ddiv_rn, __ddiv_rn_ref, EqValidatorBuilderFactory<double>());
 
-/********** Ternary Helper Macros **********/
+
+/********** Ternary Functions **********/
 
 #define MATH_TERNARY_DP_KERNEL_DEF(func_name)                                                      \
   __global__ void func_name##_kernel(double* const ys, const size_t num_xs, double* const x1s,     \
@@ -128,9 +212,7 @@ MATH_BINARY_DP_TEST_DEF_IMPL(__ddiv_rn, __ddiv_rn_ref, EqValidatorBuilderFactory
   }
 
 #define MATH_TERNARY_DP_TEST_DEF_IMPL(func_name, ref_func, validator_builder)                      \
-  MATH_TERNARY_DP_KERNEL_DEF(func_name)                                                            \
-                                                                                                   \
-  TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive - double") {                             \
+  TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive") {                                      \
     TernaryFloatingPointTest(func_name##_kernel, ref_func, validator_builder);                     \
   }
 
@@ -138,10 +220,24 @@ MATH_BINARY_DP_TEST_DEF_IMPL(__ddiv_rn, __ddiv_rn_ref, EqValidatorBuilderFactory
   MATH_TERNARY_DP_TEST_DEF_IMPL(func_name, ref_func, func_name##_validator_builder)
 
 #define MATH_TERNARY_DP_VALIDATOR_BUILDER_DEF(func_name)                                           \
-  static std::unique_ptr<Catch::MatcherBase<double>> func_name##_validator_builder(                \
+  static std::unique_ptr<MatcherBase<double>> func_name##_validator_builder(                       \
       double target, double x1, double x2, double x3)
 
-/********** __fma_rn **********/
 
+MATH_TERNARY_DP_KERNEL_DEF(__fma_rn);
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__fma(x,y,z)` against a table of difficult values,
+ * followed by a large number of randomly generated values. The error bounds are IEEE-compliant.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/double_precision_intrinsics.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 MATH_TERNARY_DP_TEST_DEF_IMPL(__fma_rn, static_cast<double (*)(double, double, double)>(std::fma),
                               EqValidatorBuilderFactory<double>());

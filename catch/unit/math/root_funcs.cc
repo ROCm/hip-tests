@@ -151,7 +151,7 @@ TEMPLATE_TEST_CASE("Unit_Device_norm4d_Accuracy_Positive", "", float, double) {
                               ULPValidatorBuilderFactory<TestType>(ulp));
 }
 
-TEST_CASE("Unit_Device_norm4d_norm4d_Negative_RTC") { NegativeTestRTCWrapper<16>(kNorm4D); }
+TEST_CASE("Unit_Device_norm4d_norm4df_Negative_RTC") { NegativeTestRTCWrapper<16>(kNorm4D); }
 
 MATH_QUATERNARY_KERNEL_DEF(rnorm4d)
 
@@ -169,7 +169,7 @@ TEMPLATE_TEST_CASE("Unit_Device_rnorm4d_Accuracy_Positive", "", float, double) {
                               ULPValidatorBuilderFactory<TestType>(ulp));
 }
 
-TEST_CASE("Unit_Device_rnorm4d_rnorm4d_Negative_RTC") { NegativeTestRTCWrapper<16>(kRnorm4D); }
+TEST_CASE("Unit_Device_rnorm4d_rnorm4df_Negative_RTC") { NegativeTestRTCWrapper<16>(kRnorm4D); }
 
 template <typename T, typename RT = RefType_t<T>, typename F, typename RF,
           typename ValidatorBuilder>

@@ -55,7 +55,6 @@ void UnarySinglePrecisionBruteForceTest(kernel_sig<T, float> kernel, ref_sig<RT,
   MathTest math_test(kernel, max_batch_size);
 
   auto batch_size = max_batch_size;
-  uint32_t val = 0u;
   const auto num_threads = thread_pool.thread_count();
 
   for (uint64_t v = 0u; v < stop;) {

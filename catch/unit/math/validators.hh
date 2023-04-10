@@ -24,7 +24,16 @@ THE SOFTWARE.
 
 #include <catch.hpp>
 
-template <typename T, typename Matcher> class ValidatorBase : public Catch::MatcherBase<T> {
+// Define a new MatcherBase class with a public 'describe' member function because
+// Catch::MatcherBase::describe is protected and thus can't be used via a pointer to
+// Catch::MatcherBase.
+template <typename T> class MatcherBase : public Catch::MatcherBase<T> {
+ public:
+  virtual std::string describe() const = 0;
+}
+
+template <typename T, typename Matcher>
+class ValidatorBase : public MatcherBase<T> {
  public:
   template <typename... Ts>
   ValidatorBase(T target, Ts&&... args) : matcher_{std::forward<Ts>(args)...}, target_{target} {}
@@ -72,7 +81,7 @@ template <typename T> auto RelValidatorBuilderFactory(T margin) {
   };
 }
 
-template <typename T> class EqValidator : public Catch::MatcherBase<T> {
+template <typename T> class EqValidator : public MatcherBase<T> {
  public:
   EqValidator(T target) : target_{target} {}
 
@@ -99,7 +108,7 @@ template <typename T> auto EqValidatorBuilderFactory() {
 }
 
 template <typename T, typename U, typename VBF, typename VBS>
-class PairValidator : public Catch::MatcherBase<std::pair<T, U>> {
+class PairValidator : public MatcherBase<std::pair<T, U>> {
  public:
   PairValidator(const std::pair<T, U>& target, const VBF& vbf, const VBS& vbs)
       : first_matcher_{vbf(target.first)}, second_matcher_{vbs(target.second)} {}
@@ -131,7 +140,7 @@ auto PairValidatorBuilderFactory(const VBF& vbf, const VBS& vbs) {
   };
 }
 
-template <typename T> class NopValidator : public Catch::MatcherBase<T> {
+template <typename T> class NopValidator : public MatcherBase<T> {
  public:
   bool match(const T& val) const override { return true; }
 

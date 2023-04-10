@@ -19,6 +19,7 @@
 # THE SOFTWARE.
 
 set(TEST_SRC
+  special_funcs.cc
 )
 
 hip_add_exe_to_target(NAME MathsTest

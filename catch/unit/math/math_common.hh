@@ -181,3 +181,31 @@ inline uint64_t GetTestIterationCount() { return cmd_options.accuracy_iterations
 template <typename T, typename... Ts> using kernel_sig = void (*)(T*, const size_t, Ts*...);
 
 template <typename T, typename... Ts> using ref_sig = T (*)(Ts...);
+
+template <int error_num> void NegativeTestRTCWrapper(const char* program_source) {
+  hiprtcProgram program{};
+
+  HIPRTC_CHECK(
+      hiprtcCreateProgram(&program, program_source, "math_test_rtc.cc", 0, nullptr, nullptr));
+  hiprtcResult result{hiprtcCompileProgram(program, 0, nullptr)};
+
+  // Get the compile log and count compiler error messages
+  size_t log_size{};
+  HIPRTC_CHECK(hiprtcGetProgramLogSize(program, &log_size));
+  std::string log(log_size, ' ');
+  HIPRTC_CHECK(hiprtcGetProgramLog(program, log.data()));
+  int error_count{0};
+
+  int expected_error_count{error_num};
+  std::string error_message{"error:"};
+
+  size_t n_pos = log.find(error_message, 0);
+  while (n_pos != std::string::npos) {
+    ++error_count;
+    n_pos = log.find(error_message, n_pos + 1);
+  }
+
+  HIPRTC_CHECK(hiprtcDestroyProgram(&program));
+  HIPRTC_CHECK_ERROR(result, HIPRTC_ERROR_COMPILATION);
+  REQUIRE(error_count == expected_error_count);
+}

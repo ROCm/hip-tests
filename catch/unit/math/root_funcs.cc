@@ -171,8 +171,7 @@ TEMPLATE_TEST_CASE("Unit_Device_rnorm4d_Accuracy_Positive", "", float, double) {
 
 TEST_CASE("Unit_Device_rnorm4d_rnorm4df_Negative_RTC") { NegativeTestRTCWrapper<16>(kRnorm4D); }
 
-template <typename T, typename RT = RefType_t<T>, typename F, typename RF,
-          typename ValidatorBuilder>
+template <typename T, typename F, typename RF, typename ValidatorBuilder>
 void NormSimpleTest(F kernel, RF ref_func, const ValidatorBuilder& validator_builder) {
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
   const auto max_dim = 10000;
@@ -194,7 +193,7 @@ void NormSimpleTest(F kernel, RF ref_func, const ValidatorBuilder& validator_bui
     const auto ref_val = static_cast<T>(ref_func(i, x.ptr()));
     const auto validator = validator_builder(ref_val);
 
-    if (!validator.match(actual_val)) {
+    if (!validator->match(actual_val)) {
       std::stringstream ss;
       ss << std::scientific << std::setprecision(std::numeric_limits<T>::max_digits10 - 1);
       ss << "Validation fails for dim: " << i << " " << actual_val << " " << ref_val;
@@ -206,7 +205,7 @@ void NormSimpleTest(F kernel, RF ref_func, const ValidatorBuilder& validator_bui
 
 MATH_NORM_KERNEL_DEF(norm)
 
-TEMPLATE_TEST_CASE("Unit_Device_norm_Accuracy_Limited_Positive", "", float, double) {
+TEMPLATE_TEST_CASE("Unit_Device_norm_Sanity_Positive", "", float, double) {
   using RT = RefType_t<TestType>;
   auto norm_ref = [](int dim, TestType* args) -> RT {
     RT sum = 0;
@@ -217,16 +216,15 @@ TEMPLATE_TEST_CASE("Unit_Device_norm_Accuracy_Limited_Positive", "", float, doub
     return std::sqrt(sum);
   };
   RT (*ref)(int, TestType*) = norm_ref;
-  const auto validator_builder = ULPValidatorBuilderFactory<TestType>(10);
 
-  NormSimpleTest<TestType, RT>(norm_kernel<TestType>, ref, validator_builder);
+  NormSimpleTest<TestType>(norm_kernel<TestType>, ref, ULPValidatorBuilderFactory<TestType>(10));
 }
 
 TEST_CASE("Unit_Device_norm_normf_Negative_RTC") { NegativeTestRTCWrapper<18>(kNorm); }
 
 MATH_NORM_KERNEL_DEF(rnorm)
 
-TEMPLATE_TEST_CASE("Unit_Device_rnorm_Accuracy_Limited_Positive", "", float, double) {
+TEMPLATE_TEST_CASE("Unit_Device_rnorm_Sanity_Positive", "", float, double) {
   using RT = RefType_t<TestType>;
   auto rnorm_ref = [](int dim, TestType* args) -> RT {
     RT sum = 0;
@@ -237,9 +235,8 @@ TEMPLATE_TEST_CASE("Unit_Device_rnorm_Accuracy_Limited_Positive", "", float, dou
     return 1. / std::sqrt(sum);
   };
   RT (*ref)(int, TestType*) = rnorm_ref;
-  const auto validator_builder = ULPValidatorBuilderFactory<TestType>(10);
 
-  NormSimpleTest<TestType, RT>(rnorm_kernel<TestType>, ref, validator_builder);
+  NormSimpleTest<TestType>(rnorm_kernel<TestType>, ref, ULPValidatorBuilderFactory<TestType>(10));
 }
 
 TEST_CASE("Unit_Device_rnorm_rnormf_Negative_RTC") { NegativeTestRTCWrapper<18>(kRnorm); }

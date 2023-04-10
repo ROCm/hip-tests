@@ -51,7 +51,7 @@ class CompileAndCapture(unittest.TestCase):
     # HIP compiler on AMD platforms has limit of 20 errors, and some negative
     # test cases expect that more errors are detected.
     if (self.platform == 'amd'):
-      compiler_args.append('-ferror-limit=100')
+      compiler_args.append('-ferror-limit=200')
     compiler_output = subprocess.run(compiler_args, stderr=subprocess.PIPE)
     # Get the compiler output in the stdout if -V flag is raised during ctest invocation.
     print(compiler_output.stderr.decode('UTF-8'))

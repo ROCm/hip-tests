@@ -29,8 +29,8 @@ THE SOFTWARE.
 namespace cg = cooperative_groups;
 
 #define MATH_BINARY_KERNEL_DEF(func_name)                                                          \
-  template <typename T>                                                                            \
-  __global__ void func_name##_kernel(T* const ys, const size_t num_xs, T* const x1s,               \
+  template <typename T, typename RT = T>                                                           \
+  __global__ void func_name##_kernel(RT* const ys, const size_t num_xs, T* const x1s,              \
                                      T* const x2s) {                                               \
     const auto tid = cg::this_grid().thread_rank();                                                \
     const auto stride = cg::this_grid().size();                                                    \
@@ -73,8 +73,8 @@ void BinaryFloatingPointBruteForceTest(kernel_sig<T, TArg, TArg> kernel,
       thread_pool.Post([=, &x1s, &x2s] {
         const auto generator = [=] {
           static thread_local std::mt19937 rng(std::random_device{}());
-          std::uniform_real_distribution<TArg> unif_dist(a, b);
-          return unif_dist(rng);
+          std::uniform_real_distribution<RefType_t<TArg>> unif_dist(a, b);
+          return static_cast<TArg>(unif_dist(rng));
         };
         std::generate(x1s.ptr() + base_idx, x1s.ptr() + base_idx + sub_batch_size, generator);
         std::generate(x2s.ptr() + base_idx, x2s.ptr() + base_idx + sub_batch_size, generator);

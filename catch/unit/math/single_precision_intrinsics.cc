@@ -49,7 +49,8 @@ THE SOFTWARE.
   MATH_UNARY_SP_TEST_DEF_IMPL(func_name, ref_func, func_name##_validator_builder)
 
 #define MATH_UNARY_SP_VALIDATOR_BUILDER_DEF(func_name)                                             \
-  static std::unique_ptr<MatcherBase<float>> func_name##_validator_builder(float target, float x)
+  static std::unique_ptr<Catch::MatcherBase<float>> func_name##_validator_builder(float target,    \
+                                                                                  float x)
 
 /********** __frcp_rn **********/
 
@@ -211,8 +212,8 @@ MATH_UNARY_SP_TEST_DEF(__tanf, static_cast<double (*)(double)>(std::tan));
   MATH_BINARY_SP_TEST_DEF_IMPL(func_name, ref_func, func_name##_validator_builder)
 
 #define MATH_BINARY_SP_VALIDATOR_BUILDER_DEF(func_name)                                            \
-  static std::unique_ptr<MatcherBase<float>> func_name##_validator_builder(float target, float x1, \
-                                                                           float x2)
+  static std::unique_ptr<Catch::MatcherBase<float>> func_name##_validator_builder(                 \
+      float target, float x1, float x2)
 
 /********** __fadd_rn **********/
 
@@ -284,8 +285,8 @@ MATH_BINARY_SP_TEST_DEF(__powf, static_cast<double (*)(double, double)>(std::pow
   MATH_TERNARY_SP_TEST_DEF_IMPL(func_name, ref_func, func_name##_validator_builder)
 
 #define MATH_TERNARY_SP_VALIDATOR_BUILDER_DEF(func_name)                                           \
-  static std::unique_ptr<MatcherBase<float>> func_name##_validator_builder(float target, float x1, \
-                                                                           float x2, float x3)
+  static std::unique_ptr<Catch::MatcherBase<float>> func_name##_validator_builder(                 \
+      float target, float x1, float x2, float x3)
 
 /********** __fmaf_rn **********/
 

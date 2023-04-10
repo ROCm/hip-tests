@@ -49,7 +49,8 @@ THE SOFTWARE.
   MATH_UNARY_DP_TEST_DEF_IMPL(func_name, ref_func, func_name##_validator_builder)
 
 #define MATH_UNARY_DP_VALIDATOR_BUILDER_DEF(func_name)                                             \
-  static std::unique_ptr<MatcherBase<double>> func_name##_validator_builder(double target, double x)
+  static std::unique_ptr<Catch::MatcherBase<double>> func_name##_validator_builder(double target,  \
+                                                                                   double x)
 
 /********** __drcp_rn **********/
 
@@ -86,8 +87,8 @@ MATH_UNARY_DP_TEST_DEF_IMPL(__dsqrt_rn, static_cast<double (*)(double)>(std::sqr
   MATH_BINARY_DP_TEST_IMPL(func_name, ref_func, func_name##_validator_builder)
 
 #define MATH_BINARY_DP_VALIDATOR_BUILDER_DEF(func_name)                                            \
-  static std::unique_ptr<MatcherBase<double>> func_name##_validator_builder(double target,         \
-                                                                            double x1, double x2)
+  static std::unique_ptr<Catch::MatcherBase<double>> func_name##_validator_builder(                \
+      double target, double x1, double x2)
 
 /********** __dadd_rn **********/
 
@@ -137,7 +138,7 @@ MATH_BINARY_DP_TEST_DEF_IMPL(__ddiv_rn, __ddiv_rn_ref, EqValidatorBuilderFactory
   MATH_TERNARY_DP_TEST_DEF_IMPL(func_name, ref_func, func_name##_validator_builder)
 
 #define MATH_TERNARY_DP_VALIDATOR_BUILDER_DEF(func_name)                                           \
-  static std::unique_ptr<MatcherBase<double>> func_name##_validator_builder(                       \
+  static std::unique_ptr<Catch::MatcherBase<double>> func_name##_validator_builder(                \
       double target, double x1, double x2, double x3)
 
 /********** __fma_rn **********/

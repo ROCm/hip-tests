@@ -138,8 +138,8 @@ void UnaryDoublePrecisionBruteForceTest(kernel_sig<T, double> kernel, ref_sig<RT
       thread_pool.Post([=, &values] {
         const auto generator = [=] {
           static thread_local std::mt19937 rng(std::random_device{}());
-          std::uniform_real_distribution<double> unif_dist(a, b);
-          return unif_dist(rng);
+          std::uniform_real_distribution<long double> unif_dist(a, b);
+          return static_cast<double>(unif_dist(rng));
         };
         std::generate(values.ptr() + base_idx, values.ptr() + base_idx + sub_batch_size, generator);
       });

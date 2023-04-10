@@ -1,5 +1,6 @@
 /*
 Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -23,12 +24,7 @@ THE SOFTWARE.
 
 #include <catch.hpp>
 
-template <typename T> class MatcherBase : public Catch::MatcherBase<T> {
- public:
-  virtual std::string describe() const = 0;
-};
-
-template <typename T, typename Matcher> class ValidatorBase : public MatcherBase<T> {
+template <typename T, typename Matcher> class ValidatorBase : public Catch::MatcherBase<T> {
  public:
   template <typename... Ts>
   ValidatorBase(T target, Ts&&... args) : matcher_{std::forward<Ts>(args)...}, target_{target} {}
@@ -41,7 +37,7 @@ template <typename T, typename Matcher> class ValidatorBase : public MatcherBase
     return matcher_.match(val);
   }
 
-  virtual std::string describe() const override {
+  std::string describe() const override {
     if (std::isnan(target_)) {
       return "is not NaN";
     }
@@ -76,7 +72,7 @@ template <typename T> auto RelValidatorBuilderFactory(T margin) {
   };
 }
 
-template <typename T> class EqValidator : public MatcherBase<T> {
+template <typename T> class EqValidator : public Catch::MatcherBase<T> {
  public:
   EqValidator(T target) : target_{target} {}
 
@@ -88,7 +84,7 @@ template <typename T> class EqValidator : public MatcherBase<T> {
     return target_ == val;
   }
 
-  virtual std::string describe() const override {
+  std::string describe() const override {
     std::stringstream ss;
     ss << " is not equal to " << target_;
     return ss.str();
@@ -103,7 +99,7 @@ template <typename T> auto EqValidatorBuilderFactory() {
 }
 
 template <typename T, typename U, typename VBF, typename VBS>
-class PairValidator : public MatcherBase<std::pair<T, U>> {
+class PairValidator : public Catch::MatcherBase<std::pair<T, U>> {
  public:
   PairValidator(const std::pair<T, U>& target, const VBF& vbf, const VBS& vbs)
       : first_matcher_{vbf(target.first)}, second_matcher_{vbs(target.second)} {}
@@ -112,7 +108,7 @@ class PairValidator : public MatcherBase<std::pair<T, U>> {
     return first_matcher_.match(val.first) && second_matcher_.match(val.second);
   }
 
-  virtual std::string describe() const override {
+  std::string describe() const override {
     return "<" + first_matcher_.describe() + ", " + second_matcher_.describe() + ">";
   }
 
@@ -135,11 +131,11 @@ auto PairValidatorBuilderFactory(const VBF& vbf, const VBS& vbs) {
   };
 }
 
-template <typename T> class NopValidator : public MatcherBase<T> {
+template <typename T> class NopValidator : public Catch::MatcherBase<T> {
  public:
   bool match(const T& val) const override { return true; }
 
-  virtual std::string describe() const override { return ""; }
+  std::string describe() const override { return ""; }
 };
 
 template <typename T> auto NopValidatorBuilderFactory() {

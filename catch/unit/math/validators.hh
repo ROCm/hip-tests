@@ -1,5 +1,6 @@
 /*
 Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -23,7 +24,16 @@ THE SOFTWARE.
 
 #include <catch.hpp>
 
-template <typename T, typename Matcher> class ValidatorBase : public Catch::MatcherBase<T> {
+// Define a new MatcherBase class with a public 'describe' member function because
+// Catch::MatcherBase::describe is protected and thus can't be used via a pointer to
+// Catch::MatcherBase.
+template <typename T> class MatcherBase : public Catch::MatcherBase<T> {
+ public:
+  virtual std::string describe() const = 0;
+  virtual ~MatcherBase() = default;
+};
+
+template <typename T, typename Matcher> class ValidatorBase : public MatcherBase<T> {
  public:
   template <typename... Ts>
   ValidatorBase(T target, Ts&&... args) : matcher_{std::forward<Ts>(args)...}, target_{target} {}
@@ -36,7 +46,7 @@ template <typename T, typename Matcher> class ValidatorBase : public Catch::Matc
     return matcher_.match(val);
   }
 
-  virtual std::string describe() const override {
+  std::string describe() const override {
     if (std::isnan(target_)) {
       return "is not NaN";
     }
@@ -51,33 +61,39 @@ template <typename T, typename Matcher> class ValidatorBase : public Catch::Matc
 };
 
 template <typename T> auto ULPValidatorBuilderFactory(int64_t ulps) {
-  return [=](T target) {
-    return ValidatorBase<T, Catch::Matchers::Floating::WithinUlpsMatcher>{
-        target, Catch::WithinULP(target, ulps)};
+  return [=](T target, auto&&... args) {
+    return std::make_unique<ValidatorBase<T, Catch::Matchers::Floating::WithinUlpsMatcher>>(
+        target, Catch::WithinULP(target, ulps));
   };
 };
 
 template <typename T> auto AbsValidatorBuilderFactory(double margin) {
-  return [=](T target) {
-    return ValidatorBase<T, Catch::Matchers::Floating::WithinAbsMatcher>{
-        target, Catch::WithinAbs(target, margin)};
+  return [=](T target, auto&&... args) {
+    return std::make_unique<ValidatorBase<T, Catch::Matchers::Floating::WithinAbsMatcher>>(
+        target, Catch::WithinAbs(target, margin));
   };
 }
 
 template <typename T> auto RelValidatorBuilderFactory(T margin) {
-  return [=](T target) {
-    return ValidatorBase<T, Catch::Matchers::Floating::WithinRelMatcher>{
-        target, Catch::WithinRel(target, margin)};
+  return [=](T target, auto&&... args) {
+    return std::make_unique<ValidatorBase<T, Catch::Matchers::Floating::WithinRelMatcher>>(
+        target, Catch::WithinRel(target, margin));
   };
 }
 
-template <typename T> class EqValidator : public Catch::MatcherBase<T> {
+template <typename T> class EqValidator : public MatcherBase<T> {
  public:
   EqValidator(T target) : target_{target} {}
 
-  bool match(const T& val) const override { return target_ == val; }
+  bool match(const T& val) const override {
+    if (std::isnan(target_)) {
+      return std::isnan(val);
+    }
 
-  virtual std::string describe() const override {
+    return target_ == val;
+  }
+
+  std::string describe() const override {
     std::stringstream ss;
     ss << " is not equal to " << target_;
     return ss.str();
@@ -88,21 +104,21 @@ template <typename T> class EqValidator : public Catch::MatcherBase<T> {
 };
 
 template <typename T> auto EqValidatorBuilderFactory() {
-  return [](T val) { return EqValidator<T>(val); };
+  return [](T val, auto&&... args) { return std::make_unique<EqValidator<T>>(val); };
 }
 
 template <typename T, typename U, typename VBF, typename VBS>
-class PairValidator : public Catch::MatcherBase<std::pair<T, U>> {
+class PairValidator : public MatcherBase<std::pair<T, U>> {
  public:
   PairValidator(const std::pair<T, U>& target, const VBF& vbf, const VBS& vbs)
       : first_matcher_{vbf(target.first)}, second_matcher_{vbs(target.second)} {}
 
   bool match(const std::pair<T, U>& val) const override {
-    return first_matcher_.match(val.first) && second_matcher_.match(val.second);
+    return first_matcher_->match(val.first) && second_matcher_->match(val.second);
   }
 
-  virtual std::string describe() const override {
-    return "<" + first_matcher_.describe() + ", " + second_matcher_.describe() + ">";
+  std::string describe() const override {
+    return "<" + first_matcher_->describe() + ", " + second_matcher_->describe() + ">";
   }
 
  private:
@@ -112,12 +128,25 @@ class PairValidator : public Catch::MatcherBase<std::pair<T, U>> {
 
 template <typename T, typename ValidatorBuilder>
 auto PairValidatorBuilderFactory(const ValidatorBuilder& vb) {
-  return [&](const std::pair<T, T>& t) {
-    return PairValidator<T, T, ValidatorBuilder, ValidatorBuilder>(t, vb, vb);
+  return [&](const std::pair<T, T>& t, auto&&... args) {
+    return std::make_unique<PairValidator<T, T, ValidatorBuilder, ValidatorBuilder>>(t, vb, vb);
   };
 }
 
 template <typename T, typename U, typename VBF, typename VBS>
 auto PairValidatorBuilderFactory(const VBF& vbf, const VBS& vbs) {
-  return [&](const std::pair<T, U>& t) { return PairValidator<T, U, VBF, VBS>(t, vbf, vbs); };
+  return [&](const std::pair<T, U>& t, auto&&... args) {
+    return std::make_unique<PairValidator<T, U, VBF, VBS>>(t, vbf, vbs);
+  };
+}
+
+template <typename T> class NopValidator : public MatcherBase<T> {
+ public:
+  bool match(const T& val) const override { return true; }
+
+  std::string describe() const override { return ""; }
+};
+
+template <typename T> auto NopValidatorBuilderFactory() {
+  return [](auto&&... args) { return std::make_unique<NopValidator<T>>(); };
 }

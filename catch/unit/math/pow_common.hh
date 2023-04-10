@@ -36,15 +36,16 @@ namespace cg = cooperative_groups;
     const auto stride = cg::this_grid().size();                                                    \
                                                                                                    \
     for (auto i = tid; i < num_xs; i += stride) {                                                  \
-      if constexpr (std::is_same_v<float, T1>) {                                                    \
+      if constexpr (std::is_same_v<float, T1>) {                                                   \
         ys[i] = func_name##f(x1s[i], x2s[i]);                                                      \
-      } else if constexpr (std::is_same_v<double, T1>) {                                            \
+      } else if constexpr (std::is_same_v<double, T1>) {                                           \
         ys[i] = func_name(x1s[i], x2s[i]);                                                         \
       }                                                                                            \
     }                                                                                              \
   }
 
-template <typename T1, typename T2> using kernel_pow_int_sig = void (*)(T1*, const size_t, T1*, T2*);
+template <typename T1, typename T2>
+using kernel_pow_int_sig = void (*)(T1*, const size_t, T1*, T2*);
 
 template <typename T1, typename T2> using ref_pow_int_sig = T1 (*)(T1, T2);
 
@@ -75,9 +76,9 @@ void PowIntFloatingPointBruteForceTest(kernel_pow_int_sig<T1, T2> kernel,
       thread_pool.Post([=, &x1s, &x2s] {
         const auto generator1 = [=] {
           static thread_local std::mt19937 rng(std::random_device{}());
-          std::uniform_real_distribution<T1> unif_dist(std::numeric_limits<double>::lowest(),
-                                                      std::numeric_limits<double>::max());
-          return unif_dist(rng);
+          std::uniform_real_distribution<RefType_t<T1>> unif_dist(std::numeric_limits<T1>::lowest(),
+                                                                  std::numeric_limits<T1>::max());
+          return static_cast<T1>(unif_dist(rng));
         };
         const auto generator2 = [] {
           static thread_local std::mt19937 rng(std::random_device{}());

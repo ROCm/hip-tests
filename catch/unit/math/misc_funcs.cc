@@ -29,7 +29,7 @@ MATH_BINARY_WITHIN_ULP_TEST_DEF(copysign, std::copysign, 0, 0)
 
 MATH_BINARY_WITHIN_ULP_TEST_DEF(fmax, std::fmax, 0, 0)
 
-MATH_BINARY_WITHIN_ULP_TEST_DEF(fmin, std::fmax, 0, 0)
+MATH_BINARY_WITHIN_ULP_TEST_DEF(fmin, std::fmin, 0, 0)
 
 MATH_BINARY_WITHIN_ULP_TEST_DEF(nextafter, std::nextafter, 0, 0)
 

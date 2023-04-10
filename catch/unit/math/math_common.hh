@@ -1,5 +1,6 @@
 /*
 Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -21,6 +22,7 @@ THE SOFTWARE.
 
 #pragma once
 
+#include <cmd_options.hh>
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
 
@@ -92,10 +94,10 @@ template <typename T, typename... Ts> class MathTest {
       for (auto i = 0u; i < num_args; ++i) {
         const auto actual_val = y_.ptr()[i];
         const auto ref_val = static_cast<T>(ref_func(xss[i]...));
-        const auto validator = validator_builder(ref_val);
+        const auto validator = validator_builder(ref_val, xss[i]...);
 
-        if (!validator.match(actual_val)) {
-          const auto log = MakeLogMessage(actual_val, xss[i]...) + validator.describe() + "\n";
+        if (!validator->match(actual_val)) {
+          const auto log = MakeLogMessage(actual_val, xss[i]...) + validator->describe() + "\n";
           INFO(log);
           REQUIRE(false);
         }
@@ -110,14 +112,14 @@ template <typename T, typename... Ts> class MathTest {
 
         const auto actual_val = y_.ptr()[base_idx + i];
         const auto ref_val = static_cast<T>(ref_func(xss[base_idx + i]...));
-        const auto validator = validator_builder(ref_val);
+        const auto validator = validator_builder(ref_val, xss[base_idx + i]...);
 
-        if (!validator.match(actual_val)) {
+        if (!validator->match(actual_val)) {
           fail_flag_.store(true, std::memory_order_relaxed);
           // Several threads might have passed the first check, but failed validation. On the
           // chance of this happening, access to the string stream must be serialized.
           const auto log =
-              MakeLogMessage(actual_val, xss[base_idx + i]...) + validator.describe() + "\n";
+              MakeLogMessage(actual_val, xss[base_idx + i]...) + validator->describe() + "\n";
           {
             std::lock_guard lg{mtx_};
             error_info_ += log;
@@ -169,17 +171,12 @@ template <typename F> auto GetOccupancyMaxPotentialBlockSize(F kernel) {
 }
 
 inline size_t GetMaxAllowedDeviceMemoryUsage() {
-  // TODO - Add setting of allowed memory from the command line
-  // If the cmd option is set, return that, otherwise return 80% of available
   hipDeviceProp_t props;
   HIP_CHECK(hipGetDeviceProperties(&props, 0));
-  return props.totalGlobalMem * 0.8;
+  return props.totalGlobalMem * (cmd_options.accuracy_max_memory * 0.01f);
 }
 
-inline uint64_t GetTestIterationCount() {
-  // TODO - Add setting of iteration count from the command line
-  return std::numeric_limits<uint32_t>::max() + 1ul;
-}
+inline uint64_t GetTestIterationCount() { return cmd_options.accuracy_iterations; }
 
 template <typename T, typename... Ts> using kernel_sig = void (*)(T*, const size_t, Ts*...);
 

@@ -22,12 +22,16 @@ THE SOFTWARE.
 
 #pragma once
 
+#include <limits>
+
 struct CmdOptions {
   int iterations = 1000;
   int warmups = 100;
   int cg_extended_run = 5;
   bool no_display = false;
   bool progress = false;
+  uint64_t accuracy_iterations = std::numeric_limits<uint32_t>::max() + 1;
+  int accuracy_max_memory = 80;
 };
 
 extern CmdOptions cmd_options;

@@ -30,10 +30,10 @@ THE SOFTWARE.
 template <typename T> class MatcherBase : public Catch::MatcherBase<T> {
  public:
   virtual std::string describe() const = 0;
+  virtual ~MatcherBase() = default;
 };
 
-template <typename T, typename Matcher>
-class ValidatorBase : public MatcherBase<T> {
+template <typename T, typename Matcher> class ValidatorBase : public MatcherBase<T> {
  public:
   template <typename... Ts>
   ValidatorBase(T target, Ts&&... args) : matcher_{std::forward<Ts>(args)...}, target_{target} {}

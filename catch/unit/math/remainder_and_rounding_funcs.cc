@@ -21,26 +21,36 @@ THE SOFTWARE.
 
 #include "unary_common.hh"
 #include "binary_common.hh"
-
+#include "math_remainder_rounding_negative_kernels_rtc.hh"
 
 MATH_BINARY_WITHIN_ULP_TEST_DEF(fmod, std::fmod, 0, 0)
+TEST_CASE("Unit_Device_fmod_fmodf_Negative_RTC") { NegativeTestRTCWrapper<8>(kFmod); }
 
 MATH_BINARY_WITHIN_ULP_TEST_DEF(remainder, std::remainder, 0, 0)
+TEST_CASE("Unit_Device_remainder_remainder_Negative_RTC") { NegativeTestRTCWrapper<8>(kRemainder); }
 
 MATH_BINARY_WITHIN_ULP_TEST_DEF(fdim, std::fdim, 0, 0)
-
+TEST_CASE("Unit_Device_fdim_fdimf_Negative_RTC") { NegativeTestRTCWrapper<8>(kFdim); }
 
 MATH_UNARY_WITHIN_ULP_TEST_DEF(trunc, std::trunc, 0, 0)
+TEST_CASE("Unit_Device_trunc_truncf_Negative_RTC") { NegativeTestRTCWrapper<4>(kTrunc); }
 
 MATH_UNARY_WITHIN_ULP_TEST_DEF(round, std::round, 0, 0)
+TEST_CASE("Unit_Device_round_roundf_Negative_RTC") { NegativeTestRTCWrapper<4>(kRound); }
 
 MATH_UNARY_WITHIN_ULP_TEST_DEF(rint, std::rint, 0, 0)
+TEST_CASE("Unit_Device_rint_rintf_Negative_RTC") { NegativeTestRTCWrapper<4>(kRint); }
 
 MATH_UNARY_WITHIN_ULP_TEST_DEF(nearbyint, std::nearbyint, 0, 0)
+TEST_CASE("Unit_Device_nearbyint_nearbyintf_Negative_RTC") {
+  NegativeTestRTCWrapper<4>(kNearbyint);
+}
 
 MATH_UNARY_WITHIN_ULP_TEST_DEF(ceil, std::ceil, 0, 0)
+TEST_CASE("Unit_Device_ceil_ceilf_Negative_RTC") { NegativeTestRTCWrapper<4>(kCeil); }
 
 MATH_UNARY_WITHIN_ULP_TEST_DEF(floor, std::floor, 0, 0)
+TEST_CASE("Unit_Device_floor_floorf_Negative_RTC") { NegativeTestRTCWrapper<4>(kFloor); }
 
 
 #define LONG_CONVERSION_FUNCTION_TEST_DEF(kern_name, ref_func, lt)                                 \
@@ -63,12 +73,16 @@ MATH_UNARY_WITHIN_ULP_TEST_DEF(floor, std::floor, 0, 0)
   }
 
 LONG_CONVERSION_FUNCTION_TEST_DEF(lrint, std::lrint, long)
+TEST_CASE("Unit_Device_lrint_lrintf_Negative_RTC") { NegativeTestRTCWrapper<4>(kLrint); }
 
 LONG_CONVERSION_FUNCTION_TEST_DEF(lround, std::lround, long)
+TEST_CASE("Unit_Device_lround_lroundf_Negative_RTC") { NegativeTestRTCWrapper<4>(kLround); }
 
 LONG_CONVERSION_FUNCTION_TEST_DEF(llrint, std::llrint, long long)
+TEST_CASE("Unit_Device_llrint_llrintf_Negative_RTC") { NegativeTestRTCWrapper<4>(kLlrint); }
 
 LONG_CONVERSION_FUNCTION_TEST_DEF(llround, std::llround, long long)
+TEST_CASE("Unit_Device_llround_llroundf_Negative_RTC") { NegativeTestRTCWrapper<4>(kLlround); }
 
 
 template <typename T>
@@ -102,6 +116,8 @@ TEMPLATE_TEST_CASE("Unit_Device_remquo_Accuracy_Positive", "", float, double) {
                           PairValidatorBuilderFactory<TestType, int>(ulp_builder, eq_builder));
 }
 
+TEST_CASE("Unit_Device_remquo_remquof_Negative_RTC") { NegativeTestRTCWrapper<24>(kRemquo); }
+
 template <typename T>
 __global__ void modf_kernel(std::pair<T, T>* const ys, const size_t num_xs, T* const xs) {
   const auto tid = cg::this_grid().thread_rank();
@@ -133,3 +149,5 @@ TEST_CASE("Unit_Device_modf_Accuracy_Positive - double") {
       modf_kernel<double>, modf_wrapper<long double>,
       PairValidatorBuilderFactory<double>(ULPValidatorBuilderFactory<double>(0)));
 }
+
+TEST_CASE("Unit_Device_modf_modff_Negative_RTC") { NegativeTestRTCWrapper<20>(kModf); }

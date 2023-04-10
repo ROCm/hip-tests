@@ -114,11 +114,11 @@ class PairValidator : public MatcherBase<std::pair<T, U>> {
       : first_matcher_{vbf(target.first)}, second_matcher_{vbs(target.second)} {}
 
   bool match(const std::pair<T, U>& val) const override {
-    return first_matcher_.match(val.first) && second_matcher_.match(val.second);
+    return first_matcher_->match(val.first) && second_matcher_->match(val.second);
   }
 
   std::string describe() const override {
-    return "<" + first_matcher_.describe() + ", " + second_matcher_.describe() + ">";
+    return "<" + first_matcher_->describe() + ", " + second_matcher_->describe() + ">";
   }
 
  private:

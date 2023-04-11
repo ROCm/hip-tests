@@ -73,6 +73,7 @@
 	   "Unit_hipDeviceSetCacheConfig_Positive_Basic",
 	   "Unit_hipDeviceSetCacheConfig_Negative_Parameters",
 	   "Unit_hipDeviceSetSharedMemConfig_Positive_Basic",
-	   "Unit_hipDeviceSetSharedMemConfig_Negative_Parameters"
+	   "Unit_hipDeviceSetSharedMemConfig_Negative_Parameters",
+	   "Unit_hipDeviceSynchronize_Positive_Nullstream"
 	]
 }

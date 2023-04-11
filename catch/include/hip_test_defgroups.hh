@@ -42,3 +42,10 @@ THE SOFTWARE.
  * This section describes the warp shuffle types & functions of HIP runtime API.
  * @}
  */
+
+/**
+ * @defgroup KernelTest Kernel Management
+ * @{
+ * This section describes the kernel management types & functions of HIP runtime API.
+ * @}
+ */

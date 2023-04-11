@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2022 - 2023 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include "hip/hip_runtime_api.h"
 #include <hip_test_process.hh>
 #include <string>
+#include <hip_test_defgroups.hh>
 
 /**
  * @addtogroup hipDeviceGetP2PAttribute hipDeviceGetP2PAttribute
@@ -44,6 +45,21 @@ THE SOFTWARE.
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Test all possible combination of attributes and devices for hipDeviceGetP2PAttribute
+ * Verify that the output is within the range of acceptable values.
+
+ * Test source
+ * ------------------------
+ *    - catch/unit/p2p/hipDeviceGetP2PAttribute.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.5
+ */
+
 TEST_CASE("Unit_hipDeviceGetP2PAttribute_Basic") {
 #if HT_AMD
   HipTest::HIP_SKIP_TEST("EXSWCPHIPT-119");
@@ -57,17 +73,19 @@ TEST_CASE("Unit_hipDeviceGetP2PAttribute_Basic") {
   }
 
   hipDeviceP2PAttr attribute =
-      GENERATE(hipDevP2PAttrPerformanceRank, hipDevP2PAttrAccessSupported,
-               hipDevP2PAttrNativeAtomicSupported, hipDevP2PAttrHipArrayAccessSupported);
+    GENERATE(hipDevP2PAttrPerformanceRank, hipDevP2PAttrAccessSupported,
+     hipDevP2PAttrNativeAtomicSupported, hipDevP2PAttrHipArrayAccessSupported);
 
   /* Test all combinations of devices in the system */
   for (int srcDevice = 0; srcDevice < deviceCount; ++srcDevice) {
     for (int dstDevice = 0; dstDevice < deviceCount; ++dstDevice) {
       if (srcDevice != dstDevice) {
         int value{-1};
-        HIP_CHECK(hipDeviceGetP2PAttribute(&value, attribute, srcDevice, dstDevice));
+        HIP_CHECK(hipDeviceGetP2PAttribute(&value, attribute,
+                                           srcDevice, dstDevice));
         INFO("hipDeviceP2PAttr: " << attribute << "\nsrcDevice: " << srcDevice
-                                  << "\ndstDevice: " << dstDevice << "\nValue: " << value);
+                                  << "\ndstDevice: " << dstDevice
+                                  << "\nValue: " << value);
         if (attribute == hipDevP2PAttrPerformanceRank) {
           REQUIRE(value >= 0);
         } else {
@@ -103,6 +121,7 @@ TEST_CASE("Unit_hipDeviceGetP2PAttribute_Basic") {
  *  - Platform specific (NVIDIA)
  *  - HIP_VERSION >= 5.2
  */
+
 TEST_CASE("Unit_hipDeviceGetP2PAttribute_Negative") {
 #if HT_AMD
   HipTest::HIP_SKIP_TEST("EXSWCPHIPT-122");
@@ -121,22 +140,22 @@ TEST_CASE("Unit_hipDeviceGetP2PAttribute_Negative") {
   hipDeviceP2PAttr validAttr = hipDevP2PAttrAccessSupported;
 
   SECTION("Nullptr value") {
-    HIP_CHECK_ERROR(hipDeviceGetP2PAttribute(nullptr, validAttr, validSrcDevice, validDstDevice),
-                    hipErrorInvalidValue);
+    HIP_CHECK_ERROR(hipDeviceGetP2PAttribute(nullptr, validAttr,
+                     validSrcDevice, validDstDevice), hipErrorInvalidValue);
   }
 
   SECTION("Invalid attribute") {
     hipDeviceP2PAttr invalidAttr = static_cast<hipDeviceP2PAttr>(10);
-    HIP_CHECK_ERROR(hipDeviceGetP2PAttribute(&value, invalidAttr, validSrcDevice, validDstDevice),
-                    hipErrorInvalidValue);
+    HIP_CHECK_ERROR(hipDeviceGetP2PAttribute(&value, invalidAttr,
+                     validSrcDevice, validDstDevice), hipErrorInvalidValue);
   }
 
   SECTION("Device is -1") {
     int invalidDevice = -1;
-    HIP_CHECK_ERROR(hipDeviceGetP2PAttribute(&value, validAttr, invalidDevice, validDstDevice),
-                    hipErrorInvalidDevice);
-    HIP_CHECK_ERROR(hipDeviceGetP2PAttribute(&value, validAttr, validSrcDevice, invalidDevice),
-                    hipErrorInvalidDevice);
+    HIP_CHECK_ERROR(hipDeviceGetP2PAttribute(&value, validAttr,
+                     invalidDevice, validDstDevice), hipErrorInvalidDevice);
+    HIP_CHECK_ERROR(hipDeviceGetP2PAttribute(&value, validAttr,
+                     validSrcDevice, invalidDevice), hipErrorInvalidDevice);
   }
 
   SECTION("Device is out of bounds") {
@@ -144,33 +163,33 @@ TEST_CASE("Unit_hipDeviceGetP2PAttribute_Negative") {
     HIP_CHECK(hipGetDeviceCount(&deviceCount));
     REQUIRE_FALSE(deviceCount == 0);
 
-    HIP_CHECK_ERROR(hipDeviceGetP2PAttribute(&value, validAttr, deviceCount, validDstDevice),
-                    hipErrorInvalidDevice);
-    HIP_CHECK_ERROR(hipDeviceGetP2PAttribute(&value, validAttr, validSrcDevice, deviceCount),
-                    hipErrorInvalidDevice);
+    HIP_CHECK_ERROR(hipDeviceGetP2PAttribute(&value, validAttr,
+                     deviceCount, validDstDevice), hipErrorInvalidDevice);
+    HIP_CHECK_ERROR(hipDeviceGetP2PAttribute(&value, validAttr,
+                     validSrcDevice, deviceCount), hipErrorInvalidDevice);
   }
 
   SECTION("Source and destination devices are the same") {
-    HIP_CHECK_ERROR(hipDeviceGetP2PAttribute(&value, validAttr, validSrcDevice, validSrcDevice),
-                    hipErrorInvalidDevice);
+    HIP_CHECK_ERROR(hipDeviceGetP2PAttribute(&value, validAttr,
+                     validSrcDevice, validSrcDevice), hipErrorInvalidDevice);
   }
 
-  /* https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#env-vars */
+  // https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#env-vars
   SECTION("Hidden devices using environment variables") {
-    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("") == hipSuccess);
-    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("0") == hipErrorInvalidDevice);
-    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("1") == hipErrorInvalidDevice);
-    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("0,1") == hipSuccess);
-    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("-1,0") == hipErrorNoDevice);
-    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("0,-1") == hipErrorInvalidDevice);
-    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("0,1,-1") == hipSuccess);
-    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("0,-1,1") == hipErrorInvalidDevice);
+    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("") == hipSuccess); // NOLINT
+    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("0") == hipErrorInvalidDevice); // NOLINT
+    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("1") == hipErrorInvalidDevice); // NOLINT
+    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("0,1") == hipSuccess); // NOLINT
+    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("-1,0") == hipErrorNoDevice); // NOLINT
+    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("0,-1") == hipErrorInvalidDevice); // NOLINT
+    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("0,1,-1") == hipSuccess); // NOLINT
+    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("0,-1,1") == hipErrorInvalidDevice); // NOLINT
 
     if (deviceCount > 2) {
-      REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("2,1") == hipSuccess);
-      REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("2") == hipErrorInvalidDevice);
+      REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("2,1") == hipSuccess); // NOLINT
+      REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("2") == hipErrorInvalidDevice); // NOLINT
     } else {
-      REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("2,1") == hipErrorNoDevice);
+      REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("2,1") == hipErrorNoDevice); // NOLINT
     }
   }
 #endif

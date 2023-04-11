@@ -93,3 +93,10 @@ THE SOFTWARE.
  * This section describes the stream management types & functions of HIP runtime API.
  * @}
  */
+
+/**
+ * @defgroup MemoryTest memory Management APIs
+ * @{
+ * This section describes the memory management types & functions of HIP runtime API.
+ * @}
+ */

@@ -114,11 +114,11 @@ class PairValidator : public MatcherBase<std::pair<T, U>> {
       : first_matcher_{vbf(target.first)}, second_matcher_{vbs(target.second)} {}
 
   bool match(const std::pair<T, U>& val) const override {
-    return first_matcher_.match(val.first) && second_matcher_.match(val.second);
+    return first_matcher_->match(val.first) && second_matcher_->match(val.second);
   }
 
   std::string describe() const override {
-    return "<" + first_matcher_.describe() + ", " + second_matcher_.describe() + ">";
+    return "<" + first_matcher_->describe() + ", " + second_matcher_->describe() + ">";
   }
 
  private:
@@ -128,14 +128,14 @@ class PairValidator : public MatcherBase<std::pair<T, U>> {
 
 template <typename T, typename ValidatorBuilder>
 auto PairValidatorBuilderFactory(const ValidatorBuilder& vb) {
-  return [&](const std::pair<T, T>& t, auto&&... args) {
+  return [=](const std::pair<T, T>& t, auto&&... args) {
     return std::make_unique<PairValidator<T, T, ValidatorBuilder, ValidatorBuilder>>(t, vb, vb);
   };
 }
 
 template <typename T, typename U, typename VBF, typename VBS>
 auto PairValidatorBuilderFactory(const VBF& vbf, const VBS& vbs) {
-  return [&](const std::pair<T, U>& t, auto&&... args) {
+  return [=](const std::pair<T, U>& t, auto&&... args) {
     return std::make_unique<PairValidator<T, U, VBF, VBS>>(t, vbf, vbs);
   };
 }

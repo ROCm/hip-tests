@@ -41,6 +41,7 @@ add_subdirectory(g++)
 add_subdirectory(module)
 add_subdirectory(channelDescriptor)
 add_subdirectory(executionControl)
+add_subdirectory(p2p)
 
 if(HIP_PLATFORM STREQUAL "amd")
 add_subdirectory(callback)

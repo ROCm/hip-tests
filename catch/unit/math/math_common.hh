@@ -185,7 +185,13 @@ template <int error_num> void NegativeTestRTCWrapper(const char* program_source)
 
   HIPRTC_CHECK(
       hiprtcCreateProgram(&program, program_source, "math_test_rtc.cc", 0, nullptr, nullptr));
+#if HT_AMD
+  std::string args = std::string("-ferror-limit=100");
+  const char* options[] = {args.c_str()};
+  hiprtcResult result{hiprtcCompileProgram(program, 1, options)};
+#else
   hiprtcResult result{hiprtcCompileProgram(program, 0, nullptr)};
+#endif
 
   // Get the compile log and count compiler error messages
   size_t log_size{};

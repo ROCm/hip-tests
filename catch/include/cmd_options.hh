@@ -22,6 +22,7 @@ THE SOFTWARE.
 
 #pragma once
 
+#include <cstdint>
 #include <limits>
 
 struct CmdOptions {
@@ -30,7 +31,7 @@ struct CmdOptions {
   int cg_extended_run = 5;
   bool no_display = false;
   bool progress = false;
-  uint64_t accuracy_iterations = std::numeric_limits<uint32_t>::max() + 1;
+  uint64_t accuracy_iterations = std::numeric_limits<uint32_t>::max() + 1ull;
   int accuracy_max_memory = 80;
 };
 

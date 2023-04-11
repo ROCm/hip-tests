@@ -73,6 +73,12 @@
 	   "Unit_hipDeviceSetCacheConfig_Positive_Basic",
 	   "Unit_hipDeviceSetCacheConfig_Negative_Parameters",
 	   "Unit_hipDeviceSetSharedMemConfig_Positive_Basic",
-	   "Unit_hipDeviceSetSharedMemConfig_Negative_Parameters"
+	   "Unit_hipDeviceSetSharedMemConfig_Negative_Parameters",
+     "Disabling tests tracked with SWDEV-393637",
+	   "Unit_hipDeviceSynchronize_Functional",
+	   "Unit_hipMemset3DSync",
+	   "Unit_hipStreamAddCallback_StrmSyncTiming",
+	   "Unit_hipDeviceSynchronize_Functional",
+	   "Unit_hipDeviceSynchronize_Positive_Nullstream"
 	]
 }

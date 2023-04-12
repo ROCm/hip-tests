@@ -32,20 +32,25 @@ THE SOFTWARE.
 
 class MemsetD8Benchmark : public Benchmark<MemsetD8Benchmark> {
  public:
-  void operator()(LinearAllocs allocation_type, size_t size) {
-    LinearAllocGuard<void> dst(allocation_type, size);
+  MemsetD8Benchmark(LinearAllocs allocation_type, size_t size)
+      : dst_(allocation_type, size), size_(size) {}
 
+  void operator()() {
     TIMED_SECTION(kTimerTypeEvent) {
-      HIP_CHECK(hipMemsetD8(reinterpret_cast<hipDeviceptr_t>(dst.ptr()), 17, size));
+      HIP_CHECK(hipMemsetD8(reinterpret_cast<hipDeviceptr_t>(dst_.ptr()), 17, size_));
     }
   }
+
+ private:
+  LinearAllocGuard<void> dst_;
+  const size_t size_;
 };
 
 static void RunBenchmark(LinearAllocs allocation_type, size_t size) {
-  MemsetD8Benchmark benchmark;
+  MemsetD8Benchmark benchmark(allocation_type, size);
   benchmark.AddSectionName(std::to_string(size));
   benchmark.AddSectionName(GetAllocationSectionName(allocation_type));
-  benchmark.Run(allocation_type, size);
+  benchmark.Run();
 }
 
 /**

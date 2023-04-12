@@ -33,18 +33,23 @@ THE SOFTWARE.
 
 class MemsetBenchmark : public Benchmark<MemsetBenchmark> {
  public:
-  void operator()(LinearAllocs allocation_type, size_t size) {
-    LinearAllocGuard<void> dst(allocation_type, size);
+  MemsetBenchmark(LinearAllocs allocation_type, size_t size)
+      : dst_(allocation_type, size), size_(size) {}
 
-    TIMED_SECTION(kTimerTypeEvent) { HIP_CHECK(hipMemset(dst.ptr(), 17, size)); }
+  void operator()() {
+    TIMED_SECTION(kTimerTypeEvent) { HIP_CHECK(hipMemset(dst_.ptr(), 17, size_)); }
   }
+
+ private:
+  LinearAllocGuard<void> dst_;
+  const size_t size_;
 };
 
 static void RunBenchmark(LinearAllocs allocation_type, size_t size) {
-  MemsetBenchmark benchmark;
+  MemsetBenchmark benchmark(allocation_type, size);
   benchmark.AddSectionName(std::to_string(size));
   benchmark.AddSectionName(GetAllocationSectionName(allocation_type));
-  benchmark.Run(allocation_type, size);
+  benchmark.Run();
 }
 
 /**

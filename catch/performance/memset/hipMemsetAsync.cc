@@ -32,21 +32,26 @@ THE SOFTWARE.
 
 class MemsetAsyncBenchmark : public Benchmark<MemsetAsyncBenchmark> {
  public:
-  void operator()(LinearAllocs allocation_type, size_t size) {
-    LinearAllocGuard<void> dst(allocation_type, size);
-    StreamGuard stream(Streams::created);
+  MemsetAsyncBenchmark(LinearAllocs allocation_type, size_t size)
+      : dst_(allocation_type, size), size_(size), stream_(Streams::created) {}
 
-    TIMED_SECTION_STREAM(kTimerTypeEvent, stream.stream()) {
-      HIP_CHECK(hipMemsetAsync(dst.ptr(), 17, size, stream.stream()));
+  void operator()() {
+    TIMED_SECTION_STREAM(kTimerTypeEvent, stream_.stream()) {
+      HIP_CHECK(hipMemsetAsync(dst_.ptr(), 17, size_, stream_.stream()));
     }
   }
+
+ private:
+  LinearAllocGuard<void> dst_;
+  const size_t size_;
+  StreamGuard stream_;
 };
 
 static void RunBenchmark(LinearAllocs allocation_type, size_t size) {
-  MemsetAsyncBenchmark benchmark;
+  MemsetAsyncBenchmark benchmark(allocation_type, size);
   benchmark.AddSectionName(std::to_string(size));
   benchmark.AddSectionName(GetAllocationSectionName(allocation_type));
-  benchmark.Run(allocation_type, size);
+  benchmark.Run();
 }
 
 /**

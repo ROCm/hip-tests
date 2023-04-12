@@ -32,19 +32,22 @@ THE SOFTWARE.
 
 class Memset2DBenchmark : public Benchmark<Memset2DBenchmark> {
  public:
-  void operator()(size_t width, size_t height) {
-    LinearAllocGuard2D<char> dst(width, height);
+  Memset2DBenchmark(size_t width, size_t height) : dst_(width, height) {}
 
+  void operator()() {
     TIMED_SECTION(kTimerTypeEvent) {
-      HIP_CHECK(hipMemset2D(dst.ptr(), dst.pitch(), 17, width, height));
+      HIP_CHECK(hipMemset2D(dst_.ptr(), dst_.pitch(), 17, dst_.width(), dst_.height()));
     }
   }
+
+ private:
+  LinearAllocGuard2D<char> dst_;
 };
 
 static void RunBenchmark(size_t width, size_t height) {
-  Memset2DBenchmark benchmark;
+  Memset2DBenchmark benchmark(width, height);
   benchmark.AddSectionName("(" + std::to_string(width) + ", " + std::to_string(height) + ")");
-  benchmark.Run(width, height);
+  benchmark.Run();
 }
 
 /**

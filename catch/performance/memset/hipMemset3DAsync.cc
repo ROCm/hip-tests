@@ -32,21 +32,25 @@ THE SOFTWARE.
 
 class Memset3DAsyncBenchmark : public Benchmark<Memset3DAsyncBenchmark> {
  public:
-  void operator()(size_t width, size_t height, size_t depth) {
-    LinearAllocGuard3D<char> dst(width, height, depth);
-    StreamGuard stream(Streams::created);
+  Memset3DAsyncBenchmark(size_t width, size_t height, size_t depth)
+      : dst_(width, height, depth), stream_(Streams::created) {}
 
-    TIMED_SECTION_STREAM(kTimerTypeEvent, stream.stream()) {
-      HIP_CHECK(hipMemset3DAsync(dst.pitched_ptr(), 17, dst.extent(), stream.stream()));
+  void operator()() {
+    TIMED_SECTION_STREAM(kTimerTypeEvent, stream_.stream()) {
+      HIP_CHECK(hipMemset3DAsync(dst_.pitched_ptr(), 17, dst_.extent(), stream_.stream()));
     }
   }
+
+ private:
+  LinearAllocGuard3D<char> dst_;
+  StreamGuard stream_;
 };
 
 static void RunBenchmark(size_t width, size_t height, size_t depth) {
-  Memset3DAsyncBenchmark benchmark;
+  Memset3DAsyncBenchmark benchmark(width, height, depth);
   benchmark.AddSectionName("(" + std::to_string(width) + ", " + std::to_string(height) + ", " +
                            std::to_string(depth) + ")");
-  benchmark.Run(width, height, depth);
+  benchmark.Run();
 }
 
 /**

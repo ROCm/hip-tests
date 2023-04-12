@@ -32,18 +32,23 @@ THE SOFTWARE.
 
 class Memset2DAsyncBenchmark : public Benchmark<Memset2DAsyncBenchmark> {
  public:
-  void operator()(size_t width, size_t height) {
-    LinearAllocGuard2D<char> dst(width, height);
-    StreamGuard stream(Streams::created);
+  Memset2DAsyncBenchmark(size_t width, size_t height)
+      : dst_(width, height), stream_(Streams::created) {}
 
-    TIMED_SECTION_STREAM(kTimerTypeEvent, stream.stream()) {
-      HIP_CHECK(hipMemset2DAsync(dst.ptr(), dst.pitch(), 17, width, height, stream.stream()));
+  void operator()(size_t width, size_t height) {
+    TIMED_SECTION_STREAM(kTimerTypeEvent, stream_.stream()) {
+      HIP_CHECK(hipMemset2DAsync(dst_.ptr(), dst_.pitch(), 17, dst_.width(), dst_.height(),
+                                 stream_.stream()));
     }
   }
+
+ private:
+  LinearAllocGuard2D<char> dst_;
+  StreamGuard stream_;
 };
 
 static void RunBenchmark(size_t width, size_t height) {
-  Memset2DAsyncBenchmark benchmark;
+  Memset2DAsyncBenchmark benchmark(width, height);
   benchmark.AddSectionName("(" + std::to_string(width) + ", " + std::to_string(height) + ")");
   benchmark.Run(width, height);
 }

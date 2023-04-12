@@ -32,18 +32,23 @@ THE SOFTWARE.
 
 class Memset3DBenchmark : public Benchmark<Memset3DBenchmark> {
  public:
-  void operator()(size_t width, size_t height, size_t depth) {
-    LinearAllocGuard3D<char> dst(width, height, depth);
+  Memset3DBenchmark(size_t width, size_t height, size_t depth) : dst_(width, height, depth) {}
 
-    TIMED_SECTION(kTimerTypeEvent) { HIP_CHECK(hipMemset3D(dst.pitched_ptr(), 17, dst.extent())); }
+  void operator()() {
+    TIMED_SECTION(kTimerTypeEvent) {
+      HIP_CHECK(hipMemset3D(dst_.pitched_ptr(), 17, dst_.extent()));
+    }
   }
+
+ private:
+  LinearAllocGuard3D<char> dst_;
 };
 
 static void RunBenchmark(size_t width, size_t height, size_t depth) {
-  Memset3DBenchmark benchmark;
+  Memset3DBenchmark benchmark(width, height, depth);
   benchmark.AddSectionName("(" + std::to_string(width) + ", " + std::to_string(height) + ", " +
                            std::to_string(depth) + ")");
-  benchmark.Run(width, height, depth);
+  benchmark.Run();
 }
 
 /**

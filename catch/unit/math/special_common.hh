@@ -45,18 +45,18 @@ template <typename T> using kernel_bessel_n_sig = void (*)(T*, const size_t, int
 
 template <typename T> using ref_bessel_n_sig = T (*)(int, T);
 
-template <typename T, typename RT, typename ValidatorBuilder>
-void BesselDoublePrecisionBruteForceTest(kernel_bessel_n_sig<T> kernel,
-                                         ref_bessel_n_sig<RT> ref_func,
+template <typename ValidatorBuilder>
+void BesselDoublePrecisionBruteForceTest(kernel_bessel_n_sig<double> kernel,
+                                         ref_bessel_n_sig<long double> ref_func,
                                          const ValidatorBuilder& validator_builder, int n_input = 0,
-                                         const T a = std::numeric_limits<T>::lowest(),
-                                         const T b = std::numeric_limits<T>::max()) {
+                                         const double a = std::numeric_limits<double>::lowest(),
+                                         const double b = std::numeric_limits<double>::max()) {
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
   const uint64_t num_iterations = GetTestIterationCount();
-  const auto max_batch_size =
-      std::min(GetMaxAllowedDeviceMemoryUsage() / (sizeof(T) * 2 + sizeof(int)), num_iterations);
+  const auto max_batch_size = std::min(
+      GetMaxAllowedDeviceMemoryUsage() / (sizeof(double) * 2 + sizeof(int)), num_iterations);
   LinearAllocGuard<int> x1s{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(int)};
-  LinearAllocGuard<T> x2s{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(T)};
+  LinearAllocGuard<double> x2s{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(double)};
 
   MathTest math_test(kernel, max_batch_size);
   std::fill_n(x1s.ptr(), max_batch_size, 1);
@@ -75,8 +75,8 @@ void BesselDoublePrecisionBruteForceTest(kernel_bessel_n_sig<T> kernel,
       thread_pool.Post([=, &x1s, &x2s] {
         const auto generator = [=] {
           static thread_local std::mt19937 rng(std::random_device{}());
-          std::uniform_real_distribution<RefType_t<T>> unif_dist(a, b);
-          return static_cast<T>(unif_dist(rng));
+          std::uniform_real_distribution<RefType_t<double>> unif_dist(a, b);
+          return static_cast<double>(unif_dist(rng));
         };
         std::generate(x2s.ptr() + base_idx, x2s.ptr() + base_idx + sub_batch_size, generator);
       });

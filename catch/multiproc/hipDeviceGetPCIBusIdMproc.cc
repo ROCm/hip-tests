@@ -217,7 +217,7 @@ TEST_CASE("Unit_hipDeviceGetPCIBusId_CheckPciBusIDWithLspci") {
     command = "lspci -D | grep controller | grep NVIDIA | "
               "cut -d ' ' -f 1";
   } else {
-    command = "lspci -D | grep controller | grep AMD/ATI | "
+    command = "lspci -D | grep -e controller -e accelerator | grep AMD/ATI | "
               "cut -d ' ' -f 1";
   }
   fpipe = popen(command, "r");

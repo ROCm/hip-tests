@@ -23,7 +23,7 @@ THE SOFTWARE.
 #include <hip/hip_cooperative_groups.h>
 #include <cstdlib>
 
-#include "cooperative_groups_common.hh"
+#include "hip_cg_common.hh"
 
 namespace cg = cooperative_groups;
 
@@ -65,8 +65,7 @@ __device__ int reduction_kernel(cg::thread_group g, int* x, int val) {
 }
 
 template <unsigned int tile_size>
-__global__ void kernel_cg_group_partition_static(int* result,
-                                                  bool is_global_mem, int* global_mem) {
+__global__ void kernel_cg_group_partition_static(int* result, bool is_global_mem, int* global_mem) {
   cg::thread_block thread_block_CG_ty = cg::this_thread_block();
 
   int* workspace = NULL;
@@ -79,16 +78,18 @@ __global__ void kernel_cg_group_partition_static(int* result,
     workspace = shared_mem;
   }
 
-  int input, output_sum;
+  int input, output_sum, expected_output;
 
   // input to reduction, for each thread, is its' rank in the group
   input = thread_block_CG_ty.thread_rank();
 
+  expected_output = (thread_block_CG_ty.size() - 1) * thread_block_CG_ty.size() / 2;
+
   output_sum = reduction_kernel(thread_block_CG_ty, workspace, input);
 
   if (thread_block_CG_ty.thread_rank() == 0) {
-    printf("\n\n\n Sum of all ranks 0..%d in threadBlockCooperativeGroup is %d\n\n",
-           (int)thread_block_CG_ty.size() - 1, output_sum);
+    printf(" Sum of all ranks 0..%d in threadBlockCooperativeGroup is %d (expected %d)\n\n",
+           (int)thread_block_CG_ty.size() - 1, output_sum, expected_output);
     printf(" Creating %d groups, of tile size %d threads:\n\n",
            (int)thread_block_CG_ty.size() / tile_size, tile_size);
   }
@@ -103,8 +104,10 @@ __global__ void kernel_cg_group_partition_static(int* result,
   output_sum = reduction_kernel(tiled_part, workspace + workspace_offset, input);
 
   if (tiled_part.thread_rank() == 0) {
-    printf("   Sum of all ranks %d..%d in this tiled_part group is %d.\n",
-        input, input + static_cast<int>(tiled_part.size()) - 1, output_sum);
+    printf(
+        "   Sum of all ranks 0..%d in this tiledPartition group is %d. Corresponding parent thread "
+        "rank: %d\n",
+        tiled_part.size() - 1, output_sum, input);
     result[input / (tile_size)] = output_sum;
   }
   return;
@@ -148,15 +151,18 @@ __global__ void kernel_cg_group_partition_dynamic(unsigned int tile_size, int* r
   output_sum = reduction_kernel(tiled_part, workspace + workspace_offset, input);
 
   if (tiled_part.thread_rank() == 0) {
-    printf("   Sum of all ranks %d..%d in this tiled_part group is %d.\n",
-        input, input + static_cast<int>(tiled_part.size()) - 1, output_sum);
+    printf(
+        "   Sum of all ranks 0..%d in this tiledPartition group is %d. Corresponding parent thread "
+        "rank: %d\n",
+        static_cast<int>(tiled_part.size()) - 1, output_sum, input);
     result[input / (tile_size)] = output_sum;
   }
   return;
 }
 
 template <typename F>
-static void common_group_partition(F kernel_func, unsigned int tile_size, void** params, size_t num_params, bool use_global_mem) {
+static void common_group_partition(F kernel_func, unsigned int tile_size, void** params,
+                                   size_t num_params, bool use_global_mem) {
   int block_size = 1;
   int threads_per_blk = 64;
 
@@ -173,7 +179,7 @@ static void common_group_partition(F kernel_func, unsigned int tile_size, void**
   for (int i = 1; i <= num_tiles; i++) {
     sum = temp;
     temp = (((tile_size * i) - 1) * (tile_size * i)) / 2;
-    expected_sum[i-1] = temp - sum;
+    expected_sum[i - 1] = temp - sum;
   }
 
   int* result_dev = NULL;
@@ -198,7 +204,8 @@ static void common_group_partition(F kernel_func, unsigned int tile_size, void**
     HIP_CHECK(hipDeviceSynchronize());
   } else {
     // Launch Kernel
-    HIP_CHECK(hipLaunchCooperativeKernel(kernel_func, block_size, threads_per_blk, params, threads_per_blk * sizeof(int), 0));
+    HIP_CHECK(hipLaunchCooperativeKernel(kernel_func, block_size, threads_per_blk, params,
+                                         threads_per_blk * sizeof(int), 0));
     HIP_CHECK(hipDeviceSynchronize());
   }
 
@@ -218,14 +225,16 @@ static void common_group_partition(F kernel_func, unsigned int tile_size, void**
 template <unsigned int tile_size> static void test_group_partition(bool use_global_mem) {
   void* params[3];
   size_t num_params = 0;
-  common_group_partition(kernel_cg_group_partition_static<tile_size>, tile_size, params, num_params, use_global_mem);
+  common_group_partition(kernel_cg_group_partition_static<tile_size>, tile_size, params, num_params,
+                         use_global_mem);
 }
 
 static void test_group_partition(unsigned int tile_size, bool use_global_mem) {
   void* params[4];
   params[0] = &tile_size;
   size_t num_params = 1;
-  common_group_partition(kernel_cg_group_partition_dynamic, tile_size, params, num_params, use_global_mem);
+  common_group_partition(kernel_cg_group_partition_dynamic, tile_size, params, num_params,
+                         use_global_mem);
 }
 
 TEST_CASE("Unit_hipCGThreadBlockTileType") {

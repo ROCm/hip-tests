@@ -22,19 +22,14 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip/hip_cooperative_groups.h>
 
-#include "cooperative_groups_common.hh"
+#include "hip_cg_common.hh"
 
 namespace cg = cooperative_groups;
 
 enum class ThreadBlockTypeTests { basicApi, baseType, publicApi };
 
-static __global__
-void kernel_cg_thread_block_type(int *size_dev,
-                                 int *thd_rank_dev,
-                                 int *sync_dev,
-                                 dim3 *group_index_dev,
-                                 dim3 *thd_index_dev)
-{
+static __global__ void kernel_cg_thread_block_type(int* size_dev, int* thd_rank_dev, int* sync_dev,
+                                                   dim3* group_index_dev, dim3* thd_index_dev) {
   cg::thread_block tb = cg::this_thread_block();
   int gIdx = (blockIdx.x * blockDim.x) + threadIdx.x;
   // Test size
@@ -59,11 +54,8 @@ void kernel_cg_thread_block_type(int *size_dev,
   thd_index_dev[gIdx] = tb.thread_index();
 }
 
-static __global__
-void kernel_cg_thread_block_type_via_base_type(int *size_dev,
-                                               int *thd_rank_dev,
-                                               int *sync_dev)
-{
+static __global__ void kernel_cg_thread_block_type_via_base_type(int* size_dev, int* thd_rank_dev,
+                                                                 int* sync_dev) {
   cg::thread_group tg = cg::this_thread_block();
   int gIdx = (blockIdx.x * blockDim.x) + threadIdx.x;
 
@@ -83,11 +75,8 @@ void kernel_cg_thread_block_type_via_base_type(int *size_dev,
   sync_dev[gIdx] = sm[1] * sm[0];
 }
 
-static __global__
-void kernel_cg_thread_block_type_via_public_api(int *size_dev,
-                                                int *thd_rank_dev,
-                                                int *sync_dev)
-{
+static __global__ void kernel_cg_thread_block_type_via_public_api(int* size_dev, int* thd_rank_dev,
+                                                                  int* sync_dev) {
   cg::thread_block tb = cg::this_thread_block();
   int gIdx = (blockIdx.x * blockDim.x) + threadIdx.x;
 
@@ -107,8 +96,7 @@ void kernel_cg_thread_block_type_via_public_api(int *size_dev,
   sync_dev[gIdx] = sm[1] * sm[0];
 }
 
-static void test_cg_thread_block_type(ThreadBlockTypeTests test_type, int block_size)
-{
+static void test_cg_thread_block_type(ThreadBlockTypeTests test_type, int block_size) {
   int num_bytes = sizeof(int) * 2 * block_size;
   int num_dim3_bytes = sizeof(dim3) * 2 * block_size;
   int *size_dev, *size_host;
@@ -127,21 +115,23 @@ static void test_cg_thread_block_type(ThreadBlockTypeTests test_type, int block_
   HIP_CHECK(hipHostMalloc(&thd_rank_host, num_bytes));
   HIP_CHECK(hipHostMalloc(&sync_host, num_bytes));
 
-  switch(test_type) {
-    case(ThreadBlockTypeTests::basicApi):
+  switch (test_type) {
+    case (ThreadBlockTypeTests::basicApi):
       HIP_CHECK(hipMalloc(&group_index_dev, num_dim3_bytes));
       HIP_CHECK(hipMalloc(&thd_index_dev, num_dim3_bytes));
       HIP_CHECK(hipHostMalloc(&group_index_host, num_dim3_bytes));
       HIP_CHECK(hipHostMalloc(&thd_index_host, num_dim3_bytes));
 
-      hipLaunchKernelGGL(kernel_cg_thread_block_type, 2, block_size, 0, 0 , size_dev, thd_rank_dev,
+      hipLaunchKernelGGL(kernel_cg_thread_block_type, 2, block_size, 0, 0, size_dev, thd_rank_dev,
                          sync_dev, group_index_dev, thd_index_dev);
       break;
-    case(ThreadBlockTypeTests::baseType):
-      hipLaunchKernelGGL(kernel_cg_thread_block_type_via_base_type, 2, block_size, 0, 0, size_dev, thd_rank_dev, sync_dev);
+    case (ThreadBlockTypeTests::baseType):
+      hipLaunchKernelGGL(kernel_cg_thread_block_type_via_base_type, 2, block_size, 0, 0, size_dev,
+                         thd_rank_dev, sync_dev);
       break;
-    case(ThreadBlockTypeTests::publicApi):
-      hipLaunchKernelGGL(kernel_cg_thread_block_type_via_public_api, 2, block_size, 0, 0, size_dev, thd_rank_dev, sync_dev);
+    case (ThreadBlockTypeTests::publicApi):
+      hipLaunchKernelGGL(kernel_cg_thread_block_type_via_public_api, 2, block_size, 0, 0, size_dev,
+                         thd_rank_dev, sync_dev);
   }
 
   // Copy result from device to host
@@ -159,10 +149,10 @@ static void test_cg_thread_block_type(ThreadBlockTypeTests test_type, int block_
     ASSERT_EQUAL(thd_rank_host[i], i % block_size);
     ASSERT_EQUAL(sync_host[i], 200);
     if (test_type == ThreadBlockTypeTests::basicApi) {
-      ASSERT_EQUAL(group_index_host[i].x, (uint) i / block_size);
+      ASSERT_EQUAL(group_index_host[i].x, (uint)i / block_size);
       ASSERT_EQUAL(group_index_host[i].y, 0);
       ASSERT_EQUAL(group_index_host[i].z, 0);
-      ASSERT_EQUAL(thd_index_host[i].x, (uint) i % block_size);
+      ASSERT_EQUAL(thd_index_host[i].x, (uint)i % block_size);
       ASSERT_EQUAL(thd_index_host[i].y, 0);
       ASSERT_EQUAL(thd_index_host[i].z, 0);
     }
@@ -173,7 +163,7 @@ static void test_cg_thread_block_type(ThreadBlockTypeTests test_type, int block_
   HIP_CHECK(hipFree(thd_rank_dev));
   HIP_CHECK(hipFree(sync_dev));
 
-  //Free host memory
+  // Free host memory
   HIP_CHECK(hipHostFree(size_host));
   HIP_CHECK(hipHostFree(thd_rank_host));
   HIP_CHECK(hipHostFree(sync_host));
@@ -201,21 +191,15 @@ TEST_CASE("Unit_hipCGThreadBlockType") {
 
   ThreadBlockTypeTests test_type = ThreadBlockTypeTests::basicApi;
 
-  SECTION("Default thread block API test") {
-    test_type = ThreadBlockTypeTests::basicApi;
-  }
+  SECTION("Default thread block API test") { test_type = ThreadBlockTypeTests::basicApi; }
 
-  SECTION("Base type thread block API test") {
-    test_type = ThreadBlockTypeTests::baseType;
-  }
+  SECTION("Base type thread block API test") { test_type = ThreadBlockTypeTests::baseType; }
 
-  SECTION("Public API thread block test") {
-    test_type = ThreadBlockTypeTests::publicApi;
-  }
+  SECTION("Public API thread block test") { test_type = ThreadBlockTypeTests::publicApi; }
 
   // Test for blockSizes in powers of 2
   int max_threads_per_blk = device_properties.maxThreadsPerBlock;
-  for (int block_size = 2; block_size <= max_threads_per_blk; block_size = block_size*2) {
+  for (int block_size = 2; block_size <= max_threads_per_blk; block_size = block_size * 2) {
     test_cg_thread_block_type(test_type, block_size);
   }
 

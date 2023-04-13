@@ -22,19 +22,14 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip/hip_cooperative_groups.h>
 
-#include "cooperative_groups_common.hh"
+#include "hip_cg_common.hh"
 
 namespace cg = cooperative_groups;
 
-static __global__
-void kernel_cg_multi_grid_group_type(int* grid_rank_dev,
-                                     int *size_dev,
-                                     int *thd_rank_dev,
-                                     int *is_valid_dev,
-                                     int *sync_dev,
-                                     int *sync_result,
-                                     int* num_grids_dev)
-{
+static __global__ void kernel_cg_multi_grid_group_type(int* grid_rank_dev, int* size_dev,
+                                                       int* thd_rank_dev, int* is_valid_dev,
+                                                       int* sync_dev, int* sync_result,
+                                                       int* num_grids_dev) {
   cg::multi_grid_group mg = cg::this_multi_grid();
   int gIdx = (blockIdx.x * blockDim.x) + threadIdx.x;
 
@@ -77,15 +72,11 @@ void kernel_cg_multi_grid_group_type(int* grid_rank_dev,
   }
 }
 
-static __global__
-void kernel_cg_multi_grid_group_type_via_base_type(int* grid_rank_dev,
-                                                   int *size_dev,
-                                                   int *thd_rank_dev,
-                                                   int *is_valid_dev,
-                                                   int *sync_dev,
-                                                   int *sync_result)
-{
-  cg::thread_group tg = cg::this_multi_grid();  // This can work if _CG_ABI_EXPERIMENTAL defined on Cuda
+static __global__ void kernel_cg_multi_grid_group_type_via_base_type(
+    int* grid_rank_dev, int* size_dev, int* thd_rank_dev, int* is_valid_dev, int* sync_dev,
+    int* sync_result) {
+  cg::thread_group tg =
+      cg::this_multi_grid();  // This can work if _CG_ABI_EXPERIMENTAL defined on Cuda
 
   int gIdx = (blockIdx.x * blockDim.x) + threadIdx.x;
 
@@ -127,14 +118,9 @@ void kernel_cg_multi_grid_group_type_via_base_type(int* grid_rank_dev,
   }
 }
 
-static __global__
-void kernel_cg_multi_grid_group_type_via_public_api(int* grid_rank_dev,
-                                                    int *size_dev,
-                                                    int *thd_rank_dev,
-                                                    int *is_valid_dev,
-                                                    int *sync_dev,
-                                                    int *sync_result)
-{
+static __global__ void kernel_cg_multi_grid_group_type_via_public_api(
+    int* grid_rank_dev, int* size_dev, int* thd_rank_dev, int* is_valid_dev, int* sync_dev,
+    int* sync_result) {
   cg::multi_grid_group mg = cg::this_multi_grid();
   int gIdx = (blockIdx.x * blockDim.x) + threadIdx.x;
 
@@ -172,12 +158,10 @@ void kernel_cg_multi_grid_group_type_via_public_api(int* grid_rank_dev,
   }
 }
 
-static __global__ void
-test_kernel(unsigned int *atomic_val, unsigned int *global_array,
-            unsigned int *array, uint32_t loops) {
+static __global__ void test_kernel(unsigned int* atomic_val, unsigned int* global_array,
+                                   unsigned int* array, uint32_t loops) {
   cooperative_groups::grid_group grid = cooperative_groups::this_grid();
-  cooperative_groups::multi_grid_group mgrid =
-                      cooperative_groups::this_multi_grid();
+  cooperative_groups::multi_grid_group mgrid = cooperative_groups::this_multi_grid();
   unsigned rank = grid.thread_rank();
   unsigned global_rank = mgrid.thread_rank();
 
@@ -204,7 +188,7 @@ test_kernel(unsigned int *atomic_val, unsigned int *global_array,
         // If it rolls over, we don't know how much to add to catch up.
         // So just ignore those slipped cycles.
         last_clock = cur_clock;
-      } while(time_diff < 1000000);
+      } while (time_diff < 1000000);
     }
     if (threadIdx.x == 0) {
       array[offset] = atomicInc(atomic_val, UINT_MAX);
@@ -227,7 +211,7 @@ test_kernel(unsigned int *atomic_val, unsigned int *global_array,
         // If it rolls over, we don't know how much to add to catch up.
         // So just ignore those slipped cycles.
         last_clock = cur_clock;
-      } while(time_diff < 1000000);
+      } while (time_diff < 1000000);
     }
     // During even iterations, add into your own array entry
     // During odd iterations, add into your partner's array entry
@@ -245,14 +229,13 @@ test_kernel(unsigned int *atomic_val, unsigned int *global_array,
   }
 }
 
-static void verify_barrier_buffer(unsigned int loops, unsigned int warps,
-                                 unsigned int *host_buffer,
-                                 unsigned int num_devs) {
+static void verify_barrier_buffer(unsigned int loops, unsigned int warps, unsigned int* host_buffer,
+                                  unsigned int num_devs) {
   unsigned int max_in_this_loop = 0;
   for (unsigned int i = 0; i < loops; i++) {
     max_in_this_loop += (warps * num_devs);
     for (unsigned int j = 0; j < warps; j++) {
-      REQUIRE(host_buffer[i*warps+j] <= max_in_this_loop);
+      REQUIRE(host_buffer[i * warps + j] <= max_in_this_loop);
     }
   }
 }
@@ -262,8 +245,7 @@ static void verify_multi_gpu_buffer(unsigned int loops, unsigned int array_val) 
   for (int i = 0; i < loops; i++) {
     if (i % 2 == 0) {
       desired_val += 2;
-    }
-    else {
+    } else {
       desired_val *= 2;
     }
   }
@@ -272,8 +254,8 @@ static void verify_multi_gpu_buffer(unsigned int loops, unsigned int array_val) 
 }
 
 template <typename F>
-static void test_cg_multi_grid_group_type(F kernel_func, int num_devices, int block_size, bool specific_api_test)
-{
+static void test_cg_multi_grid_group_type(F kernel_func, int num_devices, int block_size,
+                                          bool specific_api_test) {
   // Create a stream each device
   hipStream_t stream[MaxGPUs];
   for (int i = 0; i < num_devices; i++) {
@@ -310,7 +292,8 @@ static void test_cg_multi_grid_group_type(F kernel_func, int num_devices, int bl
     HIP_CHECK(hipHostMalloc(&is_valid_host[i], num_bytes));
 
     if (i == 0) {
-      HIP_CHECK(hipHostMalloc(&sync_result, sizeof(int) * (num_devices + 1), hipHostMallocCoherent));
+      HIP_CHECK(
+          hipHostMalloc(&sync_result, sizeof(int) * (num_devices + 1), hipHostMallocCoherent));
     }
   }
 
@@ -324,7 +307,7 @@ static void test_cg_multi_grid_group_type(F kernel_func, int num_devices, int bl
   for (int i = 0; i < num_devices; i++) {
     HIP_CHECK(hipSetDevice(i));
 
-    args[i * NumKernelArgs    ] = &grid_rank_dev[i];
+    args[i * NumKernelArgs] = &grid_rank_dev[i];
     args[i * NumKernelArgs + 1] = &size_dev[i];
     args[i * NumKernelArgs + 2] = &thd_rank_dev[i];
     args[i * NumKernelArgs + 3] = &is_valid_dev[i];
@@ -363,14 +346,14 @@ static void test_cg_multi_grid_group_type(F kernel_func, int num_devices, int bl
         ASSERT_EQUAL(num_grids_host[i][j], num_devices);
       }
       ASSERT_GE(grid_rank_host[i][j], 0);
-      ASSERT_LE(grid_rank_host[i][j], num_devices-1);
+      ASSERT_LE(grid_rank_host[i][j], num_devices - 1);
       ASSERT_EQUAL(grid_rank_host[i][j], grid_rank_host[i][0]);
       ASSERT_EQUAL(size_host[i][j], num_devices * 2 * block_size);
       int gridRank = grid_rank_host[i][j];
       ASSERT_EQUAL(thd_rank_host[i][j], (gridRank * 2 * block_size) + j);
       ASSERT_EQUAL(is_valid_host[i][j], 1);
     }
-    ASSERT_EQUAL(sync_result[i+1],  2 * block_size);
+    ASSERT_EQUAL(sync_result[i + 1], 2 * block_size);
 
     // Validate uniqueness property of grid rank
     grids_seen[i] = grid_rank_host[i][0];
@@ -382,7 +365,7 @@ static void test_cg_multi_grid_group_type(F kernel_func, int num_devices, int bl
   ASSERT_EQUAL(sync_result[0], num_devices * 2 * block_size);
 
   // Free host and device memory
-  delete [] launchParamsList;
+  delete[] launchParamsList;
   for (int i = 0; i < num_devices; i++) {
     HIP_CHECK(hipSetDevice(i));
 
@@ -390,7 +373,7 @@ static void test_cg_multi_grid_group_type(F kernel_func, int num_devices, int bl
       HIP_CHECK(hipFree(num_grids_dev[i]));
       HIP_CHECK(hipHostFree(num_grids_host[i]));
     }
-    
+
     HIP_CHECK(hipFree(grid_rank_dev[i]));
     HIP_CHECK(hipFree(size_dev[i]));
     HIP_CHECK(hipFree(thd_rank_dev[i]));
@@ -424,24 +407,24 @@ TEST_CASE("Unit_hipCGMultiGridGroupType_Basic") {
     max_threads_per_blk = min(max_threads_per_blk, device_properties.maxThreadsPerBlock);
   }
 
-  void* (*kernel_func) (void);
+  void* (*kernel_func)(void);
   bool specific_api_test = false;
 
   SECTION("Default multi grid group API test") {
-    kernel_func = reinterpret_cast<void*(*)()>(kernel_cg_multi_grid_group_type);
+    kernel_func = reinterpret_cast<void* (*)()>(kernel_cg_multi_grid_group_type);
     specific_api_test = true;
   }
 
   SECTION("Base type multi grid group API test") {
-    kernel_func = reinterpret_cast<void*(*)()>(kernel_cg_multi_grid_group_type_via_base_type);
+    kernel_func = reinterpret_cast<void* (*)()>(kernel_cg_multi_grid_group_type_via_base_type);
   }
 
   SECTION("Public API multi grid group test") {
-    kernel_func = reinterpret_cast<void*(*)()>(kernel_cg_multi_grid_group_type_via_public_api);
+    kernel_func = reinterpret_cast<void* (*)()>(kernel_cg_multi_grid_group_type_via_public_api);
   }
 
   // Test for blockSizes in powers of 2
-  for (int block_size = 2; block_size <= max_threads_per_blk; block_size = block_size*2) {
+  for (int block_size = 2; block_size <= max_threads_per_blk; block_size = block_size * 2) {
     test_cg_multi_grid_group_type(kernel_func, num_devices, block_size, specific_api_test);
   }
 
@@ -449,7 +432,8 @@ TEST_CASE("Unit_hipCGMultiGridGroupType_Basic") {
   srand(0);
   for (int i = 0; i < 10; i++) {
     // Test fails for 0 thread per block
-    test_cg_multi_grid_group_type(kernel_func, num_devices, max(2, rand() % max_threads_per_blk), specific_api_test);
+    test_cg_multi_grid_group_type(kernel_func, num_devices, max(2, rand() % max_threads_per_blk),
+                                  specific_api_test);
   }
 }
 
@@ -497,8 +481,8 @@ TEST_CASE("Unit_hipCGMultiGridGroupType_Barrier") {
   int max_blocks_per_sm = INT_MAX;
   for (int i = 0; i < num_devices; i++) {
     HIP_CHECK(hipSetDevice(i));
-    HIP_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor(
-            &max_blocks_per_sm_arr[i], test_kernel, num_threads_in_block, 0));
+    HIP_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor(&max_blocks_per_sm_arr[i], test_kernel,
+                                                           num_threads_in_block, 0));
     if (max_blocks_per_sm_arr[i] < max_blocks_per_sm) {
       max_blocks_per_sm = max_blocks_per_sm_arr[i];
     }
@@ -507,16 +491,17 @@ TEST_CASE("Unit_hipCGMultiGridGroupType_Barrier") {
   int requested_blocks = warps / block_size;
 
   // Each block will output a single value per loop.
-  uint32_t total_buffer_len = requested_blocks*loops;
+  uint32_t total_buffer_len = requested_blocks * loops;
 
   // Alocate the buffer that will hold the kernel's output, and which will
   // also be used to globally synchronize during GWS initialization
-  unsigned int *host_buffer[num_devices];
-  unsigned int *kernel_buffer[num_devices];
-  unsigned int *kernel_atomic[num_devices];
+  unsigned int* host_buffer[num_devices];
+  unsigned int* kernel_buffer[num_devices];
+  unsigned int* kernel_atomic[num_devices];
   hipStream_t streams[num_devices];
   for (int i = 0; i < num_devices; i++) {
-    host_buffer[i] = reinterpret_cast<unsigned int*>(calloc(total_buffer_len, sizeof(unsigned int)));
+    host_buffer[i] =
+        reinterpret_cast<unsigned int*>(calloc(total_buffer_len, sizeof(unsigned int)));
     HIP_CHECK(hipSetDevice(i));
     HIP_CHECK(hipMalloc(&kernel_buffer[i], sizeof(unsigned int) * total_buffer_len));
     HIP_CHECK(hipMemcpy(kernel_buffer[i], host_buffer[i], sizeof(unsigned int) * total_buffer_len,
@@ -532,9 +517,10 @@ TEST_CASE("Unit_hipCGMultiGridGroupType_Barrier") {
   HIP_CHECK(hipMemset(global_array, 0, num_devices * sizeof(unsigned int)));
 
   // Launch the kernels
-  INFO("Launching a cooperative kernel with" << warps << "warps in" << requested_blocks << "thread blocks");
+  INFO("Launching a cooperative kernel with" << warps << "warps in" << requested_blocks
+                                             << "thread blocks");
 
-  void *dev_params[num_devices][4];
+  void* dev_params[num_devices][4];
   hipLaunchParams md_params[num_devices];
   for (int i = 0; i < num_devices; i++) {
     dev_params[i][0] = reinterpret_cast<void*>(&kernel_atomic[i]);
@@ -554,8 +540,8 @@ TEST_CASE("Unit_hipCGMultiGridGroupType_Barrier") {
 
   // Read back the buffer to host
   for (int dev = 0; dev < num_devices; dev++) {
-    HIP_CHECK(hipMemcpy(host_buffer[dev], kernel_buffer[dev], sizeof(unsigned int) * total_buffer_len,
-                           hipMemcpyDeviceToHost));
+    HIP_CHECK(hipMemcpy(host_buffer[dev], kernel_buffer[dev],
+                        sizeof(unsigned int) * total_buffer_len, hipMemcpyDeviceToHost));
   }
 
   for (unsigned int dev = 0; dev < num_devices; dev++) {

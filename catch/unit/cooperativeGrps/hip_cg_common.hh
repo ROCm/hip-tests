@@ -32,6 +32,14 @@ THE SOFTWARE.
 constexpr int MaxGPUs = 8;
 
 template <typename T>
+void printResults(T* ptr, int size) {
+  for (int i = 0; i < size; i++) {
+    std::cout << ptr[i] << " ";
+  }
+  std::cout << '\n';
+}
+
+template <typename T>
 void compareResults(T* cpu, T* gpu, int size) {
   for (unsigned int i = 0; i < size / sizeof(T); i++) {
     if (cpu[i] != gpu[i]) {

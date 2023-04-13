@@ -22,14 +22,15 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip/hip_cooperative_groups.h>
 
-#include "cooperative_groups_common.hh"
+#include "hip_cg_common.hh"
 
 namespace cg = cooperative_groups;
 
 enum class TiledGroupShflTests { shflDown, shflXor, shflUp };
 
 template <unsigned int tileSz>
-__device__ int reduction_kernel_shfl_down(cg::thread_block_tile<tileSz> const& g, volatile int val) {
+__device__ int reduction_kernel_shfl_down(cg::thread_block_tile<tileSz> const& g,
+                                          volatile int val) {
   int sz = g.size();
 
   for (int i = sz / 2; i > 0; i >>= 1) {
@@ -79,7 +80,8 @@ __device__ int prefix_sum_kernel(cg::thread_block_tile<tileSz> const& g, volatil
 }
 
 template <unsigned int tile_size>
-static __global__ void kernel_cg_group_partition_static(int* result, TiledGroupShflTests shfl_test) {
+static __global__ void kernel_cg_group_partition_static(int* result,
+                                                        TiledGroupShflTests shfl_test) {
   cg::thread_block thread_block_CG_ty = cg::this_thread_block();
   int threadBlockGroupSize = thread_block_CG_ty.size();
   int input, output_sum;
@@ -97,38 +99,37 @@ static __global__ void kernel_cg_group_partition_static(int* result, TiledGroupS
 
   input = tiled_part.thread_rank();
 
-  switch(shfl_test) {
-    case(TiledGroupShflTests::shflDown):
+  switch (shfl_test) {
+    case (TiledGroupShflTests::shflDown):
       output_sum = reduction_kernel_shfl_down(tiled_part, input);
       break;
-    case(TiledGroupShflTests::shflXor):
+    case (TiledGroupShflTests::shflXor):
       output_sum = reduction_kernel_shfl_xor(tiled_part, input);
       break;
-    case(TiledGroupShflTests::shflUp):
+    case (TiledGroupShflTests::shflUp):
       output_sum = prefix_sum_kernel(tiled_part, input);
       result[thread_block_CG_ty.thread_rank()] = output_sum;
   }
 
   if (tiled_part.thread_rank() == 0 && shfl_test != TiledGroupShflTests::shflUp) {
-    printf("   Sum of all ranks 0..%d in this tiled_part group is %d\n",
-        tiled_part.size() - 1, output_sum);
+    printf("   Sum of all ranks 0..%d in this tiled_part group is %d\n", tiled_part.size() - 1,
+           output_sum);
     result[thread_block_CG_ty.thread_rank() / (tile_size)] = output_sum;
   }
 }
 
-static void expected_result_calc(int* expected_result, int tile_size, int size, TiledGroupShflTests shfl_test) {
-  switch(shfl_test) {
-    case(TiledGroupShflTests::shflDown):
-    case(TiledGroupShflTests::shflXor):
-    {
+static void expected_result_calc(int* expected_result, int tile_size, int size,
+                                 TiledGroupShflTests shfl_test) {
+  switch (shfl_test) {
+    case (TiledGroupShflTests::shflDown):
+    case (TiledGroupShflTests::shflXor): {
       int expected_sum = ((tile_size - 1) * tile_size / 2);
       for (int i = 0; i < size; i++) {
         expected_result[i] = expected_sum;
       }
       break;
     }
-    case(TiledGroupShflTests::shflUp):
-    {
+    case (TiledGroupShflTests::shflUp): {
       for (int i = 0; i < size / tile_size; i++) {
         int acc = 0;
         for (int j = 0; j < tile_size; j++) {
@@ -138,18 +139,17 @@ static void expected_result_calc(int* expected_result, int tile_size, int size, 
       }
       break;
     }
-  }  
+  }
 }
 
-template <unsigned int tile_size>
-static void test_group_partition(TiledGroupShflTests shfl_test) {
+template <unsigned int tile_size> static void test_group_partition(TiledGroupShflTests shfl_test) {
   int block_size = 1;
   int threads_per_blk = 64;
 
   int num_elem = (block_size * threads_per_blk) / tile_size;
   if (shfl_test == TiledGroupShflTests::shflUp) {
     num_elem = block_size * threads_per_blk;
-  }   
+  }
 
   int* expected_result = new int[num_elem];
 
@@ -163,7 +163,7 @@ static void test_group_partition(TiledGroupShflTests shfl_test) {
 
   // Launch Kernel
   hipLaunchKernelGGL(kernel_cg_group_partition_static<tile_size>, block_size, threads_per_blk,
-                    threads_per_blk * sizeof(int), 0, result_dev, shfl_test);
+                     threads_per_blk * sizeof(int), 0, result_dev, shfl_test);
   HIP_CHECK(hipDeviceSynchronize());
 
 
@@ -176,7 +176,6 @@ static void test_group_partition(TiledGroupShflTests shfl_test) {
   HIP_CHECK(hipFree(result_dev));
   HIP_CHECK(hipHostFree(result_host));
   delete[] expected_result;
-
 }
 
 TEST_CASE("Unit_hipCGThreadBlockTileType_Shfl") {
@@ -191,7 +190,8 @@ TEST_CASE("Unit_hipCGThreadBlockTileType_Shfl") {
     return;
   }
 
-  TiledGroupShflTests shfl_test = GENERATE(TiledGroupShflTests::shflDown, TiledGroupShflTests::shflXor, TiledGroupShflTests::shflUp);
+  TiledGroupShflTests shfl_test = GENERATE(
+      TiledGroupShflTests::shflDown, TiledGroupShflTests::shflXor, TiledGroupShflTests::shflUp);
   test_group_partition<2>(shfl_test);
   test_group_partition<4>(shfl_test);
   test_group_partition<8>(shfl_test);

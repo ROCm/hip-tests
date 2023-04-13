@@ -86,53 +86,51 @@ using namespace cooperative_groups;
 
 static constexpr size_t kBufferLen = 1024 * 1024;
 
-__global__ void test_gws(uint* buf, uint buf_size, long* tmp_buf, long* result)
-{
-    extern __shared__ long tmp[];
-    uint groups = gridDim.x;
-    uint group_id = blockIdx.x;
-    uint local_id = threadIdx.x;
-    uint chunk = gridDim.x * blockDim.x;
+__global__ void test_gws(uint* buf, uint buf_size, long* tmp_buf, long* result) {
+  extern __shared__ long tmp[];
+  uint groups = gridDim.x;
+  uint group_id = blockIdx.x;
+  uint local_id = threadIdx.x;
+  uint chunk = gridDim.x * blockDim.x;
 
-    uint i = group_id * blockDim.x + local_id;
-    long sum = 0;
-    while (i < buf_size) {
-      sum += buf[i];
-      i += chunk;
+  uint i = group_id * blockDim.x + local_id;
+  long sum = 0;
+  while (i < buf_size) {
+    sum += buf[i];
+    i += chunk;
+  }
+  tmp[local_id] = sum;
+  __syncthreads();
+  i = 0;
+  if (local_id == 0) {
+    sum = 0;
+    while (i < blockDim.x) {
+      sum += tmp[i];
+      i++;
     }
-    tmp[local_id] = sum;
-    __syncthreads();
-    i = 0;
-    if (local_id == 0) {
-        sum = 0;
-        while (i < blockDim.x) {
-          sum += tmp[i];
-          i++;
-        }
-        tmp_buf[group_id] = sum;
-    }
-    // wait
-    cooperative_groups::this_grid().sync();
+    tmp_buf[group_id] = sum;
+  }
+  // wait
+  cooperative_groups::this_grid().sync();
 
-    if (((blockIdx.x * blockDim.x) + threadIdx.x) == 0) {
-        for (uint i = 1; i < groups; ++i) {
-          sum += tmp_buf[i];
-       }
-       //*result = sum;
-       result[1 + cooperative_groups::this_multi_grid().grid_rank()] = sum;
+  if (((blockIdx.x * blockDim.x) + threadIdx.x) == 0) {
+    for (uint i = 1; i < groups; ++i) {
+      sum += tmp_buf[i];
     }
-    cooperative_groups::this_multi_grid().sync();
-    if (cooperative_groups::this_multi_grid().grid_rank() == 0) {
-      sum = 0;
-      for (uint i = 1; i <= cooperative_groups::this_multi_grid().num_grids(); ++i) {
-        sum += result[i];
-      }
-      *result = sum;
+    //*result = sum;
+    result[1 + cooperative_groups::this_multi_grid().grid_rank()] = sum;
+  }
+  cooperative_groups::this_multi_grid().sync();
+  if (cooperative_groups::this_multi_grid().grid_rank() == 0) {
+    sum = 0;
+    for (uint i = 1; i <= cooperative_groups::this_multi_grid().num_grids(); ++i) {
+      sum += result[i];
     }
+    *result = sum;
+  }
 }
 
-__global__ void test_coop_kernel(unsigned int loops, long long *array,
-                                 int fast_gpu) {
+__global__ void test_coop_kernel(unsigned int loops, long long* array, int fast_gpu) {
   multi_grid_group mgrid = this_multi_grid();
   unsigned int rank = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -151,12 +149,12 @@ __global__ void test_coop_kernel(unsigned int loops, long long *array,
       // If it rolls over, we don't know how much to add to catch up.
       // So just ignore those slipped cycles.
       last_clock = cur_clock;
-    } while(time_diff < 1000000);
+    } while (time_diff < 1000000);
     array[rank] += clock64();
   }
 }
 
-__global__ void test_kernel(uint32_t loops, unsigned long long *array) {
+__global__ void test_kernel(uint32_t loops, unsigned long long* array) {
   unsigned int rank = blockIdx.x * blockDim.x + threadIdx.x;
 
   for (int i = 0; i < loops; i++) {
@@ -170,13 +168,13 @@ __global__ void test_kernel(uint32_t loops, unsigned long long *array) {
       // If it rolls over, we don't know how much to add to catch up.
       // So just ignore those slipped cycles.
       last_clock = cur_clock;
-    } while(time_diff < 1000000);
+    } while (time_diff < 1000000);
     array[rank] += clock64();
   }
 }
 
-static void verify_time(double single_kernel_time, double multi_kernel_time, float low_bound, float high_bound)
-{
+static void verify_time(double single_kernel_time, double multi_kernel_time, float low_bound,
+                        float high_bound) {
   // Test that multiple kernel times are inside expected boundaries
   REQUIRE(multi_kernel_time >= low_bound * single_kernel_time);
   REQUIRE(multi_kernel_time <= high_bound * single_kernel_time);
@@ -185,14 +183,14 @@ static void verify_time(double single_kernel_time, double multi_kernel_time, flo
 void test_multigrid_streams(int device_num) {
   uint32_t loops = 2000;
   int32_t fast_gpu = -1;
-   
+
   // We will launch enough waves to fill up all of the GPU
   int warp_sizes[2];
   int num_sms[2];
   hipDeviceProp_t device_properties[2];
   int warp_size = INT_MAX;
   int num_sm = INT_MAX;
-  for (int dev = 0; dev < (device_num-1); ++dev) {
+  for (int dev = 0; dev < (device_num - 1); ++dev) {
     for (int i = 0; i < 2; i++) {
       HIP_CHECK(hipGetDeviceProperties(&device_properties[i], (dev + i)));
       warp_sizes[i] = device_properties[i].warpSize;
@@ -210,8 +208,8 @@ void test_multigrid_streams(int device_num) {
     int max_blocks_per_sm = INT_MAX;
     for (int i = 0; i < 2; i++) {
       HIP_CHECK(hipSetDevice(dev + i));
-      HIP_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor(
-               &max_blocks_per_sm_arr[i], test_kernel, warp_size, 0));
+      HIP_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor(&max_blocks_per_sm_arr[i], test_kernel,
+                                                             warp_size, 0));
       if (max_blocks_per_sm_arr[i] < max_blocks_per_sm) {
         max_blocks_per_sm = max_blocks_per_sm_arr[i];
       }
@@ -234,7 +232,7 @@ void test_multigrid_streams(int device_num) {
     // Set up data to pass into the kernel
     // Alocate the host input buffer, and two device-focused buffers that we
     // will use for our test.
-    unsigned long long *dev_array[2];
+    unsigned long long* dev_array[2];
     for (int i = 0; i < 2; i++) {
       int good_size = desired_blocks * warp_size * sizeof(long long);
       HIP_CHECK(hipSetDevice(dev + i));
@@ -247,11 +245,11 @@ void test_multigrid_streams(int device_num) {
     }
 
     /* Launch the kernels ****************************************************/
-    void *dev_params[2][3];
+    void* dev_params[2][3];
     hipLaunchParams md_params[2];
     std::chrono::time_point<std::chrono::system_clock> start_time[2];
     std::chrono::time_point<std::chrono::system_clock> end_time[2];
-    
+
     // Test 0: Launching a multi-GPU cooperative kernel
     // Both GPUs launch a long cooperative kernel
     INFO("GPU " << dev << ": Long Coop Kernel");
@@ -277,8 +275,7 @@ void test_multigrid_streams(int device_num) {
     }
     end_time[0] = std::chrono::system_clock::now();
 
-    std::chrono::duration<double> single_kernel_time =
-                                  (end_time[0] - start_time[0]);
+    std::chrono::duration<double> single_kernel_time = (end_time[0] - start_time[0]);
     INFO("A single kernel on both GPUs took: " << single_kernel_time.count() << " seconds");
 
     SECTION("GPU1 - Standard/ Long Coop, GPU2 - Coop/Standard") {
@@ -287,13 +284,13 @@ void test_multigrid_streams(int device_num) {
       fast_gpu = 1;
       start_time[1] = std::chrono::system_clock::now();
       HIP_CHECK(hipSetDevice(dev));
-      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0,
-                       streams[0], loops, dev_array[0]);
+      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0, streams[0], loops,
+                         dev_array[0]);
       HIP_CHECK(hipGetLastError());
       HIP_CHECK(hipLaunchCooperativeKernelMultiDevice(md_params, 2, 0));
       HIP_CHECK(hipSetDevice(dev + 1));
-      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0,
-                       streams[1], loops, dev_array[1]);
+      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0, streams[1], loops,
+                         dev_array[1]);
       HIP_CHECK(hipGetLastError());
       for (int i = 0; i < 2; i++) {
         HIP_CHECK(hipSetDevice(dev + i));
@@ -301,7 +298,8 @@ void test_multigrid_streams(int device_num) {
       }
       end_time[1] = std::chrono::system_clock::now();
       std::chrono::duration<double> serialized_gpu0_time = (end_time[1] - start_time[1]);
-      INFO("Serialized set of three kernels with GPU0 being long took: " << serialized_gpu0_time.count() << " seconds");
+      INFO("Serialized set of three kernels with GPU0 being long took: "
+           << serialized_gpu0_time.count() << " seconds");
 
       verify_time(single_kernel_time.count(), serialized_gpu0_time.count(), 2.7f, 3.3f);
     }
@@ -312,13 +310,13 @@ void test_multigrid_streams(int device_num) {
       fast_gpu = 0;
       start_time[1] = std::chrono::system_clock::now();
       HIP_CHECK(hipSetDevice(dev));
-      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0,
-                         streams[0], loops, dev_array[0]);
+      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0, streams[0], loops,
+                         dev_array[0]);
       HIP_CHECK(hipGetLastError());
       HIP_CHECK(hipLaunchCooperativeKernelMultiDevice(md_params, 2, 0));
       HIP_CHECK(hipSetDevice(dev + 1));
-      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0,
-                         streams[1], loops, dev_array[1]);
+      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0, streams[1], loops,
+                         dev_array[1]);
       HIP_CHECK(hipGetLastError());
       for (int i = 0; i < 2; i++) {
         HIP_CHECK(hipSetDevice(dev + i));
@@ -326,25 +324,28 @@ void test_multigrid_streams(int device_num) {
       }
       end_time[1] = std::chrono::system_clock::now();
       std::chrono::duration<double> serialized_gpu1_time = (end_time[1] - start_time[1]);
-      INFO("Serialized set of three kernels with GPU1 being long took: " << serialized_gpu1_time.count() << " seconds");
+      INFO("Serialized set of three kernels with GPU1 being long took: "
+           << serialized_gpu1_time.count() << " seconds");
 
       verify_time(single_kernel_time.count(), serialized_gpu1_time.count(), 2.7f, 3.3f);
     }
 
-    SECTION("GPU1 - Standard/Coop, GPU2 - Long Coop/Standard - regular and coop kernel overlap at beginning") {
+    SECTION(
+        "GPU1 - Standard/Coop, GPU2 - Long Coop/Standard - regular and coop kernel overlap at "
+        "beginning") {
       INFO("GPU " << dev << ": Standard/Coop with multi device no pre sync");
       INFO("GPU " << (dev + 1) << ": Long Coop/Standard with multi device no pre sync");
       fast_gpu = 0;
       start_time[1] = std::chrono::system_clock::now();
       HIP_CHECK(hipSetDevice(dev));
-      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0,
-                       streams[0], loops, dev_array[0]);
+      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0, streams[0], loops,
+                         dev_array[0]);
       HIP_CHECK(hipGetLastError());
       HIP_CHECK(hipLaunchCooperativeKernelMultiDevice(md_params, 2,
-             hipCooperativeLaunchMultiDeviceNoPreSync));
+                                                      hipCooperativeLaunchMultiDeviceNoPreSync));
       HIP_CHECK(hipSetDevice(dev + 1));
-      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0,
-                       streams[1], loops, dev_array[1]);
+      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0, streams[1], loops,
+                         dev_array[1]);
       HIP_CHECK(hipGetLastError());
       for (int i = 0; i < 2; i++) {
         HIP_CHECK(hipSetDevice(dev + i));
@@ -352,50 +353,55 @@ void test_multigrid_streams(int device_num) {
       }
       end_time[1] = std::chrono::system_clock::now();
       std::chrono::duration<double> pre_overlapped_time = (end_time[1] - start_time[1]);
-      INFO("Multiple kernels with pre-overlap allowed took: " << pre_overlapped_time.count() << " seconds");
+      INFO("Multiple kernels with pre-overlap allowed took: " << pre_overlapped_time.count()
+                                                              << " seconds");
 
       verify_time(single_kernel_time.count(), pre_overlapped_time.count(), 1.7f, 2.3f);
     }
 
-    SECTION("GPU1 - Standard/Long Coop, GPU2 - Coop/Standard - regular and coop kernel overlap at end") {
+    SECTION(
+        "GPU1 - Standard/Long Coop, GPU2 - Coop/Standard - regular and coop kernel overlap at "
+        "end") {
       INFO("GPU " << dev << ": Standard/Long Coop with multi device no post sync");
       INFO("GPU " << (dev + 1) << ": Coop/Standard with multi device no post sync");
       fast_gpu = 1;
       start_time[1] = std::chrono::system_clock::now();
       HIP_CHECK(hipSetDevice(dev));
-      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0,
-                         streams[0], loops, dev_array[0]);
+      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0, streams[0], loops,
+                         dev_array[0]);
       HIP_CHECK(hipGetLastError());
       HIP_CHECK(hipLaunchCooperativeKernelMultiDevice(md_params, 2,
-               hipCooperativeLaunchMultiDeviceNoPostSync));
+                                                      hipCooperativeLaunchMultiDeviceNoPostSync));
       HIP_CHECK(hipSetDevice(dev + 1));
-      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0,
-                       streams[1], loops, dev_array[1]);
+      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0, streams[1], loops,
+                         dev_array[1]);
       for (int i = 0; i < 2; i++) {
         HIP_CHECK(hipSetDevice(dev + i));
         HIP_CHECK(hipDeviceSynchronize());
       }
       end_time[1] = std::chrono::system_clock::now();
       std::chrono::duration<double> post_overlapped_time = (end_time[1] - start_time[1]);
-      INFO("Multiple kernels with post-overlap allowed took: " << post_overlapped_time.count() << " seconds");
+      INFO("Multiple kernels with post-overlap allowed took: " << post_overlapped_time.count()
+                                                               << " seconds");
 
       verify_time(single_kernel_time.count(), post_overlapped_time.count(), 1.7f, 2.3f);
     }
 
-    SECTION("GPU1 - Standard/Long Coop, GPU2 - Long Coop/Standard - regular and coop kernel overlap") {
+    SECTION(
+        "GPU1 - Standard/Long Coop, GPU2 - Long Coop/Standard - regular and coop kernel overlap") {
       INFO("GPU " << dev << ": Standard/Long Coop with multi device no pre or post sync");
       INFO("GPU " << (dev + 1) << ": Long Coop/Standard with multi device no pre or post sync");
       start_time[1] = std::chrono::system_clock::now();
       HIP_CHECK(hipSetDevice(dev));
-      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0,
-                       streams[0], loops, dev_array[0]);
+      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0, streams[0], loops,
+                         dev_array[0]);
       HIP_CHECK(hipGetLastError());
-      HIP_CHECK(hipLaunchCooperativeKernelMultiDevice(md_params, 2,
-               hipCooperativeLaunchMultiDeviceNoPreSync |
-               hipCooperativeLaunchMultiDeviceNoPostSync));
+      HIP_CHECK(hipLaunchCooperativeKernelMultiDevice(
+          md_params, 2,
+          hipCooperativeLaunchMultiDeviceNoPreSync | hipCooperativeLaunchMultiDeviceNoPostSync));
       HIP_CHECK(hipSetDevice(dev + 1));
-      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0,
-                         streams[1], loops, dev_array[1]);
+      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0, streams[1], loops,
+                         dev_array[1]);
       HIP_CHECK(hipGetLastError());
       for (int i = 0; i < 2; i++) {
         HIP_CHECK(hipSetDevice(dev + i));
@@ -412,8 +418,7 @@ void test_multigrid_streams(int device_num) {
       HIP_CHECK(hipFree(dev_array[k]));
       HIP_CHECK(hipStreamDestroy(streams[k]));
     }
-
-  } 
+  }
 }
 
 TEST_CASE("Unit_hipLaunchCooperativeKernelMultiDevice_Basic") {
@@ -423,15 +428,15 @@ TEST_CASE("Unit_hipLaunchCooperativeKernelMultiDevice_Basic") {
   HIP_CHECK(hipGetDeviceCount(&device_num));
 
   size_t buffer_size = kBufferLen * sizeof(int);
-  
-  int *A_h = reinterpret_cast<int*>(malloc(buffer_size * device_num));
+
+  int* A_h = reinterpret_cast<int*>(malloc(buffer_size * device_num));
   for (uint32_t i = 0; i < kBufferLen * device_num; ++i) {
     A_h[i] = static_cast<int>(i);
   }
 
-  int *A_d[device_num];
-  long *B_d[device_num];
-  long *C_d;
+  int* A_d[device_num];
+  long* B_d[device_num];
+  long* C_d;
   hipStream_t stream[device_num];
 
   hipDeviceProp_t device_properties[device_num];
@@ -473,18 +478,19 @@ TEST_CASE("Unit_hipLaunchCooperativeKernelMultiDevice_Basic") {
 
   for (int i = 0; i < device_num; i++) {
     HIP_CHECK(hipSetDevice(i));
-  
-    dimBlock.x = workgroup;
-    HIP_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor(&num_blocks,
-    test_gws, dimBlock.x * dimBlock.y * dimBlock.z, dimBlock.x * sizeof(long)));
 
-    INFO("GPU" << i << " has block size = " << dimBlock.x << " and num blocks per CU " << num_blocks << "\n");
+    dimBlock.x = workgroup;
+    HIP_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor(
+        &num_blocks, test_gws, dimBlock.x * dimBlock.y * dimBlock.z, dimBlock.x * sizeof(long)));
+
+    INFO("GPU" << i << " has block size = " << dimBlock.x << " and num blocks per CU " << num_blocks
+               << "\n");
 
     dimGrid.x = device_properties[i].multiProcessorCount * std::min(num_blocks, 32);
 
     HIP_CHECK(hipMalloc(&B_d[i], dimGrid.x * sizeof(long)));
 
-    args[i * num_kernel_args]     = (void*)&A_d[i];
+    args[i * num_kernel_args] = (void*)&A_d[i];
     args[i * num_kernel_args + 1] = (void*)&kBufferLen;
     args[i * num_kernel_args + 2] = (void*)&B_d[i];
     args[i * num_kernel_args + 3] = (void*)&C_d;
@@ -505,7 +511,7 @@ TEST_CASE("Unit_hipLaunchCooperativeKernelMultiDevice_Basic") {
   size_t processed_Dwords = kBufferLen * device_num;
   REQUIRE(*C_d == (((long)(processed_Dwords) * (processed_Dwords - 1)) / 2));
 
-  delete [] launch_params_list;
+  delete[] launch_params_list;
 
   HIP_CHECK(hipSetDevice(0));
   HIP_CHECK(hipHostFree(C_d));
@@ -522,7 +528,7 @@ TEST_CASE("Unit_hipLaunchCooperativeKernelMultiDevice_Basic") {
 TEST_CASE("Unit_hipLaunchCooperativeKernelMultiDevice_Streams") {
   int device_num = 0;
   HIP_CHECK(hipGetDeviceCount(&device_num));
- 
+
   if (device_num < 2) {
     HipTest::HIP_SKIP_TEST("Skipping because devices < 2");
     return;

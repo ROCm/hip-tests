@@ -22,16 +22,12 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip/hip_cooperative_groups.h>
 
-#include "cooperative_groups_common.hh"
+#include "hip_cg_common.hh"
 
 namespace cg = cooperative_groups;
 
-static __global__
-void kernel_cg_grid_group_type(int *size_dev,
-                               int *thd_rank_dev,
-                               int *is_valid_dev,
-                               int *sync_dev)
-{
+static __global__ void kernel_cg_grid_group_type(int* size_dev, int* thd_rank_dev,
+                                                 int* is_valid_dev, int* sync_dev) {
   cg::grid_group gg = cg::this_grid();
   int gIdx = (blockIdx.x * blockDim.x) + threadIdx.x;
 
@@ -54,12 +50,8 @@ void kernel_cg_grid_group_type(int *size_dev,
   sync_dev[gIdx] = gm[1] * gm[0];
 }
 
-static __global__
-void kernel_cg_grid_group_type_via_base_type(int *size_dev,
-                               int *thd_rank_dev,
-                               int *is_valid_dev,
-                               int *sync_dev)
-{
+static __global__ void kernel_cg_grid_group_type_via_base_type(int* size_dev, int* thd_rank_dev,
+                                                               int* is_valid_dev, int* sync_dev) {
   cg::thread_group tg = cg::this_grid();
   int gIdx = (blockIdx.x * blockDim.x) + threadIdx.x;
 
@@ -87,12 +79,8 @@ void kernel_cg_grid_group_type_via_base_type(int *size_dev,
   sync_dev[gIdx] = gm[1] * gm[0];
 }
 
-static __global__
-void kernel_cg_grid_group_type_via_public_api(int *size_dev,
-                               int *thd_rank_dev,
-                               int *is_valid_dev,
-                               int *sync_dev)
-{
+static __global__ void kernel_cg_grid_group_type_via_public_api(int* size_dev, int* thd_rank_dev,
+                                                                int* is_valid_dev, int* sync_dev) {
   cg::grid_group gg = cg::this_grid();
   int gIdx = (blockIdx.x * blockDim.x) + threadIdx.x;
 
@@ -115,9 +103,8 @@ void kernel_cg_grid_group_type_via_public_api(int *size_dev,
   sync_dev[gIdx] = gm[1] * gm[0];
 }
 
-static __global__ void
-coop_kernel(unsigned int *first_array, unsigned int *second_array,
-            unsigned int loops, unsigned int array_len) {
+static __global__ void coop_kernel(unsigned int* first_array, unsigned int* second_array,
+                                   unsigned int loops, unsigned int array_len) {
   cg::grid_group grid = cg::this_grid();
   unsigned int rank = grid.thread_rank();
   unsigned int grid_size = grid.size();
@@ -143,9 +130,8 @@ coop_kernel(unsigned int *first_array, unsigned int *second_array,
   }
 }
 
-static __global__ void
-test_kernel(unsigned int *atomic_val, unsigned int *array,
-            unsigned int loops) {
+static __global__ void test_kernel(unsigned int* atomic_val, unsigned int* array,
+                                   unsigned int loops) {
   cg::grid_group grid = cg::this_grid();
   unsigned rank = grid.thread_rank();
 
@@ -171,7 +157,7 @@ test_kernel(unsigned int *atomic_val, unsigned int *array,
         // If it rolls over, we don't know how much to add to catch up.
         // So just ignore those slipped cycles.
         last_clock = cur_clock;
-      } while(time_diff < 1000000);
+      } while (time_diff < 1000000);
     }
 
     if (threadIdx.x == 0) {
@@ -182,12 +168,12 @@ test_kernel(unsigned int *atomic_val, unsigned int *array,
   }
 }
 
-static void verify_coop_buffers(unsigned int *host_input,
-                              unsigned int *first_array,
-                              unsigned int *second_array,
-                              unsigned int loops, unsigned int array_len) {
-  unsigned int *expected_first_array = host_input;
-  unsigned int *expected_second_array = reinterpret_cast<unsigned int*>(malloc(sizeof(unsigned int) * array_len));
+static void verify_coop_buffers(unsigned int* host_input, unsigned int* first_array,
+                                unsigned int* second_array, unsigned int loops,
+                                unsigned int array_len) {
+  unsigned int* expected_first_array = host_input;
+  unsigned int* expected_second_array =
+      reinterpret_cast<unsigned int*>(malloc(sizeof(unsigned int) * array_len));
   memset(expected_second_array, 0, sizeof(unsigned int) * array_len);
 
   for (int i = 0; i < loops; i++) {
@@ -210,19 +196,17 @@ static void verify_coop_buffers(unsigned int *host_input,
 }
 
 static void verify_barrier_buffer(unsigned int loops, unsigned int warps,
-                                 unsigned int *host_buffer) {
+                                  unsigned int* host_buffer) {
   unsigned int max_in_this_loop = 0;
   for (unsigned int i = 0; i < loops; i++) {
     max_in_this_loop += warps;
     for (unsigned int j = 0; j < warps; j++) {
-      REQUIRE(host_buffer[i*warps+j] <= max_in_this_loop);
+      REQUIRE(host_buffer[i * warps + j] <= max_in_this_loop);
     }
   }
 }
 
-template <typename F>
-static void test_cg_grid_group_type(F kernel_func, int block_size)
-{
+template <typename F> static void test_cg_grid_group_type(F kernel_func, int block_size) {
   int num_bytes = sizeof(int) * 2 * block_size;
   int *size_dev, *size_host;
   int *thd_rank_dev, *thd_rank_host;
@@ -242,13 +226,12 @@ static void test_cg_grid_group_type(F kernel_func, int block_size)
   HIP_CHECK(hipHostMalloc(&sync_host, num_bytes));
 
   // Launch Kernel
-  void *params[4];
+  void* params[4];
   params[0] = &size_dev;
   params[1] = &thd_rank_dev;
   params[2] = &is_valid_dev;
   params[3] = &sync_dev;
-  HIP_CHECK(hipLaunchCooperativeKernel(kernel_func, 2, block_size,
-                             params, 0, 0));
+  HIP_CHECK(hipLaunchCooperativeKernel(kernel_func, 2, block_size, params, 0, 0));
 
   // Copy result from device to host
   HIP_CHECK(hipMemcpy(size_host, size_dev, num_bytes, hipMemcpyDeviceToHost));
@@ -270,7 +253,7 @@ static void test_cg_grid_group_type(F kernel_func, int block_size)
   HIP_CHECK(hipFree(is_valid_dev));
   HIP_CHECK(hipFree(sync_dev));
 
-  //Free host memory
+  // Free host memory
   HIP_CHECK(hipHostFree(size_host));
   HIP_CHECK(hipHostFree(thd_rank_host));
   HIP_CHECK(hipHostFree(is_valid_host));
@@ -289,10 +272,10 @@ TEST_CASE("Unit_hipCGGridGroupType_Basic") {
     return;
   }
 
-  void* (*kernel_func) (void);
+  void* (*kernel_func)(void);
 
   SECTION("Default grid group API test") {
-    kernel_func = reinterpret_cast<void*(*)()>(kernel_cg_grid_group_type);
+    kernel_func = reinterpret_cast<void* (*)()>(kernel_cg_grid_group_type);
   }
 #if 0
   SECTION("Base type grid group API test") {
@@ -300,12 +283,12 @@ TEST_CASE("Unit_hipCGGridGroupType_Basic") {
   }
 #endif
   SECTION("Public API grid group test") {
-    kernel_func = reinterpret_cast<void*(*)()>(kernel_cg_grid_group_type_via_public_api);
+    kernel_func = reinterpret_cast<void* (*)()>(kernel_cg_grid_group_type_via_public_api);
   }
 
   // Test for block_size in powers of 2
   int max_threads_per_blk = device_properties.maxThreadsPerBlock;
-  for (int block_size = 2; block_size <= max_threads_per_blk; block_size = block_size*2) {
+  for (int block_size = 2; block_size <= max_threads_per_blk; block_size = block_size * 2) {
     test_cg_grid_group_type(kernel_func, block_size);
   }
 
@@ -339,7 +322,8 @@ TEST_CASE("Unit_hipCGGridGroupType_DataSharing") {
 
   // Calculate the device occupancy to know how many blocks can be run.
   int max_blocks_per_sm;
-  HIP_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor(&max_blocks_per_sm, coop_kernel, warp_size, 0));
+  HIP_CHECK(
+      hipOccupancyMaxActiveBlocksPerMultiprocessor(&max_blocks_per_sm, coop_kernel, warp_size, 0));
 
   int num_blocks = max_blocks_per_sm * num_sms;
 
@@ -350,7 +334,8 @@ TEST_CASE("Unit_hipCGGridGroupType_DataSharing") {
   // Allocate and initialize data
 
   // Alocate the host input buffer, and two device buffers
-  unsigned int *input_buffer = reinterpret_cast<unsigned int*>(malloc(sizeof(unsigned int) * width));
+  unsigned int* input_buffer =
+      reinterpret_cast<unsigned int*>(malloc(sizeof(unsigned int) * width));
   for (int i = 0; i < width; i++) {
     input_buffer[i] = i;
   }
@@ -359,30 +344,29 @@ TEST_CASE("Unit_hipCGGridGroupType_DataSharing") {
   host_mem_1 = reinterpret_cast<unsigned int*>(malloc(sizeof(unsigned int) * width));
   HIP_CHECK(hipMalloc(&dev_mem_1, sizeof(unsigned int) * width));
   HIP_CHECK(hipMemcpyAsync(dev_mem_1, input_buffer, sizeof(unsigned int) * width,
-                          hipMemcpyHostToDevice, stream));
+                           hipMemcpyHostToDevice, stream));
 
   unsigned int *dev_mem_2, *host_mem_2;
   host_mem_2 = reinterpret_cast<unsigned int*>(malloc(sizeof(unsigned int) * width));
   HIP_CHECK(hipMalloc(&dev_mem_2, sizeof(unsigned int) * width));
-  HIP_CHECK(hipMemsetAsync(dev_mem_2, 0, width * sizeof(unsigned int),
-                            stream));
+  HIP_CHECK(hipMemsetAsync(dev_mem_2, 0, width * sizeof(unsigned int), stream));
 
   // Launch the kernels
-  INFO("Launching a cooperative kernel with" << num_blocks << "blocks, each with" << warp_size << "threads");
+  INFO("Launching a cooperative kernel with" << num_blocks << "blocks, each with" << warp_size
+                                             << "threads");
 
-  void *coop_params[4];
+  void* coop_params[4];
   coop_params[0] = reinterpret_cast<void*>(&dev_mem_1);
   coop_params[1] = reinterpret_cast<void*>(&dev_mem_2);
   coop_params[2] = reinterpret_cast<void*>(&loops);
   coop_params[3] = reinterpret_cast<void*>(&width);
-  HIP_CHECK(hipLaunchCooperativeKernel(coop_kernel, num_blocks, warp_size, coop_params,
-                                      0, stream));
+  HIP_CHECK(hipLaunchCooperativeKernel(coop_kernel, num_blocks, warp_size, coop_params, 0, stream));
 
   // Read back the buffers and print out their data
   HIP_CHECK(hipMemcpyAsync(host_mem_1, dev_mem_1, sizeof(unsigned int) * width,
-                          hipMemcpyDeviceToHost, stream));
+                           hipMemcpyDeviceToHost, stream));
   HIP_CHECK(hipMemcpyAsync(host_mem_2, dev_mem_2, sizeof(unsigned int) * width,
-                          hipMemcpyDeviceToHost, stream));
+                           hipMemcpyDeviceToHost, stream));
 
   HIP_CHECK(hipStreamSynchronize(stream));
 
@@ -412,49 +396,55 @@ TEST_CASE("Unit_hipCGGridGroupType_Barrier") {
   uint32_t loops = GENERATE(1, 2, 3, 4);
   uint32_t warps = GENERATE(4, 8, 16, 32);
   uint32_t block_size = 1;
-    
+
   // Test whether the requested size will fit on the GPU
-  int warp_size;
   int max_blocks_per_sm;
-  warp_size = device_properties.warpSize;
+  int warp_size = device_properties.warpSize;
+  int num_sms = device_properties.multiProcessorCount;
 
   int num_threads_in_block = block_size * warp_size;
 
   // Calculate the device occupancy to know how many blocks can be run.
-  HIP_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor(&max_blocks_per_sm,
-           test_kernel, num_threads_in_block, 0));
+  HIP_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor(&max_blocks_per_sm, test_kernel,
+                                                         num_threads_in_block, 0));
 
   int requested_blocks = warps / block_size;
+  if (requested_blocks > max_blocks_per_sm * num_sms) {
+    INFO("Too many blocks requested!");
+    REQUIRE(false);
+  }
 
   // Each block will output a single value per loop.
   uint32_t total_buffer_len = requested_blocks * loops;
 
   // Alocate the buffer that will hold the kernel's output, and which will
   // also be used to globally synchronize during GWS initialization
-  unsigned int *host_buffer = reinterpret_cast<unsigned int*>(calloc(total_buffer_len, sizeof(unsigned int)));
+  unsigned int* host_buffer =
+      reinterpret_cast<unsigned int*>(calloc(total_buffer_len, sizeof(unsigned int)));
 
-  unsigned int *kernel_buffer;
+  unsigned int* kernel_buffer;
   HIP_CHECK(hipMalloc(&kernel_buffer, sizeof(unsigned int) * total_buffer_len));
   HIP_CHECK(hipMemcpy(kernel_buffer, host_buffer, sizeof(unsigned int) * total_buffer_len,
                       hipMemcpyHostToDevice));
 
-  unsigned int *kernel_atomic;
+  unsigned int* kernel_atomic;
   HIP_CHECK(hipMalloc(&kernel_atomic, sizeof(unsigned int)));
   HIP_CHECK(hipMemset(kernel_atomic, 0, sizeof(unsigned int)));
 
   // Launch the kernel
-  INFO("Launching a cooperative kernel with" << warps << "warps in" << requested_blocks << "thread blocks");
+  INFO("Launching a cooperative kernel with" << warps << "warps in" << requested_blocks
+                                             << "thread blocks");
 
-  void *params[3];
+  void* params[3];
   params[0] = reinterpret_cast<void*>(&kernel_atomic);
   params[1] = reinterpret_cast<void*>(&kernel_buffer);
   params[2] = reinterpret_cast<void*>(&loops);
-  HIP_CHECK(hipLaunchCooperativeKernel(test_kernel, requested_blocks,
-                                      num_threads_in_block, params, 0, 0));
+  HIP_CHECK(hipLaunchCooperativeKernel(test_kernel, requested_blocks, num_threads_in_block, params,
+                                       0, 0));
 
   // Read back the buffer to host
   HIP_CHECK(hipMemcpy(host_buffer, kernel_buffer, sizeof(unsigned int) * total_buffer_len,
-                           hipMemcpyDeviceToHost));
+                      hipMemcpyDeviceToHost));
 
   verify_barrier_buffer(loops, requested_blocks, host_buffer);
 
@@ -462,4 +452,3 @@ TEST_CASE("Unit_hipCGGridGroupType_Barrier") {
   HIP_CHECK(hipFree(kernel_atomic));
   free(host_buffer);
 }
-

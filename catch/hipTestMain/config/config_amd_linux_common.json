@@ -55,9 +55,11 @@
 	   "Unit_hipDeviceSetSharedMemConfig_Negative_Parameters",
 	   "Disabling tests tracked with SWDEV-394083",
 	   "Unit_hipDeviceSynchronize_Positive_Nullstream",
-           "Disabling tests tracked with SWDEV-393637",
+	   "Disabling tests tracked with SWDEV-393637",
 	   "Unit_hipDeviceSynchronize_Functional",
 	   "Unit_hipMemset3DSync",
-	   "Unit_hipStreamAddCallback_StrmSyncTiming"
+	   "Unit_hipStreamAddCallback_StrmSyncTiming",
+	   "Disabling test tracked SWDEV-394199",
+	   "Unit_hipStreamCreateWithPriority_MulthreadNonblockingflag"
 	]
 }

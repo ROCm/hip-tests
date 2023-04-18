@@ -149,6 +149,12 @@
 	   "Unit_hipDeviceSetSharedMemConfig_Negative_Parameters",
 	   "Unit_hipDeviceGetUuid_Positive",
 	   "Disabling test tracked SWDEV-394199",
-	   "Unit_hipStreamCreateWithPriority_MulthreadNonblockingflag"
+	   "Unit_hipStreamCreateWithPriority_MulthreadNonblockingflag",
+	   "Note: Test disabled due to defect - EXSWHTEC-163",
+	   "Unit_hipModuleGetGlobal_Negative_Hmod_Is_Nullptr",
+	   "Note: Test disabled due to defect - EXSWHTEC-164",
+	   "Unit_hipModuleGetGlobal_Negative_Name_Is_Empty_String",
+	   "Note: Test disabled due to defect - EXSWHTEC-165",
+	   "Unit_hipModuleGetGlobal_Negative_Dptr_And_Bytes_Are_Nullptr"
 	]
 }

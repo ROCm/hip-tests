@@ -113,34 +113,37 @@ TEST_CASE("Unit_hipModuleGetGlobal_Negative_Parameters") {
   hipDeviceptr_t global = 0;
   size_t global_size = 0;
 
-// Disabled on AMD due to defect - EXSWHTEC-165
-#if HT_NVIDIA
-  SECTION("dptr == nullptr and bytes == nullptr") {
-    HIP_CHECK_ERROR(hipModuleGetGlobal(nullptr, nullptr, module, "int_var"), hipErrorInvalidValue);
-  }
-#endif
-
-// Disabled on AMD due to defect - EXSWHTEC-163
-#if HT_NVIDIA
-  SECTION("hmod == nullptr") {
-    HIP_CHECK_ERROR(hipModuleGetGlobal(&global, &global_size, nullptr, "int_var"),
-                    hipErrorInvalidResourceHandle);
-  }
-#endif
-
   SECTION("name == nullptr") {
     HIP_CHECK_ERROR(hipModuleGetGlobal(&global, &global_size, module, nullptr),
                     hipErrorInvalidValue);
   }
 
-// Disabled on AMD due to defect - EXSWHTEC-164
-#if HT_NVIDIA
-  SECTION("name == empty string") {
-    HIP_CHECK_ERROR(hipModuleGetGlobal(&global, &global_size, module, ""), hipErrorInvalidValue);
-  }
-#endif
-
   SECTION("name == invalid name") {
     HIP_CHECK_ERROR(hipModuleGetGlobal(&global, &global_size, module, "dummy"), hipErrorNotFound);
   }
+}
+
+TEST_CASE("Unit_hipModuleGetGlobal_Negative_Hmod_Is_Nullptr") {
+  hipModule_t module = GetModule();
+  hipDeviceptr_t global = 0;
+  size_t global_size = 0;
+
+  HIP_CHECK_ERROR(hipModuleGetGlobal(&global, &global_size, nullptr, "int_var"),
+                  hipErrorInvalidResourceHandle);
+}
+
+TEST_CASE("Unit_hipModuleGetGlobal_Negative_Name_Is_Empty_String") {
+  hipModule_t module = GetModule();
+  hipDeviceptr_t global = 0;
+  size_t global_size = 0;
+
+  HIP_CHECK_ERROR(hipModuleGetGlobal(&global, &global_size, module, ""), hipErrorInvalidValue);
+}
+
+TEST_CASE("Unit_hipModuleGetGlobal_Negative_Dptr_And_Bytes_Are_Nullptr") {
+  hipModule_t module = GetModule();
+  hipDeviceptr_t global = 0;
+  size_t global_size = 0;
+
+  HIP_CHECK_ERROR(hipModuleGetGlobal(nullptr, nullptr, module, "int_var"), hipErrorInvalidValue);
 }

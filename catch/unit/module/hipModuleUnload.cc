@@ -22,23 +22,17 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip/hip_runtime_api.h>
 
-TEST_CASE("Unit_hipModuleUnload_Negative_Parameters") {
+TEST_CASE("Unit_hipModuleUnload_Negative_Module_Is_Nullptr") {
   HIP_CHECK(hipFree(nullptr));
 
-// Disabled for AMD due to defect - EXSWHTEC-152
-#if HT_NVIDIA
-  SECTION("module == nullptr") {
-    HIP_CHECK_ERROR(hipModuleUnload(nullptr), hipErrorInvalidResourceHandle);
-  }
-#endif
+  HIP_CHECK_ERROR(hipModuleUnload(nullptr), hipErrorInvalidResourceHandle);
+}
 
-// Causes CUDA to segfault
-#if HT_AMD
-  SECTION("Double unload") {
-    hipModule_t module = nullptr;
-    HIP_CHECK(hipModuleLoad(&module, "empty_module.code"));
-    HIP_CHECK(hipModuleUnload(module));
-    HIP_CHECK_ERROR(hipModuleUnload(module), hipErrorNotFound);
-  }
-#endif
+TEST_CASE("Unit_hipModuleUnload_Negative_Double_Unload") {
+  HIP_CHECK(hipFree(nullptr));
+
+  hipModule_t module = nullptr;
+  HIP_CHECK(hipModuleLoad(&module, "empty_module.code"));
+  HIP_CHECK(hipModuleUnload(module));
+  HIP_CHECK_ERROR(hipModuleUnload(module), hipErrorNotFound);
 }

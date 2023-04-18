@@ -44,25 +44,25 @@ TEST_CASE("Unit_hipModuleGetTexRef_Negative_Parameters") {
     HIP_CHECK_ERROR(hipModuleGetTexRef(nullptr, module, "tex"), hipErrorInvalidValue);
   }
 
-// Disabled on AMD due to defect - EXSWHTEC-166
-#if HT_NVIDIA
-  SECTION("hmod == nullptr") {
-    HIP_CHECK_ERROR(hipModuleGetTexRef(&tex_ref, nullptr, "tex"), hipErrorInvalidResourceHandle);
-  }
-#endif
-
   SECTION("name == nullptr") {
     HIP_CHECK_ERROR(hipModuleGetTexRef(&tex_ref, module, nullptr), hipErrorInvalidValue);
   }
 
-// Disabled on AMD due to defect - EXSWHTEC-167
-#if HT_NVIDIA
-  SECTION("name == empty string") {
-    HIP_CHECK_ERROR(hipModuleGetTexRef(&tex_ref, module, ""), hipErrorInvalidValue);
-  }
-#endif
-
   SECTION("name == non existent texture") {
     HIP_CHECK_ERROR(hipModuleGetTexRef(&tex_ref, module, "non_existent_texture"), hipErrorNotFound);
   }
+}
+
+TEST_CASE("Unit_hipModuleGetTexRef_Negative_Hmod_Is_Nullptr") {
+  hipModule_t module = GetModule();
+  hipTexRef tex_ref = nullptr;
+
+  HIP_CHECK_ERROR(hipModuleGetTexRef(&tex_ref, nullptr, "tex"), hipErrorInvalidResourceHandle);
+}
+
+TEST_CASE("Unit_hipModuleGetTexRef_Negative_Name_Is_Empty_String") {
+  hipModule_t module = GetModule();
+  hipTexRef tex_ref = nullptr;
+
+  HIP_CHECK_ERROR(hipModuleGetTexRef(&tex_ref, module, ""), hipErrorInvalidValue);
 }

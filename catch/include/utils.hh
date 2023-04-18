@@ -40,7 +40,7 @@ void ArrayMismatch(T* const expected, T* const actual, const size_t num_elements
 
 template <typename It, typename T> void ArrayFindIfNot(It begin, It end, const T expected_value) {
   const auto it = std::find_if_not(
-      begin, end, [expected_value](const int elem) { return expected_value == elem; });
+      begin, end, [expected_value](const T elem) { return expected_value == elem; });
 
   if (it != end) {
     const auto idx = std::distance(begin, it);
@@ -128,7 +128,11 @@ __global__ void Iota(T* const out, size_t pitch, size_t w, size_t h, size_t d) {
 inline void LaunchDelayKernel(const std::chrono::milliseconds interval, const hipStream_t stream) {
   int ticks_per_ms = 0;
   // Clock rate is in kHz => number of clock ticks in a millisecond
-  HIP_CHECK(hipDeviceGetAttribute(&ticks_per_ms, hipDeviceAttributeClockRate, 0));
+  if (IsGfx11()) {
+    HIPCHECK(hipDeviceGetAttribute(&ticks_per_ms, hipDeviceAttributeWallClockRate, 0));
+  } else {
+    HIPCHECK(hipDeviceGetAttribute(&ticks_per_ms, hipDeviceAttributeClockRate, 0));
+  }
   Delay<<<1, 1, 0, stream>>>(interval.count(), ticks_per_ms);
   HIP_CHECK(hipGetLastError());
 }

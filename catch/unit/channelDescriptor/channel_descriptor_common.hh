@@ -63,37 +63,36 @@ template <typename T> class ChannelDescriptorTest1D : public ChannelDescriptorTe
 
  protected:
   void SetSizeAndKind() {
-    if (std::is_same<char, T>::value) {
+    if (std::is_same_v<char, T>) {
       this->size = static_cast<int>(sizeof(char) * 8);
       this->kind = hipChannelFormatKindSigned;
-    } else if (std::is_same<unsigned char, T>::value || std::is_same<uchar1, T>::value) {
+    } else if (std::is_same_v<unsigned char, T> || std::is_same_v<uchar1, T>) {
       this->size = static_cast<int>(sizeof(unsigned char) * 8);
       this->kind = hipChannelFormatKindUnsigned;
-    } else if (std::is_same<signed char, T>::value || std::is_same<char1, T>::value) {
+    } else if (std::is_same_v<signed char, T> || std::is_same_v<char1, T>) {
       this->size = static_cast<int>(sizeof(signed char) * 8);
       this->kind = hipChannelFormatKindSigned;
-    } else if (std::is_same<unsigned short, T>::value || std::is_same<ushort1, T>::value) {
+    } else if (std::is_same_v<unsigned short, T> || std::is_same_v<ushort1, T>) {
       this->size = static_cast<int>(sizeof(unsigned short) * 8);
       this->kind = hipChannelFormatKindUnsigned;
-    } else if (std::is_same<short, T>::value || std::is_same<signed short, T>::value ||
-               std::is_same<short1, T>::value) {
+    } else if (std::is_same_v<short, T> || std::is_same_v<signed short, T> ||
+               std::is_same_v<short1, T>) {
       this->size = static_cast<int>(sizeof(signed short) * 8);
       this->kind = hipChannelFormatKindSigned;
-    } else if (std::is_same<unsigned int, T>::value || std::is_same<uint1, T>::value) {
+    } else if (std::is_same_v<unsigned int, T> || std::is_same_v<uint1, T>) {
       this->size = static_cast<int>(sizeof(unsigned int) * 8);
       this->kind = hipChannelFormatKindUnsigned;
-    } else if (std::is_same<int, T>::value || std::is_same<signed int, T>::value ||
-               std::is_same<int1, T>::value) {
+    } else if (std::is_same_v<int, T> || std::is_same_v<signed int, T> || std::is_same_v<int1, T>) {
       this->size = static_cast<int>(sizeof(signed int) * 8);
       this->kind = hipChannelFormatKindSigned;
-    } else if (std::is_same<float, T>::value || std::is_same<float1, T>::value) {
+    } else if (std::is_same_v<float, T> || std::is_same_v<float1, T>) {
       this->size = static_cast<int>(sizeof(float) * 8);
       this->kind = hipChannelFormatKindFloat;
-    } else if (std::is_same<unsigned long, T>::value || std::is_same<ulong1, T>::value) {
+    } else if (std::is_same_v<unsigned long, T> || std::is_same_v<ulong1, T>) {
       this->size = static_cast<int>(sizeof(unsigned long) * 8);
       this->kind = hipChannelFormatKindUnsigned;
-    } else if (std::is_same<long, T>::value || std::is_same<signed long, T>::value ||
-               std::is_same<long1, T>::value) {
+    } else if (std::is_same_v<long, T> || std::is_same_v<signed long, T> ||
+               std::is_same_v<long1, T>) {
       this->size = static_cast<int>(sizeof(signed long) * 8);
       this->kind = hipChannelFormatKindSigned;
     }
@@ -106,31 +105,31 @@ template <typename T> class ChannelDescriptorTest2D : public ChannelDescriptorTe
 
  protected:
   void SetSizeAndKind() {
-    if (std::is_same<uchar2, T>::value) {
+    if (std::is_same_v<uchar2, T>) {
       this->size = static_cast<int>(sizeof(unsigned char) * 8);
       this->kind = hipChannelFormatKindUnsigned;
-    } else if (std::is_same<char2, T>::value) {
+    } else if (std::is_same_v<char2, T>) {
       this->size = static_cast<int>(sizeof(signed char) * 8);
       this->kind = hipChannelFormatKindSigned;
-    } else if (std::is_same<ushort2, T>::value) {
+    } else if (std::is_same_v<ushort2, T>) {
       this->size = static_cast<int>(sizeof(unsigned short) * 8);
       this->kind = hipChannelFormatKindUnsigned;
-    } else if (std::is_same<short2, T>::value) {
+    } else if (std::is_same_v<short2, T>) {
       this->size = static_cast<int>(sizeof(signed short) * 8);
       this->kind = hipChannelFormatKindSigned;
-    } else if (std::is_same<uint2, T>::value) {
+    } else if (std::is_same_v<uint2, T>) {
       this->size = static_cast<int>(sizeof(unsigned int) * 8);
       this->kind = hipChannelFormatKindUnsigned;
-    } else if (std::is_same<int2, T>::value) {
+    } else if (std::is_same_v<int2, T>) {
       this->size = static_cast<int>(sizeof(signed int) * 8);
       this->kind = hipChannelFormatKindSigned;
-    } else if (std::is_same<float2, T>::value) {
+    } else if (std::is_same_v<float2, T>) {
       this->size = static_cast<int>(sizeof(float) * 8);
       this->kind = hipChannelFormatKindFloat;
-    } else if (std::is_same<ulong2, T>::value) {
+    } else if (std::is_same_v<ulong2, T>) {
       this->size = static_cast<int>(sizeof(unsigned long) * 8);
       this->kind = hipChannelFormatKindUnsigned;
-    } else if (std::is_same<long2, T>::value) {
+    } else if (std::is_same_v<long2, T>) {
       this->size = static_cast<int>(sizeof(signed long) * 8);
       this->kind = hipChannelFormatKindSigned;
     }
@@ -144,31 +143,31 @@ template <typename T> class ChannelDescriptorTest3D : public ChannelDescriptorTe
 
  protected:
   void SetSizeAndKind() {
-    if (std::is_same<uchar3, T>::value) {
+    if (std::is_same_v<uchar3, T>) {
       this->size = static_cast<int>(sizeof(unsigned char) * 8);
       this->kind = hipChannelFormatKindUnsigned;
-    } else if (std::is_same<char3, T>::value) {
+    } else if (std::is_same_v<char3, T>) {
       this->size = static_cast<int>(sizeof(signed char) * 8);
       this->kind = hipChannelFormatKindSigned;
-    } else if (std::is_same<ushort3, T>::value) {
+    } else if (std::is_same_v<ushort3, T>) {
       this->size = static_cast<int>(sizeof(unsigned short) * 8);
       this->kind = hipChannelFormatKindUnsigned;
-    } else if (std::is_same<short3, T>::value) {
+    } else if (std::is_same_v<short3, T>) {
       this->size = static_cast<int>(sizeof(signed short) * 8);
       this->kind = hipChannelFormatKindSigned;
-    } else if (std::is_same<uint3, T>::value) {
+    } else if (std::is_same_v<uint3, T>) {
       this->size = static_cast<int>(sizeof(unsigned int) * 8);
       this->kind = hipChannelFormatKindUnsigned;
-    } else if (std::is_same<int3, T>::value) {
+    } else if (std::is_same_v<int3, T>) {
       this->size = static_cast<int>(sizeof(signed int) * 8);
       this->kind = hipChannelFormatKindSigned;
-    } else if (std::is_same<float3, T>::value) {
+    } else if (std::is_same_v<float3, T>) {
       this->size = static_cast<int>(sizeof(float) * 8);
       this->kind = hipChannelFormatKindFloat;
-    } else if (std::is_same<ulong3, T>::value) {
+    } else if (std::is_same_v<ulong3, T>) {
       this->size = static_cast<int>(sizeof(unsigned long) * 8);
       this->kind = hipChannelFormatKindUnsigned;
-    } else if (std::is_same<long3, T>::value) {
+    } else if (std::is_same_v<long3, T>) {
       this->size = static_cast<int>(sizeof(signed long) * 8);
       this->kind = hipChannelFormatKindSigned;
     }
@@ -182,31 +181,31 @@ template <typename T> class ChannelDescriptorTest4D : public ChannelDescriptorTe
 
  protected:
   void SetSizeAndKind() {
-    if (std::is_same<uchar4, T>::value) {
+    if (std::is_same_v<uchar4, T>) {
       this->size = static_cast<int>(sizeof(unsigned char) * 8);
       this->kind = hipChannelFormatKindUnsigned;
-    } else if (std::is_same<char4, T>::value) {
+    } else if (std::is_same_v<char4, T>) {
       this->size = static_cast<int>(sizeof(signed char) * 8);
       this->kind = hipChannelFormatKindSigned;
-    } else if (std::is_same<ushort4, T>::value) {
+    } else if (std::is_same_v<ushort4, T>) {
       this->size = static_cast<int>(sizeof(unsigned short) * 8);
       this->kind = hipChannelFormatKindUnsigned;
-    } else if (std::is_same<short4, T>::value) {
+    } else if (std::is_same_v<short4, T>) {
       this->size = static_cast<int>(sizeof(signed short) * 8);
       this->kind = hipChannelFormatKindSigned;
-    } else if (std::is_same<uint4, T>::value) {
+    } else if (std::is_same_v<uint4, T>) {
       this->size = static_cast<int>(sizeof(unsigned int) * 8);
       this->kind = hipChannelFormatKindUnsigned;
-    } else if (std::is_same<int4, T>::value) {
+    } else if (std::is_same_v<int4, T>) {
       this->size = static_cast<int>(sizeof(signed int) * 8);
       this->kind = hipChannelFormatKindSigned;
-    } else if (std::is_same<float4, T>::value) {
+    } else if (std::is_same_v<float4, T>) {
       this->size = static_cast<int>(sizeof(float) * 8);
       this->kind = hipChannelFormatKindFloat;
-    } else if (std::is_same<ulong4, T>::value) {
+    } else if (std::is_same_v<ulong4, T>) {
       this->size = static_cast<int>(sizeof(unsigned long) * 8);
       this->kind = hipChannelFormatKindUnsigned;
-    } else if (std::is_same<long4, T>::value) {
+    } else if (std::is_same_v<long4, T>) {
       this->size = static_cast<int>(sizeof(signed long) * 8);
       this->kind = hipChannelFormatKindSigned;
     }

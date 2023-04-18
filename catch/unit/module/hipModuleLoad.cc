@@ -49,11 +49,11 @@ TEST_CASE("Unit_hipModuleLoad_Negative_Parameters") {
   SECTION("fname == non existent file") {
     HIP_CHECK_ERROR(hipModuleLoad(&module, "non existent file"), hipErrorFileNotFound);
   }
+}
 
-// Disabled for AMD due to defect - EXSWHTEC-151
-#if HT_NVIDIA
-  SECTION("Load from a file that is not a module") {
-    HIP_CHECK_ERROR(hipModuleLoad(&module, "not_a_module.txt"), hipErrorInvalidImage);
-  }
-#endif
+TEST_CASE("Unit_hipModuleLoad_Negative_Load_From_A_File_That_Is_Not_A_Module") {
+  HIP_CHECK(hipFree(nullptr));
+  hipModule_t module;
+
+  HIP_CHECK_ERROR(hipModuleLoad(&module, "not_a_module.txt"), hipErrorInvalidImage);
 }

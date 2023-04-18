@@ -483,7 +483,6 @@ TEST_CASE("Unit_Device_rnorm4d_rnorm4df_Negative_RTC") { NegativeTestRTCWrapper<
 
 template <typename T, typename F, typename RF, typename ValidatorBuilder>
 void NormSimpleTest(F kernel, RF ref_func, const ValidatorBuilder& validator_builder) {
-  const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
   const auto max_dim = 10000;
 
   LinearAllocGuard<T> x{LinearAllocs::hipHostMalloc, max_dim * sizeof(T)};
@@ -495,7 +494,7 @@ void NormSimpleTest(F kernel, RF ref_func, const ValidatorBuilder& validator_bui
   HIP_CHECK(hipMemcpy(x_dev.ptr(), x.ptr(), max_dim * sizeof(T), hipMemcpyHostToDevice));
 
   for (uint64_t i = 1u; i < max_dim; i++) {
-    kernel<<<grid_size, block_size>>>(y_dev.ptr(), i, x_dev.ptr());
+    kernel<<<1, 1>>>(y_dev.ptr(), i, x_dev.ptr());
     HIP_CHECK(hipGetLastError());
 
     HIP_CHECK(hipMemcpy(y.ptr(), y_dev.ptr(), sizeof(T), hipMemcpyDeviceToHost));

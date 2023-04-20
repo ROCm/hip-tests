@@ -160,8 +160,8 @@ static __global__ void kernel_cg_multi_grid_group_type_via_public_api(
 
 static __global__ void test_kernel(unsigned int* atomic_val, unsigned int* global_array,
                                    unsigned int* array, uint32_t loops) {
-  cooperative_groups::grid_group grid = cooperative_groups::this_grid();
-  cooperative_groups::multi_grid_group mgrid = cooperative_groups::this_multi_grid();
+  cg::grid_group grid = cg::this_grid();
+  cg::multi_grid_group mgrid = cg::this_multi_grid();
   unsigned rank = grid.thread_rank();
   unsigned global_rank = mgrid.thread_rank();
 
@@ -227,6 +227,79 @@ static __global__ void test_kernel(unsigned int* atomic_val, unsigned int* globa
     mgrid.sync();
     offset += gridDim.x;
   }
+}
+
+__global__ void test_kernel_gfx11(unsigned int* atomic_val, unsigned int* global_array,
+                                  unsigned int* array, uint32_t loops) {
+#if HT_AMD
+  cg::grid_group grid = cg::this_grid();
+  cg::multi_grid_group mgrid = cg::this_multi_grid();
+  unsigned rank = grid.thread_rank();
+  unsigned global_rank = mgrid.thread_rank();
+
+  int offset = blockIdx.x;
+  for (int i = 0; i < loops; i++) {
+    // Make the last thread run way behind everyone else.
+    // If the grid barrier below fails, then the other threads may hit the
+    // atomicInc instruction many times before the last thread ever gets
+    // to it.
+    // As such, without the barrier, the last array entry will eventually
+    // contain a very large value, defined by however many times the other
+    // wavefronts make it through this loop.
+    // If the barrier works, then it will likely contain some number
+    // near "total number of blocks". It will be the last wavefront to
+    // reach the atomicInc, but everyone will have only hit the atomic once.
+    if (rank == (grid.size() - 1)) {
+      long long time_diff = 0;
+      long long last_clock = wall_clock64();
+      do {
+        long long cur_clock = wall_clock64();
+        if (cur_clock > last_clock) {
+          time_diff += (cur_clock - last_clock);
+        }
+        // If it rolls over, we don't know how much to add to catch up.
+        // So just ignore those slipped cycles.
+        last_clock = cur_clock;
+      } while (time_diff < 1000000);
+    }
+    if (threadIdx.x == 0) {
+      array[offset] = atomicInc(atomic_val, UINT_MAX);
+    }
+    grid.sync();
+
+    // Make the last thread in the entire multi-grid run way behind
+    // everyone else.
+    // If the mgrid barrier below fails, then the two global_array entries
+    // will end up being out of sync, because the intermingling of adds
+    // and multiplies will not be aligned between to the two GPUs.
+    if (global_rank == (mgrid.size() - 1)) {
+      long long time_diff = 0;
+      long long last_clock = wall_clock64();
+      do {
+        long long cur_clock = wall_clock64();
+        if (cur_clock > last_clock) {
+          time_diff += (cur_clock - last_clock);
+        }
+        // If it rolls over, we don't know how much to add to catch up.
+        // So just ignore those slipped cycles.
+        last_clock = cur_clock;
+      } while (time_diff < 1000000);
+    }
+    // During even iterations, add into your own array entry
+    // During odd iterations, add into your partner's array entry
+    unsigned grid_rank = mgrid.grid_rank();
+    unsigned inter_gpu_offset = (grid_rank + i) % mgrid.num_grids();
+    if (rank == (grid.size() - 1)) {
+      if (i % mgrid.num_grids() == 0) {
+        global_array[grid_rank] += 2;
+      } else {
+        global_array[inter_gpu_offset] *= 2;
+      }
+    }
+    mgrid.sync();
+    offset += gridDim.x;
+  }
+#endif
 }
 
 static void verify_barrier_buffer(unsigned int loops, unsigned int warps, unsigned int* host_buffer,
@@ -481,8 +554,9 @@ TEST_CASE("Unit_hipCGMultiGridGroupType_Barrier") {
   int max_blocks_per_sm = INT_MAX;
   for (int i = 0; i < num_devices; i++) {
     HIP_CHECK(hipSetDevice(i));
-    HIP_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor(&max_blocks_per_sm_arr[i], test_kernel,
-                                                           num_threads_in_block, 0));
+    auto test_kernel_used = IsGfx11() ? test_kernel_gfx11 : test_kernel;
+    HIP_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor(
+        &max_blocks_per_sm_arr[i], test_kernel_used, num_threads_in_block, 0));
     if (max_blocks_per_sm_arr[i] < max_blocks_per_sm) {
       max_blocks_per_sm = max_blocks_per_sm_arr[i];
     }
@@ -523,11 +597,13 @@ TEST_CASE("Unit_hipCGMultiGridGroupType_Barrier") {
   void* dev_params[num_devices][4];
   hipLaunchParams md_params[num_devices];
   for (int i = 0; i < num_devices; i++) {
+    HIP_CHECK(hipSetDevice(i));
+    auto test_kernel_used = IsGfx11() ? test_kernel_gfx11 : test_kernel;
     dev_params[i][0] = reinterpret_cast<void*>(&kernel_atomic[i]);
     dev_params[i][1] = reinterpret_cast<void*>(&global_array);
     dev_params[i][2] = reinterpret_cast<void*>(&kernel_buffer[i]);
     dev_params[i][3] = reinterpret_cast<void*>(&loops);
-    md_params[i].func = reinterpret_cast<void*>(test_kernel);
+    md_params[i].func = reinterpret_cast<void*>(test_kernel_used);
     md_params[i].gridDim = requested_blocks;
     md_params[i].blockDim = num_threads_in_block;
     md_params[i].sharedMem = 0;

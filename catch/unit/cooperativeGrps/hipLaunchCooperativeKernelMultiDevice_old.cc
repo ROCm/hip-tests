@@ -82,7 +82,7 @@ overlap-allowing flags work as expected.
 #include <hip_test_common.hh>
 #include <hip/hip_cooperative_groups.h>
 
-using namespace cooperative_groups;
+namespace cg = cooperative_groups;
 
 static constexpr size_t kBufferLen = 1024 * 1024;
 
@@ -111,19 +111,19 @@ __global__ void test_gws(uint* buf, uint buf_size, long* tmp_buf, long* result) 
     tmp_buf[group_id] = sum;
   }
   // wait
-  cooperative_groups::this_grid().sync();
+  cg::this_grid().sync();
 
   if (((blockIdx.x * blockDim.x) + threadIdx.x) == 0) {
     for (uint i = 1; i < groups; ++i) {
       sum += tmp_buf[i];
     }
     //*result = sum;
-    result[1 + cooperative_groups::this_multi_grid().grid_rank()] = sum;
+    result[1 + cg::this_multi_grid().grid_rank()] = sum;
   }
-  cooperative_groups::this_multi_grid().sync();
-  if (cooperative_groups::this_multi_grid().grid_rank() == 0) {
+  cg::this_multi_grid().sync();
+  if (cg::this_multi_grid().grid_rank() == 0) {
     sum = 0;
-    for (uint i = 1; i <= cooperative_groups::this_multi_grid().num_grids(); ++i) {
+    for (uint i = 1; i <= cg::this_multi_grid().num_grids(); ++i) {
       sum += result[i];
     }
     *result = sum;
@@ -131,7 +131,7 @@ __global__ void test_gws(uint* buf, uint buf_size, long* tmp_buf, long* result) 
 }
 
 __global__ void test_coop_kernel(unsigned int loops, long long* array, int fast_gpu) {
-  multi_grid_group mgrid = this_multi_grid();
+  cg::multi_grid_group mgrid = cg::this_multi_grid();
   unsigned int rank = blockIdx.x * blockDim.x + threadIdx.x;
 
   if (mgrid.grid_rank() == fast_gpu) {
@@ -154,6 +154,32 @@ __global__ void test_coop_kernel(unsigned int loops, long long* array, int fast_
   }
 }
 
+__global__ void test_coop_kernel_gfx11(unsigned int loops, long long* array, int fast_gpu) {
+#if HT_AMD
+  cg::multi_grid_group mgrid = cg::this_multi_grid();
+  unsigned int rank = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (mgrid.grid_rank() == fast_gpu) {
+    return;
+  }
+
+  for (int i = 0; i < loops; i++) {
+    long long time_diff = 0;
+    long long last_clock = wall_clock64();
+    do {
+      long long cur_clock = wall_clock64();
+      if (cur_clock > last_clock) {
+        time_diff += (cur_clock - last_clock);
+      }
+      // If it rolls over, we don't know how much to add to catch up.
+      // So just ignore those slipped cycles.
+      last_clock = cur_clock;
+    } while (time_diff < 1000000);
+    array[rank] += wall_clock64();
+  }
+#endif
+}
+
 __global__ void test_kernel(uint32_t loops, unsigned long long* array) {
   unsigned int rank = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -171,6 +197,27 @@ __global__ void test_kernel(uint32_t loops, unsigned long long* array) {
     } while (time_diff < 1000000);
     array[rank] += clock64();
   }
+}
+
+__global__ void test_kernel_gfx11(uint32_t loops, unsigned long long* array) {
+#if HT_AMD
+  unsigned int rank = blockIdx.x * blockDim.x + threadIdx.x;
+
+  for (int i = 0; i < loops; i++) {
+    long long time_diff = 0;
+    long long last_clock = wall_clock64();
+    do {
+      long long cur_clock = wall_clock64();
+      if (cur_clock > last_clock) {
+        time_diff += (cur_clock - last_clock);
+      }
+      // If it rolls over, we don't know how much to add to catch up.
+      // So just ignore those slipped cycles.
+      last_clock = cur_clock;
+    } while (time_diff < 1000000);
+    array[rank] += wall_clock64();
+  }
+#endif
 }
 
 static void verify_time(double single_kernel_time, double multi_kernel_time, float low_bound,
@@ -208,8 +255,9 @@ void test_multigrid_streams(int device_num) {
     int max_blocks_per_sm = INT_MAX;
     for (int i = 0; i < 2; i++) {
       HIP_CHECK(hipSetDevice(dev + i));
-      HIP_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor(&max_blocks_per_sm_arr[i], test_kernel,
-                                                             warp_size, 0));
+      auto test_kernel_used = IsGfx11() ? test_kernel_gfx11 : test_kernel;
+      HIP_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor(&max_blocks_per_sm_arr[i],
+                                                             test_kernel_used, warp_size, 0));
       if (max_blocks_per_sm_arr[i] < max_blocks_per_sm) {
         max_blocks_per_sm = max_blocks_per_sm_arr[i];
       }
@@ -255,11 +303,12 @@ void test_multigrid_streams(int device_num) {
     INFO("GPU " << dev << ": Long Coop Kernel");
     INFO("GPU " << (dev + 1) << ": Long Coop Kernel");
 
+    auto test_coop_kernel_used = IsGfx11() ? test_coop_kernel_gfx11 : test_coop_kernel;
     for (int i = 0; i < 2; i++) {
       dev_params[i][0] = reinterpret_cast<void*>(&loops);
       dev_params[i][1] = reinterpret_cast<void*>(&dev_array[i]);
       dev_params[i][2] = reinterpret_cast<void*>(&fast_gpu);
-      md_params[i].func = reinterpret_cast<void*>(test_coop_kernel);
+      md_params[i].func = reinterpret_cast<void*>(test_coop_kernel_used);
       md_params[i].gridDim = desired_blocks;
       md_params[i].blockDim = warp_size;
       md_params[i].sharedMem = 0;
@@ -284,13 +333,15 @@ void test_multigrid_streams(int device_num) {
       fast_gpu = 1;
       start_time[1] = std::chrono::system_clock::now();
       HIP_CHECK(hipSetDevice(dev));
-      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0, streams[0], loops,
-                         dev_array[0]);
+      auto test_kernel_used = IsGfx11() ? test_kernel_gfx11 : test_kernel;
+      hipLaunchKernelGGL(test_kernel_used, dim3(desired_blocks), dim3(warp_size), 0, streams[0],
+                         loops, dev_array[0]);
       HIP_CHECK(hipGetLastError());
       HIP_CHECK(hipLaunchCooperativeKernelMultiDevice(md_params, 2, 0));
       HIP_CHECK(hipSetDevice(dev + 1));
-      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0, streams[1], loops,
-                         dev_array[1]);
+      test_kernel_used = IsGfx11() ? test_kernel_gfx11 : test_kernel;
+      hipLaunchKernelGGL(test_kernel_used, dim3(desired_blocks), dim3(warp_size), 0, streams[1],
+                         loops, dev_array[1]);
       HIP_CHECK(hipGetLastError());
       for (int i = 0; i < 2; i++) {
         HIP_CHECK(hipSetDevice(dev + i));
@@ -310,13 +361,15 @@ void test_multigrid_streams(int device_num) {
       fast_gpu = 0;
       start_time[1] = std::chrono::system_clock::now();
       HIP_CHECK(hipSetDevice(dev));
-      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0, streams[0], loops,
-                         dev_array[0]);
+      auto test_kernel_used = IsGfx11() ? test_kernel_gfx11 : test_kernel;
+      hipLaunchKernelGGL(test_kernel_used, dim3(desired_blocks), dim3(warp_size), 0, streams[0],
+                         loops, dev_array[0]);
       HIP_CHECK(hipGetLastError());
       HIP_CHECK(hipLaunchCooperativeKernelMultiDevice(md_params, 2, 0));
       HIP_CHECK(hipSetDevice(dev + 1));
-      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0, streams[1], loops,
-                         dev_array[1]);
+      test_kernel_used = IsGfx11() ? test_kernel_gfx11 : test_kernel;
+      hipLaunchKernelGGL(test_kernel_used, dim3(desired_blocks), dim3(warp_size), 0, streams[1],
+                         loops, dev_array[1]);
       HIP_CHECK(hipGetLastError());
       for (int i = 0; i < 2; i++) {
         HIP_CHECK(hipSetDevice(dev + i));
@@ -338,14 +391,16 @@ void test_multigrid_streams(int device_num) {
       fast_gpu = 0;
       start_time[1] = std::chrono::system_clock::now();
       HIP_CHECK(hipSetDevice(dev));
-      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0, streams[0], loops,
-                         dev_array[0]);
+      auto test_kernel_used = IsGfx11() ? test_kernel_gfx11 : test_kernel;
+      hipLaunchKernelGGL(test_kernel_used, dim3(desired_blocks), dim3(warp_size), 0, streams[0],
+                         loops, dev_array[0]);
       HIP_CHECK(hipGetLastError());
       HIP_CHECK(hipLaunchCooperativeKernelMultiDevice(md_params, 2,
                                                       hipCooperativeLaunchMultiDeviceNoPreSync));
       HIP_CHECK(hipSetDevice(dev + 1));
-      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0, streams[1], loops,
-                         dev_array[1]);
+      test_kernel_used = IsGfx11() ? test_kernel_gfx11 : test_kernel;
+      hipLaunchKernelGGL(test_kernel_used, dim3(desired_blocks), dim3(warp_size), 0, streams[1],
+                         loops, dev_array[1]);
       HIP_CHECK(hipGetLastError());
       for (int i = 0; i < 2; i++) {
         HIP_CHECK(hipSetDevice(dev + i));
@@ -367,14 +422,16 @@ void test_multigrid_streams(int device_num) {
       fast_gpu = 1;
       start_time[1] = std::chrono::system_clock::now();
       HIP_CHECK(hipSetDevice(dev));
-      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0, streams[0], loops,
-                         dev_array[0]);
+      auto test_kernel_used = IsGfx11() ? test_kernel_gfx11 : test_kernel;
+      hipLaunchKernelGGL(test_kernel_used, dim3(desired_blocks), dim3(warp_size), 0, streams[0],
+                         loops, dev_array[0]);
       HIP_CHECK(hipGetLastError());
       HIP_CHECK(hipLaunchCooperativeKernelMultiDevice(md_params, 2,
                                                       hipCooperativeLaunchMultiDeviceNoPostSync));
       HIP_CHECK(hipSetDevice(dev + 1));
-      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0, streams[1], loops,
-                         dev_array[1]);
+      test_kernel_used = IsGfx11() ? test_kernel_gfx11 : test_kernel;
+      hipLaunchKernelGGL(test_kernel_used, dim3(desired_blocks), dim3(warp_size), 0, streams[1],
+                         loops, dev_array[1]);
       for (int i = 0; i < 2; i++) {
         HIP_CHECK(hipSetDevice(dev + i));
         HIP_CHECK(hipDeviceSynchronize());
@@ -393,15 +450,17 @@ void test_multigrid_streams(int device_num) {
       INFO("GPU " << (dev + 1) << ": Long Coop/Standard with multi device no pre or post sync");
       start_time[1] = std::chrono::system_clock::now();
       HIP_CHECK(hipSetDevice(dev));
-      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0, streams[0], loops,
-                         dev_array[0]);
+      auto test_kernel_used = IsGfx11() ? test_kernel_gfx11 : test_kernel;
+      hipLaunchKernelGGL(test_kernel_used, dim3(desired_blocks), dim3(warp_size), 0, streams[0],
+                         loops, dev_array[0]);
       HIP_CHECK(hipGetLastError());
       HIP_CHECK(hipLaunchCooperativeKernelMultiDevice(
           md_params, 2,
           hipCooperativeLaunchMultiDeviceNoPreSync | hipCooperativeLaunchMultiDeviceNoPostSync));
       HIP_CHECK(hipSetDevice(dev + 1));
-      hipLaunchKernelGGL(test_kernel, dim3(desired_blocks), dim3(warp_size), 0, streams[1], loops,
-                         dev_array[1]);
+      test_kernel_used = IsGfx11() ? test_kernel_gfx11 : test_kernel;
+      hipLaunchKernelGGL(test_kernel_used, dim3(desired_blocks), dim3(warp_size), 0, streams[1],
+                         loops, dev_array[1]);
       HIP_CHECK(hipGetLastError());
       for (int i = 0; i < 2; i++) {
         HIP_CHECK(hipSetDevice(dev + i));

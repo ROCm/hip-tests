@@ -80,6 +80,29 @@ __global__ void test_kernel(uint32_t loops, unsigned long long* array, long long
   }
 }
 
+__global__ void test_kernel_gfx11(uint32_t loops, unsigned long long* array, long long totalTicks) {
+#if HT_AMD
+  cg::thread_block tb = cg::this_thread_block();
+  unsigned int rank = blockIdx.x * blockDim.x + threadIdx.x;
+
+  for (int i = 0; i < loops; i++) {
+    long long time_diff = 0;
+    long long last_clock = wall_clock64();
+    do {
+      long long cur_clock = wall_clock64();
+      if (cur_clock > last_clock) {
+        time_diff += (cur_clock - last_clock);
+      }
+      // If it rolls over, we don't know how much to add to catch up.
+      // So just ignore those slipped cycles.
+      last_clock = cur_clock;
+    } while (time_diff < totalTicks);
+    tb.sync();
+    array[rank] += wall_clock64();
+  }
+#endif
+}
+
 template <typename T>
 static void verifyLeastCapacity(T& single_kernel_time, T& double_kernel_time,
                                 T& triple_kernel_time) {
@@ -163,8 +186,9 @@ static void test_cooperative_streams(int dev, int p_tests) {
   long long totalTicks = device_properties.clockRate;
   int max_blocks_per_sm = 0;
   // Calculate the device occupancy to know how many blocks can be run.
-  HIP_CHECK(
-      hipOccupancyMaxActiveBlocksPerMultiprocessor(&max_blocks_per_sm, test_kernel, warp_size, 0));
+  auto test_kernel_used = IsGfx11() ? test_kernel_gfx11 : test_kernel;
+  HIP_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor(&max_blocks_per_sm, test_kernel_used,
+                                                         warp_size, 0));
   int max_active_blocks = max_blocks_per_sm * num_sms;
   int coop_blocks = 0;
   int reg_blocks = 0;
@@ -216,14 +240,14 @@ static void test_cooperative_streams(int dev, int p_tests) {
 
   // We need exclude the the initial launching as it will need time to load code obj.
   auto single_start0 = std::chrono::system_clock::now();
-  HIP_CHECK(hipLaunchCooperativeKernel(reinterpret_cast<void*>(test_kernel), max_active_blocks,
+  HIP_CHECK(hipLaunchCooperativeKernel(reinterpret_cast<void*>(test_kernel_used), max_active_blocks,
                                        warp_size, coop_params[0], 0, streams[0]));
   HIP_CHECK(hipDeviceSynchronize());
   auto single_end0 = std::chrono::system_clock::now();
 
   // Launching a single cooperative kernel
   auto single_start = std::chrono::system_clock::now();
-  HIP_CHECK(hipLaunchCooperativeKernel(reinterpret_cast<void*>(test_kernel), max_active_blocks,
+  HIP_CHECK(hipLaunchCooperativeKernel(reinterpret_cast<void*>(test_kernel_used), max_active_blocks,
                                        warp_size, coop_params[0], 0, streams[0]));
   HIP_CHECK(hipDeviceSynchronize());
   auto single_end = std::chrono::system_clock::now();
@@ -232,10 +256,10 @@ static void test_cooperative_streams(int dev, int p_tests) {
 
   // Launching 2 cooperative kernels to different streams
   auto double_start = std::chrono::system_clock::now();
-  HIP_CHECK(hipLaunchCooperativeKernel(reinterpret_cast<void*>(test_kernel), coop_blocks, warp_size,
-                                       coop_params[0], 0, streams[0]));
-  HIP_CHECK(hipLaunchCooperativeKernel(reinterpret_cast<void*>(test_kernel), coop_blocks, warp_size,
-                                       coop_params[1], 0, streams[1]));
+  HIP_CHECK(hipLaunchCooperativeKernel(reinterpret_cast<void*>(test_kernel_used), coop_blocks,
+                                       warp_size, coop_params[0], 0, streams[0]));
+  HIP_CHECK(hipLaunchCooperativeKernel(reinterpret_cast<void*>(test_kernel_used), coop_blocks,
+                                       warp_size, coop_params[1], 0, streams[1]));
 
   HIP_CHECK(hipDeviceSynchronize());
   auto double_end = std::chrono::system_clock::now();
@@ -244,11 +268,11 @@ static void test_cooperative_streams(int dev, int p_tests) {
   std::chrono::duration<double> double_kernel_time = (double_end - double_start);
 
   auto triple_start = std::chrono::system_clock::now();
-  HIP_CHECK(hipLaunchCooperativeKernel(reinterpret_cast<void*>(test_kernel), coop_blocks, warp_size,
-                                       coop_params[0], 0, streams[0]));
-  HIP_CHECK(hipLaunchCooperativeKernel(reinterpret_cast<void*>(test_kernel), coop_blocks, warp_size,
-                                       coop_params[1], 0, streams[1]));
-  hipLaunchKernelGGL(test_kernel, dim3(reg_blocks), dim3(warp_size), 0, streams[2], loops,
+  HIP_CHECK(hipLaunchCooperativeKernel(reinterpret_cast<void*>(test_kernel_used), coop_blocks,
+                                       warp_size, coop_params[0], 0, streams[0]));
+  HIP_CHECK(hipLaunchCooperativeKernel(reinterpret_cast<void*>(test_kernel_used), coop_blocks,
+                                       warp_size, coop_params[1], 0, streams[1]));
+  hipLaunchKernelGGL(test_kernel_used, dim3(reg_blocks), dim3(warp_size), 0, streams[2], loops,
                      dev_array[2], totalTicks);
 
   HIP_CHECK(hipDeviceSynchronize());

@@ -168,6 +168,47 @@ static __global__ void test_kernel(unsigned int* atomic_val, unsigned int* array
   }
 }
 
+__global__ void test_kernel_gfx11(unsigned int* atomic_val, unsigned int* array,
+                                  unsigned int loops) {
+#if HT_AMD
+  cg::grid_group grid = cg::this_grid();
+  unsigned rank = grid.thread_rank();
+
+  int offset = blockIdx.x;
+  for (int i = 0; i < loops; i++) {
+    // Make the last thread run way behind everyone else.
+    // If the barrier below fails, then the other threads may hit the
+    // atomicInc instruction many times before the last thread ever gets
+    // to it.
+    // As such, without the barrier, the last array entry will eventually
+    // contain a very large value, defined by however many times the other
+    // wavefronts make it through this loop.
+    // If the barrier works, then it will likely contain some number
+    // near "total number of blocks". It will be the last wavefront to
+    // reach the atomicInc, but everyone will have only hit the atomic once.
+    if (rank == (grid.size() - 1)) {
+      long long time_diff = 0;
+      long long last_clock = wall_clock64();
+      do {
+        long long cur_clock = wall_clock64();
+        if (cur_clock > last_clock) {
+          time_diff += (cur_clock - last_clock);
+        }
+        // If it rolls over, we don't know how much to add to catch up.
+        // So just ignore those slipped cycles.
+        last_clock = cur_clock;
+      } while (time_diff < 1000000);
+    }
+
+    if (threadIdx.x == 0) {
+      array[offset] = atomicInc(&atomic_val[0], UINT_MAX);
+    }
+    grid.sync();
+    offset += gridDim.x;
+  }
+#endif
+}
+
 static void verify_coop_buffers(unsigned int* host_input, unsigned int* first_array,
                                 unsigned int* second_array, unsigned int loops,
                                 unsigned int array_len) {
@@ -404,8 +445,9 @@ TEST_CASE("Unit_hipCGGridGroupType_Barrier") {
 
   int num_threads_in_block = block_size * warp_size;
 
+  auto test_kernel_used = IsGfx11() ? test_kernel_gfx11 : test_kernel;
   // Calculate the device occupancy to know how many blocks can be run.
-  HIP_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor(&max_blocks_per_sm, test_kernel,
+  HIP_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor(&max_blocks_per_sm, test_kernel_used,
                                                          num_threads_in_block, 0));
 
   int requested_blocks = warps / block_size;
@@ -439,8 +481,8 @@ TEST_CASE("Unit_hipCGGridGroupType_Barrier") {
   params[0] = reinterpret_cast<void*>(&kernel_atomic);
   params[1] = reinterpret_cast<void*>(&kernel_buffer);
   params[2] = reinterpret_cast<void*>(&loops);
-  HIP_CHECK(hipLaunchCooperativeKernel(test_kernel, requested_blocks, num_threads_in_block, params,
-                                       0, 0));
+  HIP_CHECK(hipLaunchCooperativeKernel(test_kernel_used, requested_blocks, num_threads_in_block,
+                                       params, 0, 0));
 
   // Read back the buffer to host
   HIP_CHECK(hipMemcpy(host_buffer, kernel_buffer, sizeof(unsigned int) * total_buffer_len,

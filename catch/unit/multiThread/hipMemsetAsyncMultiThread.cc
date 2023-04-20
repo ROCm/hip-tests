@@ -74,7 +74,11 @@ template <typename Func, typename T> void threadCall(Func f, hipStream_t stream)
   for (size_t i = 0; i < iter; i++) {
     overlay_val.u_val =
         static_cast<unsigned_t>(distribution(engine));  // generate an unsigned int number
-    HIP_CHECK_THREAD(f(ptr, overlay_val.t_val, size, stream));
+    if constexpr (cast_2_void) {
+      HIP_CHECK_THREAD(f((void*)ptr, overlay_val.t_val, size, stream));
+    } else {
+      HIP_CHECK_THREAD(f(*(hipDeviceptr_t*)&ptr, overlay_val.t_val, size, stream));
+    }
     HIP_CHECK_THREAD(
         hipMemcpyAsync(dst.data(), ptr, size * sizeof(T), hipMemcpyDeviceToHost, stream));
     HIP_CHECK_THREAD(hipEventRecord(event, stream));
@@ -94,15 +98,17 @@ template <typename Func, typename T> void launchThreads(Func f, TestType type) {
   static_assert(!std::is_pointer<T>::value && "Argument cant be a pointer");
 
   // Should match hipMemsetAsync or hipMemsetD*Async arguments
-  static_assert((std::is_same<Func, hipError_t(void*, int, size_t, hipStream_t)>::
-                     value ||  // hipMemsetAsync and hipMemsetD32Async
-                 std::is_same<Func, hipError_t(void*, unsigned short, size_t, hipStream_t)>::
-                     value ||  // hipMemsetD16Async
-                 std::is_same<Func, hipError_t(void*, unsigned char, size_t, hipStream_t)>::
-                     value) &&  // hipMemsetD8Async
-                "Func f should be hipMemsetAsync or hipMemsetD*Async");
+  static_assert(
+      (std::is_same<Func,
+                    hipError_t (*)(void*, int, size_t, hipStream_t)>::value ||  // hipMemsetAsync
+       std::is_same<Func, hipError_t (*)(hipDeviceptr_t, int, size_t, hipStream_t)>::
+           value ||  // hipMemsetD32Async
+       std::is_same<Func, hipError_t (*)(hipDeviceptr_t, unsigned short, size_t, hipStream_t)>::
+           value ||  // hipMemsetD16Async
+       std::is_same<Func, hipError_t (*)(hipDeviceptr_t, unsigned char, size_t, hipStream_t)>::
+           value) &&  // hipMemsetD8Async
+      "Func f should be hipMemsetAsync or hipMemsetD*Async");
 
-  constexpr size_t size = 1024;  // It should 4 byte-aligned
   const size_t num_threads = (std::thread::hardware_concurrency() > 8)
       ? (((std::thread::hardware_concurrency() / 4) >= 127)
              ? 127

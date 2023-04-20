@@ -26,6 +26,7 @@
 #include <random>
 #include <type_traits>
 #include <vector>
+#include <utility>
 
 enum TestType { SameStream = 0, DifferentStreams };
 
@@ -33,13 +34,19 @@ enum TestType { SameStream = 0, DifferentStreams };
 // basically each thread memsets value present in input one by one on its allocated buffer
 template <typename Func, typename T> void threadCall(Func f, hipStream_t stream) {
   // Should match hipMemsetAsync or hipMemsetD*Async arguments
-  static_assert((std::is_same<Func, hipError_t(void*, int, size_t, hipStream_t)>::
-                     value ||  // hipMemsetAsync and hipMemsetD32Async
-                 std::is_same<Func, hipError_t(void*, unsigned short, size_t, hipStream_t)>::
-                     value ||  // hipMemsetD16Async
-                 std::is_same<Func, hipError_t(void*, unsigned char, size_t, hipStream_t)>::
-                     value) &&  // hipMemsetD8Async
-                "Func f should be hipMemsetAsync or hipMemsetD*Async");
+  static_assert(
+      (std::is_same<Func,
+                    hipError_t (*)(void*, int, size_t, hipStream_t)>::value ||  // hipMemsetAsync
+       std::is_same<Func, hipError_t (*)(hipDeviceptr_t, int, size_t, hipStream_t)>::
+           value ||  // hipMemsetD32Async
+       std::is_same<Func, hipError_t (*)(hipDeviceptr_t, unsigned short, size_t, hipStream_t)>::
+           value ||  // hipMemsetD16Async
+       std::is_same<Func, hipError_t (*)(hipDeviceptr_t, unsigned char, size_t, hipStream_t)>::
+           value) &&  // hipMemsetD8Async
+      "Func f should be hipMemsetAsync or hipMemsetD*Async");
+
+  constexpr bool cast_2_void =
+      std::is_same<Func, hipError_t (*)(void*, int, size_t, hipStream_t)>::value;
 
   // Use the unsiged type, since memset concerns with set bit values over a mem address
   typedef typename std::make_unsigned<T>::type unsigned_t;
@@ -130,13 +137,20 @@ template <typename Func, typename T> void launchThreads(Func f, TestType type) {
 }
 
 TEST_CASE("Unit_hipMemsetAsync_QueueJobsMultithreaded") {
-  launchThreads<decltype(hipMemsetAsync), char>(hipMemsetAsync, SameStream);
-  launchThreads<decltype(hipMemsetAsync), char>(hipMemsetAsync, DifferentStreams);
+  using hipMemsetAsync_t = hipError_t (*)(void*, int, const size_t, hipStream_t);
+  using hipMemsetAsyncD8_t =
+      hipError_t (*)(hipDeviceptr_t, unsigned char, const size_t, hipStream_t);
+  using hipMemsetAsyncD16_t =
+      hipError_t (*)(hipDeviceptr_t, unsigned short, const size_t, hipStream_t);
+  using hipMemsetAsyncD32_t = hipError_t (*)(hipDeviceptr_t, int, const size_t, hipStream_t);
 
-  launchThreads<decltype(hipMemsetD8Async), unsigned char>(hipMemsetD8Async, SameStream);
-  launchThreads<decltype(hipMemsetD8Async), unsigned char>(hipMemsetD8Async, DifferentStreams);
-  launchThreads<decltype(hipMemsetD16Async), unsigned short>(hipMemsetD16Async, SameStream);
-  launchThreads<decltype(hipMemsetD16Async), unsigned short>(hipMemsetD16Async, DifferentStreams);
-  launchThreads<decltype(hipMemsetD32Async), int>(hipMemsetD32Async, SameStream);
-  launchThreads<decltype(hipMemsetD32Async), int>(hipMemsetD32Async, DifferentStreams);
+  launchThreads<hipMemsetAsync_t, char>(hipMemsetAsync, SameStream);
+  launchThreads<hipMemsetAsync_t, char>(hipMemsetAsync, DifferentStreams);
+
+  launchThreads<hipMemsetAsyncD8_t, unsigned char>(hipMemsetD8Async, SameStream);
+  launchThreads<hipMemsetAsyncD8_t, unsigned char>(hipMemsetD8Async, DifferentStreams);
+  launchThreads<hipMemsetAsyncD16_t, unsigned short>(hipMemsetD16Async, SameStream);
+  launchThreads<hipMemsetAsyncD16_t, unsigned short>(hipMemsetD16Async, DifferentStreams);
+  launchThreads<hipMemsetAsyncD32_t, int>(hipMemsetD32Async, SameStream);
+  launchThreads<hipMemsetAsyncD32_t, int>(hipMemsetD32Async, DifferentStreams);
 }

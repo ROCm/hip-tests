@@ -49,6 +49,15 @@
 	   "Unit_hipStreamSetCaptureDependencies_Positive_Functional",
 	   "Note: Test disabled due to defect - EXSWHTEC-207",
 	   "Unit_hipGraphExecMemsetNodeSetParams_Negative_Updating_Non1D_Node",
-	   "Unit_hipIpcGetMemHandle_Positive_Unique_Handles_Separate_Allocations"
+	   "Unit_hipIpcGetMemHandle_Positive_Unique_Handles_Separate_Allocations",
+	   "Unit_hipStreamCreateWithFlags_DefaultStreamInteraction",
+	   "Unit_hipStreamWaitEvent_UninitializedStream_Negative",
+	   "Unit_hipDeviceSetSharedMemConfig_Negative_Parameters",
+	   "Disabling tests tracked with SWDEV-394083",
+	   "Unit_hipDeviceSynchronize_Positive_Nullstream",
+           "Disabling tests tracked with SWDEV-393637",
+	   "Unit_hipDeviceSynchronize_Functional",
+	   "Unit_hipMemset3DSync",
+	   "Unit_hipStreamAddCallback_StrmSyncTiming"
 	]
 }

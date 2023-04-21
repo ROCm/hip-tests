@@ -19,7 +19,7 @@ def hipBuildTest(String backendLabel) {
             dir("${WORKSPACE}/clr") {
               git branch: 'develop',
               url: 'https://github.com/ROCm-Developer-Tools/clr'
-              credentialsId: 'branch-credentials',
+              credentialsId: 'branch-credentials'
               env.CLR_DIR = "${WORKSPACE}" + "/clr"
             }
         }

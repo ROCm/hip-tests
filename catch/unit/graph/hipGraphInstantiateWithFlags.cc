@@ -333,7 +333,7 @@ TEST_CASE("Unit_hipGraphInstantiateWithFlags_FlagAutoFreeOnLaunch_check") {
   memset(&allocParam, 0, sizeof(allocParam));
   allocParam.bytesize = Nbytes;
   allocParam.poolProps.allocType = hipMemAllocationTypePinned;
-  allocParam.poolProps.location.id = 1;
+  allocParam.poolProps.location.id = 0;
   allocParam.poolProps.location.type = hipMemLocationTypeDevice;
 
   HIP_CHECK(hipGraphAddMemAllocNode(&allocNodeA, graph, nullptr,

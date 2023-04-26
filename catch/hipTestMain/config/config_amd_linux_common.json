@@ -62,6 +62,8 @@
 	   "Disabling test tracked SWDEV-394199",
 	   "Unit_hipStreamCreateWithPriority_MulthreadNonblockingflag",
 	   "Disabling test tracked SWDEV-395683",
-	   "Unit_hipStreamPerThread_MultiThread"
+	   "Unit_hipStreamPerThread_MultiThread",
+	   "Disabling tests tracked with SWDEV-389647..",
+	   "Unit_hipMemcpy2DToArrayAsync_Positive_Synchronization_Behavior"
 	]
 }

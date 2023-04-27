@@ -193,7 +193,7 @@ TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParamsFromSymbol_Negative_Parameters") 
     LinearAllocGuard<int> new_var(LinearAllocs::hipMalloc, sizeof(int));
     HIP_CHECK_ERROR(hipGraphExecMemcpyNodeSetParamsFromSymbol(
                         graph_exec, node, new_var.ptr(), SYMBOL(int_device_var),
-                        sizeof(*new_var.ptr()), 0, static_cast<hipMemcpyKind>(-1)),
+                        sizeof(*new_var.ptr()), 0, hipMemcpyDeviceToDevice),
                     hipErrorInvalidValue);
   }
 

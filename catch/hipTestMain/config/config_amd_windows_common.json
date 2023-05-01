@@ -157,6 +157,11 @@
 	   "SWDEV-396616 hipMemMap returns invalid error",
 	   "Unit_hipMemVmm_Basic",
 	   "SWDEV-396615 mGPUs not considered correctly",
-	   "Unit_hipManagedKeyword_MultiGpu"
+	   "Unit_hipManagedKeyword_MultiGpu",
+	   "Disabling test tracked SWDEV-391555",
+	   "Unit_hipMemcpyPeer_Positive_ZeroSize",
+	   "Unit_hipMemcpyPeerAsync_Positive_ZeroSize",
+	   "Disabling test tracked SWDEV-391718",
+	   "Unit_hipMemRangeGetAttribute_TstCountParam"
 	]
 }

@@ -21,8 +21,6 @@ THE SOFTWARE.
 
 #include "cpu_grid.h"
 
-#include <optional>
-
 #include <hip_test_common.hh>
 #include <hip/hip_cooperative_groups.h>
 #include <resource_guards.hh>
@@ -40,12 +38,17 @@ static __device__ bool deactivate_thread(const uint64_t* const active_masks) {
 }
 
 static inline std::mt19937& GetRandomGenerator() {
-  static std::mt19937 mt(11);
+  static std::mt19937 mt(std::random_device{}());
   return mt;
 }
 
 template <typename T> static inline T GenerateRandomInteger(const T min, const T max) {
   std::uniform_int_distribution<T> dist(min, max);
+  return dist(GetRandomGenerator());
+}
+
+template <typename T> static inline T GenerateRandomReal(const T min, const T max) {
+  std::uniform_real_distribution<T> dist(min, max);
   return dist(GetRandomGenerator());
 }
 
@@ -80,11 +83,46 @@ inline uint64_t get_active_predicate(uint64_t predicate, size_t partition_size) 
   return active_predicate;
 }
 
+inline int generate_width(int warp_size) {
+  int exponent = 0;
+  while (warp_size >>= 1) {
+    ++exponent;
+  }
+
+  return GENERATE_COPY(map([](int e) { return 1 << e; }, range(1, exponent + 1)));
+}
+
+inline uint64_t get_active_mask(unsigned int warp_id, unsigned int warp_size) {
+  uint64_t active_mask = 0;
+  switch (warp_id % 5) {
+    case 0:  // even threads in the warp
+      active_mask = 0xAAAAAAAAAAAAAAAA;
+      break;
+    case 1:  // odd threads in the warp
+      active_mask = 0x5555555555555555;
+      break;
+    case 2:  // first half of the warp
+      for (int i = 0; i < warp_size / 2; i++) {
+        active_mask = active_mask | (static_cast<uint64_t>(1) << i);
+      }
+      break;
+    case 3:  // second half of the warp
+      for (int i = warp_size / 2; i < warp_size; i++) {
+        active_mask = active_mask | (static_cast<uint64_t>(1) << i);
+      }
+      break;
+    case 4:  // all threads
+      active_mask = 0xFFFFFFFFFFFFFFFF;
+      break;
+  }
+  return active_mask;
+}
+
 template <typename Derived, typename T> class WarpTest {
  public:
   WarpTest() : warp_size_{get_warp_size()} {}
 
-  void run() {
+  void run(bool random = false) {
     const auto blocks = GenerateBlockDimensionsForShuffle();
     INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);
     const auto threads = GenerateThreadDimensionsForShuffle();
@@ -92,6 +130,8 @@ template <typename Derived, typename T> class WarpTest {
     grid_ = CPUGrid(blocks, threads);
 
     const auto alloc_size = grid_.thread_count_ * sizeof(T);
+    LinearAllocGuard<T> input_dev(LinearAllocs::hipMalloc, alloc_size);
+    LinearAllocGuard<T> input(LinearAllocs::hipHostMalloc, alloc_size);
     LinearAllocGuard<T> arr_dev(LinearAllocs::hipMalloc, alloc_size);
     LinearAllocGuard<T> arr(LinearAllocs::hipHostMalloc, alloc_size);
     HIP_CHECK(hipMemset(arr_dev.ptr(), 0, alloc_size));
@@ -101,17 +141,18 @@ template <typename Derived, typename T> class WarpTest {
     LinearAllocGuard<uint64_t> active_masks_dev(LinearAllocs::hipMalloc,
                                                 warps_in_grid * sizeof(uint64_t));
     active_masks_.resize(warps_in_grid);
-    std::generate(active_masks_.begin(), active_masks_.end(),
-                  [] { return GenerateRandomInteger(0ul, std::numeric_limits<uint64_t>().max()); });
+
+    generate_input(input.ptr(), random);
 
     HIP_CHECK(hipMemcpy(active_masks_dev.ptr(), active_masks_.data(),
                         warps_in_grid * sizeof(uint64_t), hipMemcpyHostToDevice));
-    cast_to_derived().launch_kernel(arr_dev.ptr(), active_masks_dev.ptr());
+    HIP_CHECK(hipMemcpy(input_dev.ptr(), input.ptr(), alloc_size, hipMemcpyHostToDevice));
+    cast_to_derived().launch_kernel(arr_dev.ptr(), input_dev.ptr(), active_masks_dev.ptr());
     HIP_CHECK(hipGetLastError());
     HIP_CHECK(hipMemcpy(arr.ptr(), arr_dev.ptr(), alloc_size, hipMemcpyDeviceToHost));
     HIP_CHECK(hipDeviceSynchronize());
 
-    cast_to_derived().validate(arr.ptr());
+    cast_to_derived().validate(arr.ptr(), input.ptr());
   }
 
  private:
@@ -121,6 +162,39 @@ template <typename Derived, typename T> class WarpTest {
     int warp_size = 0u;
     HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
     return warp_size;
+  }
+
+  void generate_input(T* input, bool random) {
+    if (random) {
+      std::generate(active_masks_.begin(), active_masks_.end(), [] {
+        return GenerateRandomInteger(0ul, std::numeric_limits<uint64_t>().max());
+      });
+
+      if constexpr (std::is_same_v<float, T> || std::is_same_v<double, T>) {
+        std::generate_n(input, grid_.thread_count_, [] {
+          return static_cast<T>(
+              GenerateRandomReal(std::numeric_limits<T>().min(), std::numeric_limits<T>().max()));
+        });
+      } else {
+        std::generate_n(input, grid_.thread_count_, [] {
+          return static_cast<T>(GenerateRandomInteger(std::numeric_limits<T>().min(),
+                                                      std::numeric_limits<T>().max()));
+        });
+      }
+    } else {
+      unsigned long long int i = 0;
+      std::generate(active_masks_.begin(), active_masks_.end(),
+                    [this, &i]() { return get_active_mask(i++, warp_size_); });
+
+      i = 0;
+      std::generate_n(input, grid_.thread_count_, [&i]() {
+        if (static_cast<T>(i) > std::numeric_limits<T>().max())
+          i = 0;
+        else
+          i++;
+        return static_cast<T>(i);
+      });
+    }
   }
 
   Derived& cast_to_derived() { return reinterpret_cast<Derived&>(*this); }

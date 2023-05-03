@@ -32,49 +32,56 @@ THE SOFTWARE.
 namespace cg = cooperative_groups;
 
 template <typename T>
-__global__ void shfl_down(T* const out, const uint64_t* const active_masks,
-                          const unsigned int delta, const int width) {
+__global__ void shfl_down(T* const out, const T* const in, const uint64_t* const active_masks,
+                          const unsigned int* const deltas, const int width) {
   if (deactivate_thread(active_masks)) {
     return;
   }
 
   const auto grid = cg::this_grid();
-  T var = static_cast<T>(grid.thread_rank() % warpSize);
-  out[grid.thread_rank()] = __shfl_down(var, delta, width);
+  const auto block = cg::this_thread_block();
+  T var = in[grid.thread_rank()];
+  out[grid.thread_rank()] = __shfl_down(var, deltas[block.thread_rank() % width], width);
 }
 
 template <typename T> class WarpShflDown : public WarpTest<WarpShflDown<T>, T> {
  public:
-  void launch_kernel(T* const arr_dev, const uint64_t* const active_masks) {
+  void launch_kernel(T* const arr_dev, T* const input_dev, const uint64_t* const active_masks) {
     width_ = generate_width(this->warp_size_);
     INFO("Width: " << width_);
-    delta_ = GENERATE_COPY(range(0, width_));
-    INFO("Delta: " << delta_);
-    shfl_down<<<this->grid_.grid_dim_, this->grid_.block_dim_>>>(arr_dev, active_masks, delta_,
-                                                                 width_);
+    const auto alloc_size = width_ * sizeof(unsigned int);
+    LinearAllocGuard<unsigned int> deltas_dev(LinearAllocs::hipMalloc, alloc_size);
+    deltas_.resize(width_);
+    std::generate(deltas_.begin(), deltas_.end(),
+                  [this] { return GenerateRandomInteger(0u, static_cast<unsigned int>(width_)); });
+    HIP_CHECK(hipMemcpy(deltas_dev.ptr(), deltas_.data(), alloc_size, hipMemcpyHostToDevice));
+    shfl_down<<<this->grid_.grid_dim_, this->grid_.block_dim_>>>(arr_dev, input_dev, active_masks,
+                                                                 deltas_dev.ptr(), width_);
   }
 
-  void validate(const T* const arr) {
-    ArrayAllOf(arr, this->grid_.thread_count_, [this](unsigned int i) -> std::optional<T> {
+  void validate(const T* const arr, const T* const input) {
+    ArrayAllOf(arr, this->grid_.thread_count_, [this, &input](unsigned int i) -> std::optional<T> {
       const int rank_in_block = this->grid_.thread_rank_in_block(i).value();
       const auto rank_in_warp = rank_in_block % this->warp_size_;
+      const auto rank_in_partition = rank_in_block % width_;
       const auto mask_idx = this->warps_in_block_ * (i / this->grid_.threads_in_block_count_) +
           rank_in_block / this->warp_size_;
+      const unsigned int delta = deltas_[rank_in_partition] % width_;
       const std::bitset<sizeof(uint64_t) * 8> active_mask(this->active_masks_[mask_idx]);
 
-      const int target = rank_in_block % width_ + delta_;
+      const int target = rank_in_block % width_ + delta;
       if (!active_mask.test(rank_in_warp) ||
-          (target < width_ && !active_mask.test(rank_in_warp + delta_)) ||
-          (target < width_ && rank_in_block + delta_ >= this->grid_.threads_in_block_count_)) {
+          (target < width_ && !active_mask.test(rank_in_warp + delta)) ||
+          (target < width_ && rank_in_block + delta >= this->grid_.threads_in_block_count_)) {
         return std::nullopt;
       }
 
-      return (target >= width_ ? i : i + delta_) % this->warp_size_;
+      return (target >= width_ ? input[i] : input[i + delta]);
     });
   };
 
  private:
-  unsigned int delta_;
+  std::vector<unsigned int> deltas_;
   int width_;
 };
 
@@ -82,7 +89,7 @@ template <typename T> class WarpShflDown : public WarpTest<WarpShflDown<T>, T> {
  * Test Description
  * ------------------------
  *  - Validates the warp shuffle down behavior for all valid width sizes {2, 4, 8, 16, 32,
- * 64(if supported)} for delta values of [0, width). The threads are deactivated based on the
+ * 64(if supported)} for generated delta values. The threads are deactivated based on the
  * passed active mask. The test is run for all overloads of shfl_down.
  * Test source
  * ------------------------
@@ -104,5 +111,11 @@ TEMPLATE_TEST_CASE("Unit_Warp_Shfl_Down_Positive_Basic", "", int, unsigned int, 
     return;
   }
 
-  WarpShflDown<TestType>().run();
+  SECTION("Shfl Down with specified active mask and input values") {
+    WarpShflDown<TestType>().run(false);
+  }
+
+  SECTION("Shfl Down with random active mask and input values") {
+    WarpShflDown<TestType>().run(true);
+  }
 }

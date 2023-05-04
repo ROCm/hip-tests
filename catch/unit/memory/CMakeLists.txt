@@ -150,7 +150,8 @@ set(TEST_SRC
     hipMallocAsync.cc
     hipStreamAttachMemAsync.cc
     hipMemRangeGetAttributes_old.cc
-    hipMemGetAddressRange.cc)
+    hipMemGetAddressRange.cc
+    hipArrayGetDescriptor.cc)
 
 set(NOT_FOR_MI200_AND_ABOVE_TEST hipMallocArray.cc hipArrayCreate.cc) # tests not for MI200+
 set(MI200_AND_ABOVE_TARGETS gfx90a gfx940 gfx941 gfx942)

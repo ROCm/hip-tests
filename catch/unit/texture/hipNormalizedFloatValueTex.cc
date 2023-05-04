@@ -19,6 +19,8 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 
+#if CUDA_VERSION < CUDA_12000
+
 #define SIZE          10
 #define EPSILON       0.00001
 #define THRESH_HOLD   0.01  // For filter mode
@@ -159,3 +161,5 @@ TEST_CASE("Unit_hipNormalizedFloatValueTex_CheckModes") {
     runTest_hipTextureFilterMode<hipFilterModeLinear>();
   }
 }
+
+#endif  // CUDA_VERSION < CUDA_12000

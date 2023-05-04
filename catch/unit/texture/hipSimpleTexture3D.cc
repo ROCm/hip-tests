@@ -20,6 +20,8 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 
+#if CUDA_VERSION < CUDA_12000
+
 // Texture reference for 3D texture
 texture<float, hipTextureType3D, hipReadModeElementType> texf;
 texture<int, hipTextureType3D, hipReadModeElementType>   texi;
@@ -119,3 +121,5 @@ TEST_CASE("Unit_hipSimpleTexture3D_Check_DataTypes") {
     runSimpleTexture3D_Check<char>(i, i+1, i, &texc);
   }
 }
+
+#endif // CUDA_VERSION < CUDA_12000

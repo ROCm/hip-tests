@@ -32,20 +32,20 @@ THE SOFTWARE.
 namespace cg = cooperative_groups;
 
 template <typename T>
-__global__ void shfl(T* const out, const uint64_t* const active_masks,
+__global__ void shfl(T* const out, const T* const in, const uint64_t* const active_masks,
                      const uint8_t* const src_lanes, const int width) {
   if (deactivate_thread(active_masks)) {
     return;
   }
   const auto grid = cg::this_grid();
   const auto block = cg::this_thread_block();
-  T var = static_cast<T>(grid.thread_rank() % warpSize);
+  T var = in[grid.thread_rank()];
   out[grid.thread_rank()] = __shfl(var, src_lanes[block.thread_rank() % width], width);
 }
 
 template <typename T> class WarpShfl : public WarpTest<WarpShfl<T>, T> {
  public:
-  void launch_kernel(T* const arr_dev, const uint64_t* const active_masks) {
+  void launch_kernel(T* const arr_dev, T* const input_dev, const uint64_t* const active_masks) {
     width_ = generate_width(this->warp_size_);
     INFO("Width: " << width_);
     const auto alloc_size = width_ * sizeof(uint8_t);
@@ -55,12 +55,12 @@ template <typename T> class WarpShfl : public WarpTest<WarpShfl<T>, T> {
                   [this] { return GenerateRandomInteger(0, static_cast<int>(2 * width_)); });
 
     HIP_CHECK(hipMemcpy(src_lanes_dev.ptr(), src_lanes_.data(), alloc_size, hipMemcpyHostToDevice));
-    shfl<<<this->grid_.grid_dim_, this->grid_.block_dim_>>>(arr_dev, active_masks,
+    shfl<<<this->grid_.grid_dim_, this->grid_.block_dim_>>>(arr_dev, input_dev, active_masks,
                                                             src_lanes_dev.ptr(), width_);
   }
 
-  void validate(const T* const arr) {
-    ArrayAllOf(arr, this->grid_.thread_count_, [this](unsigned int i) -> std::optional<T> {
+  void validate(const T* const arr, const T* const input) {
+    ArrayAllOf(arr, this->grid_.thread_count_, [this, &input](unsigned int i) -> std::optional<T> {
       const auto rank_in_block = this->grid_.thread_rank_in_block(i).value();
       const auto rank_in_warp = rank_in_block % this->warp_size_;
       const auto rank_in_partition = rank_in_block % width_;
@@ -76,7 +76,7 @@ template <typename T> class WarpShfl : public WarpTest<WarpShfl<T>, T> {
         return std::nullopt;
       }
 
-      return (i + src_offset) % this->warp_size_;
+      return input[i + src_offset];
     });
   };
 
@@ -99,7 +99,7 @@ template <typename T> class WarpShfl : public WarpTest<WarpShfl<T>, T> {
  *  - HIP_VERSION >= 5.2
  *  - Device supports warp shuffle
  */
- #if HT_NVIDIA // EXSWHTEC-274
+#if HT_NVIDIA  // EXSWHTEC-274
 TEMPLATE_TEST_CASE("Unit_Warp_Shfl_Positive_Basic", "", int, unsigned int, long, unsigned long,
                    long long, unsigned long long, float, double) {
   int device;
@@ -112,6 +112,12 @@ TEMPLATE_TEST_CASE("Unit_Warp_Shfl_Positive_Basic", "", int, unsigned int, long,
     return;
   }
 
-  WarpShfl<TestType>().run();
+  SECTION("Shfl with specified active mask and input values") {
+    WarpShfl<TestType>().run(false);
+  }
+
+  SECTION("Shfl with random active mask and input values") {
+    WarpShfl<TestType>().run(true);
+  }
 }
 #endif

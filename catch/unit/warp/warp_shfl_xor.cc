@@ -32,30 +32,30 @@ THE SOFTWARE.
 namespace cg = cooperative_groups;
 
 template <typename T>
-__global__ void shfl_xor(T* const out, const uint64_t* const active_masks, const int lane_mask,
-                         const int width) {
+__global__ void shfl_xor(T* const out, const T* const in, const uint64_t* const active_masks,
+                         const int lane_mask, const int width) {
   if (deactivate_thread(active_masks)) {
     return;
   }
 
   const auto grid = cg::this_grid();
-  T var = static_cast<T>(grid.thread_rank() % warpSize);
+  T var = in[grid.thread_rank()];
   out[grid.thread_rank()] = __shfl_xor(var, lane_mask, width);
 }
 
 template <typename T> class WarpShflXOR : public WarpTest<WarpShflXOR<T>, T> {
  public:
-  void launch_kernel(T* const arr_dev, const uint64_t* const active_masks) {
+  void launch_kernel(T* const arr_dev, T* const input_dev, const uint64_t* const active_masks) {
     width_ = generate_width(this->warp_size_);
     INFO("Width: " << width_);
     lane_mask_ = GENERATE_COPY(range(0, this->warp_size_));
     INFO("Lane mask: " << lane_mask_);
-    shfl_xor<<<this->grid_.grid_dim_, this->grid_.block_dim_>>>(arr_dev, active_masks, lane_mask_,
-                                                                width_);
+    shfl_xor<<<this->grid_.grid_dim_, this->grid_.block_dim_>>>(arr_dev, input_dev, active_masks,
+                                                                lane_mask_, width_);
   }
 
-  void validate(const T* const arr) {
-    ArrayAllOf(arr, this->grid_.thread_count_, [this](unsigned int i) -> std::optional<T> {
+  void validate(const T* const arr, const T* const input) {
+    ArrayAllOf(arr, this->grid_.thread_count_, [this, &input](unsigned int i) -> std::optional<T> {
       const auto rank_in_block = this->grid_.thread_rank_in_block(i).value();
       const auto rank_in_warp = rank_in_block % this->warp_size_;
       const int warp_target = rank_in_warp ^ this->lane_mask_;
@@ -73,7 +73,7 @@ template <typename T> class WarpShflXOR : public WarpTest<WarpShflXOR<T>, T> {
         return std::nullopt;
       }
 
-      return (target_partition > partition_rank ? i : i + target_offset) % this->warp_size_;
+      return target_partition > partition_rank ? input[i] : input[i + target_offset];
     });
   };
 
@@ -108,5 +108,11 @@ TEMPLATE_TEST_CASE("Unit_Warp_Shfl_XOR_Positive_Basic", "", int, unsigned int, l
     return;
   }
 
-  WarpShflXOR<TestType>().run();
+  SECTION("Shfl Xor with specified active mask and input values") {
+    WarpShflXOR<TestType>().run(false);
+  }
+
+  SECTION("Shfl Xor with random active mask and input values") {
+    WarpShflXOR<TestType>().run(true);
+  }
 }

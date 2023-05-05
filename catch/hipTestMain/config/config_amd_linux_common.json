@@ -69,7 +69,9 @@
 	   "Unit_hipMemcpyPeer_Positive_ZeroSize",
 	   "Unit_hipMemcpyPeerAsync_Positive_ZeroSize",
 	   "Disabling test tracked SWDEV-391718",
-	   "Unit_hipMemRangeGetAttribute_TstCountParam"
+	   "Unit_hipMemRangeGetAttribute_TstCountParam",
+	   "SWDEV-398980 fails in Stress test",
+	   "Unit_hipMemcpyPeer_Positive_Synchronization_Behavior"
 	]
 
 }

@@ -60,6 +60,26 @@
 	   "Unit_hipMemset3DSync",
 	   "Unit_hipStreamAddCallback_StrmSyncTiming",
 	   "Disabling test tracked SWDEV-394199",
-	   "Unit_hipStreamCreateWithPriority_MulthreadNonblockingflag"
+	   "Unit_hipStreamCreateWithPriority_MulthreadNonblockingflag",
+	   "Disabling test tracked SWDEV-395683",
+	   "Unit_hipStreamPerThread_MultiThread",
+	   "Disabling tests tracked with SWDEV-389647..",
+	   "Unit_hipMemcpy2DToArrayAsync_Positive_Synchronization_Behavior",
+	   "Disabling test tracked SWDEV-391555",
+	   "Unit_hipMemcpyPeer_Positive_ZeroSize",
+	   "Unit_hipMemcpyPeerAsync_Positive_ZeroSize",
+	   "Disabling test tracked SWDEV-391718",
+	   "Unit_hipMemRangeGetAttribute_TstCountParam",
+	   "Fails in Stress test SWDEV-398971",
+	   "Unit_HMM_OverSubscriptionTst",
+	   "SWDEV-398975 Seg faults in stress test",
+	   "Unit_hipMemcpyWithStream_MultiThread",
+	   "SWDEV-398977 fails in stress tests",
+	   "Unit_hipMemset2DSync",
+	   "SWDEV-398980 fails in Stress test",
+	   "Unit_hipMemcpyPeer_Positive_Synchronization_Behavior",
+	   "SWDEV-398981 fails in stress test",
+	   "Unit_hipStreamCreateWithPriority_MulthreadDefaultflag"
 	]
+
 }

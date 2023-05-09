@@ -19,8 +19,29 @@
 # THE SOFTWARE.
 
 set(TEST_SRC
+    single_precision_intrinsics.cc
+    double_precision_intrinsics.cc
+    integer_intrinsics.cc
 )
 
 hip_add_exe_to_target(NAME MathsTest
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
+
+add_test(NAME Unit_Single_Precision_Intrinsics_Negative
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR}
+         ${HIP_PLATFORM}
+         single_precision_intrinsics_negative_kernels.cc 42)
+
+add_test(NAME Unit_Double_Precision_Intrinsics_Negative
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR}
+         ${HIP_PLATFORM}
+         double_precision_intrinsics_negative_kernels.cc 18)
+   
+add_test(NAME Unit_Integer_Intrinsics_Negative
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR}
+         ${HIP_PLATFORM}
+         integer_intrinsics_negative_kernels.cc 20)

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -20,16 +20,20 @@ THE SOFTWARE.
 /*
 hipGraphInstantiateWithFlags(hipGraphExec_t* pGraphExec, hipGraph_t graph, unsigned long long flags);
 Testcase Scenarios of hipGraphInstantiateWithFlags API:
+
 Negative:
 1) Pass nullptr to pGraphExec
 2) Pass nullptr to graph
 4) Pass invalid flag
+
 Functional:
+
 1) Create dependencies graph and instantiate the graph
 2) Create graph in one GPU device and instantiate, launch in peer GPU device
 3) Create stream capture graph and instantite the graph
 4) Create stream capture graph in one GPU device  and instantite the graph launch
    in peer GPU device
+
 Mapping is missing for NVIDIA platform hence skipping the testcases
 */
 
@@ -306,50 +310,4 @@ TEST_CASE("Unit_hipGraphInstantiateWithFlags_StreamCaptureDeviceContextChg") {
   } else {
     SUCCEED("skipped the testcase as no of devices is less than 2");
   }
-}
-
-/* Create graph and add memAlloc node, but no corresponding memFree node to it.
-  Instantiate graph with flag - hipGraphInstantiateFlagAutoFreeOnLaunch
-  Launch and check graph execution should work properly and
-  free memory allocated by memAlloc call manually using hipFree api.
-
-Note - This test case is just to check if hipGraphInstantiateFlagAutoFreeOnLaunch
-       is not resulting in compilation error or api failure. Real functional test
-       will be added once the feature is fully implemented.
-*/
-TEST_CASE("Unit_hipGraphInstantiateWithFlags_FlagAutoFreeOnLaunch_check") {
-  constexpr size_t size = 512 * 1024 * 1024;
-  constexpr size_t Nbytes = size * sizeof(int);
-
-  hipGraph_t graph;
-  hipGraphExec_t graphExec;
-  hipStream_t stream;
-  hipGraphNode_t allocNodeA;
-  hipMemAllocNodeParams allocParam;
-
-  HIP_CHECK(hipGraphCreate(&graph, 0));
-  HIP_CHECK(hipStreamCreate(&stream));
-
-  memset(&allocParam, 0, sizeof(allocParam));
-  allocParam.bytesize = Nbytes;
-  allocParam.poolProps.allocType = hipMemAllocationTypePinned;
-  allocParam.poolProps.location.id = 0;
-  allocParam.poolProps.location.type = hipMemLocationTypeDevice;
-
-  HIP_CHECK(hipGraphAddMemAllocNode(&allocNodeA, graph, nullptr,
-                                    0, &allocParam));
-  REQUIRE(allocParam.dptr != nullptr);
-  int *A_d = reinterpret_cast<int *>(allocParam.dptr);
-
-  // Instantiate with Flag and launch the graph
-  HIP_CHECK(hipGraphInstantiateWithFlags(&graphExec, graph,
-                    hipGraphInstantiateFlagAutoFreeOnLaunch));
-
-  HIP_CHECK(hipGraphLaunch(graphExec, stream));
-  HIP_CHECK(hipStreamSynchronize(stream));
-
-  HIP_CHECK(hipFree(A_d));  //  free allocMemory manually
-  HIP_CHECK(hipGraphDestroy(graph));
-  HIP_CHECK(hipGraphExecDestroy(graphExec));
-  HIP_CHECK(hipStreamDestroy(stream));
 }

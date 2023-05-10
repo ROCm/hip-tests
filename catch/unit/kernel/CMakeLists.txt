@@ -22,7 +22,16 @@
 set(TEST_SRC
     hipMemFaultStackAllocation.cc
     hipLaunchBounds.cc
+    hipShflTests.cc
 )
+
+# only for AMD
+if(HIP_PLATFORM MATCHES "amd")
+  set(AMD_SRC
+      hipShflUpDownTest.cc
+  )
+  set(TEST_SRC ${TEST_SRC} ${AMD_SRC})
+endif()
 
 hip_add_exe_to_target(NAME KernelTest
                       TEST_SRC ${TEST_SRC}

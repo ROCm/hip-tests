@@ -38,6 +38,7 @@ set(AMD_TEST_SRC
     floatTM.cc
     hipMathFunctions.cc
     hmax_hmin.cc
+    hip_hc_8pk.cc
 )
 set(AMD_ARCH_SPEC_TEST_SRC
     AtomicAdd_Coherent_withunsafeflag.cc
@@ -115,6 +116,13 @@ endif()
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests
                       LINKER_LIBS hiprtc)
+
+    add_test(NAME Unit_Device__hip_hc_8pk_Negative
+             COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+             ${CMAKE_CURRENT_SOURCE_DIR}
+             ${HIP_PLATFORM}
+             hip_hc_8pk_negative_kernels.cc 90)
+
 elseif(HIP_PLATFORM MATCHES "nvidia")
     hip_add_exe_to_target(NAME UnitDeviceTests
                       TEST_SRC ${TEST_SRC}

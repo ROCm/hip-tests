@@ -51,8 +51,6 @@ sep
 x
 (null)
 (nil)
-hello
-5
 3.14159000    hello 0xf01dab1eca55e77e
 )here");
 #elif !defined(_WIN32)

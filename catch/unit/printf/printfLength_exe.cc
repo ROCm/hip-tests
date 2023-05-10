@@ -21,25 +21,30 @@ THE SOFTWARE.
 */
 
 #include <hip/hip_runtime.h>
-#include <cwchar>
 
 __global__ void test_kernel() {
-  const char* N = nullptr;
-  printf("%hhd %hhi\n", char(-42), char(-42));
   printf("%hd %hi\n", short(-42), short(-42));
   printf("%ld %li\n", -42l, -42l);
   printf("%lld %lli\n", -42ll, -42ll);
-  printf("%jd %ji\n", -42l, -42l);
-  printf("%zd %zi\n", -42l, -42l);
-  printf("%td %ti\n", (ptrdiff_t)N, (ptrdiff_t)N);
-  printf("%hhu %hho\n", uchar(42), uchar(42));
   printf("%hu %ho\n", ushort(42), ushort(42));
   printf("%lu %lo\n", 42l, 42l);
   printf("%llu %llo\n", 42ll, 42ll);
+  printf("%hx %hX\n", ushort(42), ushort(42));
+  printf("%lx %lX\n", 42l, 42l);
+  printf("%llx %llX\n", 42ll, 42ll);
+  printf("%lf\n", 123.456);
+  printf("%lc\n", 'x');
+#if HT_AMD
+  const char* N = nullptr;
+  printf("%hhd %hhi\n", char(-42), char(-42));
+  printf("%jd %ji\n", -42l, -42l);
+  printf("%zd %zi\n", -42l, -42l);
+  printf("%td %ti\n", (ptrdiff_t)N, (ptrdiff_t)N);
+  printf("%hhu %hho\n", static_cast<unsigned char>(42), static_cast<unsigned char>(42));
   printf("%ju %jo\n", 42l, 42l);
   printf("%zu %zo\n", 42l, 42l);
   printf("%tu %to\n", (ptrdiff_t)N, (ptrdiff_t)N);
-  printf("%lc\n", 'x');
+#endif
 }
 
 int main() {

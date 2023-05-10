@@ -24,22 +24,40 @@ THE SOFTWARE.
 #include <hip_test_process.hh>
 
 TEST_CASE("Unit_printf_length") {
+#if HT_NVIDIA
   std::string reference(R"here(-42 -42
 -42 -42
 -42 -42
--42 -42
--42 -42
--42 -42
-0 0
 42 52
 42 52
 42 52
-42 52
-42 52
-42 52
-0 0
+2a 2A
+2a 2A
+2a 2A
+123.456000
 x
 )here");
+#else
+  std::string reference(R"here(-42 -42
+-42 -42
+-42 -42
+42 52
+42 52
+42 52
+2a 2A
+2a 2A
+2a 2A
+123.456000
+x
+-42 -42
+-42 -42
+-42 -42
+0 0
+42 52
+42 52
+42 52
+)here");
+#endif
 
   hip::SpawnProc proc("printfLength_exe", true);
   REQUIRE(0 == proc.run());

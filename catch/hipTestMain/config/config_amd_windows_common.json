@@ -147,21 +147,6 @@
 	   "Unit_hipGraphMemsetNodeSetParams_Positive_Basic - uint8_t",
 	   "Unit_hipStreamWaitEvent_UninitializedStream_Negative",
 	   "Unit_hipDeviceSetSharedMemConfig_Negative_Parameters",
-	   "Unit_hipDeviceGetUuid_Positive",
-	   "Disabling test tracked SWDEV-394199",
-	   "Unit_hipStreamCreateWithPriority_MulthreadNonblockingflag",
-	   "SWDEV-396618 hipEventElapsedTime returns sucess",
-	   "Unit_hipEventElapsedTime_NotReady_Negative",
-	   "SWDEV-396617 ExecMemcpyNodeSetParamsFromSymbol fails in direction",
-	   "Unit_hipGraphExecMemcpyNodeSetParamsFromSymbol_Negative_Parameters",
-	   "SWDEV-396616 hipMemMap returns invalid error",
-	   "Unit_hipMemVmm_Basic",
-	   "SWDEV-396615 mGPUs not considered correctly",
-	   "Unit_hipManagedKeyword_MultiGpu",
-	   "Disabling test tracked SWDEV-391555",
-	   "Unit_hipMemcpyPeer_Positive_ZeroSize",
-	   "Unit_hipMemcpyPeerAsync_Positive_ZeroSize",
-	   "Disabling test tracked SWDEV-391718",
-	   "Unit_hipMemRangeGetAttribute_TstCountParam"
+	   "Unit_hipDeviceGetUuid_Positive"
 	]
 }

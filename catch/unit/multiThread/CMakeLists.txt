@@ -1,6 +1,5 @@
 # Common Tests - Test independent of all platforms
 set(TEST_SRC
-  hipMemsetAsyncMultiThread.cc
   hipMultiThreadDevice.cc
   hipMultiThreadStreams1.cc
   hipMultiThreadStreams2.cc

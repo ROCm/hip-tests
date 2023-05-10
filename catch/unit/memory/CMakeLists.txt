@@ -51,6 +51,7 @@ set(TEST_SRC
     hipMallocManaged_MultiScenario.cc
     hipMemsetNegative.cc
     hipMemset.cc
+    hipMemsetAsyncMultiThread.cc
     hipMemset3D.cc
     hipMemset2D.cc
     hipHostMallocTests.cc

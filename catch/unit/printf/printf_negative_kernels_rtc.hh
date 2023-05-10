@@ -1,16 +1,13 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
-
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -20,38 +17,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip/hip_runtime.h>
+#pragma once
 
-__global__ void test_kernel() {
-  printf("%08d\n", 42);
-  printf("%08i\n", -42);
-  printf("%08u\n", 42);
-  printf("%08g\n", 123.456);
-  printf("%0+8d\n", 42);
-  printf("%+d\n", -42);
-  printf("%+08d\n", 42);
-  printf("%-8s\n", "xyzzy");
-  printf("% i\n", -42);
-  printf("% i\n", 42);
-  printf("%-16.8d\n", 42);
-  printf("%16.8d\n", 42);
-  printf("%#o\n", 42);
-  printf("%#x\n", 42);
-  printf("%#X\n", 42);
-#if HT_AMD
-  printf("%#F\n", 42.);
-#else
-  printf("%#f\n", 42.);
-#endif
-  printf("%#e\n", 42.);
-  printf("%#E\n", 42.);
-  printf("%#g\n", 42.);
-  printf("%#G\n", 42.);
-  printf("%#a\n", 42.);
-  printf("%#A\n", 42.);
-}
-
-int main() {
-  test_kernel<<<1, 1>>>();
-  static_cast<void>(hipDeviceSynchronize());
-}
+static constexpr auto kPrintfParam{
+    R"(
+        struct Dummy {
+          __device__ Dummy() {}
+          __device__ ~Dummy() {}
+        };
+        __global__ void printf_n1(int* p) { printf(p); }
+        __global__ void printf_n2(unsigned int* p) { printf(p); }
+        __global__ void printf_n3(short* p) { printf(p); }
+        __global__ void printf_n4(long* p) { printf(p); }
+        __global__ void printf_n5(unsigned long* p) { printf(p); }
+        __global__ void printf_n6(long long* p) { printf(p); }
+        __global__ void printf_n7(unsigned long long* p) { printf(p); }
+        __global__ void printf_n8(float* p) { printf(p); }
+        __global__ void printf_n9(double* p) { printf(p); }
+        __global__ void printf_n10(long double* p) { printf(p); }
+        __global__ void printf_n11(Dummy* p) { printf(p); }
+    )"};

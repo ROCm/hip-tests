@@ -21,34 +21,25 @@ THE SOFTWARE.
 */
 
 #include <hip/hip_runtime.h>
+#include <cwchar>
 
 __global__ void test_kernel() {
-  printf("%08d\n", 42);
-  printf("%08i\n", -42);
-  printf("%08u\n", 42);
-  printf("%08g\n", 123.456);
-  printf("%0+8d\n", 42);
-  printf("%+d\n", -42);
-  printf("%+08d\n", 42);
-  printf("%-8s\n", "xyzzy");
-  printf("% i\n", -42);
-  printf("% i\n", 42);
-  printf("%-16.8d\n", 42);
-  printf("%16.8d\n", 42);
-  printf("%#o\n", 42);
-  printf("%#x\n", 42);
-  printf("%#X\n", 42);
-#if HT_AMD
-  printf("%#F\n", 42.);
-#else
-  printf("%#f\n", 42.);
-#endif
-  printf("%#e\n", 42.);
-  printf("%#E\n", 42.);
-  printf("%#g\n", 42.);
-  printf("%#G\n", 42.);
-  printf("%#a\n", 42.);
-  printf("%#A\n", 42.);
+  const char* N = nullptr;
+  printf("%hhd %hhi\n", char(-42), char(-42));
+  printf("%hd %hi\n", short(-42), short(-42));
+  printf("%ld %li\n", -42l, -42l);
+  printf("%lld %lli\n", -42ll, -42ll);
+  printf("%jd %ji\n", -42l, -42l);
+  printf("%zd %zi\n", -42l, -42l);
+  printf("%td %ti\n", (ptrdiff_t)N, (ptrdiff_t)N);
+  printf("%hhu %hho\n", uchar(42), uchar(42));
+  printf("%hu %ho\n", ushort(42), ushort(42));
+  printf("%lu %lo\n", 42l, 42l);
+  printf("%llu %llo\n", 42ll, 42ll);
+  printf("%ju %jo\n", 42l, 42l);
+  printf("%zu %zo\n", 42l, 42l);
+  printf("%tu %to\n", (ptrdiff_t)N, (ptrdiff_t)N);
+  printf("%lc\n", 'x');
 }
 
 int main() {

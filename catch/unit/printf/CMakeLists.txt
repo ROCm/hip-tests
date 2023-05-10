@@ -2,6 +2,7 @@
 set(TEST_SRC
     printfFlags.cc
     printfSpecifiers.cc
+    printfLength.cc
 )
 
 
@@ -17,9 +18,17 @@ elseif (HIP_PLATFORM MATCHES "nvidia")
                     COMPILE_OPTIONS -std=c++17)
 endif()
 
+add_test(NAME Unit_printf_Negative
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR}
+         ${HIP_PLATFORM}
+         printf_negative_kernels.cc 11)
+
 # Standalone exes
 add_executable(printfFlags_exe EXCLUDE_FROM_ALL printfFlags_exe.cc)
 add_executable(printfSpecifiers_exe EXCLUDE_FROM_ALL printfSpecifiers_exe.cc)
+add_executable(printfLength_exe EXCLUDE_FROM_ALL printfLength_exe.cc)
 
 add_dependencies(build_tests printfFlags_exe)
 add_dependencies(build_tests printfSpecifiers_exe)
+add_dependencies(build_tests printfLength_exe)

@@ -20,38 +20,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip/hip_runtime.h>
+#include <hip_test_common.hh>
+#include <hip_test_process.hh>
 
-__global__ void test_kernel() {
-  printf("%08d\n", 42);
-  printf("%08i\n", -42);
-  printf("%08u\n", 42);
-  printf("%08g\n", 123.456);
-  printf("%0+8d\n", 42);
-  printf("%+d\n", -42);
-  printf("%+08d\n", 42);
-  printf("%-8s\n", "xyzzy");
-  printf("% i\n", -42);
-  printf("% i\n", 42);
-  printf("%-16.8d\n", 42);
-  printf("%16.8d\n", 42);
-  printf("%#o\n", 42);
-  printf("%#x\n", 42);
-  printf("%#X\n", 42);
-#if HT_AMD
-  printf("%#F\n", 42.);
-#else
-  printf("%#f\n", 42.);
-#endif
-  printf("%#e\n", 42.);
-  printf("%#E\n", 42.);
-  printf("%#g\n", 42.);
-  printf("%#G\n", 42.);
-  printf("%#a\n", 42.);
-  printf("%#A\n", 42.);
-}
+TEST_CASE("Unit_printf_length") {
+  std::string reference(R"here(-42 -42
+-42 -42
+-42 -42
+-42 -42
+-42 -42
+-42 -42
+0 0
+42 52
+42 52
+42 52
+42 52
+42 52
+42 52
+0 0
+x
+)here");
 
-int main() {
-  test_kernel<<<1, 1>>>();
-  static_cast<void>(hipDeviceSynchronize());
+  hip::SpawnProc proc("printfLength_exe", true);
+  REQUIRE(0 == proc.run());
+  REQUIRE(proc.getOutput() == reference);
 }

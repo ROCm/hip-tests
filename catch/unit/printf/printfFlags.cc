@@ -33,8 +33,19 @@ TEST_CASE("Unit_printf_flags") {
 +0000042
 xyzzy   
 -42
+ 42
 00000042        
         00000042
+052
+0x2a
+0X2A
+42.000000
+4.200000e+01
+4.200000E+01
+42.0000
+42.0000
+0x1.5p+5
+0X1.5P+5
 )here");
 
   hip::SpawnProc proc("printfFlags_exe", true);

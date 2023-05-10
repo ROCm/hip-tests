@@ -36,9 +36,13 @@ __global__ void test_kernel() {
   printf("%%c%s\n", "xyzzy");
   printf("%c%c%c\n", 's', 'e', 'p');
   printf("%d\n", -42);
+  printf("%i\n", -42);
   printf("%u\n", 42);
+  printf("%o\n", 42);
+  printf("%x\n", 42);
+  printf("%X\n", 42);
   printf("%f\n", 123.456);
-#ifdef __HIP_PLATFORM_AMD__
+#if HT_AMD
   printf("%F\n", -123.456);
 #else
   printf("%f\n", -123.456);
@@ -47,10 +51,12 @@ __global__ void test_kernel() {
   printf("%E\n", 123.456);
   printf("%g\n", 123.456);
   printf("%G\n", -123.456);
+  printf("%a\n", 123.456);
+  printf("%A\n", -123.456);
   printf("%c\n", 'x');
   printf("%s\n", N);
   printf("%p\n", (void *)N);
-#ifdef __HIP_PLATFORM_AMD__
+#if HT_AMD
   printf("%.*f %*.*s %p\n", 8, 3.14159, 8, 5, s, (void*)0xf01dab1eca55e77e);
 #else
   // In Cuda, printf doesn't support %.*, %*.*

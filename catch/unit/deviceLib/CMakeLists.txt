@@ -119,8 +119,7 @@ endif()
 
     add_test(NAME Unit_Device__hip_hc_8pk_Negative
              COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-             ${CMAKE_CURRENT_SOURCE_DIR}
-             ${HIP_PLATFORM}
+             ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
              hip_hc_8pk_negative_kernels.cc 90)
 
 elseif(HIP_PLATFORM MATCHES "nvidia")

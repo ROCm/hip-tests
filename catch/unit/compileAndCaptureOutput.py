@@ -18,33 +18,34 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import os
 import subprocess
 import sys
 import unittest
 
 class CompileAndCapture(unittest.TestCase):
   path = None
-  expected_error_count = None
+  expected_error_count = 0
+  expected_warning_count = 0
+  hip_path = None
   file = None
   error_string = None
+  warning_string = None
   platform = None
 
   def setUp(self):
     self.error_string = 'error:'
+    self.warning_string = 'warning:'
+    self.assertFalse(self.hip_path == None)
     self.assertFalse(self.path == None)
     self.assertFalse(self.file == None)
-    self.assertFalse(self.expected_error_count == None)
     self.assertTrue(self.platform == 'amd' or self.platform == 'nvidia')
 
-  def test_atomic(self):
+  def test(self):
     compiler_args = [
-      os.environ["HIP_PATH"] + '/bin/hipcc',
+      self.hip_path + '/bin/hipcc',
       '-I' + self.path + '/../../external/Catch2',
       '-I' + self.path + '/../../include',
-      '-I' + os.environ["HIP_PATH"] + '/include',
       '-I' + self.path + '/../../external/picojson',
-      '--std=c++17',
       '-c',
       self.path + '/' + self.file,
       ]
@@ -54,19 +55,52 @@ class CompileAndCapture(unittest.TestCase):
       compiler_args.append('-ferror-limit=100')
     compiler_output = subprocess.run(compiler_args, stderr=subprocess.PIPE)
     # Get the compiler output in the stdout if -V flag is raised during ctest invocation.
-    print(compiler_output.stderr.decode('UTF-8'))
+    compiler_stderr = compiler_output.stderr.decode('UTF-8')
+    print(compiler_stderr)
+
+    error_count = compiler_stderr.count(self.error_string)
     if self.expected_error_count < 0:
-      self.assertGreater(compiler_output.stderr.decode('UTF-8').count(self.error_string), 0)
+      self.assertGreater(error_count, 0)
     else:
-      self.assertEqual(compiler_output.stderr.decode('UTF-8').count(self.error_string),
-                       self.expected_error_count)
+      self.assertEqual(error_count, self.expected_error_count)
+
+    warning_count = compiler_stderr.count(self.warning_string)
+    if self.expected_warning_count < 0:
+      self.assertGreater(warning_count, 0)
+    else:
+      self.assertEqual(warning_count, self.expected_warning_count)
 
 if __name__ == '__main__':
-  if len(sys.argv) == 5:
+  try:
     CompileAndCapture.path = sys.argv[1]
+  except IndexError:
+    CompileAndCapture.path = None
+
+  try:
     CompileAndCapture.platform = sys.argv[2]
-    CompileAndCapture.file = sys.argv[3]
-    CompileAndCapture.expected_error_count = int(sys.argv[4])
+  except IndexError:
+    CompileAndCapture.platform = None
+  
+  try:
+    CompileAndCapture.hip_path = sys.argv[3]
+  except IndexError:
+    CompileAndCapture.hip_path = None
+
+  try:
+    CompileAndCapture.file = sys.argv[4]
+  except IndexError:
+    CompileAndCapture.file = None
+
+  try:
+    CompileAndCapture.expected_error_count = int(sys.argv[5])
+  except IndexError:
+    CompileAndCapture.expected_error_count = 0
+  
+  try:
+    CompileAndCapture.expected_warning_count = int(sys.argv[6])
+  except IndexError:
+    CompileAndCapture.expected_warning_count = 0
+
   # Unittest looks at the same argv's as the __main__ and doesn't know how
   # to handle arguments other than the executable (0). Therefore passing only
   # executable as the argv for unittest module.

@@ -35,12 +35,10 @@ hip_add_exe_to_target(NAME MathsTest
 
 add_test(NAME Unit_Device_root_1Dand2D_Negative
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-         ${CMAKE_CURRENT_SOURCE_DIR}
-         ${HIP_PLATFORM}
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
          math_root_negative_kernels_1Dand2D.cc 68)
 
 add_test(NAME Unit_Device_root_3Dand4D_Negative
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-         ${CMAKE_CURRENT_SOURCE_DIR}
-         ${HIP_PLATFORM}
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
          math_root_negative_kernels_3Dand4D.cc 56)

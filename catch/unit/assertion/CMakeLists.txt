@@ -39,12 +39,10 @@ endif()
 
 add_test(NAME Unit_StaticAssert_Positive_Basic
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-         ${CMAKE_CURRENT_SOURCE_DIR}
-         ${HIP_PLATFORM}
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
          static_assert_kernels_positive.cc 2)
 
 add_test(NAME Unit_StaticAssert_Negative_Basic
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-         ${CMAKE_CURRENT_SOURCE_DIR}
-         ${HIP_PLATFORM}
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
          static_assert_kernels_negative.cc 2)

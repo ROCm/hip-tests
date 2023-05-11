@@ -36,14 +36,12 @@ endif()
 
 add_test(NAME Unit_Kernel_Launch_bounds_Negative_Parameters_CompilerError
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-         ${CMAKE_CURRENT_SOURCE_DIR}
-         ${HIP_PLATFORM}
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
          launch_bounds_compiler_error_kernels.cc -1)
 
 if(HIP_PLATFORM MATCHES "amd")
     add_test(NAME Unit_Kernel_Launch_bounds_Negative_Parameters_ParseError
             COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-            ${CMAKE_CURRENT_SOURCE_DIR}
-            ${HIP_PLATFORM}
+            ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
             launch_bounds_parse_error_kernels.cc -1)
 endif()

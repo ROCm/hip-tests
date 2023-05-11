@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip/hip_runtime.h>
+#include <hip_test_common.hh>
 
 __global__ void test_kernel() {
   printf("%hd %hi\n", short(-42), short(-42));
@@ -36,6 +36,7 @@ __global__ void test_kernel() {
   printf("%lc\n", 'x');
 #if HT_AMD
   const char* N = nullptr;
+  printf("%lF\n", 123.456);
   printf("%hhd %hhi\n", char(-42), char(-42));
   printf("%jd %ji\n", -42l, -42l);
   printf("%zd %zi\n", -42l, -42l);

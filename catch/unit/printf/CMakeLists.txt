@@ -27,8 +27,7 @@ endif()
 
 add_test(NAME Unit_printf_Negative
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-         ${CMAKE_CURRENT_SOURCE_DIR}
-         ${HIP_PLATFORM}
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
          printf_negative_kernels.cc 11)
 
 # Standalone exes

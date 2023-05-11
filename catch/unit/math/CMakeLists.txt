@@ -28,6 +28,5 @@ hip_add_exe_to_target(NAME MathsTest
 
 add_test(NAME Unit_Device_Misc_Functions_Negative
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-         ${CMAKE_CURRENT_SOURCE_DIR}
-         ${HIP_PLATFORM}
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
          misc_negative_kernels.cc 76)

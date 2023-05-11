@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
+#include <hip_test_context.hh>
 
 __global__ void test_kernel() {
   printf("%08d\n", 42);

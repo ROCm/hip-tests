@@ -47,7 +47,6 @@ static constexpr auto ARRAY_LOOP{100};
  * after releasing the memory should be the same
  *
  */
-#ifdef _WIN32
 static void MallocMipmappedArray_DiffSizes(int gpu) {
   HIP_CHECK_THREAD(hipSetDevice(gpu));
   //Use of GENERATE in thead function causes random failures with multithread condition.
@@ -74,15 +73,10 @@ static void MallocMipmappedArray_DiffSizes(int gpu) {
     }
   }
 }
-#endif
 
 TEST_CASE("Unit_hipMallocMipmappedArray_DiffSizes") {
-#ifdef _WIN32
   MallocMipmappedArray_DiffSizes(0);
   HIP_CHECK_THREAD_FINALIZE();
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }
 
 /*
@@ -91,7 +85,6 @@ scenario by launching threads in parallel on multiple GPUs
 and verifies the hipMallocMipmappedArray API with small and big chunks data
 */
 TEST_CASE("Unit_hipMallocMipmappedArray_MultiThread") {
-#ifdef _WIN32
   std::vector<std::thread> threadlist;
   int devCnt = 0;
   devCnt = HipTest::getDeviceCount();
@@ -110,12 +103,8 @@ TEST_CASE("Unit_hipMallocMipmappedArray_MultiThread") {
     WARN("Memory leak of hipMallocMipmappedArray API in multithreaded scenario");
     REQUIRE(false);
   }
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }
 
-#ifdef _WIN32
 namespace {
 void checkMipmappedArrayIsExpected(hipMipmappedArray_t array, hipArray level_array, const hipChannelFormatDesc& expected_desc,
                           const hipExtent& expected_extent, const unsigned int expected_flags) {
@@ -151,10 +140,8 @@ void checkMipmappedArrayIsExpected(hipMipmappedArray_t array, hipArray level_arr
 #endif
 }
 }  // namespace
-#endif
 
 TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_happy", "", char, uint2, int4, short4, float) {
-#ifdef _WIN32
   hipMipmappedArray_t array;
   const auto desc = hipCreateChannelDesc<TestType>();
 #if HT_AMD
@@ -183,13 +170,9 @@ TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_happy", "", char, uint2, int4, 
     checkMipmappedArrayIsExpected(array, hipArray, desc, extent, flags);
     HIP_CHECK(hipFreeMipmappedArray(array));
   }
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }
 
 TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_MaxTexture", "", int, uint4, ushort2, float) {
-#ifdef _WIN32
   hipMipmappedArray_t array;
   const hipChannelFormatDesc desc = hipCreateChannelDesc<TestType>();
 #if HT_AMD
@@ -255,13 +238,9 @@ TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_MaxTexture", "", int, uint4, us
     CAPTURE(extent.width, extent.height, extent.depth);
     HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, &desc, extent, numLevels, flag), hipErrorInvalidValue);
   }
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }
 
 
-#ifdef _WIN32
 #if HT_AMD
 constexpr std::array<unsigned int, 1> validFlags{hipArrayDefault};
 #else
@@ -283,12 +262,9 @@ hipExtent makeMipmappedExtent(unsigned int flag, size_t s) {
   }
   return make_hipExtent(s, s, s);
 }
-#endif
-
 
 // Providing the array pointer as nullptr should return an error
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NullArrayPtr") {
-#ifdef _WIN32
   hipChannelFormatDesc desc = hipCreateChannelDesc<float4>();
   unsigned int numLevels = 1;
   constexpr size_t s = 6;
@@ -296,14 +272,10 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NullArrayPtr") {
   const auto flag = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
   HIP_CHECK_ERROR(hipMallocMipmappedArray(nullptr, &desc, makeMipmappedExtent(flag, s), numLevels, flag),
                   hipErrorInvalidValue);
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }
 
 // Providing the description pointer as nullptr should return an error
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NullDescPtr") {
-#ifdef _WIN32
   constexpr size_t s = 6;  // 6 to keep cubemap happy
   unsigned int numLevels = 1;
   hipMipmappedArray_t array;
@@ -312,14 +284,10 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NullDescPtr") {
 
   HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, nullptr, makeMipmappedExtent(flag, s), numLevels, flag),
                   hipErrorInvalidValue);
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }
 
 // Zero width arrays are not allowed
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_ZeroWidth") {
-#ifdef _WIN32
   constexpr size_t s = 6;  // 6 to keep cubemap happy
   unsigned int numLevels = 1;
   hipMipmappedArray_t array;
@@ -329,14 +297,10 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_ZeroWidth") {
 
   HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, &desc, make_hipExtent(0, s, s), numLevels, flag),
                   hipErrorInvalidValue);
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }
 
 // Zero height arrays are only allowed for 1D arrays and layered arrays
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_ZeroHeight") {
-#ifdef _WIN32
   constexpr size_t s = 6;  // 6 to keep cubemap happy
   unsigned int numLevels = 1;
   hipMipmappedArray_t array;
@@ -351,13 +315,9 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_ZeroHeight") {
     HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, &desc, make_hipExtent(s, 0, s), numLevels, flag),
                     hipErrorInvalidValue);
   }
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }
 
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_InvalidFlags") {
-#ifdef _WIN32
   constexpr size_t s = 6;  // 6 to keep cubemap happy
   unsigned int numLevels = 1;
   hipMipmappedArray_t array;
@@ -377,12 +337,8 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_InvalidFlags") {
   REQUIRE(std::find(std::begin(validFlags), std::end(validFlags), flag) == std::end(validFlags));
 
   HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, &desc, makeMipmappedExtent(flag, s), numLevels, flag), hipErrorInvalidValue);
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }
 
-#ifdef _WIN32
 void testInvalidDescriptionMipmapped(hipChannelFormatDesc desc) {
   constexpr size_t s = 6;  // 6 to keep cubemap happy
   unsigned int numLevels = 1;
@@ -397,20 +353,14 @@ void testInvalidDescriptionMipmapped(hipChannelFormatDesc desc) {
   const auto flag = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
   HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, &desc, makeMipmappedExtent(flag, s), numLevels, flag), expectedError);
 }
-#endif
 
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_InvalidFormat") {
-#ifdef _WIN32
   hipChannelFormatDesc desc = hipCreateChannelDesc<float4>();
   desc.f = GENERATE(hipChannelFormatKindNone, 0xBEEF);
   testInvalidDescriptionMipmapped(desc);
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }
 
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_BadChannelLayout") {
-#ifdef _WIN32
   const int bits = GENERATE(8, 16, 32);
   const hipChannelFormatKind formatKind =
       GENERATE(hipChannelFormatKindSigned, hipChannelFormatKindUnsigned, hipChannelFormatKindFloat);
@@ -429,25 +379,17 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_BadChannelLayout") {
   INFO("x: " << desc.x << ", y: " << desc.y << ", z: " << desc.z << ", w: " << desc.w);
 
   testInvalidDescriptionMipmapped(desc);
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }
 
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_8BitFloat") {
-#ifdef _WIN32
   hipChannelFormatDesc desc = GENERATE(hipCreateChannelDesc(8, 0, 0, 0, hipChannelFormatKindFloat),
                                        hipCreateChannelDesc(8, 8, 0, 0, hipChannelFormatKindFloat),
                                        hipCreateChannelDesc(8, 8, 8, 8, hipChannelFormatKindFloat));
 
   testInvalidDescriptionMipmapped(desc);
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }
 
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_DifferentChannelSizes") {
-#ifdef _WIN32
   const int bitsX = GENERATE(8, 16, 32);
   const int bitsY = GENERATE(8, 16, 32);
   const int bitsZ = GENERATE(8, 16, 32);
@@ -468,13 +410,9 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_DifferentChannelSizes") {
 
 
   testInvalidDescriptionMipmapped(desc);
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }
 
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_BadChannelSize") {
-#ifdef _WIN32
   const int badBits = GENERATE(-1, 0, 10, 100);
   const hipChannelFormatKind formatKind =
       GENERATE(hipChannelFormatKindSigned, hipChannelFormatKindUnsigned, hipChannelFormatKindFloat);
@@ -483,15 +421,11 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_BadChannelSize") {
   INFO("Number of bits: " << badBits);
 
   testInvalidDescriptionMipmapped(desc);
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }
 
 
 // hipMallocMipmappedArray should handle the max numeric value gracefully.
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NumericLimit") {
-#ifdef _WIN32
   hipMipmappedArray_t arrayPtr;
   unsigned int numLevels = 1;
   hipChannelFormatDesc desc = hipCreateChannelDesc<float>();
@@ -500,14 +434,10 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NumericLimit") {
   const auto flag = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
   HIP_CHECK_ERROR(hipMallocMipmappedArray(&arrayPtr, &desc, makeMipmappedExtent(flag, size), numLevels, flag),
                   hipErrorInvalidValue);
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }
 
 // texture gather arrays are only allowed to be 2D
 TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_Negative_Non2DTextureGather", "", char, uchar2, float2) {
-#ifdef _WIN32
 #if HT_AMD
   HipTest::HIP_SKIP_TEST("Texture Gather arrays not supported using AMD backend");
   return;
@@ -521,13 +451,9 @@ TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_Negative_Non2DTextureGather", "
   const hipExtent extent = GENERATE(make_hipExtent(size, 0, 0), make_hipExtent(size, size, size));
 
   HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, &desc, extent, numLevels, flags), hipErrorInvalidValue);
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }
 
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NumLevels") {
-#ifdef _WIN32
   hipMipmappedArray_t array;
   constexpr size_t size = 6;
   unsigned int numLevels = floor(log2(size)) + 2;
@@ -536,13 +462,9 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NumLevels") {
   const auto flag = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
   HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, &desc, makeMipmappedExtent(flag, size), numLevels, flag),
                   hipErrorInvalidValue);
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }
 
 TEST_CASE("Unit_hipGetMipmappedArrayLevel_Negative") {
-#ifdef _WIN32
   constexpr size_t s = 6;
   unsigned int numLevels = 1;
   hipMipmappedArray_t array;
@@ -560,7 +482,4 @@ TEST_CASE("Unit_hipGetMipmappedArrayLevel_Negative") {
     HIP_CHECK_ERROR(hipGetMipmappedArrayLevel(&level_array, nullptr, 1), hipErrorInvalidResourceHandle);
   }
   HIP_CHECK(hipFreeMipmappedArray(array));
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }

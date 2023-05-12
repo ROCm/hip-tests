@@ -27,8 +27,7 @@ hipBindTextureToMipmappedArray api when parameters are invalid
 
 texture<float, 2, hipReadModeElementType> texRef;
 
-// MipMap is currently supported only on windows
-#if (defined(_WIN32) && !defined(__HIP_NO_IMAGE_SUPPORT))
+#if !defined(__HIP_NO_IMAGE_SUPPORT)
 __global__ void tex2DKernel(float* outputData, int width, float level) {
   int x = blockIdx.x * blockDim.x + threadIdx.x;
   int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -117,7 +116,7 @@ TEST_CASE("Unit_hipTextureMipmapRef2D_Positive_Check") {
   // Height Width Vector
   std::vector<unsigned int> hw_vec = {2048, 1024, 512, 256, 64};
   std::vector<unsigned int> mip_vec = {8, 4, 2, 1};
-#ifdef _WIN32
+
   for (auto& hw : hw_vec) {
     for (auto& mip : mip_vec) {
       if ((hw / static_cast<int>(pow(2, (mip * 2)))) > 0) {
@@ -125,15 +124,11 @@ TEST_CASE("Unit_hipTextureMipmapRef2D_Positive_Check") {
       }
     }
   }
-#else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }
 
 TEST_CASE("Unit_hipTextureMipmapRef2D_Negative_Parameters") {
   CHECK_IMAGE_SUPPORT
 
-#ifdef _WIN32
   hipError_t ret;
   unsigned int width = 64;
   unsigned int height = 64;
@@ -166,7 +161,4 @@ TEST_CASE("Unit_hipTextureMipmapRef2D_Negative_Parameters") {
   }
 
   HIP_CHECK(hipFreeMipmappedArray(mip_array_ptr));
-#else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }

@@ -673,7 +673,7 @@ __global__ void coalesced_group_sync_check(T* global_data, unsigned int* wait_mo
 }
 
 template <bool global_memory, typename T> void CoalescedGroupSyncTest() {
-  const auto randomized_run_count = GENERATE(range(0, cmd_options.cg_extended_run));
+  const auto randomized_run_count = GENERATE(range(0, cmd_options.cg_iterations));
   const auto blocks = GenerateBlockDimensionsForShuffle();
   const auto threads = GenerateThreadDimensionsForShuffle();
   auto test_case = GENERATE(range(0, 4));
@@ -752,10 +752,6 @@ template <bool global_memory, typename T> void CoalescedGroupSyncTest() {
  *    - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_Coalesced_Group_Sync_Positive_Basic", "", uint8_t, uint16_t, uint32_t) {
-  SECTION("Global memory") { 
-    CoalescedGroupSyncTest<true, TestType>(); 
-  }
-  SECTION("Shared memory") { 
-    CoalescedGroupSyncTest<false, TestType>(); 
-  }
+  SECTION("Global memory") { CoalescedGroupSyncTest<true, TestType>(); }
+  SECTION("Shared memory") { CoalescedGroupSyncTest<false, TestType>(); }
 }

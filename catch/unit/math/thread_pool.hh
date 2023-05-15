@@ -28,6 +28,8 @@ THE SOFTWARE.
 #include <boost/asio/post.hpp>
 #include <boost/asio/thread_pool.hpp>
 
+// This is a simple wrapper around boost::asio::thread_pool that keeps track of the number of
+// currently active tasks using an atomic counter.
 class ThreadPool {
  public:
   ThreadPool(size_t thread_count = std::thread::hardware_concurrency())
@@ -35,6 +37,8 @@ class ThreadPool {
 
   ~ThreadPool() { thread_pool_.join(); }
 
+  // Submits a task to the thread pool and increments the number of active tasks. The task is
+  // wrapped in a lambda that decrements the number of active tasks upon completion.
   template <typename T> void Post(T&& task) {
     ++active_tasks_;
     auto&& task_wrapper = [task, this] {
@@ -44,8 +48,10 @@ class ThreadPool {
     boost::asio::post(thread_pool_, task_wrapper);
   }
 
+  // Busy waits for the number of active tasks to reach zero.
   void Wait() const {
-    while (active_tasks_.load(std::memory_order_relaxed)) __builtin_ia32_pause();
+    while (active_tasks_.load(std::memory_order_relaxed))
+      ;
   }
 
   size_t thread_count() const { return thread_count_; }

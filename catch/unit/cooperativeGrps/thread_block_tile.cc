@@ -108,7 +108,7 @@ template <bool dynamic, size_t... tile_sizes> void BlockPartitionGettersBasicTes
  * ------------------------
  *    - Creates tiled partitions for each of the valid sizes{2, 4, 8, 16, 32, 64(if AMD)} and writes
  * the return values of size and thread_rank member functions to an output array that is validated
- * on the host side. 
+ * on the host side.
  * Test source
  * ------------------------
  *    - unit/cooperativeGrps/thread_block_tile.cc
@@ -128,7 +128,7 @@ TEST_CASE("Unit_Thread_Block_Tile_Getters_Positive_Basic") {
  * ------------------------
  *    - Creates tiled partitions for each of the valid sizes{2, 4, 8, 16, 32, 64(if AMD)} via the
  * dynamic tiled partition api and writes the return values of size and thread_rank member functions
- * to an output array that is validated on host. 
+ * to an output array that is validated on host.
  * Test source
  * ------------------------
  *    - unit/cooperativeGrps/thread_block_tile.cc
@@ -462,7 +462,7 @@ __global__ void block_tile_sync_check(T* global_data, unsigned int* wait_modifie
 
 template <bool global_memory, typename T, size_t tile_size> void BlockTileSyncTestImpl() {
   DYNAMIC_SECTION("Tile size: " << tile_size) {
-    const auto randomized_run_count = GENERATE(range(0, cmd_options.cg_extended_run));
+    const auto randomized_run_count = GENERATE(range(0, cmd_options.cg_iterations));
     INFO("Run number: " << randomized_run_count + 1);
     auto blocks = GenerateBlockDimensions();
     auto threads = GenerateThreadDimensions();
@@ -522,7 +522,7 @@ template <bool global_memory, typename T, size_t... tile_sizes> void BlockTileSy
  * thread executes a busy wait loop for a random amount of clock cycles, the amount being read from
  * an input array. After the write a tile-wide sync is performed and each thread validates that it
  * can read the expected values that other threads within the same tile have written to their
- * respective array slots. 
+ * respective array slots.
  * Test source
  * ------------------------
  *    - unit/cooperativeGrps/thread_block_tile.cc

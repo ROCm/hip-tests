@@ -30,18 +30,15 @@ hip_add_exe_to_target(NAME MathsTest
 
 add_test(NAME Unit_Single_Precision_Intrinsics_Negative
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-         ${CMAKE_CURRENT_SOURCE_DIR}
-         ${HIP_PLATFORM}
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
          single_precision_intrinsics_negative_kernels.cc 42)
 
 add_test(NAME Unit_Double_Precision_Intrinsics_Negative
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-         ${CMAKE_CURRENT_SOURCE_DIR}
-         ${HIP_PLATFORM}
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
          double_precision_intrinsics_negative_kernels.cc 18)
    
 add_test(NAME Unit_Integer_Intrinsics_Negative
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-         ${CMAKE_CURRENT_SOURCE_DIR}
-         ${HIP_PLATFORM}
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
          integer_intrinsics_negative_kernels.cc 20)

@@ -579,7 +579,7 @@ __global__ void coalesced_group_tiled_partition_sync_check(uint64_t* active_mask
 }
 
 template <bool global_memory, typename T> void CoalescedGroupTiledPartitionSyncTest() {
-  const auto randomized_run_count = GENERATE(range(0, cmd_options.cg_extended_run));
+  const auto randomized_run_count = GENERATE(range(0, cmd_options.cg_iterations));
   INFO("Run number: " << randomized_run_count + 1);
   const auto tile_size = GenerateTileSizes();
   INFO("Tile size: " << tile_size);

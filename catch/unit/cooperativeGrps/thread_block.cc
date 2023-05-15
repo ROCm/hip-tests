@@ -277,7 +277,7 @@ template <typename T> static inline T GenerateRandomInteger(const T min, const T
 }
 
 template <bool global_memory, typename T> void ThreadBlockSyncTest() {
-  const auto randomized_run_count = GENERATE(range(0, cmd_options.cg_extended_run));
+  const auto randomized_run_count = GENERATE(range(0, cmd_options.cg_iterations));
   INFO("Run number: " << randomized_run_count + 1);
   const auto blocks = dim3(1, 1, 1);
   const auto threads = GenerateThreadDimensions();

@@ -27,6 +27,8 @@ set(TEST_SRC
     hipTestAtomicAdd.cc
     hipStdComplex.cc
     hipTestClock.cc
+    memcpy.cc
+    memset.cc
 )
 
 # AMD only tests

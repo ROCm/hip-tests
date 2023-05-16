@@ -1,0 +1,78 @@
+/*
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+#include <hip_test_common.hh>
+#include <resource_guards.hh>
+#include <utils.hh>
+
+#include <hip/hip_cooperative_groups.h>
+
+template <typename T> using kernel_sig = void (*)(T*, int, const size_t);
+
+template <typename T>
+__global__ void memset_at_once_kernel(T* dst, int value, const size_t alloc_size) {
+  memset(dst, value, alloc_size);
+}
+
+template <typename T>
+__global__ void memset_one_by_one_kernel(T* dst, int value, const size_t N) {
+  const auto tid = cooperative_groups::this_grid().thread_rank();
+  const auto stride = cooperative_groups::this_grid().size();
+
+  for (auto i = tid; i < N; i += stride) {
+    memset(dst + tid, value, sizeof(T));
+  }
+}
+
+template <typename T>
+void DeviceMemsetCommon(kernel_sig<T> memset_kernel) {
+  const auto allocation_size = GENERATE(kPageSize / 2, kPageSize, kPageSize * 2);
+  const auto element_count = allocation_size / sizeof(T);
+
+  LinearAllocGuard<T> dst_allocation(LinearAllocs::hipMalloc, allocation_size);
+  LinearAllocGuard<T> reference(LinearAllocs::hipHostMalloc, allocation_size);
+  LinearAllocGuard<T> result(LinearAllocs::hipHostMalloc, allocation_size);
+
+  constexpr auto thread_count = 1024;
+  const auto block_count = element_count / thread_count + 1;
+  constexpr auto expected_value = 42;
+
+  memset(reference.host_ptr(), expected_value, allocation_size); 
+
+  if (memset_kernel == memset_at_once_kernel<T>) {
+    memset_at_once_kernel<T><<<1, 1>>>(dst_allocation.ptr(), expected_value, allocation_size);
+  } else {
+    memset_one_by_one_kernel<T><<<thread_count, block_count>>>(dst_allocation.ptr(), expected_value, element_count);
+  }
+
+  HIP_CHECK(
+      hipMemcpy(result.host_ptr(), dst_allocation.ptr(), allocation_size, hipMemcpyDeviceToHost));
+
+  ArrayMismatch(reference.host_ptr(), result.host_ptr(), element_count);
+}
+
+TEMPLATE_TEST_CASE("Unit_Device_memset_Positive", "", int, unsigned int, long, unsigned long,
+                   long long, unsigned long long, float, double) {
+
+  SECTION("Memset whole buffer in one thread") {
+    DeviceMemsetCommon<TestType>(memset_at_once_kernel);
+  }
+  SECTION("Memset buffer in multiple threads/blocks") {
+    DeviceMemsetCommon<TestType>(memset_one_by_one_kernel);
+  }
+}

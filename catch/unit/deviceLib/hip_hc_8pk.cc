@@ -22,10 +22,29 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
 
+
+/**
+ * @addtogroup hip_hc_8pk hip_hc_8pk
+ * @{
+ * @ingroup DeviceLanguageTest
+ */
+
 __global__ void __hip_hc_add8pk_kernel(char4* out, char4 in1, char4 in2) {
   out[0] = __hip_hc_add8pk(in1, in2);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Sanity test for `__hip_hc_add8pk(in1, in2)`.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/deviceLib/hip_hc_8pk.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device__hip_hc_add8pk_Sanity_Positive") {
   const char input1[] = {-0x70, -0x50, -0x30, -0x0f, 0x0, 0x01, 0x10, 0x20, 0x70, 0x7f};
   const char input2[] = {-0x05, -0x11, -0x20, -0x03, 0x0, 0x30, 0x05, 0x33, 0x0f, 0x7a};
@@ -47,6 +66,18 @@ __global__ void __hip_hc_sub8pk_kernel(char4* out, char4 in1, char4 in2) {
   out[0] = __hip_hc_sub8pk(in1, in2);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Sanity test for `__hip_hc_sub8pk(in1, in2)`.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/deviceLib/hip_hc_8pk.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device__hip_hc_sub8pk_Sanity_Positive") {
   const char input1[] = {-0x70, -0x50, -0x30, -0x0f, 0x0, 0x30, 0x10, 0x33, 0x70, 0x7a};
   const char input2[] = {-0x05, -0x11, -0x20, -0x03, 0x0, 0x01, 0x05, 0x20, 0x0f, 0x7f};
@@ -68,6 +99,18 @@ __global__ void __hip_hc_mul8pk_kernel(char4* out, char4 in1, char4 in2) {
   out[0] = __hip_hc_mul8pk(in1, in2);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Sanity test for `__hip_hc_mul8pk(in1, in2)`.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/deviceLib/hip_hc_8pk.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device__hip_hc_mul8pk_Sanity_Positive") {
   const char input1[] = {-0x70, -0x50, -0x30, -0x0f, 0x0, 0x01, 0x10, 0x20, 0x70, 0x7f};
   const char input2[] = {0x05, -0x11, 0x22, -0x03, 0x0, 0x30, 0x05, 0x33, 0x0f, 0x7a};

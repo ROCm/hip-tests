@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,26 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip_test_process.hh>
 
-TEST_CASE("Unit_printf_length") {
+/**
+ * @addtogroup printf printf
+ * @{
+ * @ingroup DeviceLanguageTest
+ */
+
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Sanity test for `printf(format, ...)` to check all format specifier length sub-specifiers.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/printf/printf_length.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_Device_printf_length_Sanity_Positive") {
 #if HT_NVIDIA
   std::string reference(R"here(-42 -42
 -42 -42
@@ -61,7 +80,7 @@ x
 )here");
 #endif
 
-  hip::SpawnProc proc("printfLength_exe", true);
+  hip::SpawnProc proc("printf_length_exe", true);
   REQUIRE(0 == proc.run());
   REQUIRE(proc.getOutput() == reference);
 }

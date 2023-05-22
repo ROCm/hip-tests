@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,27 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip_test_process.hh>
 
-TEST_CASE("Unit_printf_specifier") {
+/**
+ * @addtogroup printf printf
+ * @{
+ * @ingroup DeviceLanguageTest
+ */
+
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Sanity test for `printf(format, ...)` to check all format specifier specifier characters and
+ * precision/width sub-specifiers.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/printf/printf_specifier.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_Device_printf_specifier_Sanity_Positive") {
 #if HT_NVIDIA
   std::string reference(R"here(xyzzy
 %
@@ -109,7 +129,7 @@ x
 )here");
 #endif
 
-  hip::SpawnProc proc("printfSpecifiers_exe", true);
+  hip::SpawnProc proc("printf_specifiers_exe", true);
   REQUIRE(0 == proc.run());
   REQUIRE(proc.getOutput() == reference);
 }
@@ -120,12 +140,12 @@ x
  *    - RTCs kernels that pass combinations of arguments of invalid types for printf
  * Test source
  * ------------------------
- *    - unit/printf/printfSpecifiers.cc
+ *    - unit/printf/printf_specifiers.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_printf_Negative_Parameters_RTC") {
+TEST_CASE("Unit_Device_printf_Negative_Parameters_RTC") {
   hiprtcProgram program{};
 
   const auto program_source = GENERATE(kPrintfParam);

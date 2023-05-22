@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,35 +20,38 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
-#include <hip_test_process.hh>
+#include <hip_test_context.hh>
 
-TEST_CASE("Unit_printf_flags") {
-  std::string reference(R"here(00000042
--0000042
-00000042
-0123.456
-+0000042
--42
-+0000042
-xyzzy   
--42
- 42
-00000042        
-        00000042
-052
-0x2a
-0X2A
-42.000000
-4.200000e+01
-4.200000E+01
-42.0000
-42.0000
-0x1.5p+5
-0X1.5P+5
-)here");
+__global__ void test_kernel() {
+  printf("%08d\n", 42);
+  printf("%08i\n", -42);
+  printf("%08u\n", 42);
+  printf("%08g\n", 123.456);
+  printf("%0+8d\n", 42);
+  printf("%+d\n", -42);
+  printf("%+08d\n", 42);
+  printf("%-8s\n", "xyzzy");
+  printf("% i\n", -42);
+  printf("% i\n", 42);
+  printf("%-16.8d\n", 42);
+  printf("%16.8d\n", 42);
+  printf("%#o\n", 42);
+  printf("%#x\n", 42);
+  printf("%#X\n", 42);
+#if HT_AMD
+  printf("%#F\n", 42.);
+#else
+  printf("%#f\n", 42.);
+#endif
+  printf("%#e\n", 42.);
+  printf("%#E\n", 42.);
+  printf("%#g\n", 42.);
+  printf("%#G\n", 42.);
+  printf("%#a\n", 42.);
+  printf("%#A\n", 42.);
+}
 
-  hip::SpawnProc proc("printfFlags_exe", true);
-  REQUIRE(proc.run() == 0);
-  REQUIRE(proc.getOutput() == reference);
+int main() {
+  test_kernel<<<1, 1>>>();
+  static_cast<void>(hipDeviceSynchronize());
 }

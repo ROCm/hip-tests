@@ -2,9 +2,9 @@
     "DisabledTests":
 	[
 		"Unit_hipMalloc_CoherentTst",
-		"Unit_printf_flags",
-		"Unit_printf_specifier",
-		"Unit_printf_length",
+		"Unit_Device_printf_flags_Sanity_Positive",
+		"Unit_Device_printf_specifier_Sanity_Positive",
+		"Unit_Device_printf_length_Sanity_Positive",
 		"Unit_hipTextureMipmapObj2D_Check",
 		"Unit_hipGraphAddHostNode_ClonedGraphwithHostNode",
 		"Unit_hipEventIpc",

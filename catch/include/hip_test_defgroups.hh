@@ -37,8 +37,7 @@ THE SOFTWARE.
  */
 
 /**
- * @defgroup ClockCheckTest Clock Device Functions
+ * @defgroup DeviceLanguageTest Device Language
  * @{
- * This section describes tests for device clock functions of HIP runtime API.
- * @}
+ * This section describes tests for the Device Language API.
  */

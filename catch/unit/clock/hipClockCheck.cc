@@ -24,7 +24,7 @@ THE SOFTWARE.
 /**
  * @addtogroup clock clock
  * @{
- * @ingroup ClockCheckTest
+ * @ingroup DeviceLanguageTest
  * Contains unit tests for clock, clock64 and wall_clock64 APIs
  */
 

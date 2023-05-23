@@ -116,12 +116,24 @@ endif()
     hip_add_exe_to_target(NAME UnitDeviceTests
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests
-                      LINKER_LIBS hiprtc)
+                      LINKER_LIBS hiprtc
+                      PROPERTY CXX_STANDARD 17)
 elseif(HIP_PLATFORM MATCHES "nvidia")
     hip_add_exe_to_target(NAME UnitDeviceTests
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests
-                      COMPILE_OPTIONS --Wno-deprecated-declarations)
+                      LINKER_LIBS nvrtc
+                      COMPILE_OPTIONS -std=c++17 --Wno-deprecated-declarations)
 endif()
+
+add_test(NAME Unit_Device_memcpy_Negative
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+         memcpy_negative_kernels.cc 4)
+
+add_test(NAME Unit_Device_memset_Negative
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+         memset_negative_kernels.cc 4)
 
 add_dependencies(build_tests kerDevAllocMultCO.code kerDevWriteMultCO.code kerDevFreeMultCO.code kerDevAllocSingleKer.code)

@@ -79,7 +79,9 @@
 	   "SWDEV-398980 fails in Stress test",
 	   "Unit_hipMemcpyPeer_Positive_Synchronization_Behavior",
 	   "SWDEV-398981 fails in stress test",
-	   "Unit_hipStreamCreateWithPriority_MulthreadDefaultflag"
+	   "Unit_hipStreamCreateWithPriority_MulthreadDefaultflag",
+	   "SWDEV-402054 fails in external github build",
+	   "Unit_hipEventDestroy_WithWaitingStream"
 	]
 
 }

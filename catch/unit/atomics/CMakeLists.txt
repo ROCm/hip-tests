@@ -34,19 +34,21 @@ if(HIP_PLATFORM MATCHES "nvidia")
                           TEST_SRC ${TEST_SRC}
                           TEST_TARGET_NAME build_tests
                           LINKER_LIBS nvrtc)
+    set(EXPECTED_ERRORS 42) # EXSWHTEC-278
 elseif(HIP_PLATFORM MATCHES "amd")
     hip_add_exe_to_target(NAME AtomicsTest
                           TEST_SRC ${TEST_SRC}
                           TEST_TARGET_NAME build_tests
                           LINKER_LIBS hiprtc)
+    set(EXPECTED_ERRORS 48)
 endif()
 
 add_test(NAME Unit_atomicMin_Negative_Parameters
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
          ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
-         atomicMin_negative_kernels.cc 48)
+         atomicMin_negative_kernels.cc ${EXPECTED_ERRORS})
 
 add_test(NAME Unit_atomicMax_Negative_Parameters
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
          ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
-         atomicMax_negative_kernels.cc 48)
+         atomicMax_negative_kernels.cc ${EXPECTED_ERRORS})

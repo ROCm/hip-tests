@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,40 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-// Test groups are named based on the group names from hip_api_runtime.h, with adding "Test" suffix
+#include <hip_test_common.hh>
+#include <resource_guards.hh>
+
+#include "syncthreads_common.hh"
 
 /**
- * @defgroup CallbackTest Callback Activity APIs
+ * @addtogroup __syncthreads __syncthreads
  * @{
- * This section describes tests for the callback/Activity of HIP runtime API.
- * @}
+ * @ingroup SyncthreadsTest
  */
 
 /**
- * @defgroup GraphTest Graph Management
- * @{
- * This section describes the graph management types & functions of HIP runtime API.
- * @}
+ * Test Description
+ * ------------------------
+ *    - Basic synchronization test for `__syncthreads`.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/syncthreads/__syncthreads.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
  */
+TEST_CASE("Unit___syncthreads_Positive_Basic") {
+  const auto kGridSize = 2;
+  const auto kBlockSize = GENERATE(13, 32, 64, 513);
 
-/**
- * @defgroup ShflTest warp shuffle function Management
- * @{
- * This section describes the warp shuffle types & functions of HIP runtime API.
- * @}
- */
+  LinearAllocGuard<int> out_alloc(LinearAllocs::hipMallocManaged, sizeof(int) * kGridSize);
 
-/**
- * @defgroup SyncthreadsTest Synchronization Functions
- * @{
- * This section describes tests for Synchronization Functions.
- * @}
- */
+  HipTest::launchKernel(SyncthreadsKernel<SyncthreadsKind::kDefault>, kGridSize, kBlockSize,
+                        sizeof(int) * kBlockSize, nullptr, out_alloc.ptr());
+  HIP_CHECK(hipDeviceSynchronize());
+
+  for (int i = 0; i < kGridSize; ++i) {
+    REQUIRE(out_alloc.host_ptr()[i] == kBlockSize * (kBlockSize + 1) / 2);
+  }
+}

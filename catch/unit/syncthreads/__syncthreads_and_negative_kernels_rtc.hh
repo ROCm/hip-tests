@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-// Test groups are named based on the group names from hip_api_runtime.h, with adding "Test" suffix
+#pragma once
 
-/**
- * @defgroup CallbackTest Callback Activity APIs
- * @{
- * This section describes tests for the callback/Activity of HIP runtime API.
- * @}
- */
+static constexpr auto kSyncthreadsAndSource{
+    R"(
+        struct Dummy {
+          __device__ Dummy() {}
+          __device__ ~Dummy() {}
+        };
 
-/**
- * @defgroup GraphTest Graph Management
- * @{
- * This section describes the graph management types & functions of HIP runtime API.
- * @}
- */
+        __global__ void __syncthreads_and_v1(int* predicate) {
+          int result = __syncthreads_and(predicate);
+        }
 
-/**
- * @defgroup ShflTest warp shuffle function Management
- * @{
- * This section describes the warp shuffle types & functions of HIP runtime API.
- * @}
- */
-
-/**
- * @defgroup SyncthreadsTest Synchronization Functions
- * @{
- * This section describes tests for Synchronization Functions.
- * @}
- */
+        __global__ void __syncthreads_and_v2(Dummy predicate) {
+          int result = __syncthreads_and(predicate);
+        }
+    )"};

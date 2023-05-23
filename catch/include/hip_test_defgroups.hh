@@ -42,3 +42,9 @@ THE SOFTWARE.
  * This section describes the warp shuffle types & functions of HIP runtime API.
  * @}
  */
+
+/**
+ * @defgroup ThreadfenceTest Memory Fence Functions
+ * @{
+ * This section describes tests for Memory Fence Functions.
+ */

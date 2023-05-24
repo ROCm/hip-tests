@@ -174,7 +174,7 @@ template <typename T> void DeviceMemcpyCommon(kernel_sig<T> memcpy_kernel) {
   SECTION("Pinned to Pinned memory") { MemcpyPinnedToPinnedCommon<T>(memcpy_kernel); }
 }
 
-TEMPLATE_TEST_CASE("Unit_Device_memcpy_Positive", "", int, unsigned int, long, unsigned long,
+TEMPLATE_TEST_CASE("Unit_Device_memcpy_Positive", "", char, int, unsigned int, long, unsigned long,
                    long long, unsigned long long, float, double) {
   SECTION("Memcpy whole buffer in one thread") {
     DeviceMemcpyCommon<TestType>(memcpy_at_once_kernel);

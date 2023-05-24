@@ -98,7 +98,7 @@ template <typename T> void DeviceMemsetCommon(kernel_sig<T> memset_kernel) {
   SECTION("Set Pinned memory") { MemsetPinnedCommon<T>(memset_kernel); }
 }
 
-TEMPLATE_TEST_CASE("Unit_Device_memset_Positive", "", int, unsigned int, long, unsigned long,
+TEMPLATE_TEST_CASE("Unit_Device_memset_Positive", "", char, int, unsigned int, long, unsigned long,
                    long long, unsigned long long, float, double) {
   SECTION("Memset whole buffer in one thread") {
     DeviceMemsetCommon<TestType>(memset_at_once_kernel);

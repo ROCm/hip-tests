@@ -40,7 +40,7 @@ __global__ void __hip_hc_add8pk_kernel(char4* out, char4 in1, char4 in2) {
  *
  * Test source
  * ------------------------
- *    - unit/deviceLib/hip_hc_8pk.cc
+ *    - unit/hip_specific/hip_hc_8pk.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 5.2
@@ -73,7 +73,7 @@ __global__ void __hip_hc_sub8pk_kernel(char4* out, char4 in1, char4 in2) {
  *
  * Test source
  * ------------------------
- *    - unit/deviceLib/hip_hc_8pk.cc
+ *    - unit/hip_specific/hip_hc_8pk.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 5.2
@@ -106,7 +106,7 @@ __global__ void __hip_hc_mul8pk_kernel(char4* out, char4 in1, char4 in2) {
  *
  * Test source
  * ------------------------
- *    - unit/deviceLib/hip_hc_8pk.cc
+ *    - unit/hip_specific/hip_hc_8pk.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 5.2
@@ -135,7 +135,7 @@ TEST_CASE("Unit_Device__hip_hc_mul8pk_Sanity_Positive") {
  * __hip_hc_<add/sub/mul>8pk
  * Test source
  * ------------------------
- *    - unit/deviceLib/hip_hc_8pk.cc
+ *    - unit/hip_specific/hip_hc_8pk.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 5.2

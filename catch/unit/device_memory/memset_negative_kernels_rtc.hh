@@ -29,4 +29,4 @@ static constexpr auto kMemsetParam{
         __global__ void memset_n2(int ptr, int val, size_t size) { memset(ptr, val, size); }
         __global__ void memset_n3(int* ptr, int val, size_t* size) { memset(ptr, val, size); }
         __global__ void memset_n4(int* ptr, int val, Dummy size) { memset(ptr, val, size); }
-    )"}; 
+    )"};

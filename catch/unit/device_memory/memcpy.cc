@@ -24,6 +24,14 @@ THE SOFTWARE.
 
 #include <hip/hip_cooperative_groups.h>
 
+/**
+ * @addtogroup memcpy memcpy
+ * @{
+ * @ingroup DeviceLanguageTest
+ * `memcpy(void* dst, const void* src, size_t size)` -
+ * copies device accessible data inside a kernel
+ */
+
 template <typename T> using kernel_sig = void (*)(T*, T*, const size_t);
 
 template <typename T>
@@ -174,6 +182,21 @@ template <typename T> void DeviceMemcpyCommon(kernel_sig<T> memcpy_kernel) {
   SECTION("Pinned to Pinned memory") { MemcpyPinnedToPinnedCommon<T>(memcpy_kernel); }
 }
 
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Verifies basic test cases for copying device/pinned memory inside a kernel using various data
+ * types and memory sizes:
+ *    -# Copies whole memory buffer in one thread
+ *    -# Copies memory buffer elements one by one in multiple threads/blocks
+ * Test source
+ * ------------------------
+ *  - unit/device_memory/memcpy.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_Device_memcpy_Positive", "", char, int, unsigned int, long, unsigned long,
                    long long, unsigned long long, float, double) {
   SECTION("Memcpy whole buffer in one thread") {
@@ -184,6 +207,17 @@ TEMPLATE_TEST_CASE("Unit_Device_memcpy_Positive", "", char, int, unsigned int, l
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - RTCs kernels that pass combinations of arguments of invalid types for memcpy
+ * Test source
+ * ------------------------
+ *    - unit/device_memory/memcpy.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device_memcpy_Negative_Parameters_RTC") {
   hiprtcProgram program{};
 

@@ -24,6 +24,14 @@ THE SOFTWARE.
 
 #include <hip/hip_cooperative_groups.h>
 
+/**
+ * @addtogroup memset memset
+ * @{
+ * @ingroup DeviceLanguageTest
+ * `memset(void* ptr, int val, size_t size)` -
+ * sets device accessible data inside a kernel
+ */
+
 template <typename T> using kernel_sig = void (*)(T*, int, const size_t);
 
 template <typename T>
@@ -98,6 +106,20 @@ template <typename T> void DeviceMemsetCommon(kernel_sig<T> memset_kernel) {
   SECTION("Set Pinned memory") { MemsetPinnedCommon<T>(memset_kernel); }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Verifies basic test cases for setting device/pinned memory inside a kernel using various data
+ * types and memory sizes:
+ *    -# Set whole memory buffer in one thread
+ *    -# Set memory buffer elements one by one in multiple threads/blocks
+ * Test source
+ * ------------------------
+ *  - unit/device_memory/memset.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_Device_memset_Positive", "", char, int, unsigned int, long, unsigned long,
                    long long, unsigned long long, float, double) {
   SECTION("Memset whole buffer in one thread") {
@@ -108,6 +130,17 @@ TEMPLATE_TEST_CASE("Unit_Device_memset_Positive", "", char, int, unsigned int, l
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - RTCs kernels that pass combinations of arguments of invalid types for memset
+ * Test source
+ * ------------------------
+ *    - unit/device_memory/memset.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device_memset_Negative_Parameters_RTC") {
   hiprtcProgram program{};
 

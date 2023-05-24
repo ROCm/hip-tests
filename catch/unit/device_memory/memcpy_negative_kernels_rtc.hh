@@ -29,4 +29,4 @@ static constexpr auto kMemcpyParam{
         __global__ void memcpy_n2(int dst, const int* src, size_t size) { memcpy(dst, src, size); }
         __global__ void memcpy_n3(int* dst, const int* src, size_t* size) { memcpy(dst, src, size); }
         __global__ void memcpy_n8(int* dst, const int* src, Dummy size) { memcpy(dst, src, size); }
-    )"}; 
+    )"};

@@ -62,7 +62,7 @@ template <typename T> void MemsetDeviceCommon(kernel_sig<T> memset_kernel) {
 
   memset(reference.host_ptr(), expected_value, allocation_size);
 
-  if (memset_kernel == memset_at_once_kernel<T>) {
+  if (memset_kernel == &memset_at_once_kernel<T>) {
     memset_at_once_kernel<T><<<1, 1>>>(dst_allocation.ptr(), expected_value, allocation_size);
   } else {
     memset_one_by_one_kernel<T>
@@ -88,7 +88,7 @@ template <typename T> void MemsetPinnedCommon(kernel_sig<T> memset_kernel) {
 
   memset(reference.host_ptr(), expected_value, allocation_size);
 
-  if (memset_kernel == memset_at_once_kernel<T>) {
+  if (memset_kernel == &memset_at_once_kernel<T>) {
     memset_at_once_kernel<T><<<1, 1>>>(result.host_ptr(), expected_value, allocation_size);
   } else {
     memset_one_by_one_kernel<T>

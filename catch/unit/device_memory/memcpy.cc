@@ -67,7 +67,7 @@ template <typename T> void MemcpyDeviceToDeviceCommon(kernel_sig<T> memcpy_kerne
       hipMemcpy(src_allocation.ptr(), input.host_ptr(), allocation_size, hipMemcpyHostToDevice));
 
   /* Launch appropriate kernel*/
-  if (memcpy_kernel == memcpy_at_once_kernel<T>) {
+  if (memcpy_kernel == &memcpy_at_once_kernel<T>) {
     memcpy_at_once_kernel<T><<<1, 1>>>(dst_allocation.ptr(), src_allocation.ptr(), allocation_size);
   } else {
     constexpr auto thread_count = 1024;
@@ -97,7 +97,7 @@ template <typename T> void MemcpyPinnedToDeviceCommon(kernel_sig<T> memcpy_kerne
   }
 
   /* Launch appropriate kernel*/
-  if (memcpy_kernel == memcpy_at_once_kernel<T>) {
+  if (memcpy_kernel == &memcpy_at_once_kernel<T>) {
     memcpy_at_once_kernel<T><<<1, 1>>>(dst_allocation.ptr(), input.host_ptr(), allocation_size);
   } else {
     constexpr auto thread_count = 1024;
@@ -131,7 +131,7 @@ template <typename T> void MemcpyDeviceToPinnedCommon(kernel_sig<T> memcpy_kerne
       hipMemcpy(src_allocation.ptr(), input.host_ptr(), allocation_size, hipMemcpyHostToDevice));
 
   /* Launch appropriate kernel*/
-  if (memcpy_kernel == memcpy_at_once_kernel<T>) {
+  if (memcpy_kernel == &memcpy_at_once_kernel<T>) {
     memcpy_at_once_kernel<T><<<1, 1>>>(result.host_ptr(), src_allocation.ptr(), allocation_size);
   } else {
     constexpr auto thread_count = 1024;
@@ -158,7 +158,7 @@ template <typename T> void MemcpyPinnedToPinnedCommon(kernel_sig<T> memcpy_kerne
   }
 
   /* Launch appropriate kernel*/
-  if (memcpy_kernel == memcpy_at_once_kernel<T>) {
+  if (memcpy_kernel == &memcpy_at_once_kernel<T>) {
     memcpy_at_once_kernel<T><<<1, 1>>>(result.host_ptr(), input.host_ptr(), allocation_size);
   } else {
     constexpr auto thread_count = 1024;

@@ -148,7 +148,7 @@ x
 TEST_CASE("Unit_Device_printf_Negative_Parameters_RTC") {
   hiprtcProgram program{};
 
-  const auto program_source = GENERATE(kPrintfParam);
+  const auto program_source = kPrintfParam;
 
   HIPRTC_CHECK(
       hiprtcCreateProgram(&program, program_source, "printf_negative.cc", 0, nullptr, nullptr));

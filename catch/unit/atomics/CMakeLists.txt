@@ -30,10 +30,12 @@ set(TEST_SRC
 )
 
 if(HIP_PLATFORM MATCHES "nvidia")
+    set_source_files_properties(atomicAdd_system.cc PROPERTIES COMPILE_FLAGS "-rdc=true -gencode arch=compute_60,code=sm_60 -gencode arch=compute_70,code=sm_70 -gencode arch=compute_80,code=sm_80")
+    set_source_files_properties(atomicSub_system.cc PROPERTIES COMPILE_FLAGS "-rdc=true -gencode arch=compute_60,code=sm_60 -gencode arch=compute_70,code=sm_70 -gencode arch=compute_80,code=sm_80")
     hip_add_exe_to_target(NAME AtomicsTest
                         TEST_SRC ${TEST_SRC}
                         TEST_TARGET_NAME build_tests
-                        LINKER_LIBS nvrtc)
+                        LINKER_LIBS "nvrtc -rdc=true -gencode arch=compute_60,code=sm_60 -gencode arch=compute_70,code=sm_70 -gencode arch=compute_80,code=sm_80")
 elseif(HIP_PLATFORM MATCHES "amd")
     hip_add_exe_to_target(NAME AtomicsTest
                         TEST_SRC ${TEST_SRC}

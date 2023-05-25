@@ -44,8 +44,13 @@ THE SOFTWARE.
  *  - Multi-device
  *  - HIP_VERSION >= 5.2
  */
+#if HT_AMD
 TEMPLATE_TEST_CASE("Unit_atomicMin_system_Positive_Peer_GPUs_Same_Address", "", int, unsigned int,
                    unsigned long long, float, double) {
+#else
+TEMPLATE_TEST_CASE("Unit_atomicMin_system_Positive_Peer_GPUs_Same_Address", "", int, unsigned int,
+                   unsigned long long) {
+#endif
   MinMax::MultipleDeviceMultipleKernelTest<TestType, MinMax::AtomicOperation::kMinSystem>(2, 2, 1,
                                                                           sizeof(TestType));
 }
@@ -63,8 +68,13 @@ TEMPLATE_TEST_CASE("Unit_atomicMin_system_Positive_Peer_GPUs_Same_Address", "", 
  *  - Multi-device
  *  - HIP_VERSION >= 5.2
  */
-TEMPLATE_TEST_CASE("Unit_atomicMin_system_Positive_Peer_GPUs_Adjacent_Addresses", "", int,
-                   unsigned int, unsigned long long, float, double) {
+#if HT_AMD
+TEMPLATE_TEST_CASE("Unit_atomicMin_system_Positive_Peer_GPUs_Adjacent_Addresses", "", int, unsigned int,
+                   unsigned long long, float, double) {
+#else
+TEMPLATE_TEST_CASE("Unit_atomicMin_system_Positive_Peer_GPUs_Adjacent_Addresses", "", int, unsigned int,
+                   unsigned long long) {
+#endif
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
 
@@ -85,8 +95,13 @@ TEMPLATE_TEST_CASE("Unit_atomicMin_system_Positive_Peer_GPUs_Adjacent_Addresses"
  *  - Multi-device
  *  - HIP_VERSION >= 5.2
  */
-TEMPLATE_TEST_CASE("Unit_atomicMin_system_Positive_Peer_GPUs_Scattered_Addresses", "", int,
-                   unsigned int, unsigned long long, float, double) {
+#if HT_AMD
+TEMPLATE_TEST_CASE("Unit_atomicMin_system_Positive_Peer_GPUs_Scattered_Addresses", "", int, unsigned int,
+                   unsigned long long, float, double) {
+#else
+TEMPLATE_TEST_CASE("Unit_atomicMin_system_Positive_Peer_GPUs_Scattered_Addresses", "", int, unsigned int,
+                   unsigned long long) {
+#endif
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;

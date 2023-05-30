@@ -1,7 +1,7 @@
 ### This will test HIP language support in upstream CMake
 I. Build
 mkdir -p build; cd build
-rm -rf *; cmake ..
+rm -rf *; cmake -DCMAKE_PREFIX_PATH=/opt/rocm/ ..
 make
 
 II. Test

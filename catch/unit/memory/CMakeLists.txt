@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2023 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -118,6 +118,11 @@ if(HIP_PLATFORM MATCHES "amd")
       hipMemVmm.cc)
 else()
   set(TEST_SRC ${TEST_SRC} hipGetSymbolSizeAddress.cc)
+endif()
+
+if(HIP_PLATFORM MATCHES "amd")
+  set_source_files_properties(hipHostRegister.cc PROPERTIES COMPILE_FLAGS -std=c++17)
+  add_executable(hipHostRegisterPerf EXCLUDE_FROM_ALL hipHostRegister_exe.cc)
 endif()
 
 # skipped due to os related code in tests need to work on them when all the

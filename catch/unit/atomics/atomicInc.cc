@@ -67,7 +67,7 @@ TEMPLATE_TEST_CASE("Unit_atomicInc_Positive", "", unsigned int) {
     }
 
     DYNAMIC_SECTION("Adjacent addresses " << current) {
-      DYNAMIC_SECTION<TestType, AtomicOperation::kInc>(warp_size, sizeof(TestType));
+      SingleDeviceSingleKernelTest<TestType, AtomicOperation::kInc>(warp_size, sizeof(TestType));
     }
 
     DYNAMIC_SECTION("Scattered addresses " << current) {

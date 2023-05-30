@@ -23,7 +23,7 @@ THE SOFTWARE.
 #pragma once
 
 struct CmdOptions {
-  int iterations = 1000;
+  int iterations = 10;
   int warmups = 100;
   int cg_extended_run = 5;
   bool no_display = false;

@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip/hip_cooperative_groups.h>
 #include <resource_guards.hh>
+#include <cmd_options.hh>
 
 namespace cg = cooperative_groups;
 

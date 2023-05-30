@@ -60,19 +60,21 @@ TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Peer_GPUs", "", int, unsigned
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  SECTION("Same address") {
-    MultipleDeviceMultipleKernelAndHostTest<TestType, AtomicOperation::kSubSystem>(
-        2, 2, 1, sizeof(TestType));
-  }
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    DYNAMIC_SECTION("Same address " << current) {
+      MultipleDeviceMultipleKernelAndHostTest<TestType, AtomicOperation::kSubSystem>(
+          2, 2, 1, sizeof(TestType));
+    }
 
-  SECTION("Adjacent addresses") {
-    MultipleDeviceMultipleKernelAndHostTest<TestType, AtomicOperation::kSubSystem>(
-        2, 2, warp_size, sizeof(TestType));
-  }
+    DYNAMIC_SECTION("Adjacent addresses " << current) {
+      MultipleDeviceMultipleKernelAndHostTest<TestType, AtomicOperation::kSubSystem>(
+          2, 2, warp_size, sizeof(TestType));
+    }
 
-  SECTION("Scattered addresses") {
-    MultipleDeviceMultipleKernelAndHostTest<TestType, AtomicOperation::kSubSystem>(2, 2, warp_size,
-                                                                                   cache_line_size);
+    DYNAMIC_SECTION("Scattered addresses " << current) {
+      MultipleDeviceMultipleKernelAndHostTest<TestType, AtomicOperation::kSubSystem>(
+          2, 2, warp_size, cache_line_size);
+    }
   }
 }
 
@@ -80,11 +82,11 @@ TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Peer_GPUs", "", int, unsigned
  * Test Description
  * ------------------------
  *    - Executes a kernel on a single device wherein all threads will perform
- * an atomic addition on a target memory location. Each thread will add the same value to the memory
- * location, storing the return value into a separate output array slot corresponding to it. While
- * the kernel is running, the host performs atomic additions, in 4 threads, on the same memory
- * location(s). Once complete, the output array and target memory is validated to contain all the
- * expected values. Several memory access patterns are tested:
+ * an atomic addition on a target memory location. Each thread will add the same value to the
+ * memory location, storing the return value into a separate output array slot corresponding to
+ * it. While the kernel is running, the host performs atomic additions, in 4 threads, on the same
+ * memory location(s). Once complete, the output array and target memory is validated to contain
+ * all the expected values. Several memory access patterns are tested:
  *      -# All threads exchange to a single, compile time deducible, memory location
  *      -# Each thread targets an array containing warp_size elements, using tid % warp_size
  *         for indexing
@@ -107,19 +109,21 @@ TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Host_And_GPU", "", int, unsig
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  SECTION("Same address") {
-    MultipleDeviceMultipleKernelAndHostTest<TestType, AtomicOperation::kSubSystem>(
-        1, 1, 1, sizeof(TestType), 4);
-  }
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    DYNAMIC_SECTION("Same address " << current) {
+      MultipleDeviceMultipleKernelAndHostTest<TestType, AtomicOperation::kSubSystem>(
+          1, 1, 1, sizeof(TestType), 4);
+    }
 
-  SECTION("Adjacent addresses") {
-    MultipleDeviceMultipleKernelAndHostTest<TestType, AtomicOperation::kSubSystem>(
-        1, 1, warp_size, sizeof(TestType), 4);
-  }
+    DYNAMIC_SECTION("Adjacent addresses " << current) {
+      MultipleDeviceMultipleKernelAndHostTest<TestType, AtomicOperation::kSubSystem>(
+          1, 1, warp_size, sizeof(TestType), 4);
+    }
 
-  SECTION("Scattered addresses") {
-    MultipleDeviceMultipleKernelAndHostTest<TestType, AtomicOperation::kSubSystem>(
-        1, 1, warp_size, cache_line_size, 4);
+    DYNAMIC_SECTION("Scattered addresses " << current) {
+      MultipleDeviceMultipleKernelAndHostTest<TestType, AtomicOperation::kSubSystem>(
+          1, 1, warp_size, cache_line_size, 4);
+    }
   }
 }
 
@@ -127,11 +131,11 @@ TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Host_And_GPU", "", int, unsig
  * Test Description
  * ------------------------
  *    - Executes a kernel two times on two devices wherein all threads will perform
- * an atomic addition on a target memory location. Each thread will add the same value to the memory
- * location, storing the return value into a separate output array slot corresponding to it. While
- * the kernel is running, the host performs atomic additions, in 4 threads, on the same memory
- * location(s). Once complete, the output array and target memory is validated to contain all the
- * expected values. Several memory access patterns are tested:
+ * an atomic addition on a target memory location. Each thread will add the same value to the
+ * memory location, storing the return value into a separate output array slot corresponding to
+ * it. While the kernel is running, the host performs atomic additions, in 4 threads, on the same
+ * memory location(s). Once complete, the output array and target memory is validated to contain
+ * all the expected values. Several memory access patterns are tested:
  *      -# All threads exchange to a single, compile time deducible, memory location
  *      -# Each thread targets an array containing warp_size elements, using tid % warp_size
  *         for indexing
@@ -154,18 +158,20 @@ TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Host_And_Peer_GPUs", "", int,
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  SECTION("Same address") {
-    MultipleDeviceMultipleKernelAndHostTest<TestType, AtomicOperation::kSubSystem>(
-        2, 2, 1, sizeof(TestType), 4);
-  }
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    DYNAMIC_SECTION("Same address " << current) {
+      MultipleDeviceMultipleKernelAndHostTest<TestType, AtomicOperation::kSubSystem>(
+          2, 2, 1, sizeof(TestType), 4);
+    }
 
-  SECTION("Adjacent addresses") {
-    MultipleDeviceMultipleKernelAndHostTest<TestType, AtomicOperation::kSubSystem>(
-        2, 2, warp_size, sizeof(TestType), 4);
-  }
+    DYNAMIC_SECTION("Adjacent addresses " << current) {
+      MultipleDeviceMultipleKernelAndHostTest<TestType, AtomicOperation::kSubSystem>(
+          2, 2, warp_size, sizeof(TestType), 4);
+    }
 
-  SECTION("Scattered addresses") {
-    MultipleDeviceMultipleKernelAndHostTest<TestType, AtomicOperation::kSubSystem>(
-        2, 2, warp_size, cache_line_size, 4);
+    DYNAMIC_SECTION("Scattered addresses " << current) {
+      MultipleDeviceMultipleKernelAndHostTest<TestType, AtomicOperation::kSubSystem>(
+          2, 2, warp_size, cache_line_size, 4);
+    }
   }
 }

@@ -61,24 +61,26 @@ TEMPLATE_TEST_CASE("Unit_atomicInc_Positive", "", unsigned int) {
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  SECTION("Same address") {
-    SingleDeviceSingleKernelTest<TestType, AtomicOperation::kInc>(1, sizeof(TestType));
-  }
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    DYNAMIC_SECTION("Same address " << current) {
+      SingleDeviceSingleKernelTest<TestType, AtomicOperation::kInc>(1, sizeof(TestType));
+    }
 
-  SECTION("Adjacent addresses") {
-    SingleDeviceSingleKernelTest<TestType, AtomicOperation::kInc>(warp_size, sizeof(TestType));
-  }
+    DYNAMIC_SECTION("Adjacent addresses " << current) {
+      DYNAMIC_SECTION<TestType, AtomicOperation::kInc>(warp_size, sizeof(TestType));
+    }
 
-  SECTION("Scattered addresses") {
-    SingleDeviceSingleKernelTest<TestType, AtomicOperation::kInc>(warp_size, cache_line_size);
+    DYNAMIC_SECTION("Scattered addresses " << current) {
+      SingleDeviceSingleKernelTest<TestType, AtomicOperation::kInc>(warp_size, cache_line_size);
+    }
   }
 }
 
 /**
  * Test Description
  * ------------------------
- *    - Executes a kernel two times concurrently on a single device wherein all threads will perform
- * an atomic increment on a target memory location. Each thread will increment the memory
+ *    - Executes a kernel two times concurrently on a single device wherein all threads will
+ * perform an atomic increment on a target memory location. Each thread will increment the memory
  * location, storing the return value into a separate output array slot corresponding to it. Once
  * complete, the output array and target memory is validated to contain all the expected values.
  * Several memory access patterns are tested:
@@ -103,16 +105,20 @@ TEMPLATE_TEST_CASE("Unit_atomicInc_Positive_Multi_Kernel", "", unsigned int) {
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  SECTION("Same address") {
-    SingleDeviceMultipleKernelTest<TestType, AtomicOperation::kInc>(2, 1, sizeof(TestType));
-  }
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    DYNAMIC_SECTION("Same address " << current) {
+      SingleDeviceMultipleKernelTest<TestType, AtomicOperation::kInc>(2, 1, sizeof(TestType));
+    }
 
-  SECTION("Adjacent addresses") {
-    SingleDeviceMultipleKernelTest<TestType, AtomicOperation::kInc>(2, warp_size, sizeof(TestType));
-  }
+    DYNAMIC_SECTION("Adjacent addresses " << current) {
+      SingleDeviceMultipleKernelTest<TestType, AtomicOperation::kInc>(2, warp_size,
+                                                                      sizeof(TestType));
+    }
 
-  SECTION("Scattered addresses") {
-    SingleDeviceMultipleKernelTest<TestType, AtomicOperation::kInc>(2, warp_size, cache_line_size);
+    DYNAMIC_SECTION("Scattered addresses " << current) {
+      SingleDeviceMultipleKernelTest<TestType, AtomicOperation::kInc>(2, warp_size,
+                                                                      cache_line_size);
+    }
   }
 }
 

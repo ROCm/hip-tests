@@ -52,7 +52,9 @@ THE SOFTWARE.
  */
 TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Same_Address_Compile_Time", "", int, unsigned int,
                    unsigned long long, float, double) {
-  AtomicExchSameAddressTest<TestType, AtomicScopes::device>();
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    AtomicExchSameAddressTest<TestType, AtomicScopes::device>();
+  }
 }
 
 
@@ -88,18 +90,20 @@ TEMPLATE_TEST_CASE("Unit_atomicExch_Positive", "", int, unsigned int, unsigned l
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  SECTION("Same address") {
-    AtomicExchSingleDeviceSingleKernelTest<TestType, AtomicScopes::device>(1, sizeof(TestType));
-  }
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    DYNAMIC_SECTION("Same address " << current) {
+      AtomicExchSingleDeviceSingleKernelTest<TestType, AtomicScopes::device>(1, sizeof(TestType));
+    }
 
-  SECTION("Adjacent addresses") {
-    AtomicExchSingleDeviceSingleKernelTest<TestType, AtomicScopes::device>(warp_size,
-                                                                           sizeof(TestType));
-  }
+    DYNAMIC_SECTION("Adjacent addresses " << current) {
+      AtomicExchSingleDeviceSingleKernelTest<TestType, AtomicScopes::device>(warp_size,
+                                                                             sizeof(TestType));
+    }
 
-  SECTION("Scattered addresses") {
-    AtomicExchSingleDeviceSingleKernelTest<TestType, AtomicScopes::device>(warp_size,
-                                                                           cache_line_size);
+    DYNAMIC_SECTION("Scattered addresses " << current) {
+      AtomicExchSingleDeviceSingleKernelTest<TestType, AtomicScopes::device>(warp_size,
+                                                                             cache_line_size);
+    }
   }
 }
 
@@ -134,19 +138,21 @@ TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Multi_Kernel", "", int, unsigned in
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  SECTION("Same address") {
-    AtomicExchSingleDeviceMultipleKernelTest<TestType, AtomicScopes::device>(2, 1,
-                                                                             sizeof(TestType));
-  }
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    DYNAMIC_SECTION("Same address " << current) {
+      AtomicExchSingleDeviceMultipleKernelTest<TestType, AtomicScopes::device>(2, 1,
+                                                                               sizeof(TestType));
+    }
 
-  SECTION("Adjacent addresses") {
-    AtomicExchSingleDeviceMultipleKernelTest<TestType, AtomicScopes::device>(2, warp_size,
-                                                                             sizeof(TestType));
-  }
+    DYNAMIC_SECTION("Adjacent addresses " << current) {
+      AtomicExchSingleDeviceMultipleKernelTest<TestType, AtomicScopes::device>(2, warp_size,
+                                                                               sizeof(TestType));
+    }
 
-  SECTION("Scattered addresses") {
-    AtomicExchSingleDeviceMultipleKernelTest<TestType, AtomicScopes::device>(2, warp_size,
-                                                                             cache_line_size);
+    DYNAMIC_SECTION("Scattered addresses " << current) {
+      AtomicExchSingleDeviceMultipleKernelTest<TestType, AtomicScopes::device>(2, warp_size,
+                                                                               cache_line_size);
+    }
   }
 }
 

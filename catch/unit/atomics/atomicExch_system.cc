@@ -60,16 +60,19 @@ TEMPLATE_TEST_CASE("Unit_atomicExch_system_Positive_Peer_GPUs", "", int, unsigne
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  SECTION("Same address") {
-    AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(2, 2, 1, sizeof(TestType));
-  }
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    DYNAMIC_SECTION("Same address " << current) {
+      AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(2, 2, 1, sizeof(TestType));
+    }
 
-  SECTION("Adjacent addresses") {
-    AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(2, 2, warp_size, sizeof(TestType));
-  }
+    DYNAMIC_SECTION("Adjacent addresses " << current) {
+      AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(2, 2, warp_size,
+                                                                  sizeof(TestType));
+    }
 
-  SECTION("Scattered addresses") {
-    AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(2, 2, warp_size, cache_line_size);
+    DYNAMIC_SECTION("Scattered addresses " << current) {
+      AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(2, 2, warp_size, cache_line_size);
+    }
   }
 }
 
@@ -106,18 +109,20 @@ TEMPLATE_TEST_CASE("Unit_atomicExch_system_Positive_Host_And_GPU", "", int, unsi
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  SECTION("Same address") {
-    AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(1, 1, 1, sizeof(TestType), 4);
-  }
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    DYNAMIC_SECTION("Same address " << current) {
+      AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(1, 1, 1, sizeof(TestType), 4);
+    }
 
-  SECTION("Adjacent addresses") {
-    AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(1, 1, warp_size, sizeof(TestType),
-                                                                4);
-  }
+    DYNAMIC_SECTION("Adjacent addresses " << current) {
+      AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(1, 1, warp_size, sizeof(TestType),
+                                                                  4);
+    }
 
-  SECTION("Scattered addresses") {
-    AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(1, 1, warp_size, cache_line_size,
-                                                                4);
+    DYNAMIC_SECTION("Scattered addresses " << current) {
+      AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(1, 1, warp_size, cache_line_size,
+                                                                  4);
+    }
   }
 }
 
@@ -154,18 +159,20 @@ TEMPLATE_TEST_CASE("Unit_atomicExch_system_Positive_Host_And_Peer_GPUs", "", int
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  SECTION("Same address") {
-    AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(2, 2, 1, sizeof(TestType), 4);
-  }
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    DYNAMIC_SECTION("Same address " << current) {
+      AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(2, 2, 1, sizeof(TestType), 4);
+    }
 
-  SECTION("Adjacent addresses") {
-    AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(2, 2, warp_size, sizeof(TestType),
-                                                                4);
-  }
+    DYNAMIC_SECTION("Adjacent addresses " << current) {
+      AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(2, 2, warp_size, sizeof(TestType),
+                                                                  4);
+    }
 
-  SECTION("Scattered addresses") {
-    AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(2, 2, warp_size, cache_line_size,
-                                                                4);
+    DYNAMIC_SECTION("Scattered addresses " << current) {
+      AtomicExchMultipleDeviceMultipleKernelAndHostTest<TestType>(2, 2, warp_size, cache_line_size,
+                                                                  4);
+    }
   }
 }
 

@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
 #include <hip/hip_cooperative_groups.h>
+#include <cmd_options.hh>
 
 enum class AtomicScopes { device, system };
 

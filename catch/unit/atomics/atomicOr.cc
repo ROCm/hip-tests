@@ -44,8 +44,12 @@ THE SOFTWARE.
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_SameAddress", "", int, unsigned int, unsigned long long) {
-  Bitwise::SingleDeviceSingleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(1, sizeof(TestType));
+TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_SameAddress", "", int, unsigned int,
+                   unsigned long long) {
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    Bitwise::SingleDeviceSingleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(
+        1, sizeof(TestType));
+  }
 }
 
 /**
@@ -60,11 +64,15 @@ TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_SameAddress", "", int, unsigned int, 
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Adjacent_Addresses", "", int, unsigned int, unsigned long long) {
+TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Adjacent_Addresses", "", int, unsigned int,
+                   unsigned long long) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
 
-  Bitwise::SingleDeviceSingleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(warp_size, sizeof(TestType));
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    Bitwise::SingleDeviceSingleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(
+        warp_size, sizeof(TestType));
+  }
 }
 
 /**
@@ -79,12 +87,16 @@ TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Adjacent_Addresses", "", int, unsigne
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Scattered_Addresses", "", int, unsigned int, unsigned long long) {
+TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Scattered_Addresses", "", int, unsigned int,
+                   unsigned long long) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  Bitwise::SingleDeviceSingleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(warp_size, cache_line_size);
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    Bitwise::SingleDeviceSingleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(warp_size,
+                                                                                   cache_line_size);
+  }
 }
 
 /**
@@ -99,8 +111,12 @@ TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Scattered_Addresses", "", int, unsign
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Multi_Kernel_Same_Address", "", int, unsigned int, unsigned long long) {
-  Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(2, 1, sizeof(TestType));
+TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Multi_Kernel_Same_Address", "", int, unsigned int,
+                   unsigned long long) {
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(
+        2, 1, sizeof(TestType));
+  }
 }
 
 /**
@@ -115,11 +131,15 @@ TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Multi_Kernel_Same_Address", "", int, 
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Multi_Kernel_Adjacent_Addresses", "", int, unsigned int, unsigned long long) {
+TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Multi_Kernel_Adjacent_Addresses", "", int, unsigned int,
+                   unsigned long long) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
 
-  Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(2, warp_size, sizeof(TestType));
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(
+        2, warp_size, sizeof(TestType));
+  }
 }
 
 /**
@@ -134,12 +154,16 @@ TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Multi_Kernel_Adjacent_Addresses", "",
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Multi_Kernel_Scattered_Addresses", "", int, unsigned int, unsigned long long) {
+TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Multi_Kernel_Scattered_Addresses", "", int, unsigned int,
+                   unsigned long long) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(2, warp_size, cache_line_size);
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(
+        2, warp_size, cache_line_size);
+  }
 }
 
 /**
@@ -158,8 +182,9 @@ TEST_CASE("Unit_atomicOr_Negative_Parameters_RTC") {
   hiprtcProgram program{};
 
   const auto program_source =
-    GENERATE(kAtomicOr_int, kAtomicOr_uint, kAtomicOr_ulong, kAtomicOr_ulonglong);
-  HIPRTC_CHECK(hiprtcCreateProgram(&program, program_source, "atomicOr_negative.cc", 0, nullptr, nullptr));
+      GENERATE(kAtomicOr_int, kAtomicOr_uint, kAtomicOr_ulong, kAtomicOr_ulonglong);
+  HIPRTC_CHECK(
+      hiprtcCreateProgram(&program, program_source, "atomicOr_negative.cc", 0, nullptr, nullptr));
   hiprtcResult result{hiprtcCompileProgram(program, 0, nullptr)};
 
   // Get the compile log and count compiler error messages
@@ -173,7 +198,7 @@ TEST_CASE("Unit_atomicOr_Negative_Parameters_RTC") {
   std::string error_message{"error:"};
 
   size_t n_pos = log.find(error_message, 0);
-  while(n_pos != std::string::npos) {
+  while (n_pos != std::string::npos) {
     ++error_count;
     n_pos = log.find(error_message, n_pos + 1);
   }

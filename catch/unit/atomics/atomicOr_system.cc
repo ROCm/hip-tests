@@ -47,8 +47,10 @@ THE SOFTWARE.
 TEMPLATE_TEST_CASE("Unit_atomicOr_system_Positive_Peer_GPUs_Same_Address", "", int, unsigned int,
                    unsigned long long) {
   for (auto current = 0; current < cmd_options.iterations; ++current) {
-    Bitwise::MultipleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOrSystem>(
-        2, 2, 1, sizeof(TestType));
+    DYNAMIC_SECTION("Same address " << current) {
+      Bitwise::MultipleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOrSystem>(
+          2, 2, 1, sizeof(TestType));
+    }
   }
 }
 
@@ -71,8 +73,10 @@ TEMPLATE_TEST_CASE("Unit_atomicOr_system_Positive_Peer_GPUs_Adjacent_Addresses",
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
 
   for (auto current = 0; current < cmd_options.iterations; ++current) {
-    Bitwise::MultipleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOrSystem>(
-        2, 2, warp_size, sizeof(TestType));
+    DYNAMIC_SECTION("Adjacent address " << current) {
+      Bitwise::MultipleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOrSystem>(
+          2, 2, warp_size, sizeof(TestType));
+    }
   }
 }
 
@@ -96,7 +100,9 @@ TEMPLATE_TEST_CASE("Unit_atomicOr_system_Positive_Peer_GPUs_Scattered_Addresses"
   const auto cache_line_size = 128u;
 
   for (auto current = 0; current < cmd_options.iterations; ++current) {
-    Bitwise::MultipleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOrSystem>(
-        2, 2, warp_size, cache_line_size);
+    DYNAMIC_SECTION("Scattered address " << current) {
+      Bitwise::MultipleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOrSystem>(
+          2, 2, warp_size, cache_line_size);
+    }
   }
 }

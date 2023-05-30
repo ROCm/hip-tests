@@ -47,8 +47,10 @@ THE SOFTWARE.
 TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_SameAddress", "", int, unsigned int,
                    unsigned long long) {
   for (auto current = 0; current < cmd_options.iterations; ++current) {
-    Bitwise::SingleDeviceSingleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(
-        1, sizeof(TestType));
+    DYNAMIC_SECTION("Same address " << current) {
+      Bitwise::SingleDeviceSingleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(
+          1, sizeof(TestType));
+    }
   }
 }
 
@@ -70,8 +72,10 @@ TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Adjacent_Addresses", "", int, unsigne
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
 
   for (auto current = 0; current < cmd_options.iterations; ++current) {
-    Bitwise::SingleDeviceSingleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(
-        warp_size, sizeof(TestType));
+    DYNAMIC_SECTION("Adjacent address " << current) {
+      Bitwise::SingleDeviceSingleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(
+          warp_size, sizeof(TestType));
+    }
   }
 }
 
@@ -94,8 +98,10 @@ TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Scattered_Addresses", "", int, unsign
   const auto cache_line_size = 128u;
 
   for (auto current = 0; current < cmd_options.iterations; ++current) {
-    Bitwise::SingleDeviceSingleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(warp_size,
-                                                                                   cache_line_size);
+    DYNAMIC_SECTION("Scattered address " << current) {
+      Bitwise::SingleDeviceSingleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(
+          warp_size, cache_line_size);
+    }
   }
 }
 
@@ -114,8 +120,10 @@ TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Scattered_Addresses", "", int, unsign
 TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Multi_Kernel_Same_Address", "", int, unsigned int,
                    unsigned long long) {
   for (auto current = 0; current < cmd_options.iterations; ++current) {
-    Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(
-        2, 1, sizeof(TestType));
+    DYNAMIC_SECTION("Same address " << current) {
+      Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(
+          2, 1, sizeof(TestType));
+    }
   }
 }
 
@@ -137,8 +145,10 @@ TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Multi_Kernel_Adjacent_Addresses", "",
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
 
   for (auto current = 0; current < cmd_options.iterations; ++current) {
-    Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(
-        2, warp_size, sizeof(TestType));
+    DYNAMIC_SECTION("Adjacent address " << current) {
+      Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(
+          2, warp_size, sizeof(TestType));
+    }
   }
 }
 
@@ -161,8 +171,10 @@ TEMPLATE_TEST_CASE("Unit_atomicOr_Positive_Multi_Kernel_Scattered_Addresses", ""
   const auto cache_line_size = 128u;
 
   for (auto current = 0; current < cmd_options.iterations; ++current) {
-    Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(
-        2, warp_size, cache_line_size);
+    DYNAMIC_SECTION("Scattered address " << current) {
+      Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kOr>(
+          2, warp_size, cache_line_size);
+    }
   }
 }
 

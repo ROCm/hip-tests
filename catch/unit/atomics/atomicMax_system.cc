@@ -51,8 +51,10 @@ TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Same_Address", "", 
 TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Same_Address", "", int, unsigned int,
                    unsigned long long) {
 #endif
-  MinMax::MultipleDeviceMultipleKernelTest<TestType, MinMax::AtomicOperation::kMaxSystem>(2, 2, 1,
-                                                                          sizeof(TestType));
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    MinMax::MultipleDeviceMultipleKernelTest<TestType, MinMax::AtomicOperation::kMaxSystem>(
+        2, 2, 1, sizeof(TestType));
+  }
 }
 
 /**
@@ -69,17 +71,19 @@ TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Same_Address", "", 
  *  - HIP_VERSION >= 5.2
  */
 #if HT_AMD
-TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Adjacent_Addresses", "", int, unsigned int,
-                   unsigned long long, float, double) {
+TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Adjacent_Addresses", "", int,
+                   unsigned int, unsigned long long, float, double) {
 #else
-TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Adjacent_Addresses", "", int, unsigned int,
-                   unsigned long long) {
+TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Adjacent_Addresses", "", int,
+                   unsigned int, unsigned long long) {
 #endif
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
 
-  MinMax::MultipleDeviceMultipleKernelTest<TestType, MinMax::AtomicOperation::kMaxSystem>(2, 2, warp_size,
-                                                                          sizeof(TestType));
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    MinMax::MultipleDeviceMultipleKernelTest<TestType, MinMax::AtomicOperation::kMaxSystem>(
+        2, 2, warp_size, sizeof(TestType));
+  }
 }
 
 /**
@@ -96,16 +100,18 @@ TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Adjacent_Addresses"
  *  - HIP_VERSION >= 5.2
  */
 #if HT_AMD
-TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Scattered_Addresses", "", int, unsigned int,
-                   unsigned long long, float, double) {
+TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Scattered_Addresses", "", int,
+                   unsigned int, unsigned long long, float, double) {
 #else
-TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Scattered_Addresses", "", int, unsigned int,
-                   unsigned long long) {
+TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Scattered_Addresses", "", int,
+                   unsigned int, unsigned long long) {
 #endif
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  MinMax::MultipleDeviceMultipleKernelTest<TestType, MinMax::AtomicOperation::kMaxSystem>(2, 2, warp_size,
-                                                                          cache_line_size);
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    MinMax::MultipleDeviceMultipleKernelTest<TestType, MinMax::AtomicOperation::kMaxSystem>(
+        2, 2, warp_size, cache_line_size);
+  }
 }

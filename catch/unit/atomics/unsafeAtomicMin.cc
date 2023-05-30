@@ -44,7 +44,10 @@ THE SOFTWARE.
  *  - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_unsafeAtomicMin_Positive_SameAddress", "", float, double) {
-  MinMax::SingleDeviceSingleKernelTest<TestType, MinMax::AtomicOperation::kUnsafeMin>(1, sizeof(TestType));
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    MinMax::SingleDeviceSingleKernelTest<TestType, MinMax::AtomicOperation::kUnsafeMin>(
+        1, sizeof(TestType));
+  }
 }
 
 /**
@@ -63,7 +66,10 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicMin_Positive_Adjacent_Addresses", "", float
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
 
-  MinMax::SingleDeviceSingleKernelTest<TestType, MinMax::AtomicOperation::kUnsafeMin>(warp_size, sizeof(TestType));
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    MinMax::SingleDeviceSingleKernelTest<TestType, MinMax::AtomicOperation::kUnsafeMin>(
+        warp_size, sizeof(TestType));
+  }
 }
 
 /**
@@ -83,7 +89,10 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicMin_Positive_Scattered_Addresses", "", floa
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  MinMax::SingleDeviceSingleKernelTest<TestType, MinMax::AtomicOperation::kUnsafeMin>(warp_size, cache_line_size);
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    MinMax::SingleDeviceSingleKernelTest<TestType, MinMax::AtomicOperation::kUnsafeMin>(
+        warp_size, cache_line_size);
+  }
 }
 
 /**
@@ -99,7 +108,10 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicMin_Positive_Scattered_Addresses", "", floa
  *  - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_unsafeAtomicMin_Positive_Multi_Kernel_Same_Address", "", float, double) {
-  MinMax::SingleDeviceMultipleKernelTest<TestType, MinMax::AtomicOperation::kUnsafeMin>(2, 1, sizeof(TestType));
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    MinMax::SingleDeviceMultipleKernelTest<TestType, MinMax::AtomicOperation::kUnsafeMin>(
+        2, 1, sizeof(TestType));
+  }
 }
 
 /**
@@ -114,11 +126,15 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicMin_Positive_Multi_Kernel_Same_Address", ""
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEMPLATE_TEST_CASE("Unit_unsafeAtomicMin_Positive_Multi_Kernel_Adjacent_Addresses", "", float, double) {
+TEMPLATE_TEST_CASE("Unit_unsafeAtomicMin_Positive_Multi_Kernel_Adjacent_Addresses", "", float,
+                   double) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
 
-  MinMax::SingleDeviceMultipleKernelTest<TestType, MinMax::AtomicOperation::kUnsafeMin>(2, warp_size, sizeof(TestType));
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    MinMax::SingleDeviceMultipleKernelTest<TestType, MinMax::AtomicOperation::kUnsafeMin>(
+        2, warp_size, sizeof(TestType));
+  }
 }
 
 /**
@@ -133,10 +149,14 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicMin_Positive_Multi_Kernel_Adjacent_Addresse
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEMPLATE_TEST_CASE("Unit_unsafeAtomicMin_Positive_Multi_Kernel_Scattered_Addresses", "", float, double) {
+TEMPLATE_TEST_CASE("Unit_unsafeAtomicMin_Positive_Multi_Kernel_Scattered_Addresses", "", float,
+                   double) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
 
-  MinMax::SingleDeviceMultipleKernelTest<TestType, MinMax::AtomicOperation::kUnsafeMin>(2, warp_size, cache_line_size);
+  for (auto current = 0; current < cmd_options.iterations; ++current) {
+    MinMax::SingleDeviceMultipleKernelTest<TestType, MinMax::AtomicOperation::kUnsafeMin>(
+        2, warp_size, cache_line_size);
+  }
 }

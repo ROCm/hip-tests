@@ -36,14 +36,24 @@ Unit_hipDeviceGetUuid_Negative - Test unsuccessful execution of hipDeviceGetUuid
  */
 TEST_CASE("Unit_hipDeviceGetUuid_Positive") {
   hipDevice_t device;
-  hipUUID uuid;
+  hipUUID uuid{0};
+  bool uuidValid = false;
 
   const int deviceId = GENERATE(range(0, HipTest::getDeviceCount()));
   HIP_CHECK(hipDeviceGet(&device, deviceId));
 
   // Scenario 1
   HIP_CHECK(hipDeviceGetUuid(&uuid, device));
-  REQUIRE(strcmp(uuid.bytes, "") != 0);
+
+  // Atleast one non zero value
+  size_t uuidSize = sizeof(uuid.bytes) / sizeof(uuid.bytes[0]);
+  for (int i = 0; i < uuidSize; i++) {
+    if (uuid.bytes[i] != 0) {
+      uuidValid = true;
+      break;
+    }
+  }
+  REQUIRE(uuidValid == true);
 }
 
 /**

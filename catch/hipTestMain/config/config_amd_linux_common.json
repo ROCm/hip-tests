@@ -15,7 +15,6 @@
 	   "Unit_hipDeviceReset_Positive_Threaded",
 	   "Unit_hipGraphMemcpyNodeSetParamsToSymbol_Positive_Basic",
 	   "Unit_hipGraphExecMemcpyNodeSetParamsToSymbol_Positive_Basic",
-	   "Unit_hipGraphMemcpyNodeSetParamsFromSymbol_Positive_Basic",
 	   "Unit_hipGraphExecMemcpyNodeSetParamsFromSymbol_Positive_Basic",
 	   "Unit_hipKernelNameRef_Negative_Parameters",
 	   "Unit_hipMemAdvise_AccessedBy_All_Devices",

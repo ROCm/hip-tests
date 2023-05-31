@@ -39,5 +39,7 @@ set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 # Create the excutable
 add_executable(stream stream.cpp)
 
+target_include_directories(stream PRIVATE ../../common)
+
 # Link with HIP
 target_link_libraries(stream hip::host)

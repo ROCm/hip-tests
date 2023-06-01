@@ -2,7 +2,6 @@
     "DisabledTests":
 	[
 	   "Unit_hipMalloc_CoherentTst",
-	   "Unit_hipTextureMipmapObj2D_Check",
 	   "Unit_hipGraphAddHostNode_ClonedGraphwithHostNode",
 	   "Unit_hipEventIpc",
 	   "Unit_hipMalloc3D_Negative",

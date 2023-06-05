@@ -19,6 +19,8 @@
 # THE SOFTWARE.
 
 set(TEST_SRC
+    acquire_release.cc
+    sequential_consistency.cc
 )
 
 if(HIP_PLATFORM MATCHES "nvidia")

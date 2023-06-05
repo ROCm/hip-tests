@@ -1,13 +1,16 @@
 /*
 Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -36,7 +39,8 @@ enum class BuiltinAtomicOperation {
 };
 
 template <BuiltinAtomicOperation operation, int memory_order, int memory_scope>
-__device__ void SetFlag(int* const flag) {
+__host__ __device__ void SetFlag(int* const flag) {
+#ifdef __HIP_DEVICE_COMPILE__
   if constexpr (operation == BuiltinAtomicOperation::kLoadStore) {
     static_assert(memory_order != __ATOMIC_ACQ_REL);
     __hip_atomic_store(flag, 1, memory_order, memory_scope);
@@ -64,10 +68,18 @@ __device__ void SetFlag(int* const flag) {
   } else if constexpr (operation == BuiltinAtomicOperation::kMax) {
     __hip_atomic_fetch_max(flag, 1, memory_order, memory_scope);
   }
+#else
+  if constexpr (operation == BuiltinAtomicOperation::kAnd) {
+    __atomic_store_n(flag, 0, __ATOMIC_RELEASE);
+  } else {
+    __atomic_store_n(flag, 1, __ATOMIC_RELEASE);
+  }
+#endif
 }
 
 template <BuiltinAtomicOperation operation, int memory_order, int memory_scope>
-__device__ int FetchFlag(int* const flag) {
+__host__ __device__ int FetchFlag(int* const flag) {
+#ifdef __HIP_DEVICE_COMPILE__
   if constexpr (operation == BuiltinAtomicOperation::kLoadStore) {
     static_assert(memory_order != __ATOMIC_ACQ_REL);
     return __hip_atomic_load(flag, memory_order, memory_scope);
@@ -98,6 +110,13 @@ __device__ int FetchFlag(int* const flag) {
   } else if constexpr (operation == BuiltinAtomicOperation::kMax) {
     return __hip_atomic_fetch_max(flag, 0, memory_order, memory_scope);
   }
+#else
+  if constexpr (operation == BuiltinAtomicOperation::kAnd) {
+    return !__atomic_load_n(flag, __ATOMIC_ACQUIRE);
+  } else {
+    return __atomic_load_n(flag, __ATOMIC_ACQUIRE);
+  }
+#endif
 }
 
 namespace AcquireRelease {
@@ -111,11 +130,7 @@ __host__ __device__ void Producer(int* const flag, int* const data) {
 
   data[0] = kTestValue;
 
-#ifdef __HIP_DEVICE_COMPILE__
   SetFlag<operation, actual_memory_order, memory_scope>(flag);
-#else
-  __atomic_store_n(flag, 1, __ATOMIC_RELEASE);
-#endif
 }
 
 template <BuiltinAtomicOperation operation, int memory_order, int memory_scope>
@@ -123,13 +138,8 @@ __host__ __device__ void Consumer(int* const flag, int* const data, int* const r
   constexpr int actual_memory_order =
       memory_order == __ATOMIC_RELEASE ? __ATOMIC_ACQUIRE : memory_order;
 
-#ifdef __HIP_DEVICE_COMPILE__
   while (!FetchFlag<operation, memory_order, memory_scope>(flag))
     ;
-#else
-  while (!__atomic_load_n(flag, __ATOMIC_ACQUIRE))
-    ;
-#endif
 
   ret[0] = data[0];
 }
@@ -140,7 +150,12 @@ __global__ void TestKernel(int* const flag, int* data, int* const ret) {
 
   if (data == nullptr) data = &shared_mem;
 
-  if (blockIdx.x == 0 && threadIdx.x == 0) *flag = 0;
+  if (blockIdx.x == 0 && threadIdx.x == 0) {
+    if constexpr (operation == BuiltinAtomicOperation::kAnd)
+      *flag = 1;
+    else
+      *flag = 0;
+  }
   __syncthreads();
 
   bool producer = false, consumer = false;
@@ -167,35 +182,33 @@ __global__ void TestKernel(int* const flag, int* data, int* const ret) {
   }
 }
 
-template <BuiltinAtomicOperation operation, bool use_acq_rel, int memory_scope>
+template <BuiltinAtomicOperation operation, int memory_order, int memory_scope>
 __global__ void ProducerKernel(int* const flag, int* const data) {
   if (!(blockIdx.x == 0 && threadIdx.x == 0)) {
     return;
   }
 
-  Producer<operation, use_acq_rel, memory_scope>(flag, data);
+  Producer<operation, memory_order, memory_scope>(flag, data);
 }
 
-template <BuiltinAtomicOperation operation, bool use_acq_rel, int memory_scope>
+template <BuiltinAtomicOperation operation, int memory_order, int memory_scope>
 __global__ void ConsumerKernel(int* const flag, int* const data, int* const ret) {
   if (!(blockIdx.x == 0 && threadIdx.x == 0)) {
     return;
   }
 
-  Consumer<operation, use_acq_rel, memory_scope>(flag, data, ret);
+  Consumer<operation, memory_order, memory_scope>(flag, data, ret);
 }
 
-template <BuiltinAtomicOperation operation, int memory_order, int memory_scope>
-void SingleDeviceSingleKernelTest() {
-  int warp_size = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
-
+template <BuiltinAtomicOperation operation, int memory_order, int memory_scope> void Test() {
   int blocks = 1, threads = 1;
   if (memory_scope == __HIP_MEMORY_SCOPE_WAVEFRONT) {
     blocks = 1;
     threads = 2;
   } else if (memory_scope == __HIP_MEMORY_SCOPE_WORKGROUP) {
     blocks = 1;
+    int warp_size = 0;
+    HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
     threads = warp_size * 2;
   } else if (memory_scope == __HIP_MEMORY_SCOPE_AGENT) {
     blocks = 2;
@@ -206,8 +219,7 @@ void SingleDeviceSingleKernelTest() {
   LinearAllocGuard<int> ret(LinearAllocs::hipMallocManaged, sizeof(int));
 
   SECTION("Global memory") {
-    const auto alloc_type = GENERATE(LinearAllocs::hipMalloc, LinearAllocs::hipHostMalloc,
-                                     LinearAllocs::hipMallocManaged);
+    const auto alloc_type = GENERATE(LinearAllocs::hipMalloc, LinearAllocs::hipMallocManaged);
     LinearAllocGuard<int> data(alloc_type, sizeof(int));
     TestKernel<operation, memory_order, memory_scope>
         <<<blocks, threads>>>(flag.ptr(), data.ptr(), ret.ptr());
@@ -225,34 +237,60 @@ void SingleDeviceSingleKernelTest() {
   REQUIRE(ret.ptr()[0] == kTestValue);
 }
 
+template <BuiltinAtomicOperation operation, int memory_order> void SystemTest() {
+  std::thread host_thread;
+
+  LinearAllocGuard<int> flag(LinearAllocs::hipMallocManaged, sizeof(int));
+  LinearAllocGuard<int> ret(LinearAllocs::hipMallocManaged, sizeof(int));
+
+  SECTION("Global memory") {
+    const auto alloc_type = GENERATE(LinearAllocs::hipHostMalloc, LinearAllocs::hipMallocManaged);
+    LinearAllocGuard<int> data(alloc_type, sizeof(int));
+
+    SECTION("Host producer - Device consumer") {
+      ConsumerKernel<operation, memory_order, __HIP_MEMORY_SCOPE_SYSTEM>
+          <<<1, 1>>>(flag.ptr(), data.ptr(), ret.ptr());
+      host_thread = std::thread([&] {
+        Producer<operation, memory_order, __HIP_MEMORY_SCOPE_SYSTEM>(flag.ptr(), data.ptr());
+      });
+    }
+
+    SECTION("Device producer - Host consumer") {
+      host_thread = std::thread([&] {
+        Consumer<operation, memory_order, __HIP_MEMORY_SCOPE_SYSTEM>(flag.ptr(), data.ptr(),
+                                                                     ret.ptr());
+      });
+      ProducerKernel<operation, memory_order, __HIP_MEMORY_SCOPE_SYSTEM>
+          <<<1, 1>>>(flag.ptr(), data.ptr());
+    }
+  }
+
+  HIP_CHECK(hipDeviceSynchronize());
+  host_thread.join();
+
+  REQUIRE(ret.ptr()[0] == kTestValue);
+}
+
 } /* namespace AcquireRelease */
 
 namespace SequentialConsistency {
 
 template <BuiltinAtomicOperation operation, int memory_scope>
 __host__ __device__ void Producer(int* const flag) {
-#ifdef __HIP_DEVICE_COMPILE__
-  SetFlag<operation, __ATOMIC_SEQ_CST, memory_scope>(flag);
-#else
   __atomic_store_n(flag, 1, __ATOMIC_SEQ_CST);
-#endif
 }
 
 template <BuiltinAtomicOperation operation, int memory_scope>
 __host__ __device__ void Consumer(int* const flag1, int* const flag2, int* const counter) {
-#ifdef __HIP_DEVICE_COMPILE__
   while (!FetchFlag<operation, __ATOMIC_SEQ_CST, memory_scope>(flag1))
     ;
   if (FetchFlag<operation, __ATOMIC_SEQ_CST, memory_scope>(flag2)) {
+#ifdef __HIP_DEVICE_COMPILE__
     __hip_atomic_fetch_add(counter, 1, __ATOMIC_SEQ_CST, memory_scope);
-  }
 #else
-  while (!__atomic_load_n(flag1, __ATOMIC_SEQ_CST))
-    ;
-  if (__atomic_load_n(flag2, __ATOMIC_SEQ_CST)) {
     __atomic_fetch_add(counter, 1, __ATOMIC_SEQ_CST);
-  }
 #endif
+  }
 }
 
 template <BuiltinAtomicOperation operation, int memory_scope>
@@ -263,8 +301,13 @@ __global__ void TestKernel(int* flag1, int* flag2, int* const counter) {
   if (flag2 == nullptr) flag2 = &shared_mem[1];
 
   if (blockIdx.x == 0 && threadIdx.x == 0) {
-    *flag1 = 0;
-    *flag2 = 0;
+    if constexpr (operation == BuiltinAtomicOperation::kAnd) {
+      *flag1 = 1;
+      *flag2 = 1;
+    } else {
+      *flag1 = 0;
+      *flag2 = 0;
+    }
   }
   __syncthreads();
 
@@ -326,16 +369,15 @@ __global__ void ConsumerKernel(int* const flag1, int* const flag2, int* const co
   Consumer<operation, memory_scope>(flag1, flag2, counter);
 }
 
-template <BuiltinAtomicOperation operation, int memory_scope> void SingleDeviceSingleKernelTest() {
-  int warp_size = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
-
+template <BuiltinAtomicOperation operation, int memory_scope> void Test() {
   int blocks = 1, threads = 1;
   if (memory_scope == __HIP_MEMORY_SCOPE_WAVEFRONT) {
     blocks = 1;
     threads = 4;
   } else if (memory_scope == __HIP_MEMORY_SCOPE_WORKGROUP) {
     blocks = 1;
+    int warp_size = 0;
+    HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
     threads = warp_size * 4;
   } else if (memory_scope == __HIP_MEMORY_SCOPE_AGENT) {
     blocks = 4;
@@ -359,6 +401,34 @@ template <BuiltinAtomicOperation operation, int memory_scope> void SingleDeviceS
   }
 
   HIP_CHECK(hipDeviceSynchronize());
+
+  REQUIRE(counter.ptr()[0] != 0);
+}
+
+template <BuiltinAtomicOperation operation> void SystemTest() {
+  std::thread host_producer, host_consumer;
+
+  LinearAllocGuard<int> counter(LinearAllocs::hipMallocManaged, sizeof(int));
+
+  SECTION("Global memory") {
+    const auto alloc_type = GENERATE(LinearAllocs::hipMallocManaged);
+    LinearAllocGuard<int> flag1(alloc_type, sizeof(int));
+    LinearAllocGuard<int> flag2(alloc_type, sizeof(int));
+
+    ConsumerKernel<operation, __HIP_MEMORY_SCOPE_SYSTEM>
+        <<<1, 1>>>(flag1.ptr(), flag2.ptr(), counter.ptr());
+    host_consumer = std::thread([&] {
+      Consumer<operation, __HIP_MEMORY_SCOPE_SYSTEM>(flag2.ptr(), flag1.ptr(), counter.ptr());
+    });
+
+    ProducerKernel<operation, __HIP_MEMORY_SCOPE_SYSTEM><<<1, 1>>>(flag1.ptr());
+    host_producer =
+        std::thread([&] { Producer<operation, __HIP_MEMORY_SCOPE_SYSTEM>(flag2.ptr()); });
+  }
+
+  HIP_CHECK(hipDeviceSynchronize());
+  host_producer.join();
+  host_consumer.join();
 
   REQUIRE(counter.ptr()[0] != 0);
 }

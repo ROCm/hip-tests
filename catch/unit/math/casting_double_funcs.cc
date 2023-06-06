@@ -22,9 +22,9 @@ THE SOFTWARE.
 #include "casting_common.hh"
 #include "casting_double_negative_kernels_rtc.hh"
 
-#define CAST_DOUBLE2INT_TEST_DEF(T, kern_name, round_dir)                                          \
+#define CAST_DOUBLE2INT_TEST_DEF(T, kern_name, ref_func)                                           \
   CAST_KERNEL_DEF(kern_name, T, double)                                                            \
-  CAST_RND_RINT_REF_DEF(kern_name, T, double, round_dir)                                           \
+  CAST_F2I_REF_DEF(kern_name, T, double, ref_func)                                                 \
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Positive") {                                               \
     T (*ref)(double) = kern_name##_ref;                                                            \
@@ -33,7 +33,7 @@ THE SOFTWARE.
 
 #define CAST_DOUBLE2INT_RZ_TEST_DEF(T, kern_name)                                                  \
   CAST_KERNEL_DEF(kern_name, T, double)                                                            \
-  CAST_RND_RZ_REF_DEF(kern_name, T, double)                                                        \
+  CAST_F2I_RZ_REF_DEF(kern_name, T, double)                                                        \
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Positive") {                                               \
     T (*ref)(double) = kern_name##_ref;                                                            \
@@ -45,7 +45,7 @@ THE SOFTWARE.
  * ------------------------
  *    - Tests that checks `__double2int_rd` against a table of difficult values, followed by a large
  * number of randomly generated values. The results are compared against reference function
- * `std::rint` with FE_DOWNWARD rounding mode which is equivalent to `std::floor`.
+ * `std::floor`.
  *
  * Test source
  * ------------------------
@@ -54,14 +54,14 @@ THE SOFTWARE.
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2INT_TEST_DEF(int, double2int_rd, FE_DOWNWARD)
+CAST_DOUBLE2INT_TEST_DEF(int, double2int_rd, std::floor)
 
 /**
  * Test Description
  * ------------------------
  *    - Tests that checks `__double2int_rn` against a table of difficult values, followed by a large
  * number of randomly generated values. The results are compared against reference function
- * `std::rint` with FE_TONEAREST rounding mode.
+ * `std::rint`.
  *
  * Test source
  * ------------------------
@@ -70,14 +70,14 @@ CAST_DOUBLE2INT_TEST_DEF(int, double2int_rd, FE_DOWNWARD)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2INT_TEST_DEF(int, double2int_rn, FE_TONEAREST)
+CAST_DOUBLE2INT_TEST_DEF(int, double2int_rn, std::rint)
 
 /**
  * Test Description
  * ------------------------
  *    - Tests that checks `__double2int_ru` against a table of difficult values, followed by a large
  * number of randomly generated values. The results are compared against reference function
- * `std::rint` with FE_UPWARD rounding mode which is equivalent to std::ceil.
+ * `std::ceil`.
  *
  * Test source
  * ------------------------
@@ -86,7 +86,7 @@ CAST_DOUBLE2INT_TEST_DEF(int, double2int_rn, FE_TONEAREST)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2INT_TEST_DEF(int, double2int_ru, FE_UPWARD)
+CAST_DOUBLE2INT_TEST_DEF(int, double2int_ru, std::ceil)
 
 /**
  * Test Description
@@ -123,7 +123,7 @@ TEST_CASE("Unit_Device_double2int_Negative_RTC") { NegativeTestRTCWrapper<12>(kD
  * ------------------------
  *    - Tests that checks `__double2uint_rd` against a table of difficult values, followed by a
  * large number of randomly generated values. The results are compared against reference function
- * `std::rint` with FE_DOWNWARD rounding mode which is equivalent to `std::floor`.
+ * `std::floor`.
  *
  * Test source
  * ------------------------
@@ -132,14 +132,14 @@ TEST_CASE("Unit_Device_double2int_Negative_RTC") { NegativeTestRTCWrapper<12>(kD
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2INT_TEST_DEF(unsigned int, double2uint_rd, FE_DOWNWARD)
+CAST_DOUBLE2INT_TEST_DEF(unsigned int, double2uint_rd, std::floor)
 
 /**
  * Test Description
  * ------------------------
  *    - Tests that checks `__double2uint_rn` against a table of difficult values, followed by a
  * large number of randomly generated values. The results are compared against reference function
- * `std::rint` with FE_TONEAREST rounding mode.
+ * `std::rint`.
  *
  * Test source
  * ------------------------
@@ -148,14 +148,14 @@ CAST_DOUBLE2INT_TEST_DEF(unsigned int, double2uint_rd, FE_DOWNWARD)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2INT_TEST_DEF(unsigned int, double2uint_rn, FE_TONEAREST)
+CAST_DOUBLE2INT_TEST_DEF(unsigned int, double2uint_rn, std::rint)
 
 /**
  * Test Description
  * ------------------------
  *    - Tests that checks `__double2uint_ru` against a table of difficult values, followed by a
  * large number of randomly generated values. The results are compared against reference function
- * `std::rint` with FE_UPWARD rounding mode which is equivalent to std::ceil.
+ * `std::ceil`.
  *
  * Test source
  * ------------------------
@@ -164,7 +164,7 @@ CAST_DOUBLE2INT_TEST_DEF(unsigned int, double2uint_rn, FE_TONEAREST)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2INT_TEST_DEF(unsigned int, double2uint_ru, FE_UPWARD)
+CAST_DOUBLE2INT_TEST_DEF(unsigned int, double2uint_ru, std::ceil)
 
 /**
  * Test Description
@@ -196,9 +196,9 @@ CAST_DOUBLE2INT_RZ_TEST_DEF(unsigned int, double2uint_rz)
  */
 TEST_CASE("Unit_Device_double2uint_Negative_RTC") { NegativeTestRTCWrapper<12>(kDouble2Uint); }
 
-#define CAST_DOUBLE2LL_TEST_DEF(T, kern_name, round_dir)                                           \
+#define CAST_DOUBLE2LL_TEST_DEF(T, kern_name, ref_func)                                            \
   CAST_KERNEL_DEF(kern_name, T, double)                                                            \
-  CAST_RND_RINT_REF_DEF(kern_name, T, double, round_dir)                                           \
+  CAST_F2I_REF_DEF(kern_name, T, double, ref_func)                                                 \
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Positive") {                                               \
     T (*ref)(double) = kern_name##_ref;                                                            \
@@ -209,7 +209,7 @@ TEST_CASE("Unit_Device_double2uint_Negative_RTC") { NegativeTestRTCWrapper<12>(k
 
 #define CAST_DOUBLE2LL_RZ_TEST_DEF(T, kern_name)                                                   \
   CAST_KERNEL_DEF(kern_name, T, double)                                                            \
-  CAST_RND_RZ_REF_DEF(kern_name, T, double)                                                        \
+  CAST_F2I_RZ_REF_DEF(kern_name, T, double)                                                        \
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Positive") {                                               \
     T (*ref)(double) = kern_name##_ref;                                                            \
@@ -223,7 +223,7 @@ TEST_CASE("Unit_Device_double2uint_Negative_RTC") { NegativeTestRTCWrapper<12>(k
  * ------------------------
  *    - Tests that checks `__double2ll_rd` against a table of difficult values, followed by a large
  * number of randomly generated values. The results are compared against reference function
- * `std::rint` with FE_DOWNWARD rounding mode which is equivalent to `std::floor`.
+ * `std::floor`.
  *
  * Test source
  * ------------------------
@@ -232,14 +232,14 @@ TEST_CASE("Unit_Device_double2uint_Negative_RTC") { NegativeTestRTCWrapper<12>(k
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2LL_TEST_DEF(long long int, double2ll_rd, FE_DOWNWARD)
+CAST_DOUBLE2LL_TEST_DEF(long long int, double2ll_rd, std::floor)
 
 /**
  * Test Description
  * ------------------------
  *    - Tests that checks `__double2ll_rn` against a table of difficult values, followed by a large
  * number of randomly generated values. The results are compared against reference function
- * `std::rint` with FE_TONEAREST rounding mode.
+ * `std::rint`.
  *
  * Test source
  * ------------------------
@@ -248,14 +248,14 @@ CAST_DOUBLE2LL_TEST_DEF(long long int, double2ll_rd, FE_DOWNWARD)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2LL_TEST_DEF(long long int, double2ll_rn, FE_TONEAREST)
+CAST_DOUBLE2LL_TEST_DEF(long long int, double2ll_rn, std::rint)
 
 /**
  * Test Description
  * ------------------------
  *    - Tests that checks `__double2ll_ru` against a table of difficult values, followed by a large
  * number of randomly generated values. The results are compared against reference function
- * `std::rint` with FE_UPWARD rounding mode which is equivalent to std::ceil.
+ * `std::ceil`.
  *
  * Test source
  * ------------------------
@@ -264,7 +264,7 @@ CAST_DOUBLE2LL_TEST_DEF(long long int, double2ll_rn, FE_TONEAREST)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2LL_TEST_DEF(long long int, double2ll_ru, FE_UPWARD)
+CAST_DOUBLE2LL_TEST_DEF(long long int, double2ll_ru, std::ceil)
 
 /**
  * Test Description
@@ -301,7 +301,7 @@ TEST_CASE("Unit_Device_double2ll_Negative_RTC") { NegativeTestRTCWrapper<12>(kDo
  * ------------------------
  *    - Tests that checks `__double2ull_rd` against a table of difficult values, followed by a large
  * number of randomly generated values. The results are compared against reference function
- * `std::rint` with FE_DOWNWARD rounding mode which is equivalent to `std::floor`.
+ * `std::floor`.
  *
  * Test source
  * ------------------------
@@ -310,14 +310,14 @@ TEST_CASE("Unit_Device_double2ll_Negative_RTC") { NegativeTestRTCWrapper<12>(kDo
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2LL_TEST_DEF(unsigned long long int, double2ull_rd, FE_DOWNWARD)
+CAST_DOUBLE2LL_TEST_DEF(unsigned long long int, double2ull_rd, std::floor)
 
 /**
  * Test Description
  * ------------------------
  *    - Tests that checks `__double2ull_rn` against a table of difficult values, followed by a large
  * number of randomly generated values. The results are compared against reference function
- * `std::rint` with FE_TONEAREST rounding mode.
+ * `std::rint`.
  *
  * Test source
  * ------------------------
@@ -326,14 +326,14 @@ CAST_DOUBLE2LL_TEST_DEF(unsigned long long int, double2ull_rd, FE_DOWNWARD)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2LL_TEST_DEF(unsigned long long int, double2ull_rn, FE_TONEAREST)
+CAST_DOUBLE2LL_TEST_DEF(unsigned long long int, double2ull_rn, std::rint)
 
 /**
  * Test Description
  * ------------------------
  *    - Tests that checks `__double2ull_ru` against a table of difficult values, followed by a large
  * number of randomly generated values. The results are compared against reference function
- * `std::rint` with FE_UPWARD rounding mode which is equivalent to std::ceil.
+ * `std::ceil`.
  *
  * Test source
  * ------------------------
@@ -342,7 +342,7 @@ CAST_DOUBLE2LL_TEST_DEF(unsigned long long int, double2ull_rn, FE_TONEAREST)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2LL_TEST_DEF(unsigned long long int, double2ull_ru, FE_UPWARD)
+CAST_DOUBLE2LL_TEST_DEF(unsigned long long int, double2ull_ru, std::ceil)
 
 /**
  * Test Description

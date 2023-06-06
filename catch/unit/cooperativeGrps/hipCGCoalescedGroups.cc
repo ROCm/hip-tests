@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 - 2021 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2020 - 2023 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -18,18 +18,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-*/
-
-// Test Description:
-/* This test implements sum reduction kernel, first with each threads own rank
-   as input and comparing the sum with expected sum output derieved from n(n-1)/2
-   formula. The second part, partitions this parent group into child subgroups
-   a.k.a tiles using using tiled_partition() collective operation. This can be called
-   with a static tile size, passed in templated non-type variable-tiled_partition<tileSz>,
-   or in runtime as tiled_partition(thread_group parent, tileSz). This test covers both these
-   cases.
-   This test tests functionality of cg group partitioning, (static and dynamic) and its respective
-   API's size(), thread_rank(), and sync().
 */
 
 #include <hip_test_common.hh>
@@ -173,10 +161,10 @@ __global__ void kernel_cg_coalesced_group_partition(unsigned int tileSz, int* re
 
     if (tiledPartition.thread_rank() == 0) {
       printf(
-          "   Sum of all ranks 0..%d in this tiledPartition group is %d. Corresponding parent thread "
-          "rank: %d\n",
-          tiledPartition.size() - 1, outputSum, input);
-
+          "   Sum of all ranks 0..%d in this tiledPartition group is %d. Corresponding parent thread rank"
+          " obtained from meta_group_rank : %d and number of tiles created : %d\n",
+          tiledPartition.size() - 1, outputSum, tiledPartition.meta_group_rank(),
+          tiledPartition.meta_group_size());
         result[input / (tileSz)] = outputSum;
     }
     return;
@@ -226,7 +214,7 @@ void printResultsSimpleCoalescedGroups(int* ptr, int size) {
 void compareResultsSimpleCoalescedGroups(int* cpu, int* gpu, int size) {
   for (unsigned int i = 0; i < size / sizeof(int); i++) {
     if (cpu[i] != gpu[i]) {
-      INFO(" results do not match.");
+      REQUIRE(" results do not match.");
     }
   }
 }
@@ -238,7 +226,7 @@ static void test_active_threads_grouping() {
 
   // Launch Kernel
     hipLaunchKernelGGL(kernel_coalesced_active_groups, blockSize, threadsPerBlock, 0, 0);
-    HIP_CHECK(hipGetLastError()); 
+    HIP_CHECK(hipGetLastError());
 
     err = hipDeviceSynchronize();
     if (err != hipSuccess) {
@@ -257,7 +245,7 @@ void verifyResultsSimpleCoalescedGroups(int* hPtr, int* dPtr, int size) {
       }
     }
     if (j == size) {
-      INFO(" Result verification failed!");
+      REQUIRE(" Result verification failed!");
     }
   }
 }
@@ -303,7 +291,7 @@ static void test_group_partition(unsigned int tileSz, bool useGlobalMem) {
     if (useGlobalMem) {
       hipLaunchKernelGGL(kernel_cg_coalesced_group_partition, blockSize, threadsPerBlock, 0, 0, tileSz,
                          dResult, useGlobalMem, globalMem, i);
-      HIP_CHECK(hipGetLastError()); 
+      HIP_CHECK(hipGetLastError());
 
       err = hipDeviceSynchronize();
       if (err != hipSuccess) {
@@ -312,7 +300,7 @@ static void test_group_partition(unsigned int tileSz, bool useGlobalMem) {
     } else {
       hipLaunchKernelGGL(kernel_cg_coalesced_group_partition, blockSize, threadsPerBlock,
                          threadsPerBlock * sizeof(int), 0, tileSz, dResult, useGlobalMem, globalMem, i);
-      HIP_CHECK(hipGetLastError()); 
+      HIP_CHECK(hipGetLastError());
 
       err = hipDeviceSynchronize();
       if (err != hipSuccess) {
@@ -387,7 +375,7 @@ static void test_shfl_any_to_any() {
     // Launch Kernel
     hipLaunchKernelGGL(kernel_shfl_any_to_any, blockSize, threadsPerBlock,
                        threadsPerBlock * sizeof(int), 0 , dPtr, dsrcArr, dResults, i);
-    HIP_CHECK(hipGetLastError()); 
+    HIP_CHECK(hipGetLastError());
     HIPCHECK(hipMemcpy(hPtr, dResults, group_size_in_bytes, hipMemcpyDeviceToHost));
     err = hipDeviceSynchronize();
     if (err != hipSuccess) {
@@ -457,7 +445,7 @@ static void test_shfl_broadcast() {
     // Launch Kernel
     hipLaunchKernelGGL(kernel_shfl, blockSize, threadsPerBlock,
                        threadsPerBlock * sizeof(int), 0, dPtr, dResults, srcLane, i);
-    HIP_CHECK(hipGetLastError()); 
+    HIP_CHECK(hipGetLastError());
     HIPCHECK(hipMemcpy(hPtr, dResults, group_size_in_bytes, hipMemcpyDeviceToHost));
     err = hipDeviceSynchronize();
     if (err != hipSuccess) {

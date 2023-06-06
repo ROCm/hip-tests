@@ -36,20 +36,17 @@ namespace cg = cooperative_groups;
     }                                                                                              \
   }
 
-#define CAST_RND_RINT_REF_DEF(func_name, T1, T2, round_dir)                                        \
+#define CAST_F2I_REF_DEF(func_name, T1, T2, ref_func)                                              \
   T1 func_name##_ref(T2 arg) {                                                                     \
-    int curr_direction = fegetround();                                                             \
     if (arg >= static_cast<T2>(std::numeric_limits<T1>::max()))                                    \
       return std::numeric_limits<T1>::max();                                                       \
     else if (arg <= static_cast<T2>(std::numeric_limits<T1>::min()))                               \
       return std::numeric_limits<T1>::min();                                                       \
-    fesetround(round_dir);                                                                         \
-    T2 result = std::rint(arg);                                                                    \
-    fesetround(curr_direction);                                                                    \
+    T2 result = ref_func(arg);                                                                     \
     return result;                                                                                 \
   }
 
-#define CAST_RND_RZ_REF_DEF(func_name, T1, T2)                                                     \
+#define CAST_F2I_RZ_REF_DEF(func_name, T1, T2)                                                     \
   T1 func_name##_ref(T2 arg) {                                                                     \
     if (arg >= static_cast<T2>(std::numeric_limits<T1>::max()))                                    \
       return std::numeric_limits<T1>::max();                                                       \

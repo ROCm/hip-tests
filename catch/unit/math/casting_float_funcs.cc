@@ -22,9 +22,9 @@ THE SOFTWARE.
 #include "casting_common.hh"
 #include "casting_float_negative_kernels_rtc.hh"
 
-#define CAST_FLOAT2INT_TEST_DEF(T, kern_name, round_dir)                                           \
+#define CAST_FLOAT2INT_TEST_DEF(T, kern_name, ref_func)                                            \
   CAST_KERNEL_DEF(kern_name, T, float)                                                             \
-  CAST_RND_RINT_REF_DEF(kern_name, T, float, round_dir)                                            \
+  CAST_F2I_REF_DEF(kern_name, T, float, ref_func)                                                  \
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Positive") {                                               \
     T (*ref)(float) = kern_name##_ref;                                                             \
@@ -35,7 +35,7 @@ THE SOFTWARE.
 
 #define CAST_FLOAT2INT_RZ_TEST_DEF(T, kern_name)                                                   \
   CAST_KERNEL_DEF(kern_name, T, float)                                                             \
-  CAST_RND_RZ_REF_DEF(kern_name, T, float)                                                         \
+  CAST_F2I_RZ_REF_DEF(kern_name, T, float)                                                         \
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Positive") {                                               \
     T (*ref)(float) = kern_name##_ref;                                                             \
@@ -48,8 +48,7 @@ THE SOFTWARE.
  * Test Description
  * ------------------------
  *    - Tests that checks `__float2int_rd` for all possible inputs. The results are compared against
- * reference function `std::rint` with FE_DOWNWARD rounding mode which is equivalent to
- * `std::floor`.
+ * reference function `std::floor`.
  *
  * Test source
  * ------------------------
@@ -58,13 +57,13 @@ THE SOFTWARE.
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2INT_TEST_DEF(int, float2int_rd, FE_DOWNWARD)
+CAST_FLOAT2INT_TEST_DEF(int, float2int_rd, std::floor)
 
 /**
  * Test Description
  * ------------------------
  *    - Tests that checks `__float2int_rn` for all possible inputs. The results are compared against
- * reference function `std::rint` with FE_TONEAREST rounding mode.
+ * reference function `std::rint`.
  *
  * Test source
  * ------------------------
@@ -73,13 +72,13 @@ CAST_FLOAT2INT_TEST_DEF(int, float2int_rd, FE_DOWNWARD)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2INT_TEST_DEF(int, float2int_rn, FE_TONEAREST)
+CAST_FLOAT2INT_TEST_DEF(int, float2int_rn, std::rint)
 
 /**
  * Test Description
  * ------------------------
  *    - Tests that checks `__float2int_ru` for all possible inputs. The results are compared against
- * reference function `std::rint` with FE_UPWARD rounding mode which is equivalent to `std::ceil`.
+ * reference function `std::ceil`.
  *
  * Test source
  * ------------------------
@@ -88,14 +87,13 @@ CAST_FLOAT2INT_TEST_DEF(int, float2int_rn, FE_TONEAREST)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2INT_TEST_DEF(int, float2int_ru, FE_UPWARD)
+CAST_FLOAT2INT_TEST_DEF(int, float2int_ru, std::ceil)
 
 /**
  * Test Description
  * ------------------------
  *    - Tests that checks `__float2int_rz` for all possible inputs. The results are compared against
- * reference function `std::rint` with FE_TOWARDZERO rounding mode which is equivalent to
- * `std::trunc`.
+ * reference function `std::trunc`.
  *
  * Test source
  * ------------------------
@@ -104,7 +102,7 @@ CAST_FLOAT2INT_TEST_DEF(int, float2int_ru, FE_UPWARD)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2INT_TEST_DEF(int, float2int_rz, FE_TOWARDZERO)
+CAST_FLOAT2INT_TEST_DEF(int, float2int_rz, std::trunc)
 
 /**
  * Test Description
@@ -124,8 +122,7 @@ TEST_CASE("Unit_Device_float2int_Negative_RTC") { NegativeTestRTCWrapper<12>(kFl
  * Test Description
  * ------------------------
  *    - Tests that checks `__float2uint_rd` for all possible inputs. The results are compared
- * against reference function `std::rint` with FE_DOWNWARD rounding mode which is equivalent to
- * `std::floor`.
+ * against reference function `std::floor`.
  *
  * Test source
  * ------------------------
@@ -134,13 +131,13 @@ TEST_CASE("Unit_Device_float2int_Negative_RTC") { NegativeTestRTCWrapper<12>(kFl
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2INT_TEST_DEF(unsigned int, float2uint_rd, FE_DOWNWARD)
+CAST_FLOAT2INT_TEST_DEF(unsigned int, float2uint_rd, std::floor)
 
 /**
  * Test Description
  * ------------------------
  *    - Tests that checks `__float2uint_rn` for all possible inputs. The results are compared
- * against reference function `std::rint` with FE_TONEAREST rounding mode.
+ * against reference function `std::rint`.
  *
  * Test source
  * ------------------------
@@ -149,14 +146,13 @@ CAST_FLOAT2INT_TEST_DEF(unsigned int, float2uint_rd, FE_DOWNWARD)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2INT_TEST_DEF(unsigned int, float2uint_rn, FE_TONEAREST)
+CAST_FLOAT2INT_TEST_DEF(unsigned int, float2uint_rn, std::rint)
 
 /**
  * Test Description
  * ------------------------
  *    - Tests that checks `__float2uint_ru` for all possible inputs. The results are compared
- * against reference function `std::rint` with FE_UPWARD rounding mode which is equivalent to
- * `std::ceil`.
+ * against reference function `std::ceil`.
  *
  * Test source
  * ------------------------
@@ -165,7 +161,7 @@ CAST_FLOAT2INT_TEST_DEF(unsigned int, float2uint_rn, FE_TONEAREST)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2INT_TEST_DEF(unsigned int, float2uint_ru, FE_UPWARD)
+CAST_FLOAT2INT_TEST_DEF(unsigned int, float2uint_ru, std::ceil)
 
 /**
  * Test Description
@@ -197,9 +193,9 @@ CAST_FLOAT2INT_RZ_TEST_DEF(unsigned int, float2uint_rz)
  */
 TEST_CASE("Unit_Device_float2uint_Negative_RTC") { NegativeTestRTCWrapper<12>(kFloat2Uint); }
 
-#define CAST_FLOAT2LL_TEST_DEF(T, kern_name, round_dir)                                            \
+#define CAST_FLOAT2LL_TEST_DEF(T, kern_name, ref_func)                                             \
   CAST_KERNEL_DEF(kern_name, T, float)                                                             \
-  CAST_RND_RINT_REF_DEF(kern_name, T, float, round_dir)                                            \
+  CAST_F2I_REF_DEF(kern_name, T, float, ref_func)                                                  \
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Positive") {                                               \
     T (*ref)(float) = kern_name##_ref;                                                             \
@@ -210,7 +206,7 @@ TEST_CASE("Unit_Device_float2uint_Negative_RTC") { NegativeTestRTCWrapper<12>(kF
 
 #define CAST_FLOAT2LL_RZ_TEST_DEF(T, kern_name)                                                    \
   CAST_KERNEL_DEF(kern_name, T, float)                                                             \
-  CAST_RND_RZ_REF_DEF(kern_name, T, float)                                                         \
+  CAST_F2I_RZ_REF_DEF(kern_name, T, float)                                                         \
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Positive") {                                               \
     T (*ref)(float) = kern_name##_ref;                                                             \
@@ -223,8 +219,7 @@ TEST_CASE("Unit_Device_float2uint_Negative_RTC") { NegativeTestRTCWrapper<12>(kF
  * Test Description
  * ------------------------
  *    - Tests that checks `__float2ll_rd` for all possible inputs. The results are compared against
- * reference function `std::rint` with FE_DOWNWARD rounding mode which is equivalent to
- * `std::floor`.
+ * reference function `std::floor`.
  *
  * Test source
  * ------------------------
@@ -233,14 +228,13 @@ TEST_CASE("Unit_Device_float2uint_Negative_RTC") { NegativeTestRTCWrapper<12>(kF
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2LL_TEST_DEF(long long int, float2ll_rd, FE_DOWNWARD)
+CAST_FLOAT2LL_TEST_DEF(long long int, float2ll_rd, std::floor)
 
 /**
  * Test Description
  * ------------------------
  *    - Tests that checks `__float2ll_rn` for all possible inputs between lowest and maximal long
- * long int value. The results are compared against reference function `std::rint` with FE_TONEAREST
- * rounding mode.
+ * long int value. The results are compared against reference function `std::rint`.
  *
  * Test source
  * ------------------------
@@ -249,14 +243,13 @@ CAST_FLOAT2LL_TEST_DEF(long long int, float2ll_rd, FE_DOWNWARD)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2LL_TEST_DEF(long long int, float2ll_rn, FE_TONEAREST)
+CAST_FLOAT2LL_TEST_DEF(long long int, float2ll_rn, std::rint)
 
 /**
  * Test Description
  * ------------------------
  *    - Tests that checks `__float2ll_ru` for all possible inputs between lowest and maximal long
- * long int value. The results are compared against reference function `std::rint` with FE_UPWARD
- * rounding mode which is equivalent to `std::ceil`.
+ * long int value. The results are compared against reference function `std::ceil`.
  *
  * Test source
  * ------------------------
@@ -265,7 +258,7 @@ CAST_FLOAT2LL_TEST_DEF(long long int, float2ll_rn, FE_TONEAREST)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2LL_TEST_DEF(long long int, float2ll_ru, FE_UPWARD)
+CAST_FLOAT2LL_TEST_DEF(long long int, float2ll_ru, std::ceil)
 
 /**
  * Test Description
@@ -301,8 +294,7 @@ TEST_CASE("Unit_Device_float2ll_Negative_RTC") { NegativeTestRTCWrapper<12>(kFlo
  * Test Description
  * ------------------------
  *    - Tests that checks `__float2ull_rd` for all possible inputs between lowest and maximal
- * unsigned long long int value. The results are compared against reference function `std::rint`
- * with FE_DOWNWARD rounding mode which is equivalent to `std::floor`.
+ * unsigned long long int value. The results are compared against reference function `std::floor`.
  *
  * Test source
  * ------------------------
@@ -311,14 +303,13 @@ TEST_CASE("Unit_Device_float2ll_Negative_RTC") { NegativeTestRTCWrapper<12>(kFlo
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2LL_TEST_DEF(unsigned long long int, float2ull_rd, FE_DOWNWARD)
+CAST_FLOAT2LL_TEST_DEF(unsigned long long int, float2ull_rd, std::floor)
 
 /**
  * Test Description
  * ------------------------
  *    - Tests that checks `__float2ull_rn` for all possible inputs between lowest and maximal
- * unsigned long long int value. The results are compared against reference function `std::rint`
- * with FE_TONEAREST rounding mode.
+ * unsigned long long int value. The results are compared against reference function `std::rint`.
  *
  * Test source
  * ------------------------
@@ -327,14 +318,13 @@ CAST_FLOAT2LL_TEST_DEF(unsigned long long int, float2ull_rd, FE_DOWNWARD)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2LL_TEST_DEF(unsigned long long int, float2ull_rn, FE_TONEAREST)
+CAST_FLOAT2LL_TEST_DEF(unsigned long long int, float2ull_rn, std::rint)
 
 /**
  * Test Description
  * ------------------------
  *    - Tests that checks `__float2ull_ru` for all possible inputs between lowest and maximal
- * unsigned long long int value. The results are compared against reference function `std::rint`
- * with FE_UPWARD rounding mode which is equivalent to `std::ceil`.
+ * unsigned long long int value. The results are compared against reference function `std::ceil`.
  *
  * Test source
  * ------------------------
@@ -343,7 +333,7 @@ CAST_FLOAT2LL_TEST_DEF(unsigned long long int, float2ull_rn, FE_TONEAREST)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2LL_TEST_DEF(unsigned long long int, float2ull_ru, FE_UPWARD)
+CAST_FLOAT2LL_TEST_DEF(unsigned long long int, float2ull_ru, std::ceil)
 
 /**
  * Test Description

@@ -26,6 +26,8 @@ THE SOFTWARE.
 
 namespace cg = cooperative_groups;
 
+static __device__ int gm[2];
+
 static __global__ void kernel_cg_grid_group_type(int* size_dev, int* thd_rank_dev,
                                                  int* is_valid_dev, int* sync_dev) {
   cg::grid_group gg = cg::this_grid();
@@ -41,7 +43,6 @@ static __global__ void kernel_cg_grid_group_type(int* size_dev, int* thd_rank_de
   is_valid_dev[gIdx] = gg.is_valid();
 
   // Test sync
-  __shared__ int gm[2];
   if (blockIdx.x == 0 && threadIdx.x == 0)
     gm[0] = 10;
   else if (blockIdx.x == 1 && threadIdx.x == 0)
@@ -70,7 +71,6 @@ static __global__ void kernel_cg_grid_group_type_via_base_type(int* size_dev, in
 #endif
 
   // Test sync
-  __shared__ int gm[2];
   if (blockIdx.x == 0 && threadIdx.x == 0)
     gm[0] = 10;
   else if (blockIdx.x == 1 && threadIdx.x == 0)
@@ -94,7 +94,6 @@ static __global__ void kernel_cg_grid_group_type_via_public_api(int* size_dev, i
   is_valid_dev[gIdx] = gg.is_valid();
 
   // Test sync
-  __shared__ int gm[2];
   if (blockIdx.x == 0 && threadIdx.x == 0)
     gm[0] = 10;
   else if (blockIdx.x == 1 && threadIdx.x == 0)
@@ -318,11 +317,12 @@ TEST_CASE("Unit_hipCGGridGroupType_Basic") {
   SECTION("Default grid group API test") {
     kernel_func = reinterpret_cast<void* (*)()>(kernel_cg_grid_group_type);
   }
-#if 0
+#if HT_AMD
   SECTION("Base type grid group API test") {
     kernel_func = reinterpret_cast<void*(*)()>(kernel_cg_grid_group_type_via_base_type);
   }
 #endif
+
   SECTION("Public API grid group test") {
     kernel_func = reinterpret_cast<void* (*)()>(kernel_cg_grid_group_type_via_public_api);
   }

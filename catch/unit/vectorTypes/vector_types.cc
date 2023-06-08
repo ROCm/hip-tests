@@ -41,12 +41,12 @@ TEST_CASE("Unit_make_int_Basic") {
   HIP_CHECK(hipDeviceSynchronize());
 }
 
-TEMPLATE_TEST_CASE("Unit_make_vector_SanityCheck_Basic", "", char1, uchar1, char2, uchar2, char3,
-                   uchar3, char4, uchar4, short1, ushort1, short2, ushort2, short3, ushort3, short4,
-                   ushort4, int1, uint1, int2, uint2, int3, uint3, int4, uint4, long1, ulong1,
-                   long2, ulong2, long3, ulong3, long4, ulong4, longlong1, ulonglong1, longlong2,
-                   ulonglong2, longlong3, ulonglong3, longlong4, ulonglong4, float1, float2, float3,
-                   float4, double1, double2, double3, double4) {
+TEMPLATE_TEST_CASE("Unit_make_vector_SanityCheck_Basic_Host", "", char1, uchar1, char2, uchar2,
+                   char3, uchar3, char4, uchar4, short1, ushort1, short2, ushort2, short3, ushort3,
+                   short4, ushort4, int1, uint1, int2, uint2, int3, uint3, int4, uint4, long1,
+                   ulong1, long2, ulong2, long3, ulong3, long4, ulong4, longlong1, ulonglong1,
+                   longlong2, ulonglong2, longlong3, ulonglong3, longlong4, ulonglong4, float1,
+                   float2, float3, float4, double1, double2, double3, double4) {
   auto value = static_cast<typename TestType::value_type>(42);
   TestType vector = MakeVectorTypeHost<TestType>(value);
   std::cout << "alignment: " << std::alignment_of_v<TestType> << ", size: " << sizeof(TestType);
@@ -65,6 +65,13 @@ TEMPLATE_TEST_CASE("Unit_make_vector_SanityCheck_Basic", "", char1, uchar1, char
     case 4:
       std::cout << ", dimension 4" << std::endl;
   }
+
+  SanityCheck(vector, value);
+}
+
+TEMPLATE_TEST_CASE("Unit_make_vector_SanityCheck_Basic_Device", "", char1) {
+  auto value = static_cast<typename TestType::value_type>(42);
+  TestType vector = MakeVectorTypeDevice<TestType>(value);
 
   SanityCheck(vector, value);
 }

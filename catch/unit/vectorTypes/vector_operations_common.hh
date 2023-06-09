@@ -133,9 +133,9 @@ void SanityCheck(VectorOperation operation, T vector, typename T::value_type val
   } else if (operation == VectorOperation::kDivideAssign) {
     value1 /= value2;
   } else if (operation == VectorOperation::kNegate) {
-    value1 = -(value1);
+    value1 = -value1;
   } else if (operation == VectorOperation::kBitwiseNot) {
-    value1 = ~(value1);
+    value1 = ~value1;
   } else if (operation == VectorOperation::kModuloAssign) {
     value1 %= value2;
   } else if (operation == VectorOperation::kBitwiseXorAssign) {

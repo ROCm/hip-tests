@@ -17,29 +17,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "vector_types_common.hh"
-
-__global__ void MakeKernel() {
-  uint2 b_2 = make_uint2(42, 43);
-  printf("Kernel log: %u, %u\n", b_2.x, b_2.y);
-
-  float4 f_4 = make_float4(2.5f, 1.5f, 3.5f, 4.5f);
-  printf("Kernel log: %.2f, %.2f, %.2f, %.2f\n", f_4.x, f_4.y, f_4.z, f_4.w);
-}
-
-TEST_CASE("Unit_make_int_Basic") {
-  int1 a_1 = make_int1(42);
-  std::cout << "value: [" << a_1.x << "]"
-            << ", alignment: " << std::alignment_of_v<decltype(a_1)> << std::endl;
-
-  int2 a_2 = make_int2(42, 43);
-  std::cout << "value: [" << a_2.x << ", " << a_2.y << "]"
-            << ", alignment: " << std::alignment_of_v<decltype(a_2)> << std::endl;
-  std::cout << "------------------------------------------------------" << std::endl;
-
-  MakeKernel<<<1, 1, 0, 0>>>();
-  HIP_CHECK(hipDeviceSynchronize());
-}
+#include "vector_operations_common.hh"
 
 TEMPLATE_TEST_CASE("Unit_make_vector_SanityCheck_Basic_Host", "", char1, uchar1, char2, uchar2,
                    char3, uchar3, char4, uchar4, short1, ushort1, short2, ushort2, short3, ushort3,
@@ -47,25 +25,8 @@ TEMPLATE_TEST_CASE("Unit_make_vector_SanityCheck_Basic_Host", "", char1, uchar1,
                    ulong1, long2, ulong2, long3, ulong3, long4, ulong4, longlong1, ulonglong1,
                    longlong2, ulonglong2, longlong3, ulonglong3, longlong4, ulonglong4, float1,
                    float2, float3, float4, double1, double2, double3, double4) {
-  auto value = static_cast<typename TestType::value_type>(42);
+  auto value = GetTestValue<typename TestType::value_type>(0);
   TestType vector = MakeVectorTypeHost<TestType>(value);
-  std::cout << "alignment: " << std::alignment_of_v<TestType> << ", size: " << sizeof(TestType);
-
-  size_t dimension = sizeof(TestType) / sizeof(typename TestType::value_type);
-  switch (dimension) {
-    case 1:
-      std::cout << ", dimension 1" << std::endl;
-      break;
-    case 2:
-      std::cout << ", dimension 2" << std::endl;
-      break;
-    case 3:
-      std::cout << ", dimension 3" << std::endl;
-      break;
-    case 4:
-      std::cout << ", dimension 4" << std::endl;
-  }
-
   SanityCheck(vector, value);
 }
 
@@ -75,8 +36,73 @@ TEMPLATE_TEST_CASE("Unit_make_vector_SanityCheck_Basic_Device", "", char1, uchar
                    ulong1, long2, ulong2, long3, ulong3, long4, ulong4, longlong1, ulonglong1,
                    longlong2, ulonglong2, longlong3, ulonglong3, longlong4, ulonglong4, float1,
                    float2, float3, float4, double1, double2, double3, double4) {
-  auto value = static_cast<typename TestType::value_type>(42);
+  auto value = GetTestValue<typename TestType::value_type>(0);
   TestType vector = MakeVectorTypeDevice<TestType>(value);
-
   SanityCheck(vector, value);
+}
+
+TEMPLATE_TEST_CASE("Unit_vector_and_vector_operations_SanityCheck_Basic_Host", "", char1, uchar1,
+                   char2, uchar2, char3, uchar3, char4, uchar4, short1, ushort1, short2, ushort2,
+                   short3, ushort3, short4, ushort4, int1, uint1, int2, uint2, int3, uint3, int4,
+                   uint4, long1, ulong1, long2, ulong2, long3, ulong3, long4, ulong4, longlong1,
+                   ulonglong1, longlong2, ulonglong2, longlong3, ulonglong3, longlong4, ulonglong4,
+                   float1, float2, float3, float4, double1, double2, double3, double4) {
+  auto value1 = GetTestValue<typename TestType::value_type>(0);
+  auto value2 = GetTestValue<typename TestType::value_type>(1);
+
+  using VO = VectorOperation;
+  for (const auto operation : {VO::kIncrementPrefix,
+                               VO::kIncrementPostfix,
+                               VO::kDecrementPrefix,
+                               VO::kDecrementPostfix,
+                               VO::kAddAssign,
+                               VO::kSubtractAssign,
+                               VO::kMultiplyAssign,
+                               VO::kDivideAssign,
+                               VO::kNegate,
+                               VO::kBitwiseNot,
+                               VO::kModuloAssign,
+                               VO::kBitwiseXorAssign,
+                               VO::kBitwiseOrAssign,
+                               VO::kBitwiseAndAssign,
+                               VO::kRightShiftAssign,
+                               VO::kLeftShiftAssign,
+                               VO::kAdd,
+                               VO::kSubtract,
+                               VO::kMultiply,
+                               VO::kDivide,
+                               VO::kEqual,
+                               VO::kNotEqual,
+                               VO::kModulo,
+                               VO::kBitwiseXor,
+                               VO::kBitwiseOr,
+                               VO::kBitwiseAnd,
+                               VO::kRightShift,
+                               VO::kLeftShift}) {
+    DYNAMIC_SECTION("operation: " << to_string(operation)) {
+      TestType vector = PerformVectorsOperationHost<TestType>(operation, value1, value2);
+      SanityCheck(operation, vector, value1, value2);
+    }
+  }
+}
+
+TEMPLATE_TEST_CASE("Unit_vector_and_value_type_operations_SanityCheck_Basic_Host", "", char1,
+                   uchar1, char2, uchar2, char3, uchar3, char4, uchar4, short1, ushort1, short2,
+                   ushort2, short3, ushort3, short4, ushort4, int1, uint1, int2, uint2, int3, uint3,
+                   int4, uint4, long1, ulong1, long2, ulong2, long3, ulong3, long4, ulong4,
+                   longlong1, ulonglong1, longlong2, ulonglong2, longlong3, ulonglong3, longlong4,
+                   ulonglong4, float1, float2, float3, float4, double1, double2, double3, double4) {
+  auto value1 = GetTestValue<typename TestType::value_type>(0);
+  auto value2 = GetTestValue<typename TestType::value_type>(1);
+
+  using VO = VectorOperation;
+  for (const auto operation :
+       {VO::kAddAssign, VO::kSubtractAssign, VO::kMultiplyAssign, VO::kDivideAssign, VO::kAdd,
+        VO::kSubtract, VO::kMultiply, VO::kDivide, VO::kEqual, VO::kNotEqual, VO::kModulo,
+        VO::kBitwiseXor, VO::kBitwiseOr, VO::kBitwiseAnd, VO::kRightShift, VO::kLeftShift}) {
+    DYNAMIC_SECTION("operation: " << to_string(operation)) {
+      TestType vector = PerformVectorAndValueOperationHost<TestType>(operation, value1, value2);
+      SanityCheck(operation, vector, value1, value2);
+    }
+  }
 }

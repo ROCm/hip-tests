@@ -19,17 +19,30 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 
+constexpr auto kIntegerTestValueFirst = 42;
+constexpr auto kIntegerTestValueSecond = 4;
+constexpr auto kFloatingPointTestValueFirst = 42.125;
+constexpr auto kFloatingPointTestValueSecond = 4.875;
+
+template <typename T> T GetTestValue(int index) {
+  if (index == 0) {
+    return std::is_floating_point_v<T> ? static_cast<T>(kIntegerTestValueFirst)
+                                       : static_cast<T>(kFloatingPointTestValueFirst);
+  } else {
+    return std::is_floating_point_v<T> ? static_cast<T>(kIntegerTestValueSecond)
+                                       : static_cast<T>(kFloatingPointTestValueSecond);
+  }
+}
+
 template <typename T>
 typename std::enable_if<sizeof(T) / sizeof(typename T::value_type) == 1>::type SanityCheck(
     T vector, typename T::value_type expected_value) {
-  std::cout << "SanityCheck: 1D" << std::endl;
   REQUIRE(vector.x == expected_value);
 }
 
 template <typename T>
 typename std::enable_if<sizeof(T) / sizeof(typename T::value_type) == 2>::type SanityCheck(
     T vector, typename T::value_type expected_value) {
-  std::cout << "SanityCheck: 2D" << std::endl;
   REQUIRE(vector.x == expected_value);
   REQUIRE(vector.y == expected_value);
 }
@@ -37,7 +50,6 @@ typename std::enable_if<sizeof(T) / sizeof(typename T::value_type) == 2>::type S
 template <typename T>
 typename std::enable_if<sizeof(T) / sizeof(typename T::value_type) == 3>::type SanityCheck(
     T vector, typename T::value_type expected_value) {
-  std::cout << "SanityCheck: 3D" << std::endl;
   REQUIRE(vector.x == expected_value);
   REQUIRE(vector.y == expected_value);
   REQUIRE(vector.z == expected_value);
@@ -46,7 +58,6 @@ typename std::enable_if<sizeof(T) / sizeof(typename T::value_type) == 3>::type S
 template <typename T>
 typename std::enable_if<sizeof(T) / sizeof(typename T::value_type) == 4>::type SanityCheck(
     T vector, typename T::value_type expected_value) {
-  std::cout << "SanityCheck : 4D " << std::endl;
   REQUIRE(vector.x == expected_value);
   REQUIRE(vector.y == expected_value);
   REQUIRE(vector.z == expected_value);

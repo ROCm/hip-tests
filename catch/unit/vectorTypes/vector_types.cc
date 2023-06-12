@@ -79,7 +79,7 @@ TEMPLATE_TEST_CASE("Unit_VectorAndVectorOperations_SanityCheck_Basic_Host", "", 
                                VectorOperation::kRightShift,
                                VectorOperation::kLeftShift}) {
     DYNAMIC_SECTION("operation: " << to_string(operation)) {
-      TestType vector = PerformVectorsOperationHost<TestType>(operation, value1, value2);
+      TestType vector = PerformVectorAndVectorOperationHost<TestType>(operation, value1, value2);
       SanityCheck(operation, vector, value1, value2);
     }
   }

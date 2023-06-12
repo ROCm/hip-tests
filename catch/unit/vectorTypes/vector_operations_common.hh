@@ -294,8 +294,8 @@ __device__ __host__ void PerformVectorOperation(VectorOperation operation, T* ve
 }
 
 template <typename T>
-T PerformVectorsOperationHost(VectorOperation operation, typename T::value_type value1,
-                              typename T::value_type value2) {
+T PerformVectorAndVectorOperationHost(VectorOperation operation, typename T::value_type value1,
+                                      typename T::value_type value2) {
   T vector1{};
   T vector2{};
   MakeVectorType(&vector1, value1);

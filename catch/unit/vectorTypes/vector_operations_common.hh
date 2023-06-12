@@ -312,12 +312,13 @@ T PerformVectorOperationHost(VectorOperation operation, typename T::value_type v
 
 template <typename T, bool two_vectors>
 __global__ void VectorOperationKernel(VectorOperation operation, T* vector1,
-                                      typename T::value_type value1, T* vector2,
+                                      typename T::value_type value1,
                                       typename T::value_type value2) {
   MakeVectorType(vector1, value1);
   if constexpr (two_vectors) {
-    MakeVectorType(vector2, value2);
-    PerformVectorOperation(operation, vector1, vector2);
+    T vector2{};
+    MakeVectorType(&vector2, value2);
+    PerformVectorOperation(operation, vector1, &vector2);
   } else {
     PerformVectorOperation(operation, vector1, value2);
   }
@@ -327,16 +328,11 @@ template <typename T, bool two_vectors = true>
 T PerformVectorOperationDevice(VectorOperation operation, typename T::value_type value1,
                                typename T::value_type value2) {
   T vector_h{};
-  T* vector1_d;
-  T* vector2_d;
-  HIP_CHECK(hipMalloc(&vector1_d, sizeof(T)));
-  HIP_CHECK(hipMalloc(&vector2_d, sizeof(T)));
-  HIP_CHECK(hipMemcpy(vector1_d, &vector_h, sizeof(T), hipMemcpyHostToDevice));
-  HIP_CHECK(hipMemcpy(vector2_d, &vector_h, sizeof(T), hipMemcpyHostToDevice));
-  VectorOperationKernel<T, two_vectors>
-      <<<1, 1, 0, 0>>>(operation, vector1_d, value1, vector2_d, value2);
-  HIP_CHECK(hipMemcpy(&vector_h, vector1_d, sizeof(T), hipMemcpyDeviceToHost));
-  HIP_CHECK(hipFree(vector1_d));
-  HIP_CHECK(hipFree(vector2_d));
+  T* vector_d;
+  HIP_CHECK(hipMalloc(&vector_d, sizeof(T)));
+  HIP_CHECK(hipMemcpy(vector_d, &vector_h, sizeof(T), hipMemcpyHostToDevice));
+  VectorOperationKernel<T, two_vectors><<<1, 1, 0, 0>>>(operation, vector_d, value1, value2);
+  HIP_CHECK(hipMemcpy(&vector_h, vector_d, sizeof(T), hipMemcpyDeviceToHost));
+  HIP_CHECK(hipFree(vector_d));
   return vector_h;
 }

@@ -108,13 +108,12 @@ TEMPLATE_TEST_CASE("Unit_VectorAndValueTypeOperations_SanityCheck_Basic_Host", "
   }
 }
 
-// Problems with char1, uchar1
-TEMPLATE_TEST_CASE("Unit_VectorAndVectorOperations_SanityCheck_Basic_Device", "", char2, uchar2,
-                   char3, uchar3, char4, uchar4, short1, ushort1, short2, ushort2, short3, ushort3,
-                   short4, ushort4, int1, uint1, int2, uint2, int3, uint3, int4, uint4, long1,
-                   ulong1, long2, ulong2, long3, ulong3, long4, ulong4, longlong1, ulonglong1,
-                   longlong2, ulonglong2, longlong3, ulonglong3, longlong4, ulonglong4, float1,
-                   float2, float3, float4, double1, double2, double3, double4) {
+TEMPLATE_TEST_CASE("Unit_VectorAndVectorOperations_SanityCheck_Basic_Device", "", char1, uchar1,
+                   char2, uchar2, char3, uchar3, char4, uchar4, short1, ushort1, short2, ushort2,
+                   short3, ushort3, short4, ushort4, int1, uint1, int2, uint2, int3, uint3, int4,
+                   uint4, long1, ulong1, long2, ulong2, long3, ulong3, long4, ulong4, longlong1,
+                   ulonglong1, longlong2, ulonglong2, longlong3, ulonglong3, longlong4, ulonglong4,
+                   float1, float2, float3, float4, double1, double2, double3, double4) {
   auto value1 = GetTestValue<typename TestType::value_type>(0);
   auto value2 = GetTestValue<typename TestType::value_type>(1);
 

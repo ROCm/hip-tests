@@ -182,5 +182,6 @@ template <typename T> T MakeVectorTypeDevice(typename T::value_type value) {
   HIP_CHECK(hipMemcpy(vector_d, &vector_h, sizeof(T), hipMemcpyHostToDevice));
   VectorTypeKernel<<<1, 1, 0, 0>>>(vector_d, value);
   HIP_CHECK(hipMemcpy(&vector_h, vector_d, sizeof(T), hipMemcpyDeviceToHost));
+  HIP_CHECK(hipFree(vector_d));
   return vector_h;
 }

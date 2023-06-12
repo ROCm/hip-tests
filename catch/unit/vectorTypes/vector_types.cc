@@ -79,7 +79,7 @@ TEMPLATE_TEST_CASE("Unit_VectorAndVectorOperations_SanityCheck_Basic_Host", "", 
                                VectorOperation::kRightShift,
                                VectorOperation::kLeftShift}) {
     DYNAMIC_SECTION("operation: " << to_string(operation)) {
-      TestType vector = PerformVectorAndVectorOperationHost<TestType>(operation, value1, value2);
+      TestType vector = PerformVectorOperationHost<TestType>(operation, value1, value2);
       SanityCheck(operation, vector, value1, value2);
     }
   }
@@ -102,7 +102,7 @@ TEMPLATE_TEST_CASE("Unit_VectorAndValueTypeOperations_SanityCheck_Basic_Host", "
         VectorOperation::kBitwiseXor, VectorOperation::kBitwiseOr, VectorOperation::kBitwiseAnd,
         VectorOperation::kRightShift, VectorOperation::kLeftShift}) {
     DYNAMIC_SECTION("operation: " << to_string(operation)) {
-      TestType vector = PerformVectorAndValueOperationHost<TestType>(operation, value1, value2);
+      TestType vector = PerformVectorOperationHost<TestType, false>(operation, value1, value2);
       SanityCheck(operation, vector, value1, value2);
     }
   }

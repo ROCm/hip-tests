@@ -41,7 +41,7 @@ TEMPLATE_TEST_CASE("Unit_make_vector_SanityCheck_Basic_Device", "", char1, uchar
   SanityCheck(vector, value);
 }
 
-TEMPLATE_TEST_CASE("Unit_vector_and_vector_operations_SanityCheck_Basic_Host", "", char1, uchar1,
+TEMPLATE_TEST_CASE("Unit_VectorAndVectorOperations_SanityCheck_Basic_Host", "", char1, uchar1,
                    char2, uchar2, char3, uchar3, char4, uchar4, short1, ushort1, short2, ushort2,
                    short3, ushort3, short4, ushort4, int1, uint1, int2, uint2, int3, uint3, int4,
                    uint4, long1, ulong1, long2, ulong2, long3, ulong3, long4, ulong4, longlong1,
@@ -50,35 +50,34 @@ TEMPLATE_TEST_CASE("Unit_vector_and_vector_operations_SanityCheck_Basic_Host", "
   auto value1 = GetTestValue<typename TestType::value_type>(0);
   auto value2 = GetTestValue<typename TestType::value_type>(1);
 
-  using VO = VectorOperation;
-  for (const auto operation : {VO::kIncrementPrefix,
-                               VO::kIncrementPostfix,
-                               VO::kDecrementPrefix,
-                               VO::kDecrementPostfix,
-                               VO::kAddAssign,
-                               VO::kSubtractAssign,
-                               VO::kMultiplyAssign,
-                               VO::kDivideAssign,
-                               VO::kNegate,
-                               VO::kBitwiseNot,
-                               VO::kModuloAssign,
-                               VO::kBitwiseXorAssign,
-                               VO::kBitwiseOrAssign,
-                               VO::kBitwiseAndAssign,
-                               VO::kRightShiftAssign,
-                               VO::kLeftShiftAssign,
-                               VO::kAdd,
-                               VO::kSubtract,
-                               VO::kMultiply,
-                               VO::kDivide,
-                               VO::kEqual,
-                               VO::kNotEqual,
-                               VO::kModulo,
-                               VO::kBitwiseXor,
-                               VO::kBitwiseOr,
-                               VO::kBitwiseAnd,
-                               VO::kRightShift,
-                               VO::kLeftShift}) {
+  for (const auto operation : {VectorOperation::kIncrementPrefix,
+                               VectorOperation::kIncrementPostfix,
+                               VectorOperation::kDecrementPrefix,
+                               VectorOperation::kDecrementPostfix,
+                               VectorOperation::kAddAssign,
+                               VectorOperation::kSubtractAssign,
+                               VectorOperation::kMultiplyAssign,
+                               VectorOperation::kDivideAssign,
+                               VectorOperation::kNegate,
+                               VectorOperation::kBitwiseNot,
+                               VectorOperation::kModuloAssign,
+                               VectorOperation::kBitwiseXorAssign,
+                               VectorOperation::kBitwiseOrAssign,
+                               VectorOperation::kBitwiseAndAssign,
+                               VectorOperation::kRightShiftAssign,
+                               VectorOperation::kLeftShiftAssign,
+                               VectorOperation::kAdd,
+                               VectorOperation::kSubtract,
+                               VectorOperation::kMultiply,
+                               VectorOperation::kDivide,
+                               VectorOperation::kEqual,
+                               VectorOperation::kNotEqual,
+                               VectorOperation::kModulo,
+                               VectorOperation::kBitwiseXor,
+                               VectorOperation::kBitwiseOr,
+                               VectorOperation::kBitwiseAnd,
+                               VectorOperation::kRightShift,
+                               VectorOperation::kLeftShift}) {
     DYNAMIC_SECTION("operation: " << to_string(operation)) {
       TestType vector = PerformVectorsOperationHost<TestType>(operation, value1, value2);
       SanityCheck(operation, vector, value1, value2);
@@ -86,20 +85,22 @@ TEMPLATE_TEST_CASE("Unit_vector_and_vector_operations_SanityCheck_Basic_Host", "
   }
 }
 
-TEMPLATE_TEST_CASE("Unit_vector_and_value_type_operations_SanityCheck_Basic_Host", "", char1,
-                   uchar1, char2, uchar2, char3, uchar3, char4, uchar4, short1, ushort1, short2,
-                   ushort2, short3, ushort3, short4, ushort4, int1, uint1, int2, uint2, int3, uint3,
-                   int4, uint4, long1, ulong1, long2, ulong2, long3, ulong3, long4, ulong4,
-                   longlong1, ulonglong1, longlong2, ulonglong2, longlong3, ulonglong3, longlong4,
-                   ulonglong4, float1, float2, float3, float4, double1, double2, double3, double4) {
+TEMPLATE_TEST_CASE("Unit_VectorAndValueTypeOperations_SanityCheck_Basic_Host", "", char1, uchar1,
+                   char2, uchar2, char3, uchar3, char4, uchar4, short1, ushort1, short2, ushort2,
+                   short3, ushort3, short4, ushort4, int1, uint1, int2, uint2, int3, uint3, int4,
+                   uint4, long1, ulong1, long2, ulong2, long3, ulong3, long4, ulong4, longlong1,
+                   ulonglong1, longlong2, ulonglong2, longlong3, ulonglong3, longlong4, ulonglong4,
+                   float1, float2, float3, float4, double1, double2, double3, double4) {
   auto value1 = GetTestValue<typename TestType::value_type>(0);
   auto value2 = GetTestValue<typename TestType::value_type>(1);
 
-  using VO = VectorOperation;
   for (const auto operation :
-       {VO::kAddAssign, VO::kSubtractAssign, VO::kMultiplyAssign, VO::kDivideAssign, VO::kAdd,
-        VO::kSubtract, VO::kMultiply, VO::kDivide, VO::kEqual, VO::kNotEqual, VO::kModulo,
-        VO::kBitwiseXor, VO::kBitwiseOr, VO::kBitwiseAnd, VO::kRightShift, VO::kLeftShift}) {
+       {VectorOperation::kAddAssign, VectorOperation::kSubtractAssign,
+        VectorOperation::kMultiplyAssign, VectorOperation::kDivideAssign, VectorOperation::kAdd,
+        VectorOperation::kSubtract, VectorOperation::kMultiply, VectorOperation::kDivide,
+        VectorOperation::kEqual, VectorOperation::kNotEqual, VectorOperation::kModulo,
+        VectorOperation::kBitwiseXor, VectorOperation::kBitwiseOr, VectorOperation::kBitwiseAnd,
+        VectorOperation::kRightShift, VectorOperation::kLeftShift}) {
     DYNAMIC_SECTION("operation: " << to_string(operation)) {
       TestType vector = PerformVectorAndValueOperationHost<TestType>(operation, value1, value2);
       SanityCheck(operation, vector, value1, value2);

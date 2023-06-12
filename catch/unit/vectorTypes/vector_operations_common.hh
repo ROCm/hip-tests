@@ -132,22 +132,6 @@ void SanityCheck(VectorOperation operation, T vector, typename T::value_type val
     value1 *= value2;
   } else if (operation == VectorOperation::kDivideAssign) {
     value1 /= value2;
-  } else if (operation == VectorOperation::kNegate) {
-    value1 = -value1;
-  } else if (operation == VectorOperation::kBitwiseNot) {
-    value1 = ~value1;
-  } else if (operation == VectorOperation::kModuloAssign) {
-    value1 %= value2;
-  } else if (operation == VectorOperation::kBitwiseXorAssign) {
-    value1 ^= value2;
-  } else if (operation == VectorOperation::kBitwiseOrAssign) {
-    value1 |= value2;
-  } else if (operation == VectorOperation::kBitwiseAndAssign) {
-    value1 &= value2;
-  } else if (operation == VectorOperation::kRightShiftAssign) {
-    value1 >>= value2;
-  } else if (operation == VectorOperation::kLeftShiftAssign) {
-    value1 <<= value2;
   } else if (operation == VectorOperation::kAdd) {
     value1 = value1 + value2;
   } else if (operation == VectorOperation::kSubtract) {
@@ -160,18 +144,41 @@ void SanityCheck(VectorOperation operation, T vector, typename T::value_type val
     value1 = (value1 == value2) ? 2 * value1 : 3 * value1;
   } else if (operation == VectorOperation::kNotEqual) {
     value1 = (value1 != value2) ? 2 * value1 : 3 * value1;
-  } else if (operation == VectorOperation::kModulo) {
-    value1 = value1 % value2;
-  } else if (operation == VectorOperation::kBitwiseXor) {
-    value1 = value1 ^ value2;
-  } else if (operation == VectorOperation::kBitwiseOr) {
-    value1 = value1 | value2;
-  } else if (operation == VectorOperation::kBitwiseAnd) {
-    value1 = value1 & value2;
-  } else if (operation == VectorOperation::kRightShift) {
-    value1 = value1 >> value2;
-  } else if (operation == VectorOperation::kLeftShift) {
-    value1 = value1 << value2;
+  } else {
+    if constexpr (std::is_signed_v<typename T::value_type>) {
+      if (operation == VectorOperation::kNegate) {
+        value1 = -value1;
+      }
+    }
+    if constexpr (std::is_integral_v<typename T::value_type>) {
+      if (operation == VectorOperation::kBitwiseNot) {
+        value1 = ~value1;
+      } else if (operation == VectorOperation::kModuloAssign) {
+        value1 %= value2;
+      } else if (operation == VectorOperation::kBitwiseXorAssign) {
+        value1 ^= value2;
+      } else if (operation == VectorOperation::kBitwiseOrAssign) {
+        value1 |= value2;
+      } else if (operation == VectorOperation::kBitwiseAndAssign) {
+        value1 &= value2;
+      } else if (operation == VectorOperation::kRightShiftAssign) {
+        value1 >>= value2;
+      } else if (operation == VectorOperation::kLeftShiftAssign) {
+        value1 <<= value2;
+      } else if (operation == VectorOperation::kModulo) {
+        value1 = value1 % value2;
+      } else if (operation == VectorOperation::kBitwiseXor) {
+        value1 = value1 ^ value2;
+      } else if (operation == VectorOperation::kBitwiseOr) {
+        value1 = value1 | value2;
+      } else if (operation == VectorOperation::kBitwiseAnd) {
+        value1 = value1 & value2;
+      } else if (operation == VectorOperation::kRightShift) {
+        value1 = value1 >> value2;
+      } else if (operation == VectorOperation::kLeftShift) {
+        value1 = value1 << value2;
+      }
+    }
   }
   SanityCheck(vector, value1);
 }
@@ -194,22 +201,6 @@ __device__ __host__ void PerformVectorOperation(VectorOperation operation, T* ve
     *vector1 *= *vector2;
   } else if (operation == VectorOperation::kDivideAssign) {
     *vector1 /= *vector2;
-  } else if (operation == VectorOperation::kNegate) {
-    *vector1 = -(*vector1);
-  } else if (operation == VectorOperation::kBitwiseNot) {
-    *vector1 = ~(*vector1);
-  } else if (operation == VectorOperation::kModuloAssign) {
-    *vector1 %= *vector2;
-  } else if (operation == VectorOperation::kBitwiseXorAssign) {
-    *vector1 ^= *vector2;
-  } else if (operation == VectorOperation::kBitwiseOrAssign) {
-    *vector1 |= *vector2;
-  } else if (operation == VectorOperation::kBitwiseAndAssign) {
-    *vector1 &= *vector2;
-  } else if (operation == VectorOperation::kRightShiftAssign) {
-    *vector1 >>= *vector2;
-  } else if (operation == VectorOperation::kLeftShiftAssign) {
-    *vector1 <<= *vector2;
   } else if (operation == VectorOperation::kAdd) {
     *vector1 = *vector1 + *vector2;
   } else if (operation == VectorOperation::kSubtract) {
@@ -222,18 +213,41 @@ __device__ __host__ void PerformVectorOperation(VectorOperation operation, T* ve
     *vector1 = (*vector1 == *vector2) ? 2 * *vector1 : 3 * *vector1;
   } else if (operation == VectorOperation::kNotEqual) {
     *vector1 = (*vector1 != *vector2) ? 2 * *vector1 : 3 * *vector1;
-  } else if (operation == VectorOperation::kModulo) {
-    *vector1 = *vector1 % *vector2;
-  } else if (operation == VectorOperation::kBitwiseXor) {
-    *vector1 = *vector1 ^ *vector2;
-  } else if (operation == VectorOperation::kBitwiseOr) {
-    *vector1 = *vector1 | *vector2;
-  } else if (operation == VectorOperation::kBitwiseAnd) {
-    *vector1 = *vector1 & *vector2;
-  } else if (operation == VectorOperation::kRightShift) {
-    *vector1 = *vector1 >> *vector2;
-  } else if (operation == VectorOperation::kLeftShift) {
-    *vector1 = *vector1 << *vector2;
+  } else {
+    if constexpr (std::is_signed_v<typename T::value_type>) {
+      if (operation == VectorOperation::kNegate) {
+        *vector1 = -(*vector1);
+      }
+    }
+    if constexpr (std::is_integral_v<typename T::value_type>) {
+      if (operation == VectorOperation::kBitwiseNot) {
+        *vector1 = ~(*vector1);
+      } else if (operation == VectorOperation::kModuloAssign) {
+        *vector1 %= *vector2;
+      } else if (operation == VectorOperation::kBitwiseXorAssign) {
+        *vector1 ^= *vector2;
+      } else if (operation == VectorOperation::kBitwiseOrAssign) {
+        *vector1 |= *vector2;
+      } else if (operation == VectorOperation::kBitwiseAndAssign) {
+        *vector1 &= *vector2;
+      } else if (operation == VectorOperation::kRightShiftAssign) {
+        *vector1 >>= *vector2;
+      } else if (operation == VectorOperation::kLeftShiftAssign) {
+        *vector1 <<= *vector2;
+      } else if (operation == VectorOperation::kModulo) {
+        *vector1 = *vector1 % *vector2;
+      } else if (operation == VectorOperation::kBitwiseXor) {
+        *vector1 = *vector1 ^ *vector2;
+      } else if (operation == VectorOperation::kBitwiseOr) {
+        *vector1 = *vector1 | *vector2;
+      } else if (operation == VectorOperation::kBitwiseAnd) {
+        *vector1 = *vector1 & *vector2;
+      } else if (operation == VectorOperation::kRightShift) {
+        *vector1 = *vector1 >> *vector2;
+      } else if (operation == VectorOperation::kLeftShift) {
+        *vector1 = *vector1 << *vector2;
+      }
+    }
   }
 }
 
@@ -260,18 +274,22 @@ __device__ __host__ void PerformVectorOperation(VectorOperation operation, T* ve
     *vector = (*vector == value) ? 2 * *vector : 3 * *vector;
   } else if (operation == VectorOperation::kNotEqual) {
     *vector = (*vector != value) ? 2 * *vector : 3 * *vector;
-  } else if (operation == VectorOperation::kModulo) {
-    *vector = *vector % value;
-  } else if (operation == VectorOperation::kBitwiseXor) {
-    *vector = *vector ^ value;
-  } else if (operation == VectorOperation::kBitwiseOr) {
-    *vector = *vector | value;
-  } else if (operation == VectorOperation::kBitwiseAnd) {
-    *vector = *vector & value;
-  } else if (operation == VectorOperation::kRightShift) {
-    *vector = *vector >> value;
-  } else if (operation == VectorOperation::kLeftShift) {
-    *vector = *vector << value;
+  } else {
+    if constexpr (std::is_integral_v<typename T::value_type>) {
+      if (operation == VectorOperation::kModulo) {
+        *vector = *vector % value;
+      } else if (operation == VectorOperation::kBitwiseXor) {
+        *vector = *vector ^ value;
+      } else if (operation == VectorOperation::kBitwiseOr) {
+        *vector = *vector | value;
+      } else if (operation == VectorOperation::kBitwiseAnd) {
+        *vector = *vector & value;
+      } else if (operation == VectorOperation::kRightShift) {
+        *vector = *vector >> value;
+      } else if (operation == VectorOperation::kLeftShift) {
+        *vector = *vector << value;
+      }
+    }
   }
 }
 

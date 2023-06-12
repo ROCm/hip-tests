@@ -118,7 +118,34 @@ TEMPLATE_TEST_CASE("Unit_VectorAndVectorOperations_SanityCheck_Basic_Device", ""
   auto value1 = GetTestValue<typename TestType::value_type>(0);
   auto value2 = GetTestValue<typename TestType::value_type>(1);
 
-  for (const auto operation : {VectorOperation::kIncrementPrefix}) {
+  for (const auto operation : {VectorOperation::kIncrementPrefix,
+                               VectorOperation::kIncrementPostfix,
+                               VectorOperation::kDecrementPrefix,
+                               VectorOperation::kDecrementPostfix,
+                               VectorOperation::kAddAssign,
+                               VectorOperation::kSubtractAssign,
+                               VectorOperation::kMultiplyAssign,
+                               VectorOperation::kDivideAssign,
+                               VectorOperation::kNegate,
+                               VectorOperation::kBitwiseNot,
+                               VectorOperation::kModuloAssign,
+                               VectorOperation::kBitwiseXorAssign,
+                               VectorOperation::kBitwiseOrAssign,
+                               VectorOperation::kBitwiseAndAssign,
+                               VectorOperation::kRightShiftAssign,
+                               VectorOperation::kLeftShiftAssign,
+                               VectorOperation::kAdd,
+                               VectorOperation::kSubtract,
+                               VectorOperation::kMultiply,
+                               VectorOperation::kDivide,
+                               VectorOperation::kEqual,
+                               VectorOperation::kNotEqual,
+                               VectorOperation::kModulo,
+                               VectorOperation::kBitwiseXor,
+                               VectorOperation::kBitwiseOr,
+                               VectorOperation::kBitwiseAnd,
+                               VectorOperation::kRightShift,
+                               VectorOperation::kLeftShift}) {
     DYNAMIC_SECTION("operation: " << to_string(operation)) {
       TestType vector = PerformVectorOperationDevice<TestType>(operation, value1, value2);
       SanityCheck(operation, vector, value1, value2);

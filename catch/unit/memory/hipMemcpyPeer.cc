@@ -98,6 +98,7 @@ TEST_CASE("Unit_hipMemcpyPeer_Positive_Synchronization_Behavior") {
     LinearAllocGuard<int> src_alloc(LinearAllocs::hipMalloc, kPageSize);
     HIP_CHECK(hipSetDevice(dst_device));
     LinearAllocGuard<int> dst_alloc(LinearAllocs::hipMalloc, kPageSize);
+    LaunchDelayKernel(std::chrono::milliseconds{100}, nullptr);
 
     HIP_CHECK(hipSetDevice(src_device));
     LaunchDelayKernel(std::chrono::milliseconds{100}, nullptr);

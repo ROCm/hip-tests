@@ -17,14 +17,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
-
-#define NEGATE_UNSIGNED_VECTOR_FUNCTIONS(type)                                                     \
-  __global__ void NegateDevice(type* vector_dev_ptr) {                                             \
-    type vector_dev = *vector_dev_ptr;                                                             \
-    vector_dev = -vector_dev;                                                                      \
-  }                                                                                                \
-  void NegateHost(type& vector_host) { vector_host = -vector_host; }
+#include "negative_macros_common.hh"
 
 NEGATE_UNSIGNED_VECTOR_FUNCTIONS(uchar1)
 NEGATE_UNSIGNED_VECTOR_FUNCTIONS(uchar2)

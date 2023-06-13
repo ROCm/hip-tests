@@ -17,41 +17,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
+#include "negative_macros_common.hh"
 
-#define BITWISE_DOUBLE_VECTOR_FUNCTIONS(type)                                                      \
-  __global__ void BitwiseDevice(type* vector1_dev_ptr, type* vector2_dev_ptr) {                    \
-    type vector1_dev = *vector1_dev_ptr;                                                           \
-    type vector2_dev = *vector2_dev_ptr;                                                           \
-    vector1_dev = ~vector1_dev;                                                                    \
-    vector1_dev %= vector2_dev;                                                                    \
-    vector1_dev ^= vector2_dev;                                                                    \
-    vector1_dev |= vector2_dev;                                                                    \
-    vector1_dev &= vector2_dev;                                                                    \
-    vector1_dev >>= vector2_dev;                                                                   \
-    vector1_dev <<= vector2_dev;                                                                   \
-    vector1_dev = vector1_dev ^ vector2_dev;                                                       \
-    vector1_dev = vector1_dev | vector2_dev;                                                       \
-    vector1_dev = vector1_dev & vector2_dev;                                                       \
-    vector1_dev = vector1_dev >> vector2_dev;                                                      \
-    vector1_dev = vector1_dev << vector2_dev;                                                      \
-  }                                                                                                \
-  void BitwiseHost(type& vector1_host, type& vector2_host) {                                       \
-    vector1_host = ~vector1_host;                                                                  \
-    vector1_host %= vector2_host;                                                                  \
-    vector1_host ^= vector2_host;                                                                  \
-    vector1_host |= vector2_host;                                                                  \
-    vector1_host &= vector2_host;                                                                  \
-    vector1_host >>= vector2_host;                                                                 \
-    vector1_host <<= vector2_host;                                                                 \
-    vector1_host = vector1_host ^ vector2_host;                                                    \
-    vector1_host = vector1_host | vector2_host;                                                    \
-    vector1_host = vector1_host & vector2_host;                                                    \
-    vector1_host = vector1_host >> vector2_host;                                                   \
-    vector1_host = vector1_host << vector2_host;                                                   \
-  }
-
-BITWISE_DOUBLE_VECTOR_FUNCTIONS(double1)
-BITWISE_DOUBLE_VECTOR_FUNCTIONS(double2)
-BITWISE_DOUBLE_VECTOR_FUNCTIONS(double3)
-BITWISE_DOUBLE_VECTOR_FUNCTIONS(double4)
+BITWISE_FLOATING_POINT_VECTOR_FUNCTIONS(double1)
+BITWISE_FLOATING_POINT_VECTOR_FUNCTIONS(double2)
+BITWISE_FLOATING_POINT_VECTOR_FUNCTIONS(double3)
+BITWISE_FLOATING_POINT_VECTOR_FUNCTIONS(double4)

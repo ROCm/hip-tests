@@ -41,4 +41,4 @@ add_subdirectory(callback)
 # Vulkan interop APIs currently undefined for Nvidia
 add_subdirectory(vulkan_interop)
 endif()
-add_subdirectory(vectorTypes)
+add_subdirectory(vector_types)

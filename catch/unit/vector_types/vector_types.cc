@@ -18,6 +18,10 @@ THE SOFTWARE.
 */
 
 #include "vector_operations_common.hh"
+#if HT_AMD
+#include "negative_negate_unsigned_rtc.hh"
+#include "negative_bitwise_float_double_rtc.hh"
+#endif
 
 TEMPLATE_TEST_CASE("Unit_make_vector_SanityCheck_Basic_Host", "", char1, uchar1, char2, uchar2,
                    char3, uchar3, char4, uchar4, short1, ushort1, short2, ushort2, short3, ushort3,
@@ -175,4 +179,46 @@ TEMPLATE_TEST_CASE("Unit_VectorAndValueTypeOperations_SanityCheck_Basic_Device",
     }
   }
 }
-#endif // HT_AMD
+
+template <int expected_errors_num> void VectorTypesRTCWrapper(const char* program_source) {
+  hiprtcProgram program{};
+  HIPRTC_CHECK(hiprtcCreateProgram(&program, program_source, "vector_types_kernels.cc", 0, nullptr,
+                                   nullptr));
+
+#if HT_AMD
+  std::string args = std::string("-ferror-limit=100");
+  const char* options[] = {args.c_str()};
+  hiprtcResult result{hiprtcCompileProgram(program, 1, options)};
+#else
+  hiprtcResult result{hiprtcCompileProgram(program, 0, nullptr)};
+#endif
+
+  size_t log_size{};
+  HIPRTC_CHECK(hiprtcGetProgramLogSize(program, &log_size));
+  std::string log(log_size, ' ');
+  HIPRTC_CHECK(hiprtcGetProgramLog(program, log.data()));
+  int error_count{0};
+
+  std::string error_message{"error:"};
+
+  size_t npos_e = log.find(error_message, 0);
+  while (npos_e != std::string::npos) {
+    ++error_count;
+    npos_e = log.find(error_message, npos_e + 1);
+  }
+
+  HIPRTC_CHECK(hiprtcDestroyProgram(&program));
+  HIPRTC_CHECK_ERROR(result, HIPRTC_ERROR_COMPILATION);
+  REQUIRE(error_count == expected_errors_num);
+}
+
+TEST_CASE("Unit_VectorOperators_Negative_Parameters_RTC") {
+  VectorTypesRTCWrapper<8>(kNegateUnsignedChar);
+  VectorTypesRTCWrapper<8>(kNegateUnsignedShort);
+  VectorTypesRTCWrapper<8>(kNegateUnsignedInt);
+  VectorTypesRTCWrapper<8>(kNegateUnsignedLong);
+  VectorTypesRTCWrapper<8>(kNegateUnsignedLongLong);
+  VectorTypesRTCWrapper<96>(kBitwiseFloat);
+  VectorTypesRTCWrapper<96>(kBitwiseDouble);
+}
+#endif  // HT_AMD

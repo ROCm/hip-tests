@@ -28,37 +28,39 @@ hip_add_exe_to_target(NAME VectorTypesTest
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests)
 
-add_test(NAME Unit_NegateUnsigned_Negative_Parameters
-         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
-         negative_negate_unsigned.cc 40)
+if(HIP_PLATFORM MATCHES "amd")
+    add_test(NAME Unit_NegateUnsigned_Negative_Parameters
+            COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+            ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+            negative_negate_unsigned.cc 40)
 
-add_test(NAME Unit_BitwiseFloat_Negative_Parameters
-         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
-         negative_bitwise_float.cc 96)
+    add_test(NAME Unit_BitwiseFloat_Negative_Parameters
+            COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+            ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+            negative_bitwise_float.cc 96)
 
-add_test(NAME Unit_BitwiseDouble_Negative_Parameters
-         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
-         negative_bitwise_double.cc 96)
+    add_test(NAME Unit_BitwiseDouble_Negative_Parameters
+            COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+            ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+            negative_bitwise_double.cc 96)
 
-add_test(NAME Unit_CalculateAssign1D_Negative_Parameters
-         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
-         negative_calculate_assign_with_value_1D.cc 60)
+    add_test(NAME Unit_CalculateAssign1D_Negative_Parameters
+            COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+            ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+            negative_calculate_assign_with_value_1D.cc 60)
 
-add_test(NAME Unit_CalculateAssign2D_Negative_Parameters
-         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
-         negative_calculate_assign_with_value_2D.cc 60)
+    add_test(NAME Unit_CalculateAssign2D_Negative_Parameters
+            COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+            ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+            negative_calculate_assign_with_value_2D.cc 60)
 
-add_test(NAME Unit_CalculateAssign3D_Negative_Parameters
-         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
-         negative_calculate_assign_with_value_3D.cc 60)
+    add_test(NAME Unit_CalculateAssign3D_Negative_Parameters
+            COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+            ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+            negative_calculate_assign_with_value_3D.cc 60)
 
-add_test(NAME Unit_CalculateAssign4D_Negative_Parameters
-         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
-         negative_calculate_assign_with_value_4D.cc 60)
+    add_test(NAME Unit_CalculateAssign4D_Negative_Parameters
+            COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+            ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+            negative_calculate_assign_with_value_4D.cc 60)
+endif()

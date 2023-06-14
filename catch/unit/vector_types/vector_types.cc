@@ -25,7 +25,7 @@ TEMPLATE_TEST_CASE("Unit_make_vector_SanityCheck_Basic_Host", "", char1, uchar1,
                    ulong1, long2, ulong2, long3, ulong3, long4, ulong4, longlong1, ulonglong1,
                    longlong2, ulonglong2, longlong3, ulonglong3, longlong4, ulonglong4, float1,
                    float2, float3, float4, double1, double2, double3, double4) {
-  auto value = GetTestValue<typename TestType::value_type>(0);
+  auto value = GetTestValue<decltype(TestType().x)>(0);
   TestType vector = MakeVectorTypeHost<TestType>(value);
   SanityCheck(vector, value);
 }
@@ -36,7 +36,7 @@ TEMPLATE_TEST_CASE("Unit_make_vector_SanityCheck_Basic_Device", "", char1, uchar
                    ulong1, long2, ulong2, long3, ulong3, long4, ulong4, longlong1, ulonglong1,
                    longlong2, ulonglong2, longlong3, ulonglong3, longlong4, ulonglong4, float1,
                    float2, float3, float4, double1, double2, double3, double4) {
-  auto value = GetTestValue<typename TestType::value_type>(0);
+  auto value = GetTestValue<decltype(TestType().x)>(0);
   TestType vector = MakeVectorTypeDevice<TestType>(value);
   SanityCheck(vector, value);
 }
@@ -47,8 +47,8 @@ TEMPLATE_TEST_CASE("Unit_VectorAndVectorOperations_SanityCheck_Basic_Host", "", 
                    uint4, long1, ulong1, long2, ulong2, long3, ulong3, long4, ulong4, longlong1,
                    ulonglong1, longlong2, ulonglong2, longlong3, ulonglong3, longlong4, ulonglong4,
                    float1, float2, float3, float4, double1, double2, double3, double4) {
-  auto value1 = GetTestValue<typename TestType::value_type>(0);
-  auto value2 = GetTestValue<typename TestType::value_type>(1);
+  auto value1 = GetTestValue<decltype(TestType().x)>(0);
+  auto value2 = GetTestValue<decltype(TestType().x)>(1);
 
   for (const auto operation : {VectorOperation::kIncrementPrefix,
                                VectorOperation::kIncrementPostfix,
@@ -91,8 +91,8 @@ TEMPLATE_TEST_CASE("Unit_VectorAndValueTypeOperations_SanityCheck_Basic_Host", "
                    uint4, long1, ulong1, long2, ulong2, long3, ulong3, long4, ulong4, longlong1,
                    ulonglong1, longlong2, ulonglong2, longlong3, ulonglong3, longlong4, ulonglong4,
                    float1, float2, float3, float4, double1, double2, double3, double4) {
-  auto value1 = GetTestValue<typename TestType::value_type>(0);
-  auto value2 = GetTestValue<typename TestType::value_type>(1);
+  auto value1 = GetTestValue<decltype(TestType().x)>(0);
+  auto value2 = GetTestValue<decltype(TestType().x)>(1);
 
   for (const auto operation :
        {VectorOperation::kAddAssign, VectorOperation::kSubtractAssign,
@@ -114,8 +114,8 @@ TEMPLATE_TEST_CASE("Unit_VectorAndVectorOperations_SanityCheck_Basic_Device", ""
                    uint4, long1, ulong1, long2, ulong2, long3, ulong3, long4, ulong4, longlong1,
                    ulonglong1, longlong2, ulonglong2, longlong3, ulonglong3, longlong4, ulonglong4,
                    float1, float2, float3, float4, double1, double2, double3, double4) {
-  auto value1 = GetTestValue<typename TestType::value_type>(0);
-  auto value2 = GetTestValue<typename TestType::value_type>(1);
+  auto value1 = GetTestValue<decltype(TestType().x)>(0);
+  auto value2 = GetTestValue<decltype(TestType().x)>(1);
 
   for (const auto operation : {VectorOperation::kIncrementPrefix,
                                VectorOperation::kIncrementPostfix,
@@ -158,8 +158,8 @@ TEMPLATE_TEST_CASE("Unit_VectorAndValueTypeOperations_SanityCheck_Basic_Device",
                    uint4, long1, ulong1, long2, ulong2, long3, ulong3, long4, ulong4, longlong1,
                    ulonglong1, longlong2, ulonglong2, longlong3, ulonglong3, longlong4, ulonglong4,
                    float1, float2, float3, float4, double1, double2, double3, double4) {
-  auto value1 = GetTestValue<typename TestType::value_type>(0);
-  auto value2 = GetTestValue<typename TestType::value_type>(1);
+  auto value1 = GetTestValue<decltype(TestType().x)>(0);
+  auto value2 = GetTestValue<decltype(TestType().x)>(1);
 
   for (const auto operation :
        {VectorOperation::kAddAssign, VectorOperation::kSubtractAssign,
@@ -174,3 +174,32 @@ TEMPLATE_TEST_CASE("Unit_VectorAndValueTypeOperations_SanityCheck_Basic_Device",
     }
   }
 }
+
+void VectorTypesRTCWrapper(const char* program_source, int expected_errors_num) {
+  hiprtcProgram program{};
+  HIPRTC_CHECK(hiprtcCreateProgram(&program, program_source, "vector_types_kernels.cc", 0, nullptr,
+                                   nullptr));
+
+  hiprtcResult result{hiprtcCompileProgram(program, 0, nullptr)};
+
+  size_t log_size{};
+  HIPRTC_CHECK(hiprtcGetProgramLogSize(program, &log_size));
+  std::string log(log_size, ' ');
+  HIPRTC_CHECK(hiprtcGetProgramLog(program, log.data()));
+  int error_count{0};
+  int warning_count{0};
+
+  std::string error_message{"error:"};
+
+  size_t npos_e = log.find(error_message, 0);
+  while (npos_e != std::string::npos) {
+    ++error_count;
+    npos_e = log.find(error_message, npos_e + 1);
+  }
+
+  HIPRTC_CHECK(hiprtcDestroyProgram(&program));
+  HIPRTC_CHECK_ERROR(result, HIPRTC_ERROR_COMPILATION);
+  REQUIRE(error_count == expected_errors_num);
+}
+
+TEST_CASE("Unit_VectorTypes_Negative_Parameters_RTC") {}

@@ -35,29 +35,29 @@ template <typename T> T GetTestValue(int index) {
 }
 
 template <typename T>
-typename std::enable_if<sizeof(T) / sizeof(typename T::value_type) == 1>::type SanityCheck(
-    T vector, typename T::value_type expected_value) {
+typename std::enable_if<sizeof(T) / sizeof(decltype(T().x)) == 1>::type SanityCheck(
+    T vector, decltype(T().x) expected_value) {
   REQUIRE(vector.x == expected_value);
 }
 
 template <typename T>
-typename std::enable_if<sizeof(T) / sizeof(typename T::value_type) == 2>::type SanityCheck(
-    T vector, typename T::value_type expected_value) {
+typename std::enable_if<sizeof(T) / sizeof(decltype(T().x)) == 2>::type SanityCheck(
+    T vector, decltype(T().x) expected_value) {
   REQUIRE(vector.x == expected_value);
   REQUIRE(vector.y == expected_value);
 }
 
 template <typename T>
-typename std::enable_if<sizeof(T) / sizeof(typename T::value_type) == 3>::type SanityCheck(
-    T vector, typename T::value_type expected_value) {
+typename std::enable_if<sizeof(T) / sizeof(decltype(T().x)) == 3>::type SanityCheck(
+    T vector, decltype(T().x) expected_value) {
   REQUIRE(vector.x == expected_value);
   REQUIRE(vector.y == expected_value);
   REQUIRE(vector.z == expected_value);
 }
 
 template <typename T>
-typename std::enable_if<sizeof(T) / sizeof(typename T::value_type) == 4>::type SanityCheck(
-    T vector, typename T::value_type expected_value) {
+typename std::enable_if<sizeof(T) / sizeof(decltype(T().x)) == 4>::type SanityCheck(
+    T vector, decltype(T().x) expected_value) {
   REQUIRE(vector.x == expected_value);
   REQUIRE(vector.y == expected_value);
   REQUIRE(vector.z == expected_value);
@@ -65,7 +65,7 @@ typename std::enable_if<sizeof(T) / sizeof(typename T::value_type) == 4>::type S
 }
 
 template <typename T>
-__host__ __device__ void MakeVectorType(T* vector_ptr, typename T::value_type value) {
+__host__ __device__ void MakeVectorType(T* vector_ptr, decltype(T().x) value) {
   if constexpr (std::is_same_v<T, char1>) {
     *vector_ptr = make_char1(value);
   } else if constexpr (std::is_same_v<T, uchar1>) {
@@ -165,17 +165,17 @@ __host__ __device__ void MakeVectorType(T* vector_ptr, typename T::value_type va
   }
 }
 
-template <typename T> T MakeVectorTypeHost(typename T::value_type value) {
+template <typename T> T MakeVectorTypeHost(decltype(T().x) value) {
   T vector{};
   MakeVectorType(&vector, value);
   return vector;
 }
 
-template <typename T> __global__ void VectorTypeKernel(T* vector, typename T::value_type value) {
+template <typename T> __global__ void VectorTypeKernel(T* vector, decltype(T().x) value) {
   MakeVectorType(vector, value);
 }
 
-template <typename T> T MakeVectorTypeDevice(typename T::value_type value) {
+template <typename T> T MakeVectorTypeDevice(decltype(T().x) value) {
   T vector_h{};
   T* vector_d;
   HIP_CHECK(hipMalloc(&vector_d, sizeof(T)));

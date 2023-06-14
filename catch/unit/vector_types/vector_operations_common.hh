@@ -114,8 +114,8 @@ inline std::string to_string(VectorOperation operation) {
 }
 
 template <typename T>
-void SanityCheck(VectorOperation operation, T vector, typename T::value_type value1,
-                 typename T::value_type value2) {
+void SanityCheck(VectorOperation operation, T vector, decltype(T().x) value1,
+                 decltype(T().x) value2) {
   if (operation == VectorOperation::kIncrementPrefix) {
     ++value1;
   } else if (operation == VectorOperation::kIncrementPostfix) {
@@ -145,12 +145,12 @@ void SanityCheck(VectorOperation operation, T vector, typename T::value_type val
   } else if (operation == VectorOperation::kNotEqual) {
     value1 = (value1 != value2) ? 2 * value1 : 3 * value1;
   } else {
-    if constexpr (std::is_signed_v<typename T::value_type>) {
+    if constexpr (std::is_signed_v<decltype(T().x)>) {
       if (operation == VectorOperation::kNegate) {
         value1 = -value1;
       }
     }
-    if constexpr (std::is_integral_v<typename T::value_type>) {
+    if constexpr (std::is_integral_v<decltype(T().x)>) {
       if (operation == VectorOperation::kBitwiseNot) {
         value1 = ~value1;
       } else if (operation == VectorOperation::kModuloAssign) {
@@ -214,12 +214,12 @@ __device__ __host__ void PerformVectorOperation(VectorOperation operation, T* ve
   } else if (operation == VectorOperation::kNotEqual) {
     *vector1 = (*vector1 != *vector2) ? 2 * *vector1 : 3 * *vector1;
   } else {
-    if constexpr (std::is_signed_v<typename T::value_type>) {
+    if constexpr (std::is_signed_v<decltype(T().x)>) {
       if (operation == VectorOperation::kNegate) {
         *vector1 = -(*vector1);
       }
     }
-    if constexpr (std::is_integral_v<typename T::value_type>) {
+    if constexpr (std::is_integral_v<decltype(T().x)>) {
       if (operation == VectorOperation::kBitwiseNot) {
         *vector1 = ~(*vector1);
       } else if (operation == VectorOperation::kModuloAssign) {
@@ -253,7 +253,7 @@ __device__ __host__ void PerformVectorOperation(VectorOperation operation, T* ve
 
 template <typename T>
 __device__ __host__ void PerformVectorOperation(VectorOperation operation, T* vector,
-                                                typename T::value_type value) {
+                                                decltype(T().x) value) {
   if (operation == VectorOperation::kAddAssign) {
     *vector += value;
   } else if (operation == VectorOperation::kSubtractAssign) {
@@ -275,7 +275,7 @@ __device__ __host__ void PerformVectorOperation(VectorOperation operation, T* ve
   } else if (operation == VectorOperation::kNotEqual) {
     *vector = (*vector != value) ? 2 * *vector : 3 * *vector;
   } else {
-    if constexpr (std::is_integral_v<typename T::value_type>) {
+    if constexpr (std::is_integral_v<decltype(T().x)>) {
       if (operation == VectorOperation::kModulo) {
         *vector = *vector % value;
       } else if (operation == VectorOperation::kBitwiseXor) {
@@ -294,8 +294,8 @@ __device__ __host__ void PerformVectorOperation(VectorOperation operation, T* ve
 }
 
 template <typename T, bool two_vectors = true>
-T PerformVectorOperationHost(VectorOperation operation, typename T::value_type value1,
-                             typename T::value_type value2) {
+T PerformVectorOperationHost(VectorOperation operation, decltype(T().x) value1,
+                             decltype(T().x) value2) {
   T vector1{};
   MakeVectorType(&vector1, value1);
 
@@ -311,9 +311,8 @@ T PerformVectorOperationHost(VectorOperation operation, typename T::value_type v
 }
 
 template <typename T, bool two_vectors>
-__global__ void VectorOperationKernel(VectorOperation operation, T* vector1,
-                                      typename T::value_type value1,
-                                      typename T::value_type value2) {
+__global__ void VectorOperationKernel(VectorOperation operation, T* vector1, decltype(T().x) value1,
+                                      decltype(T().x) value2) {
   MakeVectorType(vector1, value1);
   if constexpr (two_vectors) {
     T vector2{};
@@ -325,8 +324,8 @@ __global__ void VectorOperationKernel(VectorOperation operation, T* vector1,
 }
 
 template <typename T, bool two_vectors = true>
-T PerformVectorOperationDevice(VectorOperation operation, typename T::value_type value1,
-                               typename T::value_type value2) {
+T PerformVectorOperationDevice(VectorOperation operation, decltype(T().x) value1,
+                               decltype(T().x) value2) {
   T vector_h{};
   T* vector_d;
   HIP_CHECK(hipMalloc(&vector_d, sizeof(T)));

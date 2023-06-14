@@ -59,7 +59,7 @@ THE SOFTWARE.
   }
 
 #define NEGATE_ASSIGN_VECTOR_FUNCTIONS(type)                                                       \
-  __global__ void CalculateAssignDevice(type* vector_dev_ptr, typename type::value_type value) {   \
+  __global__ void CalculateAssignDevice(type* vector_dev_ptr, decltype(type().x) value) {          \
     type vector_dev = *vector_dev_ptr;                                                             \
     vector_dev %= value;                                                                           \
     vector_dev ^= value;                                                                           \
@@ -68,7 +68,7 @@ THE SOFTWARE.
     vector_dev >>= value;                                                                          \
     vector_dev <<= value;                                                                          \
   }                                                                                                \
-  void CalculateAssignHost(type& vector_host, typename type::value_type value) {                   \
+  void CalculateAssignHost(type& vector_host, decltype(type().x) value) {                          \
     vector_host %= value;                                                                          \
     vector_host ^= value;                                                                          \
     vector_host |= value;                                                                          \

@@ -17,26 +17,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
-
-#define NEGATE_ASSIGN_VECTOR_FUNCTIONS(type)                                                       \
-  __global__ void CalculateAssignDevice(type* vector_dev_ptr, typename type::value_type value) {   \
-    type vector_dev = *vector_dev_ptr;                                                             \
-    vector_dev %= value;                                                                           \
-    vector_dev ^= value;                                                                           \
-    vector_dev |= value;                                                                           \
-    vector_dev &= value;                                                                           \
-    vector_dev >>= value;                                                                          \
-    vector_dev <<= value;                                                                          \
-  }                                                                                                \
-  void CalculateAssignHost(type& vector_host, typename type::value_type value) {                   \
-    vector_host %= value;                                                                          \
-    vector_host ^= value;                                                                          \
-    vector_host |= value;                                                                          \
-    vector_host &= value;                                                                          \
-    vector_host >>= value;                                                                         \
-    vector_host <<= value;                                                                         \
-  }
+#include "negative_macros_common.hh"
 
 NEGATE_ASSIGN_VECTOR_FUNCTIONS(uchar3)
 NEGATE_ASSIGN_VECTOR_FUNCTIONS(ushort3)

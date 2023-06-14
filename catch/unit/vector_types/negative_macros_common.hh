@@ -58,7 +58,7 @@ THE SOFTWARE.
     vector1_host = vector1_host << vector2_host;                                                   \
   }
 
-#define NEGATE_ASSIGN_VECTOR_FUNCTIONS(type)                                                       \
+#define CALCULATE_ASSIGN_VECTOR_FUNCTIONS(type)                                                    \
   __global__ void CalculateAssignDevice(type* vector_dev_ptr, decltype(type().x) value) {          \
     type vector_dev = *vector_dev_ptr;                                                             \
     vector_dev %= value;                                                                           \

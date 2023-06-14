@@ -63,4 +63,24 @@ if(HIP_PLATFORM MATCHES "amd")
             COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
             ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
             negative_calculate_assign_with_value_4D.cc 60)
+
+    add_test(NAME Unit_CalculateAssignUnsigned1D_Negative_Parameters
+            COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+            ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+            negative_calculate_assign_with_unsigned_value_1D.cc 60)
+
+    add_test(NAME Unit_CalculateAssignUnsigned2D_Negative_Parameters
+            COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+            ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+            negative_calculate_assign_with_unsigned_value_2D.cc 60)
+
+    add_test(NAME Unit_CalculateAssignUnsigned3D_Negative_Parameters
+            COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+            ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+            negative_calculate_assign_with_unsigned_value_3D.cc 60)
+
+    add_test(NAME Unit_CalculateAssignUnsigned4D_Negative_Parameters
+            COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+            ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+            negative_calculate_assign_with_unsigned_value_4D.cc 60)
 endif()

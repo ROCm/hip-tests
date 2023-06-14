@@ -21,6 +21,7 @@ THE SOFTWARE.
 #if HT_AMD
 #include "negative_negate_unsigned_rtc.hh"
 #include "negative_bitwise_float_double_rtc.hh"
+#include "negative_calculate_assign_with_value_rtc.hh"
 #endif
 
 TEMPLATE_TEST_CASE("Unit_make_vector_SanityCheck_Basic_Host", "", char1, uchar1, char2, uchar2,
@@ -220,5 +221,10 @@ TEST_CASE("Unit_VectorOperators_Negative_Parameters_RTC") {
   VectorTypesRTCWrapper<8>(kNegateUnsignedLongLong);
   VectorTypesRTCWrapper<96>(kBitwiseFloat);
   VectorTypesRTCWrapper<96>(kBitwiseDouble);
+  VectorTypesRTCWrapper<96>(kCalculateAssignChar);
+  VectorTypesRTCWrapper<96>(kCalculateAssignShort);
+  VectorTypesRTCWrapper<96>(kCalculateAssignInt);
+  VectorTypesRTCWrapper<96>(kCalculateAssignLong);
+  VectorTypesRTCWrapper<96>(kCalculateAssignLongLong);
 }
 #endif  // HT_AMD

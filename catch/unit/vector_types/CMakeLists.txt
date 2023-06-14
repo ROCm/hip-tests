@@ -18,27 +18,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-add_subdirectory(rtc)
-add_subdirectory(deviceLib)
-add_subdirectory(graph)
-add_subdirectory(memory)
-add_subdirectory(stream)
-add_subdirectory(event)
-add_subdirectory(occupancy)
-add_subdirectory(device)
-add_subdirectory(printf)
-add_subdirectory(texture)
-add_subdirectory(streamperthread)
-add_subdirectory(kernel)
-add_subdirectory(multiThread)
-add_subdirectory(compiler)
-add_subdirectory(errorHandling)
-add_subdirectory(cooperativeGrps)
-add_subdirectory(context)
-if(HIP_PLATFORM STREQUAL "amd")
-add_subdirectory(callback)
-#add_subdirectory(clock)
-# Vulkan interop APIs currently undefined for Nvidia
-add_subdirectory(vulkan_interop)
-endif()
-add_subdirectory(vector_types)
+# Common Tests - Test independent of all platforms
+
+set(TEST_SRC
+    dim3.cc
+)
+
+hip_add_exe_to_target(NAME VectorTypesTest
+                      TEST_SRC ${TEST_SRC}
+                      TEST_TARGET_NAME build_tests)

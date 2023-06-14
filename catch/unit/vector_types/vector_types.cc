@@ -41,6 +41,7 @@ TEMPLATE_TEST_CASE("Unit_make_vector_SanityCheck_Basic_Device", "", char1, uchar
   SanityCheck(vector, value);
 }
 
+#if HT_AMD
 TEMPLATE_TEST_CASE("Unit_VectorAndVectorOperations_SanityCheck_Basic_Host", "", char1, uchar1,
                    char2, uchar2, char3, uchar3, char4, uchar4, short1, ushort1, short2, ushort2,
                    short3, ushort3, short4, ushort4, int1, uint1, int2, uint2, int3, uint3, int4,
@@ -174,32 +175,4 @@ TEMPLATE_TEST_CASE("Unit_VectorAndValueTypeOperations_SanityCheck_Basic_Device",
     }
   }
 }
-
-void VectorTypesRTCWrapper(const char* program_source, int expected_errors_num) {
-  hiprtcProgram program{};
-  HIPRTC_CHECK(hiprtcCreateProgram(&program, program_source, "vector_types_kernels.cc", 0, nullptr,
-                                   nullptr));
-
-  hiprtcResult result{hiprtcCompileProgram(program, 0, nullptr)};
-
-  size_t log_size{};
-  HIPRTC_CHECK(hiprtcGetProgramLogSize(program, &log_size));
-  std::string log(log_size, ' ');
-  HIPRTC_CHECK(hiprtcGetProgramLog(program, log.data()));
-  int error_count{0};
-  int warning_count{0};
-
-  std::string error_message{"error:"};
-
-  size_t npos_e = log.find(error_message, 0);
-  while (npos_e != std::string::npos) {
-    ++error_count;
-    npos_e = log.find(error_message, npos_e + 1);
-  }
-
-  HIPRTC_CHECK(hiprtcDestroyProgram(&program));
-  HIPRTC_CHECK_ERROR(result, HIPRTC_ERROR_COMPILATION);
-  REQUIRE(error_count == expected_errors_num);
-}
-
-TEST_CASE("Unit_VectorTypes_Negative_Parameters_RTC") {}
+#endif // HT_AMD

@@ -45,7 +45,7 @@ TEST_CASE("Unit_hipDeviceReset_Positive_Basic") {
                                                         : hipSharedMemBankSizeFourByte);
   REQUIRE((shared_mem_config_ret == hipSuccess || shared_mem_config_ret == hipErrorNotSupported));
 
-  HIP_CHECK(hipSetDeviceFlags(flags_before ^ (1u << 2)));
+  HIP_CHECK(hipSetDeviceFlags(hipDeviceScheduleBlockingSync));
 
   HIP_CHECK(hipDeviceReset());
 
@@ -97,7 +97,7 @@ TEST_CASE("Unit_hipDeviceReset_Positive_Threaded") {
   REQUIRE((shared_mem_config_ret == hipSuccess || shared_mem_config_ret == hipErrorNotSupported));
 
 
-  HIP_CHECK(hipSetDeviceFlags(flags_before ^ (1u << 2)));
+  HIP_CHECK(hipSetDeviceFlags(hipDeviceScheduleBlockingSync));
 
   std::thread([] {
     HIP_CHECK_THREAD(hipSetDevice(0));

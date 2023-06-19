@@ -38,6 +38,7 @@ set(AMD_TEST_SRC
     floatTM.cc
     hipMathFunctions.cc
     hmax_hmin.cc
+    bfloat16.cc
 )
 set(AMD_ARCH_SPEC_TEST_SRC
     AtomicAdd_Coherent_withunsafeflag.cc

@@ -24,6 +24,37 @@ THE SOFTWARE.
 #include "negative_calculate_assign_with_value_rtc.hh"
 #endif
 
+/**
+ * @addtogroup make_vector make_vector
+ * @{
+ * @ingroup VectorTypeTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Creates vectors for all supported types:
+ *        -# make_char1, make_char2, make_char3, make_char4
+ *        -# make_uchar1, make_uchar2, make_uchar3, make_uchar4
+ *        -# make_short1, make_short2, make_short3, make_short4
+ *        -# make_ushort1, make_ushort2, make_ushort3, make_ushort4
+ *        -# make_int1, make_int2, make_int3, make_int4
+ *        -# make_uint1, make_uint2, make_uint4, make_uint4
+ *        -# make_long1, make_long2, make_long3, make_long4
+ *        -# make_ulong1, make_ulong2, make_ulong3, make_ulong4
+ *        -# make_longlong1, make_longlong2, make_longlong3, make_longlong4
+ *        -# make_ulonglong1, make_ulonglong2, make_ulonglong3, make_ulonglong4
+ *        -# make_float1, make_float2, make_float3, make_float4
+ *        -# make_double1, make_double2, make_double3, make_double4
+ *    - Checks that each vector type is created as expected
+ *    - Calls make function from the host side
+ * Test source
+ * ------------------------
+ *    - unit/vector_types/vector_types.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_make_vector_SanityCheck_Basic_Host", "", char1, uchar1, char2, uchar2,
                    char3, uchar3, char4, uchar4, short1, ushort1, short2, ushort2, short3, ushort3,
                    short4, ushort4, int1, uint1, int2, uint2, int3, uint3, int4, uint4, long1,
@@ -35,6 +66,31 @@ TEMPLATE_TEST_CASE("Unit_make_vector_SanityCheck_Basic_Host", "", char1, uchar1,
   SanityCheck(vector, value);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Creates vectors for all supported types:
+ *        -# make_char1, make_char2, make_char3, make_char4
+ *        -# make_uchar1, make_uchar2, make_uchar3, make_uchar4
+ *        -# make_short1, make_short2, make_short3, make_short4
+ *        -# make_ushort1, make_ushort2, make_ushort3, make_ushort4
+ *        -# make_int1, make_int2, make_int3, make_int4
+ *        -# make_uint1, make_uint2, make_uint4, make_uint4
+ *        -# make_long1, make_long2, make_long3, make_long4
+ *        -# make_ulong1, make_ulong2, make_ulong3, make_ulong4
+ *        -# make_longlong1, make_longlong2, make_longlong3, make_longlong4
+ *        -# make_ulonglong1, make_ulonglong2, make_ulonglong3, make_ulonglong4
+ *        -# make_float1, make_float2, make_float3, make_float4
+ *        -# make_double1, make_double2, make_double3, make_double4
+ *    - Checks that each vector type is created as expected
+ *    - Calls make function from the device side
+ * Test source
+ * ------------------------
+ *    - unit/vector_types/vector_types.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_make_vector_SanityCheck_Basic_Device", "", char1, uchar1, char2, uchar2,
                    char3, uchar3, char4, uchar4, short1, ushort1, short2, ushort2, short3, ushort3,
                    short4, ushort4, int1, uint1, int2, uint2, int3, uint3, int4, uint4, long1,
@@ -47,6 +103,20 @@ TEMPLATE_TEST_CASE("Unit_make_vector_SanityCheck_Basic_Device", "", char1, uchar
 }
 
 #if HT_AMD
+/**
+ * Test Description
+ * ------------------------
+ *    - Performs supported operations between all supported vector types
+ *    - Checks that the operators are overloaded as expected by comparing results to the manually
+ * calculated ones
+ *    - Calls operations from the host side
+ * Test source
+ * ------------------------
+ *    - unit/vector_types/vector_types.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_VectorAndVectorOperations_SanityCheck_Basic_Host", "", char1, uchar1,
                    char2, uchar2, char3, uchar3, char4, uchar4, short1, ushort1, short2, ushort2,
                    short3, ushort3, short4, ushort4, int1, uint1, int2, uint2, int3, uint3, int4,
@@ -91,6 +161,20 @@ TEMPLATE_TEST_CASE("Unit_VectorAndVectorOperations_SanityCheck_Basic_Host", "", 
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Performs supported operations between vector and underlying vector type (scalar)
+ *    - Checks that the operators are overloaded as expected by comparing results to the manually
+ * calculated ones
+ *    - Calls operations from the host side
+ * Test source
+ * ------------------------
+ *    - unit/vector_types/vector_types.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_VectorAndValueTypeOperations_SanityCheck_Basic_Host", "", char1, uchar1,
                    char2, uchar2, char3, uchar3, char4, uchar4, short1, ushort1, short2, ushort2,
                    short3, ushort3, short4, ushort4, int1, uint1, int2, uint2, int3, uint3, int4,
@@ -114,6 +198,20 @@ TEMPLATE_TEST_CASE("Unit_VectorAndValueTypeOperations_SanityCheck_Basic_Host", "
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Performs supported operations between all supported vector types
+ *    - Checks that the operators are overloaded as expected by comparing results to the manually
+ * calculated ones
+ *    - Calls operations from the device side
+ * Test source
+ * ------------------------
+ *    - unit/vector_types/vector_types.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_VectorAndVectorOperations_SanityCheck_Basic_Device", "", char1, uchar1,
                    char2, uchar2, char3, uchar3, char4, uchar4, short1, ushort1, short2, ushort2,
                    short3, ushort3, short4, ushort4, int1, uint1, int2, uint2, int3, uint3, int4,
@@ -158,6 +256,20 @@ TEMPLATE_TEST_CASE("Unit_VectorAndVectorOperations_SanityCheck_Basic_Device", ""
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Performs supported operations between vector and underlying vector type (scalar)
+ *    - Checks that the operators are overloaded as expected by comparing results to the manually
+ * calculated ones
+ *    - Calls operations from the device side
+ * Test source
+ * ------------------------
+ *    - unit/vector_types/vector_types.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_VectorAndValueTypeOperations_SanityCheck_Basic_Device", "", char1, uchar1,
                    char2, uchar2, char3, uchar3, char4, uchar4, short1, ushort1, short2, ushort2,
                    short3, ushort3, short4, ushort4, int1, uint1, int2, uint2, int3, uint3, int4,
@@ -213,6 +325,21 @@ template <int expected_errors_num> void VectorTypesRTCWrapper(const char* progra
   REQUIRE(error_count == expected_errors_num);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Compiles kernels and host functions with negative scenarios:
+ *        -# Negate (-) operator on the unsigned vectors
+ *        -# Bitwise operators on the floating-point vectors
+ *        -# Calculate-assign operators that are not supported between vector and scalar
+ *    - Utilizes HIP RTC for compilation
+ * Test source
+ * ------------------------
+ *    - unit/vector_types/vector_types.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= Hip version
+ */
 TEST_CASE("Unit_VectorOperators_Negative_Parameters_RTC") {
   VectorTypesRTCWrapper<8>(kNegateUnsignedChar);
   VectorTypesRTCWrapper<8>(kNegateUnsignedShort);

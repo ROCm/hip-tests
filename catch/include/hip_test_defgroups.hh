@@ -35,3 +35,179 @@ THE SOFTWARE.
  * This section describes the graph management types & functions of HIP runtime API.
  * @}
  */
+
+/**
+ * @defgroup VectorTypeTest Vector types
+ * @{
+ * This section describes tests for the Vector type functions and operators.
+ */
+
+/**
+ * @addtogroup make_vector make_vector
+ * @{
+ * @ingroup VectorTypeTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Compiles kernels and host functions
+ *    - Negate (-) operation applied on the unsigned vectors
+ * Test source
+ * ------------------------
+ *    - unit/vector_types/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_NegateUnsigned_Negative_Parameters") {}
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Compiles kernels and host functions
+ *    - Bitwise operations applied on the float vectors
+ * Test source
+ * ------------------------
+ *    - unit/vector_types/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_BitwiseFloat_Negative_Parameters") {}
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Compiles kernels and host functions
+ *    - Bitwise operations applied on the double vectors
+ * Test source
+ * ------------------------
+ *    - unit/vector_types/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_BitwiseDouble_Negative_Parameters") {}
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Compiles kernels and host functions
+ *    - Calculate-assign operations applied on the 1D signed vectors
+ * Test source
+ * ------------------------
+ *    - unit/vector_types/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_CalculateAssign1D_Negative_Parameters") {}
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Compiles kernels and host functions
+ *    - Calculate-assign operations applied on the 2D signed vectors
+ * Test source
+ * ------------------------
+ *    - unit/vector_types/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_CalculateAssign2D_Negative_Parameters") {}
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Compiles kernels and host functions
+ *    - Calculate-assign operations applied on the 3D signed vectors
+ * Test source
+ * ------------------------
+ *    - unit/vector_types/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_CalculateAssign3D_Negative_Parameters") {}
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Compiles kernels and host functions
+ *    - Calculate-assign operations applied on the 4D signed vectors
+ * Test source
+ * ------------------------
+ *    - unit/vector_types/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_CalculateAssign4D_Negative_Parameters") {}
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Compiles kernels and host functions
+ *    - Calculate-assign operations applied on the 1D unsigned vectors
+ * Test source
+ * ------------------------
+ *    - unit/vector_types/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_CalculateAssignUnsigned1D_Negative_Parameters") {}
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Compiles kernels and host functions
+ *    - Calculate-assign operations applied on the 2D unsigned vectors
+ * Test source
+ * ------------------------
+ *    - unit/vector_types/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_CalculateAssignUnsigned2D_Negative_Parameters") {}
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Compiles kernels and host functions
+ *    - Calculate-assign operations applied on the 3D unsigned vectors
+ * Test source
+ * ------------------------
+ *    - unit/vector_types/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_CalculateAssignUnsigned3D_Negative_Parameters") {}
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Compiles kernels and host functions
+ *    - Calculate-assign operations applied on the 4D unsigned vectors
+ * Test source
+ * ------------------------
+ *    - unit/vector_types/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_CalculateAssignUnsigned4D_Negative_Parameters") {}
+
+/**
+ * End doxygen group make_vector.
+ * @}
+ */
+
+/**
+ * End doxygen group VectorTypeTest.
+ * @}
+ */

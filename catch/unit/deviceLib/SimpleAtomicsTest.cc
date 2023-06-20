@@ -108,9 +108,9 @@ template<typename T, typename enable_if<is_integral<T>{}>::type* = nullptr>
 bool VerifyIntegral(T* gpuData, int len) {
   // atomic Max
   T val = 0;
-  for (T i = 0; i < len; ++i) {
+  for (int i = 0; i < len; ++i) {
     // fourth element should be len-1
-    val = max(val, i);
+    val = max(val, static_cast<T>(i));
   }
 
   REQUIRE(val == gpuData[3]);
@@ -118,14 +118,14 @@ bool VerifyIntegral(T* gpuData, int len) {
   // atomic Min
   val = 1 << 8;
 
-  for (T i = 0; i < len; ++i) {
-      val = min(val, i);
+  for (int i = 0; i < len; ++i) {
+      val = min(val, static_cast<T>(i));
   }
 
   REQUIRE(val == gpuData[4]);
 
   // atomic Inc
-  int limit = 17;
+  T limit = 17;
   val = 0;
 
   for (int i = 0; i < len; ++i) {
@@ -145,9 +145,9 @@ bool VerifyIntegral(T* gpuData, int len) {
   REQUIRE(val == gpuData[6]);
 
   // atomic CAS
-  for (T i = 0; i < len; ++i) {
+  for (int i = 0; i < len; ++i) {
     // eighth element should be a member of [0, len)
-    if (i == gpuData[7]) {
+    if (static_cast<T>(i) == gpuData[7]) {
       return true;
       break;
     }

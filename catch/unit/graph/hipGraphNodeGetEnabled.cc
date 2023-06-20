@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -156,20 +156,22 @@ TEST_CASE("Unit_hipGraphNodeGetEnabled_Functional_Basic") {
  Negative Functional Test for API - hipGraphNodeGetEnabled
  6) Pass hNode from different graph and verify
  7) Create graphExec and then add one more new node to the graph verify
- 8) Pass hNode a deleted node from same graph where exec was created
- 9) Create graphExec and then delete the graph and verify a node
- 10) Create graphExec and then delete the graphExec and verify a node
+ 8) Pass hNode as clonedGraph node and exec as graphExec
+ 9) Pass graphExec as clonedGraphExec and hNode as graph node
+ 10) Pass hNode a deleted node from same graph where exec was created
+ 11) Create graphExec and then delete the graph and verify a node
+ 12) Create graphExec and then delete the graphExec and verify a node
  */
 
 TEST_CASE("Unit_hipGraphNodeGetEnabled_Negative_Functional") {
   constexpr size_t Nbytes = N * sizeof(int);
   constexpr auto blocksPerCU = 6;  // to hide latency
   constexpr auto threadsPerBlock = 256;
-  hipGraph_t graph, graph2;
-  hipGraphNode_t memcpy_A, memcpy_B, memcpy_A2, memcpy_C, kNodeAdd;
+  hipGraph_t graph, graph2, clonedGraph;
+  hipGraphNode_t memcpy_A, memcpy_A_C, memcpy_B, memcpy_A2, memcpy_C, kNodeAdd;
   hipKernelNodeParams kNodeParams{};
   int *A_d, *B_d, *C_d, *A_h, *B_h, *C_h;
-  hipGraphExec_t graphExec, graphExec2;
+  hipGraphExec_t graphExec, graphExec2, clonedGraphExec;
   size_t NElem{N};
   unsigned int isEnabled;
   hipError_t ret;
@@ -197,6 +199,11 @@ TEST_CASE("Unit_hipGraphNodeGetEnabled_Negative_Functional") {
 
   HIP_CHECK(hipGraphInstantiate(&graphExec, graph, NULL, NULL, 0));
   HIP_CHECK(hipGraphInstantiate(&graphExec2, graph, NULL, NULL, 0));
+
+  HIP_CHECK(hipGraphClone(&clonedGraph, graph));
+  HIP_CHECK(hipGraphInstantiate(&clonedGraphExec, clonedGraph,
+                                nullptr, nullptr, 0));
+  HIP_CHECK(hipGraphNodeFindInClone(&memcpy_A_C, memcpy_A, clonedGraph));
 
   HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpy_C, graph, nullptr, 0, C_h, C_d,
                                     Nbytes, hipMemcpyDeviceToHost));
@@ -236,6 +243,14 @@ TEST_CASE("Unit_hipGraphNodeGetEnabled_Negative_Functional") {
     ret = hipGraphNodeGetEnabled(graphExec, memcpy_C, &isEnabled);
     REQUIRE(hipErrorInvalidValue == ret);
   }
+  SECTION("Pass hNode as clonedGraph node and exec as graphExec") {
+    ret = hipGraphNodeGetEnabled(graphExec, memcpy_A_C, &isEnabled);
+    REQUIRE(hipErrorInvalidValue == ret);
+  }
+  SECTION("Pass graphExec as clonedGraphExec and hNode as graph node") {
+    ret = hipGraphNodeGetEnabled(clonedGraphExec, memcpy_A, &isEnabled);
+    REQUIRE(hipErrorInvalidValue == ret);
+  }
   SECTION("Pass hNode a deleted node from same graph where exec was created") {
     HIP_CHECK(hipGraphDestroyNode(memcpy_A));
     ret = hipGraphNodeGetEnabled(graphExec, memcpy_A, &isEnabled);
@@ -253,5 +268,7 @@ TEST_CASE("Unit_hipGraphNodeGetEnabled_Negative_Functional") {
   }
   HipTest::freeArrays(A_d, B_d, C_d, A_h, B_h, C_h, false);
   HIP_CHECK(hipGraphExecDestroy(graphExec));
+  HIP_CHECK(hipGraphExecDestroy(clonedGraphExec));
+  HIP_CHECK(hipGraphDestroy(clonedGraph));
   HIP_CHECK(hipGraphDestroy(graph2));
 }

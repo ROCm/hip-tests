@@ -47,7 +47,6 @@ inline __host__ __device__ operator*=(T &a, const decltype(T::x) &b)
 }
 #endif // HT_NVIDIA
 
-// See https://en.wikipedia.org/wiki/SRGB#Transformation
 // From CIE 1931 color space to sRGB
 inline float hipSRGBMap(float fc) {
   double c = static_cast<double>(fc);

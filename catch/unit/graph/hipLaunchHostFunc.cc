@@ -117,7 +117,7 @@ TEST_CASE("Unit_hipLaunchHostFunc_Positive_Functional") {
   HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < kLaunchIters; i++) {
+  for (size_t i = 0; i < kLaunchIters; i++) {
     std::fill_n(A_h.host_ptr(), 1, static_cast<float>(i));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
     HIP_CHECK(hipStreamSynchronize(stream));
@@ -171,7 +171,7 @@ TEST_CASE("Unit_hipLaunchHostFunc_Positive_Thread") {
   HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < kLaunchIters; i++) {
+  for (size_t i = 0; i < kLaunchIters; i++) {
     std::fill_n(A_h.host_ptr(), 1, static_cast<float>(i));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
     HIP_CHECK(hipStreamSynchronize(stream));

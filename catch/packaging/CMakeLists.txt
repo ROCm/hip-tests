@@ -1,5 +1,5 @@
 
-# Copyright (c) 2016 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+# Copyright (c) 2016 - 2023 Advanced Micro Devices, Inc. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,58 +25,24 @@ cmake_minimum_required(VERSION 3.16.8)
 # to skip the simple compiler test
 set(CMAKE_C_COMPILER_WORKS 1)
 set(CMAKE_CXX_COMPILER_WORKS 1)
-
-project(tests)
-
-MACRO(SUBDIRLIST result curdir)
-  FILE(GLOB children RELATIVE ${curdir} ${curdir}/*)
-  SET(dirlist "")
-  FOREACH(child ${children})
-    IF(IS_DIRECTORY ${curdir}/${child})
-      LIST(APPEND dirlist ${child})
-    ENDIF()
-  ENDFOREACH()
-  SET(${result} ${dirlist})
-ENDMACRO()
-
-SUBDIRLIST(SUBDIRS @PROJECT_BINARY_DIR@/@CATCH_BUILD_DIR@)
-
-FOREACH(subdir ${SUBDIRS})
-  set(CONTENT ${CONTENT} "subdirs(${subdir}) \n")
-ENDFOREACH()
-# Creating a CTestTestfile so ctest can be executed from @CATCH_BUILD_DIR@ level
-# This also helps in executing through jenkins and avoid permission issues
-file(WRITE @PROJECT_BINARY_DIR@/@CATCH_BUILD_DIR@/CTestTestfile.cmake
-           ${CONTENT})
-
-install(DIRECTORY @PROJECT_BINARY_DIR@/@CATCH_BUILD_DIR@
-        DESTINATION .
-        USE_SOURCE_PERMISSIONS
-        DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
-                              GROUP_WRITE GROUP_READ GROUP_EXECUTE
-                              WORLD_WRITE WORLD_READ WORLD_EXECUTE)
-
-install(FILES @PROJECT_BINARY_DIR@/CTestTestfile.cmake
-        DESTINATION .)
+include(GNUInstallDirs)
 
 #############################
 # Packaging steps
 #############################
 set(CPACK_SET_DESTDIR TRUE)
-set(CPACK_INSTALL_PREFIX @CPACK_INSTALL_PREFIX@)
 if(NOT DEFINED CPACK_INSTALL_PREFIX)
-  set(CPACK_INSTALL_PREFIX "/opt/rocm/test/hip/")
+  set(CPACK_INSTALL_PREFIX "/opt/rocm/")
 endif()
 
-
-set(PKG_NAME hip-catch-@HIP_PLATFORM@)
+set(PKG_NAME hip-catch-${HIP_PLATFORM})
 set(CPACK_PACKAGE_NAME ${PKG_NAME})
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "HIP: Heterogenous-computing Interface for Portability [CATCH TESTS]")
 set(CPACK_PACKAGE_DESCRIPTION "HIP:
           Heterogenous-computing Interface for Portability [CATCH TESTS]")
 set(CPACK_PACKAGE_VENDOR "Advanced Micro Devices, Inc.")
 set(CPACK_PACKAGE_CONTACT "HIP Support <hip.support@amd.com>")
-set(CPACK_PACKAGE_VERSION @HIP_VERSION_MAJOR@.@HIP_VERSION_MINOR@.@HIP_PACKAGING_VERSION_PATCH@)
+set(CPACK_PACKAGE_VERSION ${HIP_VERSION_MAJOR}.${HIP_VERSION_MINOR}.${HIP_PACKAGING_VERSION_PATCH})
 # by default rpm tries to reduce the file size by stripping the executable
 # To avoid build/packaging failures SWDEV-375603 and skip stripping
 set(CPACK_RPM_SPEC_MORE_DEFINE "%global __os_install_post %{nil}")
@@ -87,6 +53,11 @@ set (CPACK_DEBIAN_PACKAGE_DEPENDS "rocm-core, hip-runtime-amd")
 set (CPACK_RPM_PACKAGE_REQUIRES "rocm-core, hip-runtime-amd")
 
 if(NOT WIN32)
+install(DIRECTORY ${PROJECT_BINARY_DIR}/${CATCH_BUILD_DIR}
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/hip
+        USE_SOURCE_PERMISSIONS)
+install(FILES ${PROJECT_BINARY_DIR}/CTestTestfile.cmake DESTINATION ${CMAKE_INSTALL_DATADIR}/hip)
+
 set(CPACK_GENERATOR "TGZ;DEB;RPM" CACHE STRING "Linux package types for catch tests")
 set(CPACK_BINARY_DEB "ON")
 set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
@@ -123,14 +94,19 @@ endif()
 
 set(CPACK_SOURCE_GENERATOR "TGZ")
 # Install license file
-set ( CPACK_RESOURCE_FILE_LICENSE "@CMAKE_CURRENT_LIST_DIR@/../LICENSE.txt" )
-install(FILES ${CPACK_RESOURCE_FILE_LICENSE} DESTINATION .)
+
+set ( CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/../LICENSE.txt" )
+install(FILES ${CPACK_RESOURCE_FILE_LICENSE} DESTINATION ${CMAKE_INSTALL_DATADIR}/hip)
 set(CPACK_RPM_PACKAGE_LICENSE "MIT")
 
 else()
 # windows packaging
-set(CPACK_SYSTEM_NAME "")
 set(CPACK_INSTALL_PREFIX "")
+install(DIRECTORY ${PROJECT_BINARY_DIR}/${CATCH_BUILD_DIR}
+        DESTINATION .
+        USE_SOURCE_PERMISSIONS)
+install(FILES ${PROJECT_BINARY_DIR}/CTestTestfile.cmake DESTINATION .)
+set(CPACK_SYSTEM_NAME "")
 set(CPACK_GENERATOR "ZIP" CACHE STRING "Windows package types for catch tests")
 set(CPACK_TEST_ZIP "ON")
 set(CPACK_ZIP_TEST_PACKAGE_NAME "catch")

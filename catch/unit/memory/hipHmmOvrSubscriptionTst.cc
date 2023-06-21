@@ -140,6 +140,14 @@ static void DisplayHmmFlgs(int *Signal) {
 }
 
 TEST_CASE("Unit_HMM_OverSubscriptionTst") {
+  hipDeviceProp_t prop;
+  HIP_CHECK(hipGetDeviceProperties(&prop, 0));
+  char *p = nullptr;
+  p = strstr(prop.gcnArchName, "xnack+");
+  if (p == nullptr) {
+    INFO("Skipped due current device is non xnack device.");
+    return;
+  }
   int HmmEnabled = 0;
   // The following Shared Mem is to get Max GPU Mem
   // The size requested is for three ints

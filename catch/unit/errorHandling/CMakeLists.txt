@@ -4,6 +4,8 @@ set(TEST_SRC
     hipGetErrorString.cc
     hipGetLastError.cc
     hipPeekAtLastError.cc
+    hipDrvGetErrorName.cc
+    hipDrvGetErrorString.cc
 )
 
 hip_add_exe_to_target(NAME ErrorHandlingTest

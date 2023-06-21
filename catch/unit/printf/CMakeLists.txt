@@ -4,11 +4,23 @@ set(TEST_SRC
     printfSpecifiers.cc
     printfFlagsNonHost.cc
     printfSpecifiersNonHost.cc
+    printfHost.cc
 )
+
+if(UNIX)
+  set(AMD_TEST_SRC
+      printfNonHost.cc)
+endif()
+
+if(HIP_PLATFORM MATCHES "amd")
+  set(TEST_SRC ${TEST_SRC} ${AMD_TEST_SRC})
+endif()
+
 if(UNIX)
   if(HIP_PLATFORM MATCHES "amd")
     set_source_files_properties(printfFlagsNonHost.cc PROPERTIES COMPILE_OPTIONS "-mprintf-kind=buffered")
     set_source_files_properties(printfSpecifiersNonHost.cc PROPERTIES COMPILE_OPTIONS "-mprintf-kind=buffered")
+    set_source_files_properties(printfNonHost.cc PROPERTIES COMPILE_OPTIONS "-mprintf-kind=buffered")
   endif()
 endif()
 

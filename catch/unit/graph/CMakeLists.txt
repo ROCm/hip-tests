@@ -96,6 +96,10 @@ set(TEST_SRC
   hipLaunchHostFunc.cc
   hipStreamGetCaptureInfo_v2_old.cc
   hipUserObjectCreate.cc
+  hipUserObjectRelease.cc
+  hipUserObjectRetain.cc
+  hipGraphReleaseUserObject.cc
+  hipGraphRetainUserObject.cc
   hipGraphDebugDotPrint.cc
   hipGraphCloneComplx.cc
   hipGraphNodeSetEnabled.cc

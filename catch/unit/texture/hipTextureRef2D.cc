@@ -19,6 +19,9 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 
+
+#if CUDA_VERSION < CUDA_12000
+
 texture<float, 2, hipReadModeElementType> tex;
 
 __global__ void tex2DKernel(float* outputData, int width) {
@@ -90,3 +93,7 @@ TEST_CASE("Unit_hipTextureRef2D_Check") {
   HIP_CHECK(hipFree(dData));
   HIP_CHECK(hipFreeArray(hipArray));
 }
+
+
+#endif // CUDA_VERSION < CUDA_12000
+

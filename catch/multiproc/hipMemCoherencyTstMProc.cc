@@ -49,6 +49,19 @@ __global__  void CoherentTst(int *ptr, int PeakClk) {
   }
 }
 
+__global__  void CoherentTst_gfx11(int *ptr, int PeakClk) {
+#if HT_AMD
+  // Incrementing the value by 1
+  int64_t GpuFrq = int64_t(PeakClk) * 1000;
+  int64_t StrtTck = wall_clock64();
+  atomicAdd(ptr, 1);
+  // The following while loop checks the value in ptr for around 3-4 seconds
+  while ((wall_clock64() - StrtTck) <= (3 * GpuFrq)) {
+    if (atomicCAS(ptr, 3, 4) == 3) break;
+  }
+#endif
+}
+
 __global__  void SquareKrnl(int *ptr) {
   // ptr value squared here
   *ptr = (*ptr) * (*ptr);
@@ -64,14 +77,27 @@ static void TstCoherency(int *Ptr, bool HmmMem) {
   HIP_CHECK(hipStreamCreate(&strm));
   // storing value 1 in the memory created above
   *Ptr = 1;
+
   // Getting gpu frequency
-  HIP_CHECK(hipDeviceGetAttribute(&peak_clk, hipDeviceAttributeClockRate, 0));
-  if (!HmmMem) {
-    HIP_CHECK(hipHostGetDevicePointer(reinterpret_cast<void **>(&Dptr), Ptr,
-                                      0));
-    CoherentTst<<<1, 1, 0, strm>>>(Dptr, peak_clk);
+  if (IsGfx11()) {
+    HIPCHECK(hipDeviceGetAttribute(&peak_clk, hipDeviceAttributeWallClockRate, 0));
   } else {
-    CoherentTst<<<1, 1, 0, strm>>>(Ptr, peak_clk);
+    HIPCHECK(hipDeviceGetAttribute(&peak_clk, hipDeviceAttributeClockRate, 0));
+  }
+
+  if (!HmmMem) {
+    HIP_CHECK(hipHostGetDevicePointer(reinterpret_cast<void **>(&Dptr), Ptr, 0));
+    if (IsGfx11()) {
+      CoherentTst_gfx11<<<1, 1, 0, strm>>>(Dptr, peak_clk);
+    } else {
+      CoherentTst<<<1, 1, 0, strm>>>(Dptr, peak_clk);
+    }
+  } else {
+    if (IsGfx11()) {
+      CoherentTst_gfx11<<<1, 1, 0, strm>>>(Ptr, peak_clk);
+    } else {
+      CoherentTst<<<1, 1, 0, strm>>>(Ptr, peak_clk);
+    }
   }
   // looping until the value is 2 for 3 seconds
   std::chrono::steady_clock::time_point start =

@@ -43,11 +43,11 @@ THE SOFTWARE.
  *    incorrect parameters
  *  - Afterwards, correct values in the executable graph are set.
  *  - The executable graph is run and the results of the memset is verified.
- *  - `hipGraphMemsetNodeGetParams` is used to verify that node parameters in the graph were not updated,
- *    which also constitutes a test for said API.
+ *  - `hipGraphMemsetNodeGetParams` is used to verify that node parameters in the graph were not
+ * updated, which also constitutes a test for said API.
  *  - The test is repeated for all valid element sizes(1, 2, 4).
- *  - The test is repeated for several allocations of different width(height is always 1 because only 1D memset nodes
- *    can be updated).
+ *  - The test is repeated for several allocations of different width(height is always 1 because
+ * only 1D memset nodes can be updated).
  *  - The test is repeated for both host and device.
  * Test source
  * ------------------------
@@ -134,7 +134,8 @@ TEMPLATE_TEST_CASE("Unit_hipGraphExecMemsetNodeSetParams_Positive_Basic", "", ui
  *    -# When pMemsetParams pitch * pMemsetParams height is larger than the allocated memory region
  *      - Platform specific (NVIDIA)
  *      - Expected output: return `hipErrorInvalidValue`
- *    -# When pNodeParams dst data member holds a pointer to memory allocated on a device different from the one
+ *    -# When pNodeParams dst data member holds a pointer to memory allocated on a device different
+from the one
  *       the original dst was allocated on.
  *      - Multi-device
  *      - Expected output: return `hipErrorInvalidValue`

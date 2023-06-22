@@ -22,15 +22,14 @@ THE SOFTWARE.
 Testcase Scenarios
 ------------------
 Functional:
-1) Start stream capture and get capture info. Verify api is success, capture status is hipStreamCaptureStatusActive
- and identifier returned is valid/non-zero.
-2) End stream capture and get capture info. Verify api is success, capture status is hipStreamCaptureStatusNone
- and identifier is not returned/updated by api.
-3) Begin capture on hipStreamPerThread and get capture info. Verify api is success, capture status is hipStreamCaptureStatusActive
- and identifier returned is valid/non-zero.
-4) End capture on hipStreamPerThread, get capture info. Verify api is success, capture status is hipStreamCaptureStatusNone
- and identifier is not returned/updated by api.
-5) Perform multiple captures and verify the identifier returned is unique.
+1) Start stream capture and get capture info. Verify api is success, capture status is
+hipStreamCaptureStatusActive and identifier returned is valid/non-zero. 2) End stream capture and
+get capture info. Verify api is success, capture status is hipStreamCaptureStatusNone and identifier
+is not returned/updated by api. 3) Begin capture on hipStreamPerThread and get capture info. Verify
+api is success, capture status is hipStreamCaptureStatusActive and identifier returned is
+valid/non-zero. 4) End capture on hipStreamPerThread, get capture info. Verify api is success,
+capture status is hipStreamCaptureStatusNone and identifier is not returned/updated by api. 5)
+Perform multiple captures and verify the identifier returned is unique.
 
 Argument Validation/Negative:
 1) Pass pId as nullptr and verify api doesn’t crash and returns success.
@@ -70,7 +69,7 @@ void validateStreamCaptureInfo(hipStream_t mstream) {
 
   // Initialize input buffer
   for (size_t i = 0; i < N; ++i) {
-      A_h[i] = 3.146f + i;  // Pi
+    A_h[i] = 3.146f + i;  // Pi
   }
 
   // Create cross stream dependencies.
@@ -93,8 +92,8 @@ void validateStreamCaptureInfo(hipStream_t mstream) {
   HIP_CHECK(hipStreamWaitEvent(mstream, memsetEvent1, 0));
   HIP_CHECK(hipStreamWaitEvent(mstream, memsetEvent2, 0));
   HIP_CHECK(hipMemcpyAsync(A_d, A_h, Nbytes, hipMemcpyHostToDevice, mstream));
-  hipLaunchKernelGGL(HipTest::vector_square, dim3(blocks),
-                              dim3(threadsPerBlock), 0, mstream, A_d, C_d, N);
+  hipLaunchKernelGGL(HipTest::vector_square, dim3(blocks), dim3(threadsPerBlock), 0, mstream, A_d,
+                     C_d, N);
 
   hipStreamCaptureStatus captureStatus{hipStreamCaptureStatusNone};
   unsigned long long capSequenceID = 0;  // NOLINT
@@ -138,8 +137,7 @@ void validateStreamCaptureInfo(hipStream_t mstream) {
   // Validate the computation
   for (size_t i = 0; i < N; i++) {
     if (C_h[i] != A_h[i] * A_h[i]) {
-      INFO("A and C not matching at " << i << " C_h[i] " << C_h[i]
-                                           << " A_h[i] " << A_h[i]);
+      INFO("A and C not matching at " << i << " C_h[i] " << C_h[i] << " A_h[i] " << A_h[i]);
       REQUIRE(false);
     }
   }
@@ -182,18 +180,16 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_UniqueID") {
   for (int i = 0; i < numStreams; i++) {
     HIP_CHECK(hipStreamCreate(&streams[i]));
     HIP_CHECK(hipStreamBeginCapture(streams[i], hipStreamCaptureModeGlobal));
-    HIP_CHECK(hipStreamGetCaptureInfo(streams[i], &captureStatus,
-                                                            &capSequenceID));
+    HIP_CHECK(hipStreamGetCaptureInfo(streams[i], &captureStatus, &capSequenceID));
     REQUIRE(captureStatus == hipStreamCaptureStatusActive);
     REQUIRE(capSequenceID > 0);
     idlist.push_back(capSequenceID);
   }
 
   for (int i = 0; i < numStreams; i++) {
-    for (int j = i+1; j < numStreams; j++) {
+    for (int j = i + 1; j < numStreams; j++) {
       if (idlist[i] == idlist[j]) {
-        INFO("Same identifier returned for stream "
-                                          << i << " and stream " << j);
+        INFO("Same identifier returned for stream " << i << " and stream " << j);
         REQUIRE(false);
       }
     }

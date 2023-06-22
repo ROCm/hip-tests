@@ -140,7 +140,8 @@ void checkStreamCaptureInfo_v2(hipStreamCaptureMode mode, hipStream_t stream) {
  *  - When capture is ended, status is changed to `hipStreamCaptureStatusNone`.
  *  - Error is not reported when some arguments are not passed.
  *        -# Sequence graph is linear, number of created dependencies is 1, node type is correct.
- *        -# Sequence graph is branched, number of created dependencies is 2, node types are correct.
+ *        -# Sequence graph is branched, number of created dependencies is 2, node types are
+correct.
  * Test source
  * ------------------------
  *  - catch\unit\graph\hipStreamGetCaptureInfo_v2.cc
@@ -226,6 +227,7 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_v2_Positive_UniqueID") {
 TEST_CASE("Unit_hipStreamGetCaptureInfo_v2_Negative_Parameters") {
   hipGraph_t capInfoGraph{};
   hipStreamCaptureStatus captureStatus;
+#endif
   unsigned long long capSequenceID;  // NOLINT
   size_t numDependencies;
   const hipGraphNode_t* nodelist{};

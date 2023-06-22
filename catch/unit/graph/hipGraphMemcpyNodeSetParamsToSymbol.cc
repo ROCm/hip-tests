@@ -86,8 +86,8 @@ void GraphMemcpyToSymbolSetParamsShell(const void* symbol, const void* alt_symbo
  *  - A graph is constructed to which a MemcpyToSymbol node is added with valid but
  *    incorrect parameters.
  *  - The parameters are then updated to correct values and the graph executed.
- *  - After graph execution, a MemcpyFromSymbol is performed and the copied values are compared against
- *    values known to have been copied to symbol memory previously.  
+ *  - After graph execution, a MemcpyFromSymbol is performed and the copied values are compared
+ * against values known to have been copied to symbol memory previously.
  *  - The test is run for scalar, const scalar, array, and const array symbols of types char, int,
  *    float and double.
  *  - For array symbols, the test is repeated for zero and non-zero offset values.

@@ -89,7 +89,8 @@ void GraphExecMemcpyToSymbolSetParamsShell(const void* symbol, const void* alt_s
  *  - After the graph is instantiated the parameters are updated to correct values and the
  *    graph executed.
  *  - After graph execution, a MemcpyFromSymbol is performed.
- *  - The copied values are compared against values known to have been copied to symbol memory previously.  
+ *  - The copied values are compared against values known to have been copied to symbol memory
+previously.
  *  - The test is run for scalar, const scalar, array, and const array symbols of types char, int,
  *    float and double.
  *  - For array symbols, the test is repeated for zero and non-zero offset values.

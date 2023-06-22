@@ -21,7 +21,6 @@ THE SOFTWARE.
 */
 
 #include <functional>
-
 #include <hip_test_common.hh>
 #include <hip_test_defgroups.hh>
 #include <memcpy3d_tests_common.hh>

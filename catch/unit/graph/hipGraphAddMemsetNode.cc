@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -46,7 +46,8 @@ THE SOFTWARE.
  * Test Description
  * ------------------------
  *  - Verify that all elements of destination memory are set to the correct value.
- *  - The test is repeated for all valid element sizes(1, 2, 4), and several allocations of different
+ *  - The test is repeated for all valid element sizes(1, 2, 4), and several allocations of
+different
  *    height and width.
  *  - The test is repeated both on host and device.
  * Test source
@@ -127,6 +128,36 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_Negative_Parameters") {
   using namespace std::placeholders;
   hipGraph_t graph = nullptr;
   HIP_CHECK(hipGraphCreate(&graph, 0));
+  hipGraphNode_t memsetNode, memcpyNode;
+  // Add MemSet Node
+  hipMemsetParams memsetParams{};
+  memset(&memsetParams, 0, sizeof(memsetParams));
+  memsetParams.dst = reinterpret_cast<void*>(A_d);
+  memsetParams.value = memSetVal;
+  memsetParams.pitch = pitch_A;
+  memsetParams.elementSize = sizeof(char);
+  memsetParams.width = numW;
+  memsetParams.height = numH;
+  HIP_CHECK(hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0, &memsetParams));
+  nodeDependencies.push_back(memsetNode);
+  // Add MemCpy Node
+  hipMemcpy3DParms myparms{};
+  myparms.srcPos = make_hipPos(0, 0, 0);
+  myparms.dstPos = make_hipPos(0, 0, 0);
+  myparms.srcPtr = make_hipPitchedPtr(A_d, pitch_A, numW, numH);
+  myparms.dstPtr = make_hipPitchedPtr(A_h, width, numW, numH);
+  myparms.extent = make_hipExtent(width, numH, 1);
+  myparms.kind = hipMemcpyDeviceToHost;
+  HIP_CHECK(hipGraphAddMemcpyNode(&memcpyNode, graph, nodeDependencies.data(),
+                                  nodeDependencies.size(), &myparms));
+  nodeDependencies.clear();
+  // Create executable graph
+  hipStream_t streamForGraph;
+  hipGraphExec_t graphExec;
+  HIP_CHECK(hipStreamCreate(&streamForGraph));
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+  HIP_CHECK(hipGraphLaunch(graphExec, streamForGraph));
+  HIP_CHECK(hipStreamSynchronize(streamForGraph));
 
   LinearAllocGuard<int> alloc(LinearAllocs::hipMalloc, 4 * sizeof(int));
   hipMemsetParams params = {};
@@ -142,4 +173,6 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_Negative_Parameters") {
   MemsetCommonNegative(std::bind(hipGraphAddMemsetNode, &node, graph, nullptr, 0, _1), params);
 
   HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipStreamDestroy(streamForGraph));
+  HIP_CHECK(hipFree(A_d));
 }

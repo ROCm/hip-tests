@@ -86,7 +86,7 @@ TEST_CASE("Unit_hipLaunchHostFunc_Negative_Parameters") {
 /**
  * Test Description
  * ------------------------
- *  - Test to verify enquing a host function into a stream. 
+ *  - Test to verify enquing a host function into a stream.
  *  - Checks if the captured computation result is correct.
  * Test source
  * ------------------------

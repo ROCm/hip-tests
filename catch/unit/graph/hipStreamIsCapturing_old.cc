@@ -56,8 +56,9 @@ TEST_CASE("Unit_hipStreamIsCapturing_Negative") {
     ret = hipStreamIsCapturing(stream, nullptr);
     REQUIRE(hipErrorInvalidValue == ret);
   }
-  SECTION("Check capture status with hipStreamPerThread and"
-                 " nullptr as pCaptureStatus.") {
+  SECTION(
+      "Check capture status with hipStreamPerThread and"
+      " nullptr as pCaptureStatus.") {
     ret = hipStreamIsCapturing(hipStreamPerThread, nullptr);
     REQUIRE(hipErrorInvalidValue == ret);
   }
@@ -100,7 +101,7 @@ TEST_CASE("Unit_hipStreamIsCapturing_Functional") {
 
   // Fill with Phi + i
   for (size_t i = 0; i < N; i++) {
-      A_h[i] = 1.618f + i;
+    A_h[i] = 1.618f + i;
   }
 
   HIP_CHECK(hipMalloc(&A_d, Nbytes));
@@ -124,8 +125,8 @@ TEST_CASE("Unit_hipStreamIsCapturing_Functional") {
   HIP_CHECK(hipMemcpyAsync(A_d, A_h, Nbytes, hipMemcpyHostToDevice, stream));
 
   HIP_CHECK(hipMemsetAsync(C_d, 0, Nbytes, stream));
-  hipLaunchKernelGGL(HipTest::vector_square, dim3(blocks),
-                              dim3(threadsPerBlock), 0, stream, A_d, C_d, N);
+  hipLaunchKernelGGL(HipTest::vector_square, dim3(blocks), dim3(threadsPerBlock), 0, stream, A_d,
+                     C_d, N);
   HIP_CHECK(hipMemcpyAsync(C_h, C_d, Nbytes, hipMemcpyDeviceToHost, stream));
 
   HIP_CHECK(hipStreamEndCapture(stream, &graph));
@@ -168,7 +169,7 @@ TEST_CASE("Unit_hipStreamIsCapturing_hipStreamPerThread") {
 
   // Fill with Phi + i
   for (size_t i = 0; i < N; i++) {
-      A_h[i] = 1.618f + i;
+    A_h[i] = 1.618f + i;
   }
 
   HIP_CHECK(hipMalloc(&A_d, Nbytes));
@@ -181,22 +182,19 @@ TEST_CASE("Unit_hipStreamIsCapturing_hipStreamPerThread") {
     REQUIRE(hipStreamCaptureStatusNone == cStatus);
   }
 
-  HIP_CHECK(hipStreamBeginCapture(hipStreamPerThread,
-                                  hipStreamCaptureModeGlobal));
+  HIP_CHECK(hipStreamBeginCapture(hipStreamPerThread, hipStreamCaptureModeGlobal));
 
   SECTION("Start capturing a stream and check the status.") {
     HIP_CHECK(hipStreamIsCapturing(hipStreamPerThread, &cStatus));
     REQUIRE(hipStreamCaptureStatusActive == cStatus);
   }
 
-  HIP_CHECK(hipMemcpyAsync(A_d, A_h, Nbytes, hipMemcpyHostToDevice,
-                                             hipStreamPerThread));
+  HIP_CHECK(hipMemcpyAsync(A_d, A_h, Nbytes, hipMemcpyHostToDevice, hipStreamPerThread));
 
   HIP_CHECK(hipMemsetAsync(C_d, 0, Nbytes, hipStreamPerThread));
-  hipLaunchKernelGGL(HipTest::vector_square, dim3(blocks),
-           dim3(threadsPerBlock), 0, hipStreamPerThread, A_d, C_d, N);
-  HIP_CHECK(hipMemcpyAsync(C_h, C_d, Nbytes, hipMemcpyDeviceToHost,
-                                             hipStreamPerThread));
+  hipLaunchKernelGGL(HipTest::vector_square, dim3(blocks), dim3(threadsPerBlock), 0,
+                     hipStreamPerThread, A_d, C_d, N);
+  HIP_CHECK(hipMemcpyAsync(C_h, C_d, Nbytes, hipMemcpyDeviceToHost, hipStreamPerThread));
 
   HIP_CHECK(hipStreamEndCapture(hipStreamPerThread, &graph));
 

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2022 - 2023 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -842,6 +842,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_Negative_CheckingSyncDuringCapture") {
   SECTION("Synchronize stream during capture") {
     HIP_CHECK_ERROR(hipStreamSynchronize(stream), hipErrorStreamCaptureUnsupported);
   }
+#if HT_NVIDIA
   SECTION("Synchronize device during capture") {
     HIP_CHECK_ERROR(hipDeviceSynchronize(), hipErrorStreamCaptureUnsupported);
   }
@@ -1104,7 +1105,8 @@ TEST_CASE("Unit_hipStreamBeginCapture_Positive_nestedStreamCapture") {
  *  - Record event e4 on s3 and wait for it in s1.
  *  - Record event e3 on s2 and wait for it in s1.
  *  - End stream capture on s1.
- *  - Queue operations on both s2 and s3, and capture their graphs. Execute the graphs and verify the result.
+ *  - Queue operations on both s2 and s3, and capture their graphs. Execute the graphs and verify
+the result.
  * Test source
  * ------------------------
  *  - catch\unit\graph\hipStreamBeginCapture.cc

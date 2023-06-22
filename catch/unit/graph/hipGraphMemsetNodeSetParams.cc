@@ -42,8 +42,8 @@ THE SOFTWARE.
  *    incorrect parameters.
  *  - Afterwards the correct values are set.
  *  - The graph is executed and the results verified.
- *  - The parameters are also verified via `hipGraphMemsetNodeGetParams`, which also constitutes a test
- *    for said API.
+ *  - The parameters are also verified via `hipGraphMemsetNodeGetParams`, which also constitutes a
+ * test for said API.
  *  - The test is repeated for all valid element sizes(1, 2, 4).
  *  - The test is repeated for several allocations of different height and width.
  *  - The test is repeated for both host and device.

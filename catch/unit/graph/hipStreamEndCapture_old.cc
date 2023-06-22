@@ -103,8 +103,8 @@ TEST_CASE("Unit_hipStreamEndCapture_Negative") {
     HIP_CHECK(hipMemcpyAsync(A_d, A_h, Nbytes, hipMemcpyHostToDevice, stream));
 
     HIP_CHECK(hipMemsetAsync(C_d, 0, Nbytes, stream));
-    hipLaunchKernelGGL(HipTest::vector_square, dim3(blocks),
-                                dim3(threadsPerBlock), 0, stream, A_d, C_d, N);
+    hipLaunchKernelGGL(HipTest::vector_square, dim3(blocks), dim3(threadsPerBlock), 0, stream, A_d,
+                       C_d, N);
     HIP_CHECK(hipMemcpyAsync(C_h, C_d, Nbytes, hipMemcpyDeviceToHost, stream));
 
     HIP_CHECK(hipGraphDestroy(graph));
@@ -120,8 +120,7 @@ TEST_CASE("Unit_hipStreamEndCapture_Negative") {
 }
 
 static void thread_func(hipStream_t stream, hipGraph_t graph) {
-  HIP_ASSERT(hipErrorStreamCaptureWrongThread ==
-             hipStreamEndCapture(stream, &graph));
+  HIP_ASSERT(hipErrorStreamCaptureWrongThread == hipStreamEndCapture(stream, &graph));
 }
 
 TEST_CASE("Unit_hipStreamEndCapture_Thread_Negative") {
@@ -155,8 +154,8 @@ TEST_CASE("Unit_hipStreamEndCapture_Thread_Negative") {
   HIP_CHECK(hipMemcpyAsync(A_d, A_h, Nbytes, hipMemcpyHostToDevice, stream));
 
   HIP_CHECK(hipMemsetAsync(C_d, 0, Nbytes, stream));
-  hipLaunchKernelGGL(HipTest::vector_square, dim3(blocks),
-                              dim3(threadsPerBlock), 0, stream, A_d, C_d, N);
+  hipLaunchKernelGGL(HipTest::vector_square, dim3(blocks), dim3(threadsPerBlock), 0, stream, A_d,
+                     C_d, N);
   HIP_CHECK(hipMemcpyAsync(C_h, C_d, Nbytes, hipMemcpyDeviceToHost, stream));
 
   std::thread t(thread_func, stream, graph);
@@ -173,4 +172,3 @@ TEST_CASE("Unit_hipStreamEndCapture_Thread_Negative") {
   HIP_CHECK(hipStreamDestroy(stream));
   HIP_CHECK(hipGraphDestroy(graph));
 }
-

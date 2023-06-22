@@ -32,6 +32,20 @@ THE SOFTWARE.
 /**
  * @defgroup GraphTest Graph Management
  * @{
- * This section describes tests for the graph management types & functions of HIP runtime API.
+ * This section describes the graph management types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup ShflTest warp shuffle function Management
+ * @{
+ * This section describes the warp shuffle types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup StreamTest Stream Management
+ * @{
+ * This section describes the stream management types & functions of HIP runtime API.
  * @}
  */

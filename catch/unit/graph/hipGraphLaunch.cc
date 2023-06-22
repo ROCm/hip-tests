@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -149,4 +149,97 @@ TEST_CASE("hipGraphLaunch_Negative_Parameters") {
     HIP_CHECK(hipGraphExecDestroy(graph_exec));
     HIP_CHECK_ERROR(hipGraphLaunch(graph_exec, hipStreamPerThread), hipErrorInvalidValue);
   }
+}
+
+// Function to fill input data
+static void fillRandInpData(int* A1_h, int* A2_h, size_t N) {
+  unsigned int seed = time(nullptr);
+  for (size_t i = 0; i < N; i++) {
+    A1_h[i] = (HipTest::RAND_R(&seed) & 0xFF);
+    A2_h[i] = (HipTest::RAND_R(&seed) & 0xFF);
+  }
+}
+// Function to validate result
+static void validateOutData(int* A1_h, int* A2_h, size_t N) {
+  for (size_t i = 0; i < N; i++) {
+    int result = (A1_h[i] * A1_h[i]);
+    REQUIRE(result == A2_h[i]);
+  }
+}
+/*
+ * 1.Create a graph with multiple nodes. Create an executable graph.
+ * Launch the executable graph 3 times in stream simultaneously.
+ * Wait for stream. Validate the output. No issues should be observed
+ * 2.Create a graph with multiple nodes. Create an executable graph.
+ * Verify if an executable graph be launched on null stream.
+ */
+TEST_CASE("Unit_hipGraphLaunch_Functional_MultipleLaunch") {
+  size_t memSize = SIZE;
+  constexpr auto blocksPerCU = 6;  // to hide latency
+  constexpr auto threadsPerBlock = 256;
+  unsigned blocks = HipTest::setNumBlocks(blocksPerCU, threadsPerBlock, SIZE);
+  hipGraph_t graph;
+  std::vector<hipGraphNode_t> nodeDependencies;
+
+  HIP_CHECK(hipGraphCreate(&graph, 0));
+  int *A_h{nullptr}, *A_d{nullptr}, *C_d{nullptr}, *C_h{nullptr};
+
+  HipTest::initArrays<int>(&A_d, &C_d, nullptr, &A_h, &C_h, nullptr, SIZE, false);
+
+  hipGraphNode_t memcpyH2D, memcpyD2H, kernelNode;
+
+  // Create memcpy H2D nodes
+  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D, graph, nullptr, 0, A_d, A_h, (sizeof(int) * SIZE),
+                                    hipMemcpyHostToDevice));
+  nodeDependencies.push_back(memcpyH2D);
+  // Creating kernel node
+  hipKernelNodeParams kerNodeParams;
+  void* kernelArgs[] = {reinterpret_cast<void*>(&A_d), reinterpret_cast<void*>(&C_d),
+                        reinterpret_cast<void*>(&memSize)};
+  kerNodeParams.func = reinterpret_cast<void*>(HipTest::vector_square<int>);
+  kerNodeParams.gridDim = dim3(blocks);
+  kerNodeParams.blockDim = dim3(threadsPerBlock);
+  kerNodeParams.sharedMemBytes = 0;
+  kerNodeParams.kernelParams = reinterpret_cast<void**>(kernelArgs);
+  kerNodeParams.extra = nullptr;
+  HIP_CHECK(hipGraphAddKernelNode(&kernelNode, graph, nodeDependencies.data(),
+                                  nodeDependencies.size(), &kerNodeParams));
+  nodeDependencies.clear();
+  nodeDependencies.push_back(kernelNode);
+
+  // Create memcpy D2H nodes
+  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyD2H, graph, nodeDependencies.data(),
+                                    nodeDependencies.size(), C_h, C_d, (sizeof(int) * SIZE),
+                                    hipMemcpyDeviceToHost));
+  nodeDependencies.clear();
+
+  // Create executable graph
+  hipStream_t streamForGraph;
+  hipGraphExec_t graphExec{nullptr};
+  HIP_CHECK(hipStreamCreate(&streamForGraph));
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+  // Execute graph
+  SECTION("Multiple Graph Launch") {
+    for (int iter = 0; iter < TEST_LOOP_SIZE; iter++) {
+      fillRandInpData(A_h, C_h, SIZE);
+      HIP_CHECK(hipGraphLaunch(graphExec, streamForGraph));
+      HIP_CHECK(hipStreamSynchronize(streamForGraph));
+      validateOutData(A_h, C_h, SIZE);
+    }
+  }
+  SECTION("Graph launch on Null stream") {
+    for (int iter = 0; iter < TEST_LOOP_SIZE; iter++) {
+      fillRandInpData(A_h, C_h, SIZE);
+      HIP_CHECK(hipGraphLaunch(graphExec, 0));
+      HIP_CHECK(hipStreamSynchronize(0));
+      validateOutData(A_h, C_h, SIZE);
+    }
+  }
+
+  HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipGraphExecDestroy(graphExec));
+  HIP_CHECK(hipStreamDestroy(streamForGraph));
+
+  // Free
+  HipTest::freeArrays<int>(A_d, C_d, nullptr, A_h, C_h, nullptr, false);
 }

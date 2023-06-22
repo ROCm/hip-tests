@@ -28,8 +28,8 @@ THE SOFTWARE.
  * @addtogroup hipGraphReleaseUserObject hipGraphReleaseUserObject
  * @{
  * @ingroup GraphTest
- * `hipGraphReleaseUserObject(hipGraph_t graph, hipUserObject_t object, unsigned int count __dparm(1))` -
- * Release user object from graphs.
+ * `hipGraphReleaseUserObject(hipGraph_t graph, hipUserObject_t object, unsigned int count
+ * __dparm(1))` - Release user object from graphs.
  * ________________________
  * Test cases from other modules:
  *  - @ref Unit_hipGraphRetainUserObject_Functional_2

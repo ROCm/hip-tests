@@ -79,7 +79,7 @@ void GraphMemcpyToSymbolShell(const void* symbol, size_t offset, const std::vect
  *  - A graph is constructed to which a MemcpyToSymbol node is added.
  *  - After graph execution, a MemcpyFromSymbol is performed.
  *  - The copied values are compared against values known to have been copied to symbol memory
- *    previously.  
+ *    previously.
  *  - The test is run for scalar, const scalar, array, and const array symbols of types char, int,
  *    float and double.
  *  - For array symbols, the test is repeated for zero and non-zero offset values.

@@ -178,6 +178,10 @@ TEST_CASE("Unit_hipGraphAddHostNode_ClonedGraphWithHostNode") {
   hipGraph_t clonedgraph;
   HIP_CHECK(hipGraphClone(&clonedgraph, graph));
 
+  HIP_CHECK(hipGraphNodeFindInClone(&cloned_memcpyH2D_A, memcpyH2D_A, clonedgraph));
+  HIP_CHECK(hipGraphNodeFindInClone(&cloned_memcpyH2D_C, memcpyH2D_C, clonedgraph));
+  HIP_CHECK(hipGraphNodeFindInClone(&cloned_memcpyD2H_AC, memcpyD2H_AC, clonedgraph));
+
   hipGraphNode_t hostNode;
   hipHostNodeParams hostParams = {0, 0};
   hostParams.fn = callbackfunc;

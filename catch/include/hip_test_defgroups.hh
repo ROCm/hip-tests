@@ -45,9 +45,23 @@ THE SOFTWARE.
  */
 
 /**
+ * @defgroup ShflTest warp shuffle function Management
+ * @{
+ * This section describes the warp shuffle types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
  * @defgroup ContextTest Context Management
  * @{
  * This section describes tests for the context management functions of HIP runtime API.
  * @warning All Context Management APIs are **deprecated** and shall not be implemented.
+ * @}
+ */
+
+/**
+ * @defgroup StreamTest Stream Management
+ * @{
+ * This section describes the stream management types & functions of HIP runtime API.
  * @}
  */

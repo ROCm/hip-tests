@@ -178,14 +178,19 @@ TEST_CASE("Unit_hipMemcpyPeer_Positive_ZeroSize") {
     const auto element_count = allocation_size / sizeof(*src_alloc.ptr());
     constexpr auto thread_count = 1024;
     const auto block_count = element_count / thread_count + 1;
-    constexpr int set_value = 22;
+    constexpr int set_value_s = 22;
     HIP_CHECK(hipSetDevice(src_device));
-    VectorSet<<<block_count, thread_count, 0>>>(src_alloc.ptr(), set_value, element_count);
+    VectorSet<<<block_count, thread_count, 0>>>(src_alloc.ptr(), set_value_s, element_count);
     HIP_CHECK(hipGetLastError());
 
-    constexpr int expected_value = 21;
-    std::fill_n(src_alloc.host_ptr(), element_count, expected_value);
+    constexpr int expected_value = 20;
+    HIP_CHECK(hipSetDevice(dst_device));
+    VectorSet<<<block_count, thread_count, 0>>>(dst_alloc.ptr(), expected_value, element_count);
+    HIP_CHECK(hipGetLastError());
+    HIP_CHECK(hipSetDevice(src_device));
 
+    constexpr int set_value_h = 21;
+    std::fill_n(result.host_ptr(), element_count, set_value_h);
     HIP_CHECK(hipMemcpyPeer(dst_alloc.ptr(), dst_device, src_alloc.ptr(), src_device, 0));
 
     HIP_CHECK(

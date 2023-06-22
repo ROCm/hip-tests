@@ -94,7 +94,6 @@ set(TEST_SRC
     hipPointerGetAttribute.cc
     hipDrvPtrGetAttributes.cc
     hipMemPrefetchAsync.cc
-    hipArray.cc
     hipMemGetInfo.cc
     hipFree.cc
     hipMemcpySync.cc
@@ -115,8 +114,7 @@ if(HIP_PLATFORM MATCHES "amd")
       hipMemCoherencyTst.cc
       hipExtMallocWithFlags.cc
       hipMallocMngdMultiThread.cc
-      hipArray.cc
-      hipMemVmm.cc)
+      hipArray.cc)
 else()
   set(TEST_SRC ${TEST_SRC} hipGetSymbolSizeAddress.cc)
 endif()

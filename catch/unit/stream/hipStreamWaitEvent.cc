@@ -94,6 +94,20 @@ __global__ void waitKernel(int clockRate, int seconds) {
   }
 }
 
+__global__ void waitKernel_gfx11(int clockRate, int seconds) {
+#if HT_AMD
+  auto start = wall_clock64();
+  auto ms = seconds * 1000;
+  long long waitTill = clockRate * (long long)ms;
+  while (1) {
+    auto end = wall_clock64();
+    if ((end - start) > waitTill) {
+      return;
+    }
+  }
+#endif
+}
+
 TEST_CASE("Unit_hipStreamWaitEvent_Default") {
   hipStream_t stream{nullptr};
   hipEvent_t waitEvent{nullptr};
@@ -111,7 +125,8 @@ TEST_CASE("Unit_hipStreamWaitEvent_Default") {
   HIP_CHECK(hipGetDeviceProperties(&prop, deviceId));
   auto clockRate = prop.clockRate;
 
-  waitKernel<<<1, 1, 0, stream>>>(clockRate, 2);  // Wait for 2 seconds
+  auto waitKernel_used = IsGfx11() ? waitKernel_gfx11 : waitKernel;
+  waitKernel_used<<<1, 1, 0, stream>>>(clockRate, 2);  // Wait for 2 seconds
 
   HIP_CHECK(hipEventRecord(waitEvent, stream));
 
@@ -145,8 +160,8 @@ TEST_CASE("Unit_hipStreamWaitEvent_DifferentStreams") {
   hipDeviceProp_t prop{};
   HIP_CHECK(hipGetDeviceProperties(&prop, deviceId));
   auto clockRate = prop.clockRate;
-
-  waitKernel<<<1, 1, 0, blockedStreamA>>>(clockRate,
+  auto waitKernel_used = IsGfx11() ? waitKernel_gfx11 : waitKernel;
+  waitKernel_used<<<1, 1, 0, blockedStreamA>>>(clockRate,
                                           3);  // wait for 3 seconds
   HIP_CHECK(hipEventRecord(waitEvent, blockedStreamA));
 
@@ -155,7 +170,7 @@ TEST_CASE("Unit_hipStreamWaitEvent_DifferentStreams") {
 
   HIP_CHECK(hipStreamWaitEvent(streamBlockedOnStreamA, waitEvent, 0));
 
-  waitKernel<<<1, 1, 0, streamBlockedOnStreamA>>>(clockRate, 2);  // Wait for 2 seconds
+  waitKernel_used<<<1, 1, 0, streamBlockedOnStreamA>>>(clockRate, 2);  // Wait for 2 seconds
 
   HIP_CHECK(hipStreamSynchronize(unblockingStream));
 

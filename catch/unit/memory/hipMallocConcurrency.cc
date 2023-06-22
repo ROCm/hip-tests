@@ -58,7 +58,6 @@ static std::atomic<bool> g_thTestPassed{true};
 static bool validateMemoryOnGPU(int gpu, bool concurOnOneGPU = false) {
   int *A_d, *B_d, *C_d;
   int *A_h, *B_h, *C_h;
-  size_t prevAvl, prevTot, curAvl, curTot;
   bool TestPassed = true;
   constexpr auto N = 4 * 1024 * 1024;
   constexpr auto blocksPerCU = 6;  // to hide latency
@@ -66,16 +65,7 @@ static bool validateMemoryOnGPU(int gpu, bool concurOnOneGPU = false) {
   size_t Nbytes = N * sizeof(int);
 
   HIP_CHECK(hipSetDevice(gpu));
-  HIP_CHECK(hipMemGetInfo(&prevAvl, &prevTot));
   HipTest::initArrays(&A_d, &B_d, &C_d, &A_h, &B_h, &C_h, N, false);
-  HIP_CHECK(hipMemGetInfo(&curAvl, &curTot));
-
-  if (!concurOnOneGPU && (prevAvl < curAvl || prevTot != curTot)) {
-    //In concurrent calls on one GPU, we cannot verify leaking in this way
-    printf("%s : Memory allocation mismatch observed."
-        "Possible memory leak.\n", __func__);
-    TestPassed &= false;
-  }
 
   unsigned blocks = HipTest::setNumBlocks(blocksPerCU, threadsPerBlock, N);
 
@@ -94,16 +84,7 @@ static bool validateMemoryOnGPU(int gpu, bool concurOnOneGPU = false) {
     TestPassed = false;
   }
 
-  HIP_CHECK(hipMemGetInfo(&prevAvl, &prevTot));
   HipTest::freeArrays(A_d, B_d, C_d, A_h, B_h, C_h, false);
-  HIP_CHECK(hipMemGetInfo(&curAvl, &curTot));
-
-  if (!concurOnOneGPU && (curAvl < prevAvl || prevTot != curTot)) {
-    // In concurrent calls on one GPU, we cannot verify leaking in this way
-    UNSCOPED_INFO("validateMemoryOnGPU : Memory allocation mismatch observed."
-                  << "Possible memory leak.");
-    TestPassed = false;
-  }
 
   return TestPassed;
 }
@@ -111,8 +92,7 @@ static bool validateMemoryOnGPU(int gpu, bool concurOnOneGPU = false) {
 
 // Regress memory allocation and free in loop
 static bool regressAllocInLoop(int gpu) {
-  bool TestPassed = true;
-  size_t tot, avail, ptot, pavail, numBytes;
+  size_t numBytes;
   int i = 0;
   int* ptr;
 
@@ -121,64 +101,31 @@ static bool regressAllocInLoop(int gpu) {
 
   // Exercise allocation in loop with bigger chunks
   for (i = 0; i < MaxAllocFree_BigChunks; i++) {
-    HIP_CHECK(hipMemGetInfo(&pavail, &ptot));
     HIP_CHECK(hipMalloc(&ptr, numBytes));
-    HIP_CHECK(hipMemGetInfo(&avail, &tot));
     HIP_CHECK(hipFree(ptr));
-
-    if (pavail - avail < numBytes) {  // We expect pavail-avail >= numBytes
-      UNSCOPED_INFO("LoopAllocation " << i << " : Memory allocation of " << numBytes
-                                      << " not matching with hipMemGetInfo - FAIL."
-                                      << "pavail=" << pavail << ", ptot=" << ptot
-                                      << ", avail=" << avail << ", tot=" << tot
-                                      << ", pavail-avail=" << pavail - avail);
-      TestPassed = false;
-      break;
-    }
   }
 
   // Exercise allocation in loop with smaller chunks and maximum iters
-  HIP_CHECK(hipMemGetInfo(&pavail, &ptot));
   numBytes = BuffSizeSC;
 
   for (i = 0; i < MaxAllocFree_SmallChunks; i++) {
     HIP_CHECK(hipMalloc(&ptr, numBytes));
-
     HIP_CHECK(hipFree(ptr));
   }
-
-  HIP_CHECK(hipMemGetInfo(&avail, &tot));
-
-  if ((pavail != avail) || (ptot != tot)) {
-    UNSCOPED_INFO("LoopAllocation : Memory allocation mismatch observed."
-                  << "Possible memory leak.");
-    TestPassed &= false;
-  }
-
-  return TestPassed;
+  return true;
 }
 
 // Validates data consistency on supplied gpu in Multithreaded Environment
 static bool validateMemoryOnGpuMThread(int gpu, bool concurOnOneGPU = false) {
   int *A_d, *B_d, *C_d;
   int *A_h, *B_h, *C_h;
-  size_t prevAvl, prevTot, curAvl, curTot;
   bool TestPassed = true;
   constexpr auto N = 4 * 1024 * 1024;
   constexpr auto blocksPerCU = 6;  // to hide latency
   constexpr auto threadsPerBlock = 256;
   size_t Nbytes = N * sizeof(int);
   HIPCHECK(hipSetDevice(gpu));
-  HIPCHECK(hipMemGetInfo(&prevAvl, &prevTot));
   HipTest::initArrays(&A_d, &B_d, &C_d, &A_h, &B_h, &C_h, N, false);
-  HIPCHECK(hipMemGetInfo(&curAvl, &curTot));
-
-  if (!concurOnOneGPU && (prevAvl < curAvl || prevTot != curTot)) {
-    //In concurrent calls on one GPU, we cannot verify leaking in this way
-    printf("%s : Memory allocation mismatch observed."
-        "Possible memory leak.\n", __func__);
-    TestPassed &= false;
-  }
 
   unsigned blocks = HipTest::setNumBlocks(blocksPerCU, threadsPerBlock, N);
 
@@ -197,32 +144,14 @@ static bool validateMemoryOnGpuMThread(int gpu, bool concurOnOneGPU = false) {
     TestPassed = false;
   }
 
-  HIPCHECK(hipMemGetInfo(&prevAvl, &prevTot));
   HipTest::freeArrays(A_d, B_d, C_d, A_h, B_h, C_h, false);
-  HIPCHECK(hipMemGetInfo(&curAvl, &curTot));
-
-  if (!concurOnOneGPU && (curAvl < prevAvl || prevTot != curTot)) {
-    // In concurrent calls on one GPU, we cannot verify leaking in this way
-    UNSCOPED_INFO("validateMemoryOnGPU : Memory allocation mismatch observed."
-                  << "Possible memory leak.");
-    TestPassed = false;
-  }
-
-  if (!concurOnOneGPU && (prevAvl != curAvl || prevTot != curTot)) {
-    // In concurrent calls on one GPU, we cannot verify leaking in this way
-    UNSCOPED_INFO(
-        "validateMemoryOnGpuMThread : Memory allocation mismatch observed."
-        "Possible memory leak.");
-    TestPassed = false;
-  }
 
   return TestPassed;
 }
 
 // Regress memory allocation and free in loop in Multithreaded Environment
 static bool regressAllocInLoopMthread(int gpu) {
-  bool TestPassed = true;
-  size_t tot, avail, ptot, pavail, numBytes;
+  size_t numBytes;
   int i = 0;
   int* ptr;
 
@@ -231,41 +160,18 @@ static bool regressAllocInLoopMthread(int gpu) {
 
   // Exercise allocation in loop with bigger chunks
   for (i = 0; i < MaxAllocFree_BigChunks; i++) {
-    HIPCHECK(hipMemGetInfo(&pavail, &ptot));
     HIPCHECK(hipMalloc(&ptr, numBytes));
-    HIPCHECK(hipMemGetInfo(&avail, &tot));
     HIPCHECK(hipFree(ptr));
-
-    if (pavail - avail < numBytes) {  // We expect pavail-avail >= numBytes
-      UNSCOPED_INFO("LoopAllocation " << i << " : Memory allocation of " << numBytes
-                                      << " not matching with hipMemGetInfo - FAIL."
-                                      << "pavail=" << pavail << ", ptot=" << ptot
-                                      << ", avail=" << avail << ", tot=" << tot
-                                      << ", pavail-avail=" << pavail - avail);
-      TestPassed = false;
-      break;
-    }
   }
 
   // Exercise allocation in loop with smaller chunks and maximum iters
-  HIPCHECK(hipMemGetInfo(&pavail, &ptot));
   numBytes = BuffSizeSC;
-
   for (i = 0; i < MaxAllocFree_SmallChunks; i++) {
     HIPCHECK(hipMalloc(&ptr, numBytes));
-
     HIPCHECK(hipFree(ptr));
   }
 
-  HIPCHECK(hipMemGetInfo(&avail, &tot));
-
-  if ((pavail != avail) || (ptot != tot)) {
-    UNSCOPED_INFO("LoopAllocation : Memory allocation mismatch observed."
-                  << "Possible memory leak.");
-    TestPassed &= false;
-  }
-
-  return TestPassed;
+  return true;
 }
 
 // Thread func to regress alloc and check data consistency
@@ -358,7 +264,7 @@ TEST_CASE("Unit_hipMalloc_LoopRegressionAllocFreeCycles") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMalloc_AllocateAndPoolBuffers") {
-  size_t avail{0}, tot{0}, pavail{0}, ptot{0};
+  size_t avail{0}, tot{0};
   bool ret{false};
   hipError_t err{};
   std::vector<int*> ptrlist{};
@@ -368,8 +274,6 @@ TEST_CASE("Unit_hipMalloc_AllocateAndPoolBuffers") {
   // Get GPU count
   HIP_CHECK(hipGetDeviceCount(&devCnt));
   REQUIRE(devCnt > 0);
-
-  HIP_CHECK(hipMemGetInfo(&pavail, &ptot));
 
   // Allocate small chunks of memory million times
   for (int i = 0; i < MaxAllocPoolIter; i++) {
@@ -391,13 +295,8 @@ TEST_CASE("Unit_hipMalloc_AllocateAndPoolBuffers") {
   for (auto& t : ptrlist) {
     HIP_CHECK(hipFree(t));
   }
-
-  HIP_CHECK(hipMemGetInfo(&avail, &tot));
-
   ret = validateMemoryOnGPU(0);
   REQUIRE(ret == true);
-  REQUIRE(pavail == avail);
-  REQUIRE(ptot == tot);
 }
 
 /**

@@ -228,11 +228,10 @@ TEST_CASE("Unit_hipMemsetFunctional_SmallSize_hipMemsetD8") {}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipMemsetFunctional_ZeroSize_hipMemsetD8") {}
-/**
- * End doxygen group hipMemsetD8.
- * @}
- */
+TEST_CASE("Unit_hipMemsetFunctional_ZeroSize_hipMemsetD8") {} /**
+                                                               * End doxygen group hipMemsetD8.
+                                                               * @}
+                                                               */
 
 /**
  * End doxygen group MemoryTest.
@@ -243,6 +242,12 @@ TEST_CASE("Unit_hipMemsetFunctional_ZeroSize_hipMemsetD8") {}
  * @defgroup MemoryMTest Managed Memory
  * @{
  * This section describes tests for the managed memory management functions of HIP runtime API.
+ */
+
+/**
+ * @defgroup ShflTest warp shuffle function Management
+ * @{
+ * This section describes the warp shuffle types & functions of HIP runtime API.
  * @}
  */
 
@@ -250,6 +255,13 @@ TEST_CASE("Unit_hipMemsetFunctional_ZeroSize_hipMemsetD8") {}
  * @defgroup PeerToPeerTest PeerToPeer Device Memory Access
  * @{
  *  @warning PeerToPeer support is experimental.
- *  This section describes tests for the PeerToPeer device memory access functions of HIP runtime API.
+ *  This section describes tests for the PeerToPeer device memory access functions of HIP
+ * runtime API.
+ */
+
+/**
+ * @defgroup StreamTest Stream Management
+ * @{
+ *This section describes the stream management types& functions of HIP runtime API.
  * @}
  */

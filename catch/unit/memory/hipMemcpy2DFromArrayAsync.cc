@@ -16,7 +16,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-
 #include "array_memcpy_tests_common.hh"
 
 #include <hip/hip_runtime_api.h>
@@ -29,8 +28,8 @@ THE SOFTWARE.
  * @{
  * @ingroup MemoryTest
  * `hipMemcpy2DFromArrayAsync( void* dst, size_t dpitch, hipArray_const_t src, size_t wOffset,
- * size_t hOffset, size_t width, size_t height, hipMemcpyKind kind, hipStream_t stream __dparm(0))` -
- * Copies data between host and device asynchronously.
+ * size_t hOffset, size_t width, size_t height, hipMemcpyKind kind, hipStream_t stream __dparm(0))`
+ * - Copies data between host and device asynchronously.
  */
 
 /**

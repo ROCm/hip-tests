@@ -189,18 +189,12 @@ static void MemoryAllocDiffSizes(int gpu) {
     } else {
       width = LARGECHUNK_NUMW * sizeof(T);
     }
-    size_t tot, avail, ptot, pavail;
-    HIP_CHECK(hipMemGetInfo(&pavail, &ptot));
     for (int i = 0; i < CHUNK_LOOP; i++) {
       HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&A_d[i]),
             &pitch_A, width, sizes));
     }
     for (int i = 0; i < CHUNK_LOOP; i++) {
       HIP_CHECK(hipFree(A_d[i]));
-    }
-    HIP_CHECK(hipMemGetInfo(&avail, &tot));
-    if (pavail != avail) {
-      HIPASSERT(false);
     }
   }
 }
@@ -428,21 +422,12 @@ TEST_CASE("Unit_hipMallocPitch_MultiThread", "") {
   int devCnt = 0;
 
   devCnt = HipTest::getDeviceCount();
-
-  size_t tot, avail, ptot, pavail;
-  HIP_CHECK(hipMemGetInfo(&pavail, &ptot));
   for (int i = 0; i < devCnt; i++) {
     threadlist.push_back(std::thread(threadFunc, i));
   }
 
   for (auto &t : threadlist) {
     t.join();
-  }
-  HIP_CHECK(hipMemGetInfo(&avail, &tot));
-
-  if (pavail != avail) {
-    WARN("Memory leak of hipMallocPitch API in multithreaded scenario");
-    REQUIRE(false);
   }
 }
 

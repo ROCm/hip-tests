@@ -335,6 +335,21 @@ TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_AccessedBy_Basic") {
   for (auto it = cbegin(data) + 2; it != cend(data); ++it) {
     REQUIRE(*it == hipInvalidDeviceId);
   }
+
+  LinearAllocGuard<void> allocation(LinearAllocs::hipMallocManaged, 2 * kPageSize);
+
+  HIP_CHECK(hipMemPrefetchAsync(allocation.ptr(), kPageSize, 0));
+
+  int32_t data;
+  HIP_CHECK(hipMemRangeGetAttribute(&data, sizeof(data), hipMemRangeAttributeLastPrefetchLocation,
+                                    allocation.ptr(), 2 * kPageSize));
+
+  REQUIRE(data == hipInvalidDeviceId);
+
+  HIP_CHECK(hipMemRangeGetAttribute(&data, sizeof(data), hipMemRangeAttributeLastPrefetchLocation,
+                                    allocation.ptr(), kPageSize));
+
+  REQUIRE(data == 0);
 }
 
 /**

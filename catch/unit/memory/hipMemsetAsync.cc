@@ -95,10 +95,7 @@ static void doMemsetTest(allocType mallocType, memType memset_type, MultiDData d
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemsetASyncMulti") {
-#if HT_AMD
-  HipTest::HIP_SKIP_TEST("EXSWCPHIPT-127");
-  return;
-#endif
+
   allocType mallocType = GENERATE(allocType::hostMalloc, allocType::deviceMalloc,
                                   allocType::hostRegisted, allocType::devRegistered);
   memType mem_type = memType::hipMemsetD8;
@@ -126,10 +123,6 @@ TEST_CASE("Unit_hipMemsetASyncMulti") {
  *  - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_hipMemsetDASyncMulti", "", int8_t, int16_t, uint32_t) {
-#if HT_AMD
-  HipTest::HIP_SKIP_TEST("EXSWCPHIPT-127");
-  return;
-#endif
   allocType mallocType = GENERATE(allocType::hostRegisted, allocType::deviceMalloc,
                                   allocType::hostMalloc, allocType::devRegistered);
   memType memset_type;

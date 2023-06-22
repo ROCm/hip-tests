@@ -18,8 +18,8 @@ elseif (HIP_PLATFORM MATCHES "nvidia")
 endif()
 
 # Standalone exes
-add_executable(printfFlags EXCLUDE_FROM_ALL printfFlags_exe.cc)
-add_executable(printfSpecifiers EXCLUDE_FROM_ALL printfSpecifiers_exe.cc)
+add_executable(printfFlags_exe EXCLUDE_FROM_ALL printfFlags_exe.cc)
+add_executable(printfSpecifiers_exe EXCLUDE_FROM_ALL printfSpecifiers_exe.cc)
 
-add_dependencies(printfTests printfFlags)
-add_dependencies(printfTests printfSpecifiers)
+add_dependencies(build_tests printfFlags_exe)
+add_dependencies(build_tests printfSpecifiers_exe)

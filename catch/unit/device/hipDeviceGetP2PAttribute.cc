@@ -157,20 +157,20 @@ TEST_CASE("Unit_hipDeviceGetP2PAttribute_Negative") {
 
   /* https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#env-vars */
   SECTION("Hidden devices using environment variables") {
-    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute").run("") == hipSuccess);
-    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute").run("0") == hipErrorInvalidDevice);
-    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute").run("1") == hipErrorInvalidDevice);
-    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute").run("0,1") == hipSuccess);
-    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute").run("-1,0") == hipErrorNoDevice);
-    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute").run("0,-1") == hipErrorInvalidDevice);
-    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute").run("0,1,-1") == hipSuccess);
-    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute").run("0,-1,1") == hipErrorInvalidDevice);
+    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("") == hipSuccess);
+    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("0") == hipErrorInvalidDevice);
+    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("1") == hipErrorInvalidDevice);
+    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("0,1") == hipSuccess);
+    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("-1,0") == hipErrorNoDevice);
+    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("0,-1") == hipErrorInvalidDevice);
+    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("0,1,-1") == hipSuccess);
+    REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("0,-1,1") == hipErrorInvalidDevice);
 
     if (deviceCount > 2) {
-      REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute").run("2,1") == hipSuccess);
-      REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute").run("2") == hipErrorInvalidDevice);
+      REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("2,1") == hipSuccess);
+      REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("2") == hipErrorInvalidDevice);
     } else {
-      REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute").run("2,1") == hipErrorNoDevice);
+      REQUIRE(hip::SpawnProc("hipDeviceGetP2PAttribute_exe").run("2,1") == hipErrorNoDevice);
     }
   }
 #endif

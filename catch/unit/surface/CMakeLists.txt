@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2023 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -17,27 +17,14 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-ifeq ($(OS),Windows_NT)
- $(error Makefile is not supported on windows platform. Please use cmake instead to build sample.)
-endif
-ROCM_PATH?= $(wildcard /opt/rocm/)
-HIP_PATH?= $(wildcard $(ROCM_PATH)/hip)
-ifeq (,$(HIP_PATH))
-	HIP_PATH=../../..
-endif
-HIPCC=$(HIP_PATH)/bin/hipcc -std=c++11
 
-CXXFLAGS = -O3
+# Common Tests - Test independent of all platforms
+set(TEST_SRC
+    hipSurfaceObj1D.cc
+    hipSurfaceObj2D.cc
+    hipSurfaceObj3D.cc
+)
 
-all: test_kernel.code hipDispatchLatency.out hipDispatchEnqueueRateMT.out
-
-hipDispatchLatency.out: hipDispatchLatency.cpp
-	$(HIPCC) $(CXXFLAGS) hipDispatchLatency.cpp -o $@
-
-hipDispatchEnqueueRateMT.out: hipDispatchEnqueueRateMT.cpp
-	$(HIPCC) $(CXXFLAGS) hipDispatchEnqueueRateMT.cpp -lpthread -o $@
-
-test_kernel.code: test_kernel.cpp
-	$(HIP_PATH)/bin/hipcc --genco  $(GENCO_FLAGS) $^ -o $@
-clean:
-	rm -f *.o *.out
+hip_add_exe_to_target(NAME SurfaceTest
+                      TEST_SRC ${TEST_SRC}
+                      TEST_TARGET_NAME build_tests)

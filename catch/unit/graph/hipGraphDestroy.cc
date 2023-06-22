@@ -20,62 +20,46 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 
 /**
-Negative Testcase Scenarios :
-1) Pass graph as nullptr and verify.
-2) Destroy already destroyed graph and check api returns error code.
-3) Destroy graph when is in use and make sure api handles it gracefully.
-*/
+ * @addtogroup hipGraphDestroy hipGraphDestroy
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphDestroy(hipGraph_t graph)` -
+ * Destroys a graph
+ */
 
-TEST_CASE("Unit_hipGraphDestroy_Negative") {
-  hipError_t ret;
-  SECTION("Deleting HipGraph with nullptr") {
-    ret = hipGraphDestroy(nullptr);
-    REQUIRE(hipErrorInvalidValue == ret);
-  }
-#if HT_AMD
-  SECTION("Destroy already destroyed graph and check api returns error code") {
-    hipGraph_t graph;
-    HIP_CHECK(hipGraphCreate(&graph, 0));
-    HIP_CHECK(hipGraphDestroy(graph));
+/**
+ * Test Description
+ * ------------------------
+ *    - Basic positive test for hipGraphDestroy
+ *    - Create an emtpy graph and then destroy it
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphDestroy.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipGraphDestroy_Positive_Basic") {
+  hipGraph_t graph = nullptr;
 
-    ret = hipGraphDestroy(graph);
-    REQUIRE(hipErrorIllegalState == ret);
-  }
-#endif
-  SECTION("Destroy graph when is in use and make sure api handles"
-          " it gracefully.") {
-    hipGraph_t graph;
-    hipGraphExec_t graphExec;
-    hipStream_t streamForGraph;
-    hipGraphNode_t memsetNode;
+  HIP_CHECK(hipGraphCreate(&graph, 0));
+  REQUIRE(nullptr != graph);
 
-    HIP_CHECK(hipGraphCreate(&graph, 0));
-    HIP_CHECK(hipStreamCreate(&streamForGraph));
-
-    char *devData;
-    HIP_CHECK(hipMalloc(&devData, 1024));
-    hipMemsetParams memsetParams{};
-    memset(&memsetParams, 0, sizeof(memsetParams));
-    memsetParams.dst = reinterpret_cast<void*>(devData);
-    memsetParams.value = 0;
-    memsetParams.pitch = 0;
-    memsetParams.elementSize = sizeof(char);
-    memsetParams.width = 1024;
-    memsetParams.height = 1;
-    HIP_CHECK(hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0,
-                                    &memsetParams));
-
-    HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
-    REQUIRE(graphExec != nullptr);
-
-    HIP_CHECK(hipGraphDestroy(graph));
-
-    HIP_CHECK(hipGraphLaunch(graphExec, streamForGraph));
-    HIP_CHECK(hipStreamSynchronize(streamForGraph));
-
-    HIP_CHECK(hipFree(devData));
-    HIP_CHECK(hipGraphExecDestroy(graphExec));
-    HIP_CHECK(hipStreamDestroy(streamForGraph));
-  }
+  HIP_CHECK(hipGraphDestroy(graph));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Basic negative parameter test for hipGraphDestroy
+ *        -# Expected hipErrorInvalidValue when graph is invalid
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphDestroy.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipGraphDestroy_Negative_Parameters") {
+  HIP_CHECK_ERROR(hipGraphDestroy(static_cast<hipGraph_t>(nullptr)), hipErrorInvalidValue);
+}

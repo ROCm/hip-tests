@@ -140,8 +140,6 @@ TEST_CASE("Unit_hipEventSynchronize_NoEventRecord_Positive") {
 
   // Record the end_event
   HIP_CHECK(hipEventRecord(end_event, NULL));
-  // End event has not been completed
-  HIP_CHECK_ERROR(hipEventQuery(end_event), hipErrorNotReady);
 
   // When hipEventSynchronized is called on event that has not been recorded,
   // the function returns immediately

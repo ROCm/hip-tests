@@ -168,6 +168,7 @@ TEST_CASE("Unit_hipEventElapsedTime_NotReady_Negative") {
   HIP_CHECK_ERROR(hipEventQuery(stop), hipErrorNotReady);
   HIP_ASSERT(hipEventElapsedTime(&tElapsed,start,stop) == hipErrorNotReady);
 
+  HIP_CHECK(hipStreamSynchronize(nullptr));
   HIP_CHECK(hipEventDestroy(start));
   HIP_CHECK(hipEventDestroy(stop));
 }

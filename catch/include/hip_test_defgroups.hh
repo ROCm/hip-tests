@@ -142,3 +142,10 @@ THE SOFTWARE.
  * This section describes tests for the Vector type functions and operators.
  * @}
  */
+
+/**
+ * @defgroup PrintfTest Printf API Management
+ * @{
+ * This section describes the various Printf use case Scenarios.
+ * @}
+ */

@@ -223,6 +223,21 @@ __global__ void kernel500ms(float* hostRes, int clkRate) {
  * @ingroup StreamOTest
  */
 
+__global__ void kernel500ms_gfx11(float* hostRes, int clkRate) {
+#if HT_AMD
+  int tid = threadIdx.x + blockIdx.x * blockDim.x;
+  hostRes[tid] = tid + 1;
+  __threadfence_system();
+  // expecting that the data is getting flushed to host here!
+  uint64_t start = wall_clock64()/clkRate, cur;
+  if (clkRate > 1) {
+    do { cur = wall_clock64()/clkRate-start;}while (cur < wait_ms);
+  } else {
+    do { cur = wall_clock64()/start;}while (cur < wait_ms);
+  }
+#endif
+}
+
 /**
  * Test Description
  * ------------------------
@@ -260,9 +275,14 @@ TEST_CASE("Unit_hipMemPoolApi_BasicAlloc") {
   int blocks = 1024;
   int clkRate;
   hipMemPoolAttr attr;
-  HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
+  if (IsGfx11()) {
+    HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeWallClockRate, 0));
+    kernel500ms_gfx11<<<32, blocks, 0, stream>>>(B, clkRate);
+  } else {
+    HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
 
-  kernel500ms<<<32, blocks, 0, stream>>>(B, clkRate);
+    kernel500ms<<<32, blocks, 0, stream>>>(B, clkRate);
+  }
 
   HIP_CHECK(hipFreeAsync(reinterpret_cast<void*>(B), stream));
 
@@ -366,9 +386,14 @@ TEST_CASE("Unit_hipMemPoolApi_BasicTrim") {
 
   int blocks = 2;
   int clkRate;
-  HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
+  if (IsGfx11()) {
+    HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeWallClockRate, 0));
+    kernel500ms_gfx11<<<32, blocks, 0, stream>>>(B, clkRate);
+  } else {
+    HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
 
-  kernel500ms<<<32, blocks, 0, stream>>>(B, clkRate);
+    kernel500ms<<<32, blocks, 0, stream>>>(B, clkRate);
+  }
 
   hipMemPoolAttr attr;
   attr = hipMemPoolAttrReleaseThreshold;
@@ -474,9 +499,15 @@ TEST_CASE("Unit_hipMemPoolApi_BasicReuse") {
 
   int blocks = 2;
   int clkRate;
-  HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
 
-  kernel500ms<<<32, blocks, 0, stream>>>(A, clkRate);
+  if (IsGfx11()) {
+    HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeWallClockRate, 0));
+    kernel500ms_gfx11<<<32, blocks, 0, stream>>>(A, clkRate);
+  } else {
+    HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
+
+    kernel500ms<<<32, blocks, 0, stream>>>(A, clkRate);
+  }
 
   hipMemPoolAttr attr;
   // Not a real free, since kernel isn't done
@@ -491,7 +522,11 @@ TEST_CASE("Unit_hipMemPoolApi_BasicReuse") {
   HIP_CHECK(hipStreamSynchronize(stream));
 
   // Second kernel launch with new memory
-  kernel500ms<<<32, blocks, 0, stream>>>(B, clkRate);
+  if (IsGfx11()) {
+    kernel500ms_gfx11<<<32, blocks, 0, stream>>>(B, clkRate);
+  } else {
+    kernel500ms<<<32, blocks, 0, stream>>>(B, clkRate);
+  }
 
   HIP_CHECK(hipStreamSynchronize(stream));
 
@@ -546,7 +581,11 @@ TEST_CASE("Unit_hipMemPoolApi_Opportunistic") {
   hipMemPoolAttr attr;
   int blocks = 2;
   int clkRate;
-  HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
+   if (IsGfx11()) {
+    HIPCHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeWallClockRate, 0));
+  } else {
+    HIPCHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
+  }
 
   float *A, *B, *C;
   hipStream_t stream, stream2;
@@ -572,7 +611,11 @@ TEST_CASE("Unit_hipMemPoolApi_Opportunistic") {
     HIP_CHECK(hipMemPoolSetAttribute(mem_pool, attr, &value));
 
     // Run kernel for 500 ms in the first stream
-    kernel500ms<<<32, blocks, 0, stream>>>(A, clkRate);
+    if (IsGfx11()) {
+      kernel500ms_gfx11<<<32, blocks, 0, stream>>>(A, clkRate);
+    } else {
+      kernel500ms<<<32, blocks, 0, stream>>>(A, clkRate);
+    }
 
     // Not a real free, since kernel isn't done
     HIP_CHECK(hipFreeAsync(reinterpret_cast<void*>(A), stream));
@@ -587,7 +630,11 @@ TEST_CASE("Unit_hipMemPoolApi_Opportunistic") {
     REQUIRE(A != B);
 
     // Run kernel with the new memory in the second stream
-    kernel500ms<<<32, blocks, 0, stream2>>>(B, clkRate);
+    if (IsGfx11()) {
+      kernel500ms_gfx11<<<32, blocks, 0, stream>>>(B, clkRate);
+    } else {
+      kernel500ms<<<32, blocks, 0, stream>>>(B, clkRate);
+    }
 
     HIP_CHECK(hipStreamSynchronize(stream));
     HIP_CHECK(hipStreamSynchronize(stream2));
@@ -605,7 +652,13 @@ TEST_CASE("Unit_hipMemPoolApi_Opportunistic") {
     HIP_CHECK(hipMemPoolSetAttribute(mem_pool, attr, &value));
 
     // Run kernel for 500 ms in the first stream
-    kernel500ms<<<32, blocks, 0, stream>>>(A, clkRate);
+    if (IsGfx11()) {
+      HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeWallClockRate, 0));
+      kernel500ms_gfx11<<<32, blocks, 0, stream>>>(A, clkRate);
+    } else {
+      HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
+      kernel500ms<<<32, blocks, 0, stream>>>(A, clkRate);
+    }
 
     // Not a real free, since kernel isn't done
     HIP_CHECK(hipFreeAsync(reinterpret_cast<void*>(A), stream));
@@ -620,7 +673,11 @@ TEST_CASE("Unit_hipMemPoolApi_Opportunistic") {
     REQUIRE(A == B);
 
     // Run kernel with the new memory in the second stream
-    kernel500ms<<<32, blocks, 0, stream2>>>(B, clkRate);
+    if (IsGfx11()) {
+      kernel500ms_gfx11<<<32, blocks, 0, stream>>>(B, clkRate);
+    } else {
+      kernel500ms<<<32, blocks, 0, stream>>>(B, clkRate);
+    }
 
     HIP_CHECK(hipStreamSynchronize(stream));
     HIP_CHECK(hipStreamSynchronize(stream2));
@@ -638,7 +695,12 @@ TEST_CASE("Unit_hipMemPoolApi_Opportunistic") {
     HIP_CHECK(hipMemPoolSetAttribute(mem_pool, attr, &value));
 
     // Run kernel for 500 ms in the first stream
-    kernel500ms<<<32, blocks, 0, stream>>>(A, clkRate);
+      
+    if (IsGfx11()) {
+      kernel500ms_gfx11<<<32, blocks, 0, stream>>>(A, clkRate);
+    } else {
+      kernel500ms<<<32, blocks, 0, stream>>>(A, clkRate);
+    }
 
     // Not a real free, since kernel isn't done
     HIP_CHECK(hipFreeAsync(reinterpret_cast<void*>(A), stream));
@@ -650,7 +712,11 @@ TEST_CASE("Unit_hipMemPoolApi_Opportunistic") {
     REQUIRE(A != B);
 
     // Run kernel with the new memory in the second stream
-    kernel500ms<<<32, blocks, 0, stream2>>>(B, clkRate);
+    if (IsGfx11()) {
+      kernel500ms_gfx11<<<32, blocks, 0, stream>>>(B, clkRate);
+    } else {
+      kernel500ms<<<32, blocks, 0, stream>>>(B, clkRate);
+    }
 
     HIP_CHECK(hipStreamSynchronize(stream));
     HIP_CHECK(hipStreamSynchronize(stream2));

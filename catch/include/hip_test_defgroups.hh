@@ -585,8 +585,22 @@ TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_And"){}
  */
 
 /**
+ * @defgroup ShflTest warp shuffle function Management
+ * @{
+ * This section describes the warp shuffle types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
  * @defgroup StreamOTest Ordered Memory Allocator
  * @{
  * This section describes the tests for Stream Ordered Memory Allocator functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup StreamTest Stream Management
+ * @{
+ * This section describes the stream management types & functions of HIP runtime API.
  * @}
  */

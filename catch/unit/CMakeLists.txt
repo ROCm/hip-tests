@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2023 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@ add_subdirectory(occupancy)
 add_subdirectory(device)
 add_subdirectory(printf)
 add_subdirectory(texture)
+add_subdirectory(surface)
 add_subdirectory(streamperthread)
 add_subdirectory(kernel)
 add_subdirectory(multiThread)
@@ -36,5 +37,9 @@ add_subdirectory(errorHandling)
 add_subdirectory(cooperativeGrps)
 if(HIP_PLATFORM STREQUAL "amd")
 add_subdirectory(virtualMemory)
+add_subdirectory(callback)
 #add_subdirectory(clock)
+add_subdirectory(context)
+# Vulkan interop APIs currently undefined for Nvidia
+add_subdirectory(vulkan_interop)
 endif()

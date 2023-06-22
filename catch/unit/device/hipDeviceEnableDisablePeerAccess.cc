@@ -74,6 +74,12 @@ TEST_CASE("Unit_hipDeviceEnablePeerAccess_negative") {
   }
   SECTION("Peer Access already enabled") {
     HIP_CHECK(hipSetDevice(0));
+    int canAccessPeer = 0;
+    HIP_CHECK(hipDeviceCanAccessPeer(&canAccessPeer, 1, 0));
+    if (canAccessPeer == 0) {
+      HipTest::HIP_SKIP_TEST("Skipping because no P2P support");
+      return;
+    }
     HIP_CHECK(hipDeviceEnablePeerAccess(1, 0));
     HIP_CHECK_ERROR(hipDeviceEnablePeerAccess(1, 0), hipErrorPeerAccessAlreadyEnabled);
     HIP_CHECK(hipDeviceDisablePeerAccess(1));
@@ -97,6 +103,12 @@ TEST_CASE("Unit_hipDeviceDisablePeerAccess_negative") {
   }
   SECTION("Peer Access disabled twice") {
     HIP_CHECK(hipSetDevice(0));
+    int canAccessPeer = 0;
+    HIP_CHECK(hipDeviceCanAccessPeer(&canAccessPeer, 1, 0));
+    if (canAccessPeer == 0) {
+      HipTest::HIP_SKIP_TEST("Skipping because no P2P support");
+      return;
+    }
     HIP_CHECK(hipDeviceEnablePeerAccess(1, 0));
     HIP_CHECK(hipDeviceDisablePeerAccess(1));
     HIP_CHECK_ERROR(hipDeviceDisablePeerAccess(1), hipErrorPeerAccessNotEnabled);

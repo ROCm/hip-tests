@@ -22,6 +22,7 @@ THE SOFTWARE.
 
 #pragma once
 #include "hip_test_context.hh"
+
 #include <catch.hpp>
 #include <atomic>
 #include <chrono>
@@ -30,6 +31,7 @@ THE SOFTWARE.
 #include <iomanip>
 #include <mutex>
 #include <cstdlib>
+#include <thread>
 
 #define HIP_PRINT_STATUS(status) INFO(hipGetErrorName(status) << " at line: " << __LINE__);
 
@@ -139,6 +141,27 @@ static void initHipCtx(hipCtx_t* pcontext) {
 #define HIP_TEX_REFERENCE textureReference*
 #define HIP_ARRAY hipArray*
 #endif
+
+static inline bool IsGfx11() {
+#if HT_NVIDIA
+  return false;
+#elif HT_AMD
+  int device = -1;
+  hipDeviceProp_t props{};
+  HIP_CHECK(hipGetDevice(&device));
+  HIP_CHECK(hipGetDeviceProperties(&props, device));
+   // Get GCN Arch Name and compare to check if it is gfx11
+  std::string arch = std::string(props.gcnArchName);
+  auto pos = arch.find("gfx11");
+  if (pos != std::string::npos)
+    return true;
+  else
+    return false;
+#else
+  std::cout<<"Have to be either Nvidia or AMD platform, asserting"<<std::endl;
+  assert(false);
+#endif
+}
 
 
 // Utility Functions
@@ -335,6 +358,14 @@ static __global__ void waitKernel(clock_t offset) {
   }
 }
 
+static __global__ void waitKernel_gfx11(clock_t offset) {
+#if HT_AMD
+  auto start = wall_clock64();
+  while ((wall_clock64() - start) < offset) {
+  }
+#endif
+}
+
 // helper function used to set the device frequency variable
 // estimates the number of clock ticks in 1 second
 static size_t findTicksPerSecond() {
@@ -350,9 +381,9 @@ static size_t findTicksPerSecond() {
   hipEvent_t start, stop;
   HIP_CHECK(hipEventCreate(&start));
   HIP_CHECK(hipEventCreate(&stop));
-
+  auto waitKernel_used = IsGfx11() ? waitKernel_gfx11 : waitKernel;
   // Warmup
-  hipLaunchKernelGGL(waitKernel, dim3(1), dim3(1), 0, 0, clockTicksPerSecond);
+  hipLaunchKernelGGL(waitKernel_used, dim3(1), dim3(1), 0, 0, clockTicksPerSecond);
   HIP_CHECK(hipGetLastError());
   HIP_CHECK(hipDeviceSynchronize());
 
@@ -360,7 +391,7 @@ static size_t findTicksPerSecond() {
   // after 10 attempts the result is likely good enough so just accept it
   for (int attempts = 10; attempts > 0; --attempts) {
     HIP_CHECK(hipEventRecord(start));
-    hipLaunchKernelGGL(waitKernel, dim3(1), dim3(1), 0, 0, clockTicksPerSecond);
+    hipLaunchKernelGGL(waitKernel_used, dim3(1), dim3(1), 0, 0, clockTicksPerSecond);
     HIP_CHECK(hipEventRecord(stop));
     HIP_CHECK(hipGetLastError());
     HIP_CHECK(hipEventSynchronize(stop));
@@ -396,9 +427,56 @@ static inline void runKernelForDuration(std::chrono::milliseconds duration,
   // precision so that's acceptable.
   static size_t ticksPerSecond = findTicksPerSecond();
   const auto millis = duration.count();
-  hipLaunchKernelGGL(waitKernel, dim3(1), dim3(1), 0, stream, ticksPerSecond * millis / 1000);
+  auto waitKernel_used = IsGfx11() ? waitKernel_gfx11 : waitKernel;
+  hipLaunchKernelGGL(waitKernel_used, dim3(1), dim3(1), 0, stream, ticksPerSecond * millis / 1000);
 }
 
+class BlockingContext {
+  std::atomic_bool blocked{true};
+  hipStream_t stream;
+
+ public:
+  BlockingContext(hipStream_t s) : stream(s), blocked(true) {}
+
+  BlockingContext(const BlockingContext& in) {
+    blocked = in.blocked_val();
+    stream = in.stream_val();
+  }
+
+  BlockingContext(const BlockingContext&& in) {
+    blocked = in.blocked_val();
+    stream = in.stream_val();
+  }
+
+  void reset() { blocked = true; }
+
+  BlockingContext& operator=(const BlockingContext& in) {
+    blocked = in.blocked_val();
+    stream = in.stream_val();
+    return *this;
+  }
+
+  void block_stream() {
+    blocked = true;
+    auto blocking_callback = [](hipStream_t, hipError_t, void* data) {
+      auto blocked = reinterpret_cast<std::atomic_bool*>(data);
+      while (blocked->load()) {
+        // Yield this thread till we are waiting
+        std::this_thread::yield();
+      }
+    };
+    HIP_CHECK(hipStreamAddCallback(stream, blocking_callback, (void*)&blocked, 0));
+  }
+
+  void unblock_stream() {
+    blocked = false;
+  }
+
+  bool is_blocked() const { return hipStreamQuery(stream) == hipErrorNotReady; }
+
+  bool blocked_val() const { return blocked.load(); }
+  hipStream_t stream_val() const { return stream; }
+};
 }  // namespace HipTest
 
 // This must be called in the beginning of image test app's main() to indicate whether image

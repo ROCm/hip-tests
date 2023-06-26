@@ -29,7 +29,6 @@
 	   "Unit_hipStreamAttachMemAsync_Positive_AttachGlobal",
 	   "Unit_hipStreamAttachMemAsync_Negative_Parameters",
 	   "Unit_hipMemGetAddressRange_Positive",
-	   "Unit_hipGraphAddMemcpyNode1D_Negative_Basic",
 	   "Unit_hipStreamGetCaptureInfo_Nullstream_CaptureInfo",
 	   "intermittent issue: corrupted double-linked list",
 	   "Unit_hipGraphRetainUserObject_Functional_2",
@@ -42,10 +41,6 @@
 	   "Unit_hipStreamCreateWithFlags_DefaultStreamInteraction",
 	   "Unit_hipStreamWaitEvent_UninitializedStream_Negative",
 	   "Unit_hipDeviceSetSharedMemConfig_Negative_Parameters",
-	   "Disabling tests tracked with SWDEV-394083",
-	   "Unit_hipDeviceSynchronize_Positive_Nullstream",
-	   "Disabling tests tracked with SWDEV-393637",
-	   "Unit_hipDeviceSynchronize_Functional",
 	   "Unit_hipMemset3DSync",
 	   "Unit_hipStreamAddCallback_StrmSyncTiming",
 	   "Disabling test tracked SWDEV-394199",
@@ -68,11 +63,6 @@
 	   "SWDEV-398980 fails in Stress test",
 	   "Unit_hipMemcpyPeer_Positive_Synchronization_Behavior",
 	   "SWDEV-398981 fails in stress test",
-	   "Unit_hipStreamCreateWithPriority_MulthreadDefaultflag",
-	   "Disabling below 4 tests temporarily due to change in API behavior",
-	   "Unit_hipDeviceSetCacheConfig_Positive_Basic",
-	   "Unit_hipDeviceSetCacheConfig_Negative_Parameters",
-	   "Unit_hipDeviceSetSharedMemConfig_Positive_Basic",
-	   "Unit_hipDeviceSetSharedMemConfig_Negative_Parameters"
+	   "Unit_hipStreamCreateWithPriority_MulthreadDefaultflag"
 	]
 }

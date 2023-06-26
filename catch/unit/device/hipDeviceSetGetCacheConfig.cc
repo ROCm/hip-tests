@@ -38,16 +38,12 @@ TEST_CASE("Unit_hipDeviceSetCacheConfig_Positive_Basic") {
 
   const auto cache_config =
       GENERATE(from_range(std::begin(kCacheConfigs), std::end(kCacheConfigs)));
-#if HT_AMD
-  HIP_CHECK_ERROR(hipDeviceSetCacheConfig(cache_config), hipErrorNotSupported);
-#elif HT_NVIDIA
   HIP_CHECK(hipDeviceSetCacheConfig(cache_config));
-#endif
 }
 
 TEST_CASE("Unit_hipDeviceSetCacheConfig_Negative_Parameters") {
 #if HT_AMD
-  HIP_CHECK_ERROR(hipDeviceSetCacheConfig(static_cast<hipFuncCache_t>(-1)), hipErrorNotSupported);
+  HIP_CHECK_ERROR(hipDeviceSetCacheConfig(static_cast<hipFuncCache_t>(-1)), hipSuccess);
 #elif HT_NVIDIA
   HIP_CHECK_ERROR(hipDeviceSetCacheConfig(static_cast<hipFuncCache_t>(-1)), hipErrorInvalidValue);
 #endif

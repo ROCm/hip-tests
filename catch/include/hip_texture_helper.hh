@@ -8,6 +8,8 @@
 #define HIP_SAMPLING_VERIFY_ABSOLUTE_THRESHOLD  0.1
 
 #if HT_NVIDIA
+typedef unsigned char uchar;
+
 template<typename T>
 typename std::enable_if<sizeof(T) / sizeof(decltype(T::x)) == 4, T>::type
 inline __host__ __device__ operator+(const T &a, const T &b)
@@ -47,7 +49,6 @@ inline __host__ __device__ operator*=(T &a, const decltype(T::x) &b)
 }
 #endif // HT_NVIDIA
 
-// See https://en.wikipedia.org/wiki/SRGB#Transformation
 // From CIE 1931 color space to sRGB
 inline float hipSRGBMap(float fc) {
   double c = static_cast<double>(fc);

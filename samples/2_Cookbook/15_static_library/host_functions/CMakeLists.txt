@@ -37,7 +37,7 @@ endif()
 add_library(HipOptLibrary STATIC ${CPP_SOURCES})
 
 # Set-up the correct flags to generate the static library.
-target_link_libraries(HipOptLibrary PRIVATE --emit-static-lib)
+target_link_options(HipOptLibrary PRIVATE --emit-static-lib)
 target_include_directories(HipOptLibrary PRIVATE /opt/rocm/hsa/include)
 
 # Create test executable that uses libHipOptLibrary.a

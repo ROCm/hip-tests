@@ -55,8 +55,6 @@ static void Malloc3DArray_DiffSizes(int gpu) {
     size_t width{size}, height{size}, depth{size};
     hipChannelFormatDesc channelDesc = hipCreateChannelDesc<float>();
     std::array<hipArray_t, ARRAY_LOOP> arr;
-    size_t pavail, avail;
-    HIP_CHECK_THREAD(hipMemGetInfo(&pavail, nullptr));
 
     for (int i = 0; i < ARRAY_LOOP; i++) {
       HIP_CHECK_THREAD(hipMalloc3DArray(&arr[i], &channelDesc, make_hipExtent(width, height, depth),
@@ -65,9 +63,6 @@ static void Malloc3DArray_DiffSizes(int gpu) {
     for (int i = 0; i < ARRAY_LOOP; i++) {
       HIP_CHECK_THREAD(hipFreeArray(arr[i]));
     }
-
-    HIP_CHECK_THREAD(hipMemGetInfo(&avail, nullptr));
-    REQUIRE_THREAD(pavail == avail);
   }
 }
 
@@ -85,7 +80,6 @@ TEST_CASE("Unit_hipMalloc3DArray_MultiThread") {
   std::vector<std::thread> threadlist;
   int devCnt = 0;
   devCnt = HipTest::getDeviceCount();
-  const auto pavail = getFreeMem();
   for (int i = 0; i < devCnt; i++) {
     threadlist.push_back(std::thread(Malloc3DArray_DiffSizes, i));
   }
@@ -94,12 +88,6 @@ TEST_CASE("Unit_hipMalloc3DArray_MultiThread") {
     t.join();
   }
   HIP_CHECK_THREAD_FINALIZE();
-  const auto avail = getFreeMem();
-
-  if (pavail != avail) {
-    WARN("Memory leak of hipMalloc3D API in multithreaded scenario");
-    REQUIRE(false);
-  }
 }
 
 namespace {

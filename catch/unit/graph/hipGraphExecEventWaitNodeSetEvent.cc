@@ -63,6 +63,17 @@ static __global__ void sqr_ker_func(int* a, int* b, size_t N, int clockrate, siz
   } while (cur < wait_t);
 }
 
+static __global__ void sqr_ker_func_gfx11(int* a, int* b, size_t N, int clockrate, size_t delayMs) {
+#if HT_AMD
+  int tx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+  if (tx < N) b[tx] = a[tx] * a[tx];
+  uint64_t wait_t = delayMs, start = wall_clock64() / clockrate, cur;
+  do {
+    cur = wall_clock64() / clockrate - start;
+  } while (cur < wait_t);
+#endif
+}
+
 /**
  * Scenario 1: Test to validate setting different events in executable graph.
  */
@@ -106,11 +117,16 @@ TEST_CASE("Unit_hipGraphExecEventWaitNodeSetEvent_SetAndVerifyMemory") {
   int clkRate = 0;
   size_t NElem{N};
   size_t delayMs{2000};
-  HIPCHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
+  if (IsGfx11()) {
+    HIPCHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeWallClockRate, 0));
+  } else {
+    HIPCHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
+  }
   // kernel1
+  auto sqr_ker_func_used = IsGfx11() ? sqr_ker_func_gfx11 : sqr_ker_func;
   void* kernelArgs[] = {&inp_d, &out_d, reinterpret_cast<void*>(&NElem),
                         reinterpret_cast<void*>(&clkRate), reinterpret_cast<void*>(&delayMs)};
-  kernelNodeParams1.func = reinterpret_cast<void*>(sqr_ker_func);
+  kernelNodeParams1.func = reinterpret_cast<void*>(sqr_ker_func_used);
   kernelNodeParams1.gridDim = dim3(gridSize);
   kernelNodeParams1.blockDim = dim3(blockSize);
   kernelNodeParams1.sharedMemBytes = 0;

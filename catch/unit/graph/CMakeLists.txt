@@ -100,6 +100,10 @@ set(TEST_SRC
   hipLaunchHostFunc.cc
   hipStreamGetCaptureInfo_v2_old.cc
   hipUserObjectCreate.cc
+  hipUserObjectRelease.cc
+  hipUserObjectRetain.cc
+  hipGraphReleaseUserObject.cc
+  hipGraphRetainUserObject.cc
   hipGraphDebugDotPrint.cc
   hipGraphCloneComplx.cc
   hipGraphNodeSetEnabled.cc
@@ -109,8 +113,21 @@ set(TEST_SRC
   hipGraphExecDestroy.cc
   hipGraphUpload.cc
   hipGraphKernelNodeCopyAttributes.cc
+  hipGraphKernelNodeGetAttribute.cc
 )
+
+if(HIP_PLATFORM MATCHES "amd")
+  set(AMD_SRC
+    hipStreamCaptureExtModuleLaunchKernel.cc
+  )
+  set(TEST_SRC ${TEST_SRC} ${AMD_SRC})
+endif()
 
 hip_add_exe_to_target(NAME GraphsTest
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests)
+
+if(HIP_PLATFORM MATCHES "amd")
+  add_custom_target(hipMatMul COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/hipMatMul.cc -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/graph/hipMatMul.code -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
+  add_dependencies(build_tests hipMatMul)
+endif()

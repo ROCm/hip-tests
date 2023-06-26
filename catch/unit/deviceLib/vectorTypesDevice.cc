@@ -267,3 +267,7 @@ TEST_CASE("Unit_vectorTypes_CompileTest") {
   HIP_CHECK(hipFree(ptr));
   REQUIRE(passed == true);
 }
+//Test to check __half2_raw can be initialized without designator
+TEST_CASE("Unit_half2_raw_def") {
+  constexpr __half2_raw inf = {0x7C00,0x7C00};
+}

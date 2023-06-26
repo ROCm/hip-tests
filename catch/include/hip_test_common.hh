@@ -22,6 +22,7 @@ THE SOFTWARE.
 
 #pragma once
 #include "hip_test_context.hh"
+
 #include <catch.hpp>
 #include <atomic>
 #include <chrono>
@@ -30,6 +31,7 @@ THE SOFTWARE.
 #include <iomanip>
 #include <mutex>
 #include <cstdlib>
+#include <thread>
 
 #define HIP_PRINT_STATUS(status) INFO(hipGetErrorName(status) << " at line: " << __LINE__);
 
@@ -141,24 +143,20 @@ static void initHipCtx(hipCtx_t* pcontext) {
 #endif
 
 static inline bool IsGfx11() {
-#if defined(HT_NVIDIA)
+#if HT_NVIDIA
   return false;
-#elif defined(HT_AMD)
+#elif HT_AMD
   int device = -1;
   hipDeviceProp_t props{};
   HIP_CHECK(hipGetDevice(&device));
   HIP_CHECK(hipGetDeviceProperties(&props, device));
-
    // Get GCN Arch Name and compare to check if it is gfx11
   std::string arch = std::string(props.gcnArchName);
-  auto pos = arch.find(":");
+  auto pos = arch.find("gfx11");
   if (pos != std::string::npos)
-    arch = arch.substr(0, pos);
-
-  if(arch.size() >= 5)
-    arch = arch.substr(0,5);
-
-  return (arch == std::string("gfx11")) ? true : false;
+    return true;
+  else
+    return false;
 #else
   std::cout<<"Have to be either Nvidia or AMD platform, asserting"<<std::endl;
   assert(false);
@@ -433,6 +431,52 @@ static inline void runKernelForDuration(std::chrono::milliseconds duration,
   hipLaunchKernelGGL(waitKernel_used, dim3(1), dim3(1), 0, stream, ticksPerSecond * millis / 1000);
 }
 
+class BlockingContext {
+  std::atomic_bool blocked{true};
+  hipStream_t stream;
+
+ public:
+  BlockingContext(hipStream_t s) : stream(s), blocked(true) {}
+
+  BlockingContext(const BlockingContext& in) {
+    blocked = in.blocked_val();
+    stream = in.stream_val();
+  }
+
+  BlockingContext(const BlockingContext&& in) {
+    blocked = in.blocked_val();
+    stream = in.stream_val();
+  }
+
+  void reset() { blocked = true; }
+
+  BlockingContext& operator=(const BlockingContext& in) {
+    blocked = in.blocked_val();
+    stream = in.stream_val();
+    return *this;
+  }
+
+  void block_stream() {
+    blocked = true;
+    auto blocking_callback = [](hipStream_t, hipError_t, void* data) {
+      auto blocked = reinterpret_cast<std::atomic_bool*>(data);
+      while (blocked->load()) {
+        // Yield this thread till we are waiting
+        std::this_thread::yield();
+      }
+    };
+    HIP_CHECK(hipStreamAddCallback(stream, blocking_callback, (void*)&blocked, 0));
+  }
+
+  void unblock_stream() {
+    blocked = false;
+  }
+
+  bool is_blocked() const { return hipStreamQuery(stream) == hipErrorNotReady; }
+
+  bool blocked_val() const { return blocked.load(); }
+  hipStream_t stream_val() const { return stream; }
+};
 }  // namespace HipTest
 
 // This must be called in the beginning of image test app's main() to indicate whether image

@@ -19,13 +19,28 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/*
-Testcase Scenarios :
-Unit_hipEventCreate_Positive - Test simple event creation with hipEventCreate api
-*/
 
 #include <hip_test_common.hh>
 
+/**
+ * @addtogroup hipEventCreate hipEventCreate
+ * @{
+ * @ingroup EventTest
+ * `hipEventCreate(hipEvent_t* event)` -
+ * Create an event.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Successfully creates and event for each device.
+ * Test source
+ * ------------------------
+ *  - unit/event/hipEventCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipEventCreate_Positive") {
   int id = GENERATE(range(0, HipTest::getDeviceCount()));
   HIP_CHECK(hipSetDevice(id));

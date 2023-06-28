@@ -9,17 +9,17 @@
 		"Unit_BuiltinAtomicsRTC__fminCoherentGlobalMem",
 		"Unit_BuiltInAtomicAdd_CoherentGlobalMemWithRtc",
 		"Unit_hipMemGetAddressRange_Negative",
-        "Unit_hipExternalMemoryGetMappedBuffer_Vulkan_Positive_Read_Write",
-        "Unit_hipExternalMemoryGetMappedBuffer_Vulkan_Negative_Parameters",
-        "Unit_hipImportExternalMemory_Vulkan_Negative_Parameters",
-        "Unit_hipWaitExternalSemaphoresAsync_Vulkan_Positive_Binary_Semaphore",
-        "Unit_hipWaitExternalSemaphoresAsync_Vulkan_Positive_Multiple_Semaphores",
-        "Unit_hipWaitExternalSemaphoresAsync_Vulkan_Negative_Parameters",
-        "Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Binary_Semaphore",
-        "Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Multiple_Semaphores",
-        "Unit_hipSignalExternalSemaphoresAsync_Vulkan_Negative_Parameters",
-        "Unit_hipImportExternalSemaphore_Vulkan_Negative_Parameters",
-        "Unit_hipDestroyExternalSemaphore_Vulkan_Negative_Parameters"
+    "Unit_hipExternalMemoryGetMappedBuffer_Vulkan_Positive_Read_Write",
+    "Unit_hipExternalMemoryGetMappedBuffer_Vulkan_Negative_Parameters",
+    "Unit_hipImportExternalMemory_Vulkan_Negative_Parameters",
+    "Unit_hipWaitExternalSemaphoresAsync_Vulkan_Positive_Binary_Semaphore",
+    "Unit_hipWaitExternalSemaphoresAsync_Vulkan_Positive_Multiple_Semaphores",
+    "Unit_hipWaitExternalSemaphoresAsync_Vulkan_Negative_Parameters",
+    "Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Binary_Semaphore",
+    "Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Multiple_Semaphores",
+    "Unit_hipSignalExternalSemaphoresAsync_Vulkan_Negative_Parameters",
+    "Unit_hipImportExternalSemaphore_Vulkan_Negative_Parameters",
+    "Unit_hipDestroyExternalSemaphore_Vulkan_Negative_Parameters"
 	]
 
 }

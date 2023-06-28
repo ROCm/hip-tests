@@ -95,6 +95,7 @@
 	   "Unit_hipStreamSynchronize_NullStreamAndStreamPerThread",
 	   "Note: intermittent Seg fault failure ",
 	   "Unit_hipGraphAddEventRecordNode_Functional_WithoutFlags",
+	   "Unit_hipOccupancyMaxActiveBlocksPerMultiprocessor_Negative_Parameters",
 	   "Unit_hipGraphMemcpyNodeSetParamsToSymbol_Positive_Basic",
 	   "Unit_hipGraphExecMemcpyNodeSetParamsToSymbol_Positive_Basic",
 	   "Unit_hipGraphMemcpyNodeSetParamsFromSymbol_Positive_Basic",

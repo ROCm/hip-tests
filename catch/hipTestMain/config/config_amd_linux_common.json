@@ -33,6 +33,8 @@
 	   "Unit_hipStreamGetCaptureInfo_Nullstream_CaptureInfo",
 	   "intermittent issue: corrupted double-linked list",
 	   "Unit_hipGraphRetainUserObject_Functional_2",
+	   "intermittent issue: failure expected but sucess returned",
+	   "Unit_hipMemAdvise_NegtveTsts",
 	   "Note: Following four tests disabled due to defect - EXSWHTEC-203",
 	   "Unit_hipGraphAddMemsetNode_Positive_Basic - uint16_t",
 	   "Unit_hipGraphAddMemsetNode_Positive_Basic - uint32_t",

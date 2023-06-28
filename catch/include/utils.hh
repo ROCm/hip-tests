@@ -134,7 +134,6 @@ inline void LaunchDelayKernel(const std::chrono::milliseconds interval, const hi
     HIPCHECK(hipDeviceGetAttribute(&ticks_per_ms, hipDeviceAttributeClockRate, 0));
   }
   Delay<<<1, 1, 0, stream>>>(interval.count(), ticks_per_ms);
-  HIP_CHECK(hipGetLastError());
 }
 
 template <typename... Attributes>

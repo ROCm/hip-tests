@@ -167,6 +167,8 @@
 	   "SWDEV-402082 - PAL Backend fails to reserve address on GPU except first one",
 	   "Unit_hipGraphInstantiateWithFlags_FlagAutoFreeOnLaunch_check",
 	   "SWDEV-398981 fails in stress test",
-	   "Unit_hipStreamCreateWithPriority_MulthreadDefaultflag"
+	   "Unit_hipStreamCreateWithPriority_MulthreadDefaultflag",
+	   "Note: UUID returned empty on some windows nodes",
+	   "Unit_hipDeviceGetUuid_Positive"
 	]
 }

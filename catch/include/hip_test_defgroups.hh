@@ -58,9 +58,25 @@ THE SOFTWARE.
  */
 
 /**
+ * @defgroup PeerToPeerTest PeerToPeer Device Memory Access
+ * @{
+ * This section describes tests for the PeerToPeer device memory access functions of HIP runtime API.
+ * @warning PeerToPeer support is experimental.
+ * @}
+ */
+
+/**
  * @defgroup ShflTest warp shuffle function Management
  * @{
  * This section describes the warp shuffle types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup ContextTest Context Management
+ * @{
+ * This section describes tests for the context management functions of HIP runtime API.
+ * @warning All Context Management APIs are **deprecated** and shall not be implemented.
  * @}
  */
 

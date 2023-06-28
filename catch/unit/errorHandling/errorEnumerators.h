@@ -33,6 +33,7 @@ constexpr hipError_t kErrorEnumerators[] = {hipSuccess,
                                             hipErrorProfilerNotInitialized,
                                             hipErrorProfilerAlreadyStarted,
                                             hipErrorProfilerAlreadyStopped,
+                                            #if HT_AMD
                                             hipErrorInvalidConfiguration,
                                             hipErrorInvalidPitchValue,
                                             hipErrorInvalidSymbol,
@@ -42,6 +43,7 @@ constexpr hipError_t kErrorEnumerators[] = {hipSuccess,
                                             hipErrorMissingConfiguration,
                                             hipErrorPriorLaunchFailure,
                                             hipErrorInvalidDeviceFunction,
+                                            #endif
                                             hipErrorNoDevice,
                                             hipErrorInvalidDevice,
                                             hipErrorInvalidImage,
@@ -95,5 +97,8 @@ constexpr hipError_t kErrorEnumerators[] = {hipSuccess,
                                             hipErrorStreamCaptureWrongThread,
                                             hipErrorGraphExecUpdateFailure,
                                             hipErrorUnknown,
+                                            #if HT_AMD
                                             hipErrorRuntimeMemory,
-                                            hipErrorRuntimeOther};
+                                            hipErrorRuntimeOther
+                                            #endif
+                                            };

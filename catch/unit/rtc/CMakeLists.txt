@@ -4,11 +4,13 @@ set(TEST_SRC
     warpsize.cc
     hipRtcFunctional.cc
     shfl.cc
+    hipStreamCaptureRtc.cc
 )
 
 # AMD only tests
 set(AMD_TEST_SRC
     customOptions.cc
+    hipRtcBfloat16.cc
     linker.cc
 )
 

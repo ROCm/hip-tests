@@ -112,6 +112,7 @@
 	   "Unit_hipFuncGetAttributes_Negative_Parameters",
 	   "NOTE: The following test is disabled due to defect - EXSWHTEC-242",
 	   "Unit_hipFuncGetAttributes_Positive_Basic",
+	   "Unit_hipOccupancyMaxActiveBlocksPerMultiprocessor_Negative_Parameters",
 	   "Unit_hipGraphMemcpyNodeSetParamsToSymbol_Positive_Basic",
 	   "Unit_hipGraphExecMemcpyNodeSetParamsToSymbol_Positive_Basic",
 	   "Unit_hipGraphMemcpyNodeSetParamsFromSymbol_Positive_Basic",

@@ -3,6 +3,7 @@ set(TEST_SRC
     hipGraphicsGLRegisterBuffer.cc
     hipGraphicsGLRegisterImage.cc
     hipGraphicsMapResources.cc
+    hipGraphicsSubResourceGetMappedArray.cc
 )
 
 hip_add_exe_to_target(NAME GLInteropTest

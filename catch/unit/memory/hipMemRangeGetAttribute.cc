@@ -267,7 +267,7 @@ TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_AccessedBy_MultiDevice") {
   LinearAllocGuard<void> allocation(LinearAllocs::hipMallocManaged, kPageSize);
 
   std::vector<int32_t> data(device_count);
-  HIP_CHECK(hipMemRangeGetAttribute(data.data(), sizeof(data), hipMemRangeAttributeAccessedBy,
+  HIP_CHECK(hipMemRangeGetAttribute(data.data(), sizeof(int32_t) * data.size(), hipMemRangeAttributeAccessedBy,
                                     allocation.ptr(), kPageSize));
 
   for (auto device : data) {
@@ -278,7 +278,7 @@ TEST_CASE("Unit_hipMemRangeGetAttribute_Positive_AccessedBy_MultiDevice") {
     HIP_CHECK(hipMemAdvise(allocation.ptr(), kPageSize, hipMemAdviseSetAccessedBy, device));
   }
 
-  HIP_CHECK(hipMemRangeGetAttribute(data.data(), sizeof(data), hipMemRangeAttributeAccessedBy,
+  HIP_CHECK(hipMemRangeGetAttribute(data.data(), sizeof(int32_t) * data.size(), hipMemRangeAttributeAccessedBy,
                                     allocation.ptr(), kPageSize));
 
   // Use std::find since there is no guaranteed order in which devices will be returned

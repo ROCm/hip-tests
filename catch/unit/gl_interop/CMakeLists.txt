@@ -6,6 +6,7 @@ set(TEST_SRC
     hipGraphicsSubResourceGetMappedArray.cc
     hipGraphicsResourceGetMappedPointer.cc
     hipGraphicsUnmapResources.cc
+    hipGraphicsUnregisterResource.cc
 )
 
 hip_add_exe_to_target(NAME GLInteropTest

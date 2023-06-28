@@ -3,6 +3,6 @@ set(TEST_SRC
     Stress_deviceAllocationStress.cc
 )
 
-hip_add_exe_to_target(NAME devalloc
+hip_add_exe_to_target(NAME devalloc_stress
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME stress_test)

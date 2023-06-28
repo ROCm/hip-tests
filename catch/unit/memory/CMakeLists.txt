@@ -120,13 +120,6 @@ else()
   set(TEST_SRC ${TEST_SRC} hipGetSymbolSizeAddress.cc)
 endif()
 
-# skipped due to os related code in tests need to work on them when all the
-# tests are enabled
-if(UNIX)
-  set(TEST_SRC ${TEST_SRC} hipHmmOvrSubscriptionTst.cc
-               hipMemoryAllocateCoherent.cc)
-endif()
-
 hip_add_exe_to_target(NAME MemoryTest
   TEST_SRC ${TEST_SRC}
   TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})

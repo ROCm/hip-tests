@@ -19,6 +19,17 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 
+/**
+ * @addtogroup hipEventQuery hipEventQuery
+ * @{
+ * @ingroup EventTest
+ * `hipEventQuery(hipEvent_t event)` -
+ * Query the status of the specified event.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipEventIpc
+ */
+
 // Since we can not use atomic*_system on every gpu, we will use wait based on clock rate.
 // This wont be accurate since current clock rate of a GPU varies depending on many variables
 // including thermals, load, utilization etc
@@ -34,6 +45,31 @@ __global__ void waitKernel(int clockRate, int seconds) {
   }
 }
 
+__global__ void waitKernel_gfx11(int clockRate, int seconds) {
+#if HT_AMD
+  auto start = wall_clock64();
+  auto ms = seconds * 1000;
+  long long waitTill = clockRate * (long long)ms;
+  while (1) {
+    auto end = wall_clock64();
+    if ((end - start) > waitTill) {
+      return;
+    }
+  }
+#endif
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Query events with a single and with multiple devices.
+ * Test source
+ * ------------------------
+ *  - unit/event/Unit_hipEventQuery.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipEventQuery_DifferentDevice") {
   hipEvent_t event1{}, event2{};
   HIP_CHECK(hipEventCreate(&event1));
@@ -54,9 +90,10 @@ TEST_CASE("Unit_hipEventQuery_DifferentDevice") {
     HIP_CHECK(hipSetDevice(0));
     HIP_CHECK(hipEventRecord(event1, stream));
 
+    auto waitKernel_used = IsGfx11() ? waitKernel_gfx11 : waitKernel;
     // Start kernel and wait for 3 seconds
     // Make sure you increase this time if you add more tests here
-    waitKernel<<<1, 1, 0, stream>>>(clockRate, 3);
+    waitKernel_used<<<1, 1, 0, stream>>>(clockRate, 3);
 
     HIP_CHECK(hipEventRecord(event2, stream));
 

@@ -6,11 +6,14 @@ set(TEST_SRC
     hiprtcHelper.cc
     hiprtcLinkFile.cc
     hiprtcLinkData.cc
+    hipStreamCaptureRtc.cc
 )
 
 # AMD only tests
 set(AMD_TEST_SRC
     customOptions.cc
+    hipRtcBfloat16.cc
+    linker.cc
 )
 
 if(HIP_PLATFORM MATCHES "nvidia")

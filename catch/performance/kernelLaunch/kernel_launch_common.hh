@@ -43,11 +43,11 @@ extern LargeKernelArgs large_kernel_args;
 
 __global__ void NullKernel();
 
-__global__ void SmallKernel(SmallKernelArgs);
+__global__ void KernelWithSmallArgs(SmallKernelArgs, char*);
 
-__global__ void MediumKernel(MediumKernelArgs);
+__global__ void KernelWithMediumArgs(MediumKernelArgs, char*);
 
-__global__ void LargeKernel(LargeKernelArgs);
+__global__ void KernelWithLargeArgs(LargeKernelArgs, char*);
 
 enum class KernelType { kNull = 0, kSmall, kMedium, kLarge };
 

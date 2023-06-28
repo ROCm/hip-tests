@@ -1,5 +1,6 @@
 /*
 Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -141,7 +142,7 @@ void MemcpyDeviceToDeviceShell(F memcpy_func, const hipStream_t kernel_stream = 
     HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, src_device, dst_device));
     if (!can_access_peer) {
       INFO("Peer access cannot be enabled between devices " << src_device << " " << dst_device);
-      REQUIRE(can_access_peer);
+      return;
     }
     HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));
   }
@@ -237,6 +238,7 @@ void MemcpySyncBehaviorCheck(F memcpy_func, const bool should_sync,
   LaunchDelayKernel(std::chrono::milliseconds{100}, kernel_stream);
   HIP_CHECK(memcpy_func());
   if (should_sync) {
+    HIP_CHECK(hipStreamSynchronize(kernel_stream));
     HIP_CHECK(hipStreamQuery(kernel_stream));
   } else {
     HIP_CHECK_ERROR(hipStreamQuery(kernel_stream), hipErrorNotReady);

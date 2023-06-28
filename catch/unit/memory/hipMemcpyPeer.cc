@@ -16,21 +16,35 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/*
-Testcase Scenarios :
-Unit_hipMemcpyPeer_Positive_Default - Test basic P2P memcpy between two devices
-with hipMemcpyPeer api Unit_hipMemcpyPeer_Positive_Synchronization_Behavior -
-Test synchronization behavior for hipMemcpyPeer api
-Unit_hipMemcpyPeer_Positive_ZeroSize - Test that no data is copied when
-sizeBytes is set to 0 Unit_hipMemcpyPeer_Negative_Parameters - Test unsuccessful
-execution of hipMemcpyPeer api when parameters are invalid
-*/
+
 #include <hip/hip_runtime_api.h>
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
 #include <utils.hh>
 
+/**
+ * @addtogroup hipMemcpyPeer hipMemcpyPeer
+ * @{
+ * @ingroup PeerToPeerTest
+ * `hipMemcpyPeer(void* dst, int dstDeviceId, const void* src,
+ * int srcDeviceId, size_t sizeBytes)` -
+ * Copies memory from one device to memory on another device.
+ */
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Performs basic peer to peer memcpy functionality between each pair of devices.
+ *  - Launches computation kernel.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyPeer.cc
+ * Test requirements
+ * ------------------------
+ *  - Peer access supported
+ *  - Multi-device
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyPeer_Positive_Default") {
   const auto device_count = HipTest::getDeviceCount();
   if (device_count < 2) {
@@ -77,6 +91,19 @@ TEST_CASE("Unit_hipMemcpyPeer_Positive_Default") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Checks synchronization behavior for peer memcpy.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyPeer.cc
+ * Test requirements
+ * ------------------------
+ *  - Peer access supported
+ *  - Multi-device
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyPeer_Positive_Synchronization_Behavior") {
   HIP_CHECK(hipDeviceSynchronize());
 
@@ -111,6 +138,19 @@ TEST_CASE("Unit_hipMemcpyPeer_Positive_Synchronization_Behavior") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Checks that no data is copied if size is set to 0.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyPeer.cc
+ * Test requirements
+ * ------------------------
+ *  - Peer access supported
+ *  - Multi-device
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyPeer_Positive_ZeroSize") {
   const auto device_count = HipTest::getDeviceCount();
   if (device_count < 2) {
@@ -138,14 +178,19 @@ TEST_CASE("Unit_hipMemcpyPeer_Positive_ZeroSize") {
     const auto element_count = allocation_size / sizeof(*src_alloc.ptr());
     constexpr auto thread_count = 1024;
     const auto block_count = element_count / thread_count + 1;
-    constexpr int set_value = 22;
+    constexpr int set_value_s = 22;
     HIP_CHECK(hipSetDevice(src_device));
-    VectorSet<<<block_count, thread_count, 0>>>(src_alloc.ptr(), set_value, element_count);
+    VectorSet<<<block_count, thread_count, 0>>>(src_alloc.ptr(), set_value_s, element_count);
     HIP_CHECK(hipGetLastError());
 
-    constexpr int expected_value = 21;
-    std::fill_n(src_alloc.host_ptr(), element_count, expected_value);
+    constexpr int expected_value = 20;
+    HIP_CHECK(hipSetDevice(dst_device));
+    VectorSet<<<block_count, thread_count, 0>>>(dst_alloc.ptr(), expected_value, element_count);
+    HIP_CHECK(hipGetLastError());
+    HIP_CHECK(hipSetDevice(src_device));
 
+    constexpr int set_value_h = 21;
+    std::fill_n(result.host_ptr(), element_count, set_value_h);
     HIP_CHECK(hipMemcpyPeer(dst_alloc.ptr(), dst_device, src_alloc.ptr(), src_device, 0));
 
     HIP_CHECK(
@@ -159,6 +204,29 @@ TEST_CASE("Unit_hipMemcpyPeer_Positive_ZeroSize") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When output destination pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When source pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When copying more than allocated
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When destination device ID is not valid (out of bounds)
+ *      - Expected output: return `hipErrorInvalidDevice`
+ *    -# When source device ID is not valid (out of bounds)
+ *      - Expected output: return `hipErrorInvalidDevice`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyPeer.cc
+ * Test requirements
+ * ------------------------
+ *  - Peer access supported
+ *  - Multi-device
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyPeer_Negative_Parameters") {
   const auto device_count = HipTest::getDeviceCount();
   if (device_count < 2) {

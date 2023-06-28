@@ -13,5 +13,4 @@ samples/0_Intro/module_api/vcpy_isa.hsaco
 samples/0_Intro/module_api/vcpy_kernel.co
 samples/0_Intro/module_api/vcpy_kernel.code
 samples/1_Utils/hipInfo/hipInfo
-samples/1_Utils/hipBusBandwidth/hipBusBandwidth
 samples/1_Utils/hipDispatchLatency/hipDispatchLatency

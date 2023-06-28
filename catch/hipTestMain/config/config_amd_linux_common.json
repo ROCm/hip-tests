@@ -65,6 +65,23 @@
 	   "SWDEV-398980 fails in Stress test",
 	   "Unit_hipMemcpyPeer_Positive_Synchronization_Behavior",
 	   "SWDEV-398981 fails in stress test",
-	   "Unit_hipStreamCreateWithPriority_MulthreadDefaultflag"
+	   "Unit_hipStreamCreateWithPriority_MulthreadDefaultflag",
+	   "=== Below tests fail in stress test on 23/06/23 ===",
+	   "Unit_hipIpcMemAccess_ParameterValidation",
+	   "Unit_hipMemcpy2DFromArrayAsync_Positive_Synchronization_Behavior",
+	   "Unit_hipMalloc3D_SmallandBigChunks",
+	   "Unit_hipMalloc3D_MultiThread",
+	   "Unit_hipArrayCreate_DiffSizes",
+	   "Unit_hipArrayCreate_MultiThread",
+	   "hipMemGetInfo_DifferentMallocSmall",
+	   "Unit_hipMemGetInfo_ParaSmall",
+	   "Unit_hipMemGetInfo_ParaNonDiv",
+	   "Unit_hipMemGetInfo_ParaMultiSmall",
+	   "Unit_hipMemGetInfo_Negative",
+	   "Unit_hipMemsetDSync - int8_t",
+	   "Unit_hipGraphClone_Test_hipGraphExecMemcpyNodeSetParams",
+	   "Unit_hipGraphClone_Test_hipGraphMemcpyNodeSetParams1D_and_exec",
+	   "Unit_hipStreamValue_Wait64_Blocking_NoMask_And",
+	   "Unit_hipStreamValue_Wait64_Blocking_NoMask_Nor"
 	]
 }

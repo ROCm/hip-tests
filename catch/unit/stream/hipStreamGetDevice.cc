@@ -20,7 +20,6 @@ THE SOFTWARE.
 #include <hip_test_kernels.hh>
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
-#include <hip_test_defgroups.hh>
 #define NUMBER_OF_THREADS 10
 static bool thread_results[NUMBER_OF_THREADS];
 
@@ -54,8 +53,7 @@ TEST_CASE("Unit_hipStreamGetDevice_Negative") {
 
   HIP_CHECK(hipStreamCreate(&stream));
   HIP_CHECK_ERROR(hipStreamGetDevice(nullptr, nullptr), hipErrorInvalidValue);
-  HIP_CHECK_ERROR(hipStreamGetDevice(hipStreamPerThread, nullptr),
-                  hipErrorInvalidValue);
+  HIP_CHECK_ERROR(hipStreamGetDevice(hipStreamPerThread, nullptr), hipErrorInvalidValue);
   HIP_CHECK_ERROR(hipStreamGetDevice(stream, nullptr), hipErrorInvalidValue);
   HIP_CHECK(hipStreamDestroy(stream));
 }
@@ -145,9 +143,7 @@ static bool validateStreamGetDevice() {
   return true;
 }
 
-static void thread_Test(int threadNum) {
-  thread_results[threadNum] = validateStreamGetDevice();
-}
+static void thread_Test(int threadNum) { thread_results[threadNum] = validateStreamGetDevice(); }
 
 static bool test_hipStreamGetDevice_MThread() {
   std::vector<std::thread> tests;
@@ -158,7 +154,7 @@ static bool test_hipStreamGetDevice_MThread() {
     tests.push_back(std::thread(thread_Test, idx));
   }
   // Wait for all threads to complete
-  for (std::thread &t : tests) {
+  for (std::thread& t : tests) {
     t.join();
   }
   // Wait for thread
@@ -169,9 +165,7 @@ static bool test_hipStreamGetDevice_MThread() {
   return status;
 }
 
-TEST_CASE("Unit_hipStreamGetDevice_MThread") {
-  REQUIRE(true == test_hipStreamGetDevice_MThread());
-}
+TEST_CASE("Unit_hipStreamGetDevice_MThread") { REQUIRE(true == test_hipStreamGetDevice_MThread()); }
 
 /**
  * Test Description

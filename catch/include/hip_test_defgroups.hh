@@ -20,6 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#include <hip_test_common.hh>
+
 // Test groups are named based on the group names from hip_api_runtime.h, with adding "Test" suffix
 
 /**
@@ -60,7 +62,8 @@ THE SOFTWARE.
 /**
  * @defgroup PeerToPeerTest PeerToPeer Device Memory Access
  * @{
- * This section describes tests for the PeerToPeer device memory access functions of HIP runtime API.
+ * This section describes tests for the PeerToPeer device memory access functions of HIP runtime
+ * API.
  * @warning PeerToPeer support is experimental.
  * @}
  */
@@ -126,7 +129,7 @@ TEST_CASE("Unit_StaticAssert_Positive_Basic") {}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_StaticAssert_Negative_Basic")
+TEST_CASE("Unit_StaticAssert_Negative_Basic") {}
 
 /**
  * End doxygen group static_assert.

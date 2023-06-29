@@ -22,7 +22,6 @@ THE SOFTWARE.
 #include <functional>
 #include <vector>
 
-#include <hip_test_defgroups.hh>
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
 #include <utils.hh>
@@ -127,11 +126,10 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_Negative_Parameters") {
  * Allocate a 2D array using hipMallocPitch. Initialize the allocated memory
  * using hipGraphAddMemsetNode. Copy the values in device memory to host using
  * hipGraphAddMemcpyNode. Verify the results.
-*/
+ */
 TEST_CASE("Unit_hipGraphAddMemsetNode_hipMallocPitch_2D") {
-  size_t width = SIZE * sizeof(char), numW{SIZE},
-         numH{SIZE}, pitch_A;
-  char *A_d;
+  size_t width = SIZE * sizeof(char), numW{SIZE}, numH{SIZE}, pitch_A;
+  char* A_d;
 
   hipGraph_t graph;
   std::vector<hipGraphNode_t> nodeDependencies;
@@ -143,22 +141,20 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_hipMallocPitch_2D") {
     }
   }
   // 2D Memory allocation hipMallocPitch
-  HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&A_d), &pitch_A, width,
-                          numH));
+  HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&A_d), &pitch_A, width, numH));
   // Create Graph
   HIP_CHECK(hipGraphCreate(&graph, 0));
   hipGraphNode_t memsetNode, memcpyNode;
   // Add MemSet Node
   hipMemsetParams memsetParams{};
   memset(&memsetParams, 0, sizeof(memsetParams));
-  memsetParams.dst = reinterpret_cast<void *>(A_d);
+  memsetParams.dst = reinterpret_cast<void*>(A_d);
   memsetParams.value = memSetVal;
   memsetParams.pitch = pitch_A;
   memsetParams.elementSize = sizeof(char);
   memsetParams.width = numW;
   memsetParams.height = numH;
-  HIP_CHECK(hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0,
-          &memsetParams));
+  HIP_CHECK(hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0, &memsetParams));
   nodeDependencies.push_back(memsetNode);
   // Add MemCpy Node
   hipMemcpy3DParms myparms{};
@@ -169,21 +165,20 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_hipMallocPitch_2D") {
   myparms.extent = make_hipExtent(width, numH, 1);
   myparms.kind = hipMemcpyDeviceToHost;
   HIP_CHECK(hipGraphAddMemcpyNode(&memcpyNode, graph, nodeDependencies.data(),
-                                            nodeDependencies.size(), &myparms));
+                                  nodeDependencies.size(), &myparms));
   nodeDependencies.clear();
   // Create executable graph
   hipStream_t streamForGraph;
   hipGraphExec_t graphExec;
   HIP_CHECK(hipStreamCreate(&streamForGraph));
-  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr,
-                                nullptr, 0));
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
   HIP_CHECK(hipGraphLaunch(graphExec, streamForGraph));
   HIP_CHECK(hipStreamSynchronize(streamForGraph));
 
   // Verfication
   for (size_t i = 0; i < numW; i++) {
     for (size_t j = 0; j < numH; j++) {
-      REQUIRE(*(A_h + i*numH + j) == memSetVal);
+      REQUIRE(*(A_h + i * numH + j) == memSetVal);
     }
   }
   HIP_CHECK(hipGraphExecDestroy(graphExec));
@@ -196,10 +191,10 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_hipMallocPitch_2D") {
  * Allocate a 1D array using hipMallocPitch. Initialize the allocated memory using
  * hipGraphAddMemsetNode. Copy the values in device memory to host using
  * hipGraphAddMemcpyNode. Verify the results.
-*/
+ */
 TEST_CASE("Unit_hipGraphAddMemsetNode_hipMallocPitch_1D") {
   size_t width = SIZE * sizeof(char), numW{SIZE}, pitch_A;
-  char *A_d;
+  char* A_d;
 
   // Initialize the host memory
   std::vector<char> A_h(numW, ' ');
@@ -207,22 +202,20 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_hipMallocPitch_1D") {
   hipGraph_t graph;
   std::vector<hipGraphNode_t> nodeDependencies;
   // 1D Memory allocation hipMallocPitch
-  HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&A_d), &pitch_A, width,
-                          1));
+  HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&A_d), &pitch_A, width, 1));
   // Create Graph
   HIP_CHECK(hipGraphCreate(&graph, 0));
   hipGraphNode_t memsetNode, memcpyNode;
   // Add MemSet Node
   hipMemsetParams memsetParams{};
   memset(&memsetParams, 0, sizeof(memsetParams));
-  memsetParams.dst = reinterpret_cast<void *>(A_d);
+  memsetParams.dst = reinterpret_cast<void*>(A_d);
   memsetParams.value = memSetVal;
   memsetParams.pitch = pitch_A;
   memsetParams.elementSize = sizeof(char);
   memsetParams.width = numW;
   memsetParams.height = 1;
-  HIP_CHECK(hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0,
-          &memsetParams));
+  HIP_CHECK(hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0, &memsetParams));
   nodeDependencies.push_back(memsetNode);
   // Add MemCpy Node
   hipMemcpy3DParms myparms{};
@@ -233,15 +226,14 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_hipMallocPitch_1D") {
   myparms.extent = make_hipExtent(width, 1, 1);
   myparms.kind = hipMemcpyDeviceToHost;
   HIP_CHECK(hipGraphAddMemcpyNode(&memcpyNode, graph, nodeDependencies.data(),
-                                            nodeDependencies.size(), &myparms));
+                                  nodeDependencies.size(), &myparms));
   nodeDependencies.clear();
 
   // Create executable graph
   hipStream_t streamForGraph;
   hipGraphExec_t graphExec;
   HIP_CHECK(hipStreamCreate(&streamForGraph));
-  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr,
-                                nullptr, 0));
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
   HIP_CHECK(hipGraphLaunch(graphExec, streamForGraph));
   HIP_CHECK(hipStreamSynchronize(streamForGraph));
 
@@ -258,7 +250,7 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_hipMallocPitch_1D") {
  * Allocate a 2D array using hipMalloc3D. Initialize the allocated memory using
  * hipGraphAddMemsetNode. Copy the values in device memory to host using
  * hipGraphAddMemcpyNode. Verify the results.
-*/
+ */
 TEST_CASE("Unit_hipGraphAddMemsetNode_hipMalloc3D_2D") {
   size_t width = SIZE * sizeof(char);
   size_t numW = SIZE, numH = SIZE;
@@ -292,8 +284,7 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_hipMalloc3D_2D") {
   memsetParams.elementSize = sizeof(char);
   memsetParams.width = numW;
   memsetParams.height = numH;
-  HIP_CHECK(hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0,
-          &memsetParams));
+  HIP_CHECK(hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0, &memsetParams));
   nodeDependencies.push_back(memsetNode);
 
   // MemCpy params
@@ -307,22 +298,21 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_hipMalloc3D_2D") {
 
   // Add MemCpy Node
   HIP_CHECK(hipGraphAddMemcpyNode(&memcpyNode, graph, nodeDependencies.data(),
-                                            nodeDependencies.size(), &myparms));
+                                  nodeDependencies.size(), &myparms));
   nodeDependencies.clear();
 
   // Create executable graph
   hipStream_t streamForGraph;
   hipGraphExec_t graphExec;
   HIP_CHECK(hipStreamCreate(&streamForGraph));
-  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr,
-                                nullptr, 0));
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
   HIP_CHECK(hipGraphLaunch(graphExec, streamForGraph));
   HIP_CHECK(hipStreamSynchronize(streamForGraph));
 
   // Verfication
   for (size_t i = 0; i < numW; i++) {
     for (size_t j = 0; j < numH; j++) {
-      REQUIRE(*(A_h + i*numH + j) == memSetVal);
+      REQUIRE(*(A_h + i * numH + j) == memSetVal);
     }
   }
   HIP_CHECK(hipGraphExecDestroy(graphExec));
@@ -335,7 +325,7 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_hipMalloc3D_2D") {
  * Allocate a 1D array using hipMalloc3D. Initialize the allocated
  * memory using hipGraphAddMemsetNode. Copy the values in device
  * memory to host using hipGraphAddMemcpyNode. Verify the results.
-*/
+ */
 TEST_CASE("Unit_hipGraphAddMemsetNode_hipMalloc3D_1D") {
   size_t width = SIZE * sizeof(char);
   size_t numW = SIZE;
@@ -365,8 +355,7 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_hipMalloc3D_1D") {
   memsetParams.elementSize = sizeof(char);
   memsetParams.width = numW;
   memsetParams.height = 1;
-  HIP_CHECK(hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0,
-          &memsetParams));
+  HIP_CHECK(hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0, &memsetParams));
   nodeDependencies.push_back(memsetNode);
 
   // MemCpy params
@@ -380,21 +369,20 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_hipMalloc3D_1D") {
 
   // Add MemCpy Node
   HIP_CHECK(hipGraphAddMemcpyNode(&memcpyNode, graph, nodeDependencies.data(),
-                                            nodeDependencies.size(), &myparms));
+                                  nodeDependencies.size(), &myparms));
   nodeDependencies.clear();
 
   // Create executable graph
   hipStream_t streamForGraph;
   hipGraphExec_t graphExec;
   HIP_CHECK(hipStreamCreate(&streamForGraph));
-  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr,
-                                nullptr, 0));
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
   HIP_CHECK(hipGraphLaunch(graphExec, streamForGraph));
   HIP_CHECK(hipStreamSynchronize(streamForGraph));
 
   // Verfication
   for (size_t i = 0; i < numW; i++) {
-     REQUIRE(A_h[i] == memSetVal);
+    REQUIRE(A_h[i] == memSetVal);
   }
   HIP_CHECK(hipGraphExecDestroy(graphExec));
   HIP_CHECK(hipGraphDestroy(graph));
@@ -405,9 +393,9 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_hipMalloc3D_1D") {
  * Allocate a 1D array using hipMalloc. Initialize the allocated memory using
  * hipGraphAddMemsetNode. Copy the values in device memory to host using
  * hipGraphAddMemcpyNode. Verify the results.
-*/
+ */
 TEST_CASE("Unit_hipGraphAddMemsetNode_hipMalloc_1D") {
-  char *A_d;
+  char* A_d;
   size_t NumW = SIZE;
   size_t Nbytes1D = SIZE * sizeof(char);
 
@@ -426,14 +414,13 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_hipMalloc_1D") {
   // Add Memset node
   hipMemsetParams memsetParams{};
   memset(&memsetParams, 0, sizeof(memsetParams));
-  memsetParams.dst = reinterpret_cast<void *>(A_d);
+  memsetParams.dst = reinterpret_cast<void*>(A_d);
   memsetParams.value = memSetVal;
   memsetParams.pitch = Nbytes1D;
   memsetParams.elementSize = sizeof(char);
   memsetParams.width = NumW;
   memsetParams.height = 1;
-  HIP_CHECK(hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0,
-            &memsetParams));
+  HIP_CHECK(hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0, &memsetParams));
   nodeDependencies.push_back(memsetNode);
   // Add MemCpy Node
   hipPitchedPtr devPitchedPtr{A_d, Nbytes1D, NumW, 0};
@@ -446,20 +433,19 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_hipMalloc_1D") {
   myparms.extent = make_hipExtent(Nbytes1D, 1, 1);
   myparms.kind = hipMemcpyDeviceToHost;
   HIP_CHECK(hipGraphAddMemcpyNode(&memcpyNode, graph, nodeDependencies.data(),
-                                            nodeDependencies.size(), &myparms));
+                                  nodeDependencies.size(), &myparms));
   nodeDependencies.clear();
   // Create executable graph
   hipStream_t streamForGraph;
   hipGraphExec_t graphExec;
   HIP_CHECK(hipStreamCreate(&streamForGraph));
-  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr,
-                                nullptr, 0));
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
   HIP_CHECK(hipGraphLaunch(graphExec, streamForGraph));
   HIP_CHECK(hipStreamSynchronize(streamForGraph));
 
   // Verfication
   for (size_t i = 0; i < NumW; i++) {
-     REQUIRE(A_h[i] == memSetVal);
+    REQUIRE(A_h[i] == memSetVal);
   }
   HIP_CHECK(hipGraphExecDestroy(graphExec));
   HIP_CHECK(hipGraphDestroy(graph));
@@ -469,16 +455,15 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_hipMalloc_1D") {
 
 TEST_CASE("Unit_hipGraphAddMemsetNode_hipMallocManaged") {
   int managed = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&managed,
-                                  hipDeviceAttributeManagedMemory, 0));
+  HIP_CHECK(hipDeviceGetAttribute(&managed, hipDeviceAttributeManagedMemory, 0));
   INFO("hipDeviceAttributeManagedMemory: " << managed);
   if (managed != 1) {
     WARN(
-      "GPU 0 doesn't support hipDeviceAttributeManagedMemory attribute"
-       "so defaulting to system memory.");
+        "GPU 0 doesn't support hipDeviceAttributeManagedMemory attribute"
+        "so defaulting to system memory.");
   }
   size_t Nbytes1D = SIZE * sizeof(char);
-  char *A_d;
+  char* A_d;
   // Initialize the host memory
   std::vector<char> A_h(SIZE, ' ');
   // Device Memory
@@ -492,14 +477,13 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_hipMallocManaged") {
   // Add Memset node
   hipMemsetParams memsetParams{};
   memset(&memsetParams, 0, sizeof(memsetParams));
-  memsetParams.dst = reinterpret_cast<void *>(A_d);
+  memsetParams.dst = reinterpret_cast<void*>(A_d);
   memsetParams.value = memSetVal;
   memsetParams.pitch = Nbytes1D;
   memsetParams.elementSize = sizeof(char);
   memsetParams.width = SIZE;
   memsetParams.height = 1;
-  HIP_CHECK(hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0,
-            &memsetParams));
+  HIP_CHECK(hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0, &memsetParams));
   nodeDependencies.push_back(memsetNode);
 
   // Add MemCpy Node
@@ -514,21 +498,20 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_hipMallocManaged") {
   myparms.extent = make_hipExtent(Nbytes1D, 1, 1);
   myparms.kind = hipMemcpyDeviceToHost;
   HIP_CHECK(hipGraphAddMemcpyNode(&memcpyNode, graph, nodeDependencies.data(),
-                                            nodeDependencies.size(), &myparms));
+                                  nodeDependencies.size(), &myparms));
   nodeDependencies.clear();
 
   // Create executable graph
   hipStream_t streamForGraph;
   hipGraphExec_t graphExec;
   HIP_CHECK(hipStreamCreate(&streamForGraph));
-  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr,
-                                nullptr, 0));
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
   HIP_CHECK(hipGraphLaunch(graphExec, streamForGraph));
   HIP_CHECK(hipStreamSynchronize(streamForGraph));
 
   // Verfication
   for (size_t i = 0; i < SIZE; i++) {
-     REQUIRE(A_h[i] == memSetVal);
+    REQUIRE(A_h[i] == memSetVal);
   }
 
   HIP_CHECK(hipGraphExecDestroy(graphExec));

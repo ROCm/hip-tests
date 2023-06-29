@@ -63,8 +63,6 @@
 	   "Unit_hipMemcpyWithStream_MultiThread",
 	   "SWDEV-398977 fails in stress tests",
 	   "Unit_hipMemset2DSync",
-	   "SWDEV-398980 fails in Stress test",
-	   "Unit_hipMemcpyPeer_Positive_Synchronization_Behavior",
 	   "SWDEV-398981 fails in stress test",
 	   "Unit_hipStreamCreateWithPriority_MulthreadDefaultflag",
 	   "=== Below tests fail in stress test on 23/06/23 ===",

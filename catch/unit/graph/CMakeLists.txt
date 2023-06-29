@@ -109,8 +109,9 @@ set(TEST_SRC
   hipGraphExecDestroy.cc
   hipGraphUpload.cc
   hipGraphKernelNodeCopyAttributes.cc
-  hipGraphKernelNodeSetAttribute.cc
+  hipGraphCycle.cc
   hipGraphKernelNodeGetAttribute.cc
+  hipGraphKernelNodeSetAttribute.cc
 )
 
 if(HIP_PLATFORM MATCHES "amd")

@@ -8,6 +8,8 @@
 #define HIP_SAMPLING_VERIFY_ABSOLUTE_THRESHOLD  0.1
 
 #if HT_NVIDIA
+typedef unsigned char uchar;
+
 template<typename T>
 typename std::enable_if<sizeof(T) / sizeof(decltype(T::x)) == 4, T>::type
 inline __host__ __device__ operator+(const T &a, const T &b)

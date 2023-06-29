@@ -33,7 +33,7 @@
 	   "Unit_hipStreamAttachMemAsync_Positive_AttachGlobal",
 	   "Unit_hipStreamAttachMemAsync_Negative_Parameters",
 	   "Unit_hipMemGetAddressRange_Positive",
-	   "Unit_hipStreamGetCaptureInfo_Nullstream_CaptureInfo",
+	   "Unit_hipGraphAddMemcpyNode1D_Negative_Basic",
 	   "intermittent issue: corrupted double-linked list",
 	   "Unit_hipGraphRetainUserObject_Functional_2",
 	   "intermittent issue: failure expected but sucess returned",

@@ -110,6 +110,76 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpy2D_H2D-D2D-D2H", ""
                                   A_h, B_h, C_h, false);
   }
 }
+/*
+This testcase performs the following scenarios of hipMemcpy2D API on same GPU.
+1. H2D-D2D-D2H for Host Memory<-->Device Memory
+2. H2D-D2D-D2H for Pinned Host Memory<-->Device Memory
+The src and dst input pointers to hipMemCpy2D add an offset to the pointers
+returned by the allocation functions.
+
+Input : "A_h" initialized based on data type
+         "A_h" --> "A_d" using H2D copy
+         "A_d" --> "B_d" using D2D copy
+         "B_d" --> "B_h" using D2H copy
+Output: Validating A_h with B_h both should be equal for
+        the number of COLUMNS and ROWS copied
+*/
+TEMPLATE_TEST_CASE("Unit_hipMemcpy2D_H2D-D2D-D2H_WithOffset", ""
+                   , int, float, double) {
+  // 1 refers to pinned host memory
+  auto mem_type = GENERATE(0, 1);
+  HIP_CHECK(hipSetDevice(0));
+  TestType  *A_h{nullptr}, *B_h{nullptr}, *C_h{nullptr}, *A_d{nullptr},
+            *B_d{nullptr};
+  size_t pitch_A, pitch_B;
+  size_t width{NUM_W * sizeof(TestType)};
+
+  // Allocating memory
+  if (mem_type) {
+    HipTest::initArrays<TestType>(nullptr, nullptr, nullptr,
+                                  &A_h, &B_h, &C_h, NUM_W*NUM_H, true);
+  } else {
+    HipTest::initArrays<TestType>(nullptr, nullptr, nullptr,
+                                  &A_h, &B_h, &C_h, NUM_W*NUM_H, false);
+  }
+  HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&A_d),
+                          &pitch_A, width, NUM_H));
+  HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&B_d),
+                          &pitch_B, width, NUM_H));
+
+  // Initialize the data
+  HipTest::setDefaultData<TestType>(NUM_W*NUM_H, A_h, B_h, C_h);
+
+  // Host to Device
+  HIP_CHECK(hipMemcpy2D(A_d+COLUMNS*sizeof(TestType), pitch_A, A_h, COLUMNS*sizeof(TestType),
+                        COLUMNS*sizeof(TestType), ROWS, hipMemcpyHostToDevice));
+
+  // Performs D2D on same GPU device
+  HIP_CHECK(hipMemcpy2D(B_d+COLUMNS*sizeof(TestType), pitch_B, A_d+COLUMNS*sizeof(TestType),
+                        pitch_A, COLUMNS*sizeof(TestType),
+                        ROWS, hipMemcpyDeviceToDevice));
+
+  // hipMemcpy2D Device to Host
+  HIP_CHECK(hipMemcpy2D(B_h, COLUMNS*sizeof(TestType), B_d+COLUMNS*sizeof(TestType), pitch_B,
+                        COLUMNS*sizeof(TestType), ROWS,
+                        hipMemcpyDeviceToHost));
+
+
+  // Validating the result
+  REQUIRE(HipTest::checkArray<TestType>(A_h, B_h, COLUMNS, ROWS) == true);
+
+
+  // DeAllocating the memory
+  HIP_CHECK(hipFree(A_d));
+  HIP_CHECK(hipFree(B_d));
+  if (mem_type) {
+    HipTest::freeArrays<TestType>(nullptr, nullptr, nullptr,
+                                  A_h, B_h, C_h, true);
+  } else {
+    HipTest::freeArrays<TestType>(nullptr, nullptr, nullptr,
+                                  A_h, B_h, C_h, false);
+  }
+}
 
 /*
 This testcases performs the following scenarios of hipMemcpy2D API on Peer GPU

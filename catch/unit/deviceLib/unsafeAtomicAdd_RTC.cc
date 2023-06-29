@@ -31,6 +31,7 @@ unsafeAtomicAdd Scenarios with hipRTC:
 
 #include<hip_test_checkers.hh>
 #include<hip_test_common.hh>
+#include<hip_test_features.hh>
 #include <hip/hiprtc.h>
 #define INCREMENT_VAL 10
 #define INITIAL_VAL 5
@@ -66,7 +67,7 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_CoherentRTCnounsafeatomicflag", "",
   HIP_CHECK(hipGetDeviceProperties(&props, device));
   std::string gfxName(props.gcnArchName);
 
-  if ((gfxName == "gfx90a" || gfxName.find("gfx90a:")) == 0) {
+  if (CheckIfFeatSupported(CTFeatures::CT_FEATURE_FINEGRAIN_HWSUPPORT, gfxName)) {
     hiprtcProgram prog;
     if (std::is_same<TestType, float>::value) {
     hiprtcCreateProgram(&prog,        // prog
@@ -135,7 +136,7 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_CoherentRTCnounsafeatomicflag", "",
     }
     HIP_CHECK(hipModuleUnload(module));
   } else {
-      SUCCEED("Memory model feature is only supported for gfx90a, Hence"
+      SUCCEED("Memory model feature is only supported for gfx90a, gfx940, gfx941, gfx942, Hence"
                "skipping the testcase for this GPU " << device);
   }
 }
@@ -156,7 +157,7 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_CoherentRTCunsafeatomicflag", "",
   HIP_CHECK(hipGetDeviceProperties(&props, device));
   std::string gfxName(props.gcnArchName);
 
-  if ((gfxName == "gfx90a" || gfxName.find("gfx90a:")) == 0) {
+  if (CheckIfFeatSupported(CTFeatures::CT_FEATURE_FINEGRAIN_HWSUPPORT, gfxName)) {
     hiprtcProgram prog;
     if (std::is_same<TestType, float>::value) {
     hiprtcCreateProgram(&prog,        // prog
@@ -227,7 +228,7 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_CoherentRTCunsafeatomicflag", "",
     }
     HIP_CHECK(hipModuleUnload(module));
   } else {
-      SUCCEED("Memory model feature is only supported for gfx90a, Hence"
+      SUCCEED("Memory model feature is only supported for gfx90a, gfx940, gfx941, gfx942, Hence"
                "skipping the testcase for this GPU " << device);
   }
 }
@@ -245,7 +246,7 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_CoherentRTCwithoutflag", "",
   HIP_CHECK(hipGetDeviceProperties(&props, device));
   std::string gfxName(props.gcnArchName);
 
-  if ((gfxName == "gfx90a" || gfxName.find("gfx90a:")) == 0) {
+  if(CheckIfFeatSupported(CTFeatures::CT_FEATURE_FINEGRAIN_HWSUPPORT, gfxName)) {
      hiprtcProgram prog;
     if (std::is_same<TestType, float>::value) {
     hiprtcCreateProgram(&prog,        // prog
@@ -315,7 +316,7 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_CoherentRTCwithoutflag", "",
     }
     HIP_CHECK(hipModuleUnload(module));
   } else {
-      SUCCEED("Memory model feature is only supported for gfx90a, Hence"
+      SUCCEED("Memory model feature is only supported for gfx90a, gfx940, gfx941, gfx942, Hence"
               "skipping the testcase for this GPU " << device);
   }
 }
@@ -332,7 +333,7 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_NonCoherentRTCnounsafeatomicflag", "",
   HIP_CHECK(hipGetDeviceProperties(&props, device));
   std::string gfxName(props.gcnArchName);
 
-  if ((gfxName == "gfx90a" || gfxName.find("gfx90a:")) == 0) {
+  if (CheckIfFeatSupported(CTFeatures::CT_FEATURE_FINEGRAIN_HWSUPPORT, gfxName)) {
      hiprtcProgram prog;
     if (std::is_same<TestType, float>::value) {
     hiprtcCreateProgram(&prog,        // prog
@@ -401,7 +402,7 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_NonCoherentRTCnounsafeatomicflag", "",
     }
     HIP_CHECK(hipModuleUnload(module));
   } else {
-      SUCCEED("Memory model feature is only supported for gfx90a, Hence"
+      SUCCEED("Memory model feature is only supported for gfx90a, gfx940, gfx941, gfx942, Hence"
               "skipping the testcase for this GPU " << device);
   }
 }
@@ -419,7 +420,7 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_NonCoherentRTCunsafeatomicflag", "",
   HIP_CHECK(hipGetDeviceProperties(&props, device));
   std::string gfxName(props.gcnArchName);
 
-  if ((gfxName == "gfx90a" || gfxName.find("gfx90a:")) == 0) {
+  if(CheckIfFeatSupported(CTFeatures::CT_FEATURE_FINEGRAIN_HWSUPPORT, gfxName)) {
      hiprtcProgram prog;
     if (std::is_same<TestType, float>::value) {
     hiprtcCreateProgram(&prog,        // prog
@@ -489,7 +490,7 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_NonCoherentRTCunsafeatomicflag", "",
     }
     HIP_CHECK(hipModuleUnload(module));
   } else {
-      SUCCEED("Memory model feature is only supported for gfx90a, Hence"
+      SUCCEED("Memory model feature is only supported for gfx90a, gfx940, gfx941, gfx942, Hence"
               "skipping the testcase for this GPU " << device);
   }
 }
@@ -507,7 +508,7 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_NonCoherentRTC", "",
   HIP_CHECK(hipGetDeviceProperties(&props, device));
   std::string gfxName(props.gcnArchName);
 
-  if ((gfxName == "gfx90a" || gfxName.find("gfx90a:")) == 0) {
+  if (CheckIfFeatSupported(CTFeatures::CT_FEATURE_FINEGRAIN_HWSUPPORT, gfxName)) {
     hiprtcProgram prog;
     if (std::is_same<TestType, float>::value) {
     hiprtcCreateProgram(&prog,        // prog
@@ -577,7 +578,7 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_NonCoherentRTC", "",
     }
     HIP_CHECK(hipModuleUnload(module));
   } else {
-      SUCCEED("Memory model feature is only supported for gfx90a, Hence"
+      SUCCEED("Memory model feature is only supported for gfx90a, gfx940, gfx941, gfx942, Hence"
               "skipping the testcase for this GPU " << device);
   }
 }

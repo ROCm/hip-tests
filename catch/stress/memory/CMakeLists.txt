@@ -5,6 +5,7 @@ set(TEST_SRC
     hipMallocManagedStress.cc
     hipMemPrftchAsyncStressTst.cc
     hipHostMallocStress.cc
+    hipHostRegisterStress.cc
 )
 
 if(UNIX)

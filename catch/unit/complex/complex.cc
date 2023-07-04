@@ -120,13 +120,15 @@ TEMPLATE_TEST_CASE("Unit_Device_make_Complex_Device_Positive", "", hipFloatCompl
   decltype(TestType().x) input_r = GENERATE(-0.25, 0, 0.25);
   decltype(TestType().x) input_i = GENERATE(-1.75, 0, 1.75);
 
-  LinearAllocGuard<TestType> result(LinearAllocs::hipMallocManaged, sizeof(TestType));
+  LinearAllocGuard<TestType> result_d(LinearAllocs::hipMalloc, sizeof(TestType));
+  LinearAllocGuard<TestType> result_h(LinearAllocs::hipHostMalloc, sizeof(TestType));
 
-  MakeComplexTypeKernel<TestType><<<1, 1>>>(result.ptr(), input_r, input_i);
+  MakeComplexTypeKernel<TestType><<<1, 1>>>(result_d.ptr(), input_r, input_i);
+  HIP_CHECK(hipMemcpy(result_h.ptr(), result_d.ptr(), sizeof(TestType), hipMemcpyDeviceToHost));
   HIP_CHECK(hipDeviceSynchronize());
 
-  REQUIRE(result.ptr()[0].x == input_r);
-  REQUIRE(result.ptr()[0].y == input_i);
+  REQUIRE(result_h.ptr()[0].x == input_r);
+  REQUIRE(result_h.ptr()[0].y == input_i);
 }
 
 TEMPLATE_TEST_CASE("Unit_Device_make_Complex_Host_Positive", "", hipFloatComplex,
@@ -144,13 +146,15 @@ TEST_CASE("Unit_Device_make_hipComplex_Device_Positive") {
   float input_r = GENERATE(-0.25, 0, 0.25);
   float input_i = GENERATE(-1.75, 0, 1.75);
 
-  LinearAllocGuard<hipComplex> result(LinearAllocs::hipMallocManaged, sizeof(hipComplex));
+  LinearAllocGuard<hipComplex> result_d(LinearAllocs::hipMalloc, sizeof(hipComplex));
+  LinearAllocGuard<hipComplex> result_h(LinearAllocs::hipHostMalloc, sizeof(hipComplex));
 
-  MakeHipComplexTypeKernel<<<1, 1>>>(result.ptr(), input_r, input_i);
+  MakeHipComplexTypeKernel<<<1, 1>>>(result_d.ptr(), input_r, input_i);
+  HIP_CHECK(hipMemcpy(result_h.ptr(), result_d.ptr(), sizeof(hipComplex), hipMemcpyDeviceToHost));
   HIP_CHECK(hipDeviceSynchronize());
 
-  REQUIRE(result.ptr()[0].x == input_r);
-  REQUIRE(result.ptr()[0].y == input_i);
+  REQUIRE(result_h.ptr()[0].x == input_r);
+  REQUIRE(result_h.ptr()[0].y == input_i);
 }
 
 TEST_CASE("Unit_Device_make_hipComplex_Host_Positive") {

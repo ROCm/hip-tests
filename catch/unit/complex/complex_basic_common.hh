@@ -22,7 +22,6 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 #include <hip/hip_complex.h>
 
-
 template <typename T>
 __host__ __device__ T MakeComplexType(decltype(T().x) input_val1, decltype(T().x) input_val2) {
   if constexpr (std::is_same_v<T, hipFloatComplex>) {
@@ -37,12 +36,12 @@ __global__ void MakeComplexTypeKernel(T* const output_val, decltype(T().x) const
                                       decltype(T().x) const input_val2) {
   *output_val = MakeComplexType<T>(input_val1, input_val2);
 }
-
+#if HT_AMD //EXSWHTEC-321
 __global__ void MakeHipComplexTypeKernel(hipComplex* const output_val, float const input_val1,
                                          float const input_val2) {
   *output_val = make_hipComplex(input_val1, input_val2);
 }
-
+#endif
 template <typename T> struct CastType {};
 
 template <> struct CastType<hipFloatComplex> {
@@ -68,8 +67,8 @@ __global__ void CastComplexTypeKernel(T1* const output_val, T2 const input_val) 
   *output_val = CastComplexType<T1, T2>(input_val);
 }
 
-template <typename T> void compareValues(T actual_val, T ref_val, int64_t ulps) {
+template <typename T> void CompareValues(T actual_val, T ref_val, double margin) {
   if (!std::isnan(ref_val)) {
-    REQUIRE_THAT(actual_val, Catch::WithinULP(ref_val, ulps));
+    REQUIRE_THAT(actual_val, Catch::WithinAbs(ref_val, margin));
   }
 }

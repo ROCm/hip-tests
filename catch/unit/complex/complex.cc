@@ -17,7 +17,6 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "complex_basic_common.hh"
 #include "complex_function_common.hh"
 
 TEMPLATE_TEST_CASE("Unit_Device_Complex_Unary_Device_Sanity_Positive", "", hipFloatComplex,
@@ -140,7 +139,7 @@ TEMPLATE_TEST_CASE("Unit_Device_make_Complex_Host_Positive", "", hipFloatComplex
   REQUIRE(result.x == input_r);
   REQUIRE(result.y == input_i);
 }
-
+#if HT_AMD //EXSWHTEC-321
 TEST_CASE("Unit_Device_make_hipComplex_Device_Positive") {
   float input_r = GENERATE(-0.25, 0, 0.25);
   float input_i = GENERATE(-1.75, 0, 1.75);
@@ -163,7 +162,7 @@ TEST_CASE("Unit_Device_make_hipComplex_Host_Positive") {
   REQUIRE(result.x == input_r);
   REQUIRE(result.y == input_i);
 }
-
+#endif
 TEMPLATE_TEST_CASE("Unit_Device_Complex_Cast_Device_Sanity_Positive", "", hipFloatComplex,
                    hipDoubleComplex) {
   decltype(TestType().x) input_r = GENERATE(-0.25, 0, 0.25);

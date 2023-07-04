@@ -16,10 +16,9 @@ LIABILITY, WHETHER INN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+#pragma once
 
-#include <hip_test_common.hh>
-#include <resource_guards.hh>
-#include <hip/hip_complex.h>
+#include "complex_basic_common.hh"
 
 enum class ComplexFunction { kReal, kImag, kConj, kAdd, kSub, kMul, kDiv, kAbs, kSqabs, kFma };
 
@@ -50,11 +49,13 @@ inline std::string to_string(ComplexFunction function) {
   }
 }
 
+// Function that validates complex functions with complex type result
 template <typename T>
 void ValidateComplexResultFunction(ComplexFunction function, T input_val1, T input_val2,
                                    T input_val3, T actual_val) {
   decltype(T().x) ref_val_r;
   decltype(T().x) ref_val_i;
+  double margin = 0;
 
   switch (function) {
     case ComplexFunction::kAdd: {
@@ -76,6 +77,10 @@ void ValidateComplexResultFunction(ComplexFunction function, T input_val1, T inp
       decltype(T().x) sqabs = input_val2.x * input_val2.x + input_val2.y * input_val2.y;
       ref_val_r = (input_val1.x * input_val2.x + input_val1.y * input_val2.y) / sqabs;
       ref_val_i = (input_val1.y * input_val2.x - input_val1.x * input_val2.y) / sqabs;
+#if HT_NVIDIA
+      // Nvidia implementation uses scaling to guard against intermediate underflow and overflow
+      margin = 0.000001;
+#endif
       break;
     }
     case ComplexFunction::kConj: {
@@ -98,10 +103,11 @@ void ValidateComplexResultFunction(ComplexFunction function, T input_val1, T inp
     }
   }
 
-  compareValues(actual_val.x, ref_val_r, 0);
-  compareValues(actual_val.y, ref_val_i, 0);
+  CompareValues(actual_val.x, ref_val_r, margin);
+  CompareValues(actual_val.y, ref_val_i, margin);
 }
 
+// Function that validates complex functions with scalar type result
 template <typename T>
 void ValidateScalarResultFunction(ComplexFunction function, T input_val,
                                   decltype(T().x) actual_val) {
@@ -131,9 +137,10 @@ void ValidateScalarResultFunction(ComplexFunction function, T input_val,
     }
   }
 
-  compareValues(actual_val, ref_val, 0);
+  CompareValues(actual_val, ref_val, 0);
 }
 
+// Function that performs complex functions with complex type result on host/device
 template <typename T>
 __device__ __host__ void PerformComplexResultFunction(ComplexFunction function, T* output_val,
                                                       T input_val1, T input_val2, T input_val3) {
@@ -178,6 +185,7 @@ __device__ __host__ void PerformComplexResultFunction(ComplexFunction function, 
   }
 }
 
+// Function that performs complex functions with scalar type result on host/device
 template <typename T>
 __device__ __host__ void PerformScalarResultFunction(ComplexFunction function,
                                                      decltype(T().x)* output_val, T input_val) {
@@ -210,30 +218,21 @@ __device__ __host__ void PerformScalarResultFunction(ComplexFunction function,
   }
 }
 
+// Kernel that calls device function which performs complex functions with complex type result
 template <typename T>
 __global__ void ComplexResultKernel(ComplexFunction function, T* output_val, T input_val1,
                                     T input_val2, T input_val3) {
   PerformComplexResultFunction(function, output_val, input_val1, input_val2, input_val3);
 }
 
+// Kernel that calls device function which performs complex functions with scalar type result
 template <typename T>
 __global__ void ScalarResultKernel(ComplexFunction function, decltype(T().x)* output_val,
                                    T input_val) {
   PerformScalarResultFunction(function, output_val, input_val);
 }
 
-template <typename T> void ComplexFunctionUnaryHostTest(ComplexFunction function, T input_val) {
-  if (function == ComplexFunction::kConj) {
-    T result;
-    PerformComplexResultFunction(function, &result, input_val, input_val, input_val);
-    ValidateComplexResultFunction(function, input_val, input_val, input_val, result);
-  } else {
-    decltype(T().x) result;
-    PerformScalarResultFunction(function, &result, input_val);
-    ValidateScalarResultFunction(function, input_val, result);
-  }
-}
-
+// Wrapper function for testing complex functions with one input parameter on device
 template <typename T> void ComplexFunctionUnaryDeviceTest(ComplexFunction function, T input_val) {
   if (function == ComplexFunction::kConj) {
     LinearAllocGuard<T> result_d{LinearAllocs::hipMalloc, sizeof(T)};
@@ -256,6 +255,20 @@ template <typename T> void ComplexFunctionUnaryDeviceTest(ComplexFunction functi
   }
 }
 
+// Wrapper function for testing complex functions with one input parameter on host
+template <typename T> void ComplexFunctionUnaryHostTest(ComplexFunction function, T input_val) {
+  if (function == ComplexFunction::kConj) {
+    T result;
+    PerformComplexResultFunction(function, &result, input_val, input_val, input_val);
+    ValidateComplexResultFunction(function, input_val, input_val, input_val, result);
+  } else {
+    decltype(T().x) result;
+    PerformScalarResultFunction(function, &result, input_val);
+    ValidateScalarResultFunction(function, input_val, result);
+  }
+}
+
+// Wrapper function for testing complex functions with two input parameters on device
 template <typename T>
 void ComplexFunctionBinaryDeviceTest(ComplexFunction function, T input_val1, T input_val2) {
   LinearAllocGuard<T> result_d{LinearAllocs::hipMalloc, sizeof(T)};
@@ -267,6 +280,7 @@ void ComplexFunctionBinaryDeviceTest(ComplexFunction function, T input_val1, T i
   ValidateComplexResultFunction(function, input_val1, input_val2, input_val2, result_h.ptr()[0]);
 }
 
+// Wrapper function for testing complex functions with two input parameters on host
 template <typename T>
 void ComplexFunctionBinaryHostTest(ComplexFunction function, T input_val1, T input_val2) {
   T result;
@@ -274,6 +288,7 @@ void ComplexFunctionBinaryHostTest(ComplexFunction function, T input_val1, T inp
   ValidateComplexResultFunction(function, input_val1, input_val2, input_val2, result);
 }
 
+// Wrapper function for testing complex functions with three input parameters on device
 template <typename T>
 void ComplexFunctionTernaryDeviceTest(ComplexFunction function, T input_val1, T input_val2,
                                       T input_val3) {
@@ -286,6 +301,7 @@ void ComplexFunctionTernaryDeviceTest(ComplexFunction function, T input_val1, T 
   ValidateComplexResultFunction(function, input_val1, input_val2, input_val3, result_h.ptr()[0]);
 }
 
+// Wrapper function for testing complex functions with three input parameters on host
 template <typename T>
 void ComplexFunctionTernaryHostTest(ComplexFunction function, T input_val1, T input_val2,
                                     T input_val3) {

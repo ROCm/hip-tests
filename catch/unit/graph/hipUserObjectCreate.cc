@@ -23,8 +23,8 @@ THE SOFTWARE.
 
 #include "user_object_common.hh"
 
-/**
- * Functional Test for API - hipUserObjectCreate
+/*
+  Functional Test for API - hipUserObjectCreate
 1) Call hipUserObjectCreate once and release it by calling hipUserObjectRelease
 2) Call hipUserObjectCreate refCount as X and release it by calling
    hipUserObjectRelease with same refCount.
@@ -33,7 +33,7 @@ THE SOFTWARE.
 4) Call hipUserObjectCreate with refCount as X, retain it by calling
    hipUserObjectRetain with count as Y and release it by calling
    hipUserObjectRelease with count as X+Y.
- */
+*/
 
 /* 1) Call hipUserObjectCreate once and release it by
       calling hipUserObjectRelease */

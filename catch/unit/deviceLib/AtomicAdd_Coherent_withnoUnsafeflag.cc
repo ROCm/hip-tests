@@ -22,11 +22,12 @@
 AtomicAdd on FineGrainMemory
 1. The following test scenario verifies
 atomicAdd on fineGrain memory with -mno-unsafe-atomics flag
-This testcase works only on gfx90a.
+This testcase works only on gfx90a, gfx940, gfx941, gfx942.
 */
 
-#include<hip_test_checkers.hh>
-#include<hip_test_common.hh>
+#include <hip_test_checkers.hh>
+#include <hip_test_common.hh>
+#include <hip_test_features.hh>
 
 
 #define INC_VAL 10
@@ -53,7 +54,8 @@ TEMPLATE_TEST_CASE("Unit_AtomicAdd_Coherentwithnounsafeflag", "",
   HIP_CHECK(hipGetDevice(&device));
   HIP_CHECK(hipGetDeviceProperties(&prop, device));
   std::string gfxName(prop.gcnArchName);
-  if ((gfxName == "gfx90a" || gfxName.find("gfx90a:")) == 0) {
+
+  if (CheckIfFeatSupported(CTFeatures::CT_FEATURE_FINEGRAIN_HWSUPPORT, gfxName)) {
     if (prop.canMapHostMemory != 1) {
       SUCCEED("Does not support HostPinned Memory");
     } else {
@@ -86,7 +88,7 @@ TEMPLATE_TEST_CASE("Unit_AtomicAdd_Coherentwithnounsafeflag", "",
       HIP_CHECK(hipHostFree(result));
     }
   } else {
-    SUCCEED("Memory model feature is only supported for gfx90a, Hence"
+    SUCCEED("Memory model feature is only supported for gfx90a, gfx940, gfx941, gfx942, Hence"
              "skipping the testcase for this GPU " << device);
   }
 }

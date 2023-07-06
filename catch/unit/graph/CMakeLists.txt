@@ -18,7 +18,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# Common Tests - Test independent of all platforms
+# FIXME: cjatin
+# This is a temp hack to pass it on windows since it has a char limit for
+# command line. Eventually we need to use rsp files with ninja on windows.
+# But this exposes several problems with hipcc and build system on windows.
+# While those are fixed, this hack should allow us to pass windows CI.
 set(TEST_SRC
   hipGraphAddEmptyNode.cc
   hipGraphAddDependencies.cc
@@ -65,7 +69,20 @@ set(TEST_SRC
   hipStreamBeginCapture.cc
   hipStreamBeginCapture_old.cc
   hipStreamIsCapturing.cc
-  hipStreamIsCapturing_old.cc
+  hipStreamIsCapturing_old.cc)
+
+if(HIP_PLATFORM MATCHES "amd")
+  set(AMD_SRC
+    hipStreamCaptureExtModuleLaunchKernel.cc
+  )
+  set(TEST_SRC ${TEST_SRC} ${AMD_SRC})
+endif()
+
+hip_add_exe_to_target(NAME GraphsTest1
+                      TEST_SRC ${TEST_SRC}
+                      TEST_TARGET_NAME build_tests)
+
+set(TEST_SRC
   hipStreamGetCaptureInfo.cc
   hipStreamGetCaptureInfo_old.cc
   hipStreamEndCapture.cc
@@ -109,17 +126,11 @@ set(TEST_SRC
   hipGraphExecDestroy.cc
   hipGraphUpload.cc
   hipGraphKernelNodeCopyAttributes.cc
+  hipGraphCycle.cc
   hipGraphKernelNodeGetAttribute.cc
-)
+  hipGraphKernelNodeSetAttribute.cc)
 
-if(HIP_PLATFORM MATCHES "amd")
-  set(AMD_SRC
-    hipStreamCaptureExtModuleLaunchKernel.cc
-  )
-  set(TEST_SRC ${TEST_SRC} ${AMD_SRC})
-endif()
-
-hip_add_exe_to_target(NAME GraphsTest
+hip_add_exe_to_target(NAME GraphsTest2
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests)
 

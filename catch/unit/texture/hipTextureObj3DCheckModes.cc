@@ -18,10 +18,11 @@ THE SOFTWARE.
 */
 
 #include <hip_test_common.hh>
+#include <hip_test_features.hh>
 #include <hip_test_checkers.hh>
 #include <hip_texture_helper.hh>
 
-bool isGfx90a = false;
+bool LinearFilter3D = false;
 
 template<bool normalizedCoords>
 __global__ void tex3DKernel(float *outputData, hipTextureObject_t textureObject,
@@ -95,7 +96,7 @@ static void runTest(const int width, const int height, const int depth, const fl
   if (res != hipSuccess) {
     HIP_CHECK(hipFreeArray(arr));
     free(hData);
-    if (res == hipErrorNotSupported && isGfx90a) {
+    if (res == hipErrorNotSupported && LinearFilter3D) {
       printf("gfx90a doesn't support 3D linear filter! Skipped!\n");
     } else {
       result = false;
@@ -153,8 +154,8 @@ TEST_CASE("Unit_hipTextureObj3DCheckModes") {
   int device = 0;
   hipDeviceProp_t props;
   HIPCHECK(hipGetDeviceProperties(&props, device));
-  if (!strncmp(props.gcnArchName, "gfx90a", strlen("gfx90a"))) {
-    isGfx90a = true;
+  if (CheckIfFeatSupported(CTFeatures::CT_FEATURE_TEXTURES_NOT_SUPPORTED, props.gcnArchName)) {
+    LinearFilter3D = true;
   }
 
   SECTION("hipAddressModeClamp, hipFilterModePoint, regularCoords") {

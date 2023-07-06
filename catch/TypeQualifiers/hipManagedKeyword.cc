@@ -67,6 +67,17 @@ TEST_CASE("Unit_hipManagedKeyword_MultiGpu") {
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
 
+  for (int i = 0; i < numDevices; i++){
+    int managed_memory = 0;
+    HIPCHECK(hipDeviceGetAttribute(&managed_memory,
+                                hipDeviceAttributeManagedMemory,
+                                i));
+    if (!managed_memory) {
+      HipTest::HIP_SKIP_TEST("managed memory access not supported on device");
+      return;
+    }
+  }
+
   for (int i = 0; i < numDevices; i++) {
     HIP_CHECK(hipSetDevice(i));
     GPU_func<<< 1, 1 >>>();

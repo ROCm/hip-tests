@@ -7,14 +7,24 @@ I. Prepare
    sudo apt install gfortran
 
 II. Build
+```
 mkdir -p build; cd build
-rm -rf *; CXX=`hipconfig -l`/clang++ FC=$(which gfortran) cmake ..
+rm -rf *;
+CXX="$(hipconfig -l)"/clang++ FC=$(which gfortran) cmake -DCMAKE_PREFIX_PATH=/opt/rocm ..
+cmake ..
 make
+```
 
+Note, users may need to add AMD GPU support, if test failed, for example,
+```
+CXX="$(hipconfig -l)"/clang++ FC=$(which gfortran) cmake -DCMAKE_PREFIX_PATH=/opt/rocm -DAMDGPU_TARGETS="gfx1102" ..
+```
 III. Test
-# ./test_fortran
+```
+./test_fortran
  Succeeded testing Fortran!
 
-# ./test_cpp
-Device name Device 66a7
+./test_cpp
+Device name AMD Radeon Graphics
 PASSED!
+```

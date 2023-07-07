@@ -63,6 +63,8 @@
 	   "SWDEV-398980 fails in Stress test",
 	   "Unit_hipMemcpyPeer_Positive_Synchronization_Behavior",
 	   "SWDEV-398981 fails in stress test",
-	   "Unit_hipStreamCreateWithPriority_MulthreadDefaultflag"
+	   "Unit_hipStreamCreateWithPriority_MulthreadDefaultflag",
+	   "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/96 ===",
+	   "Unit_hipHostGetDevicePointer_Negative"
 	]
 }

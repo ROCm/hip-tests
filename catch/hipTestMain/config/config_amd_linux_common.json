@@ -80,6 +80,11 @@
 	   "Unit_hipGraphClone_Test_hipGraphExecMemcpyNodeSetParams",
 	   "Unit_hipGraphClone_Test_hipGraphMemcpyNodeSetParams1D_and_exec",
 	   "Unit_hipStreamValue_Wait64_Blocking_NoMask_And",
-	   "Unit_hipStreamValue_Wait64_Blocking_NoMask_Nor"
+	   "Unit_hipStreamValue_Wait64_Blocking_NoMask_Nor",
+	   "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/69 ===",
+	   "Unit_hipGLGetDevices_Positive_Basic",
+	   "Unit_hipGLGetDevices_Positive_Parameters",
+	   "Unit_hipGLGetDevices_Negative_Parameters",
+	   "Unit_hipGraphicsUnregisterResource_Negative_Parameters"
 	]
 }

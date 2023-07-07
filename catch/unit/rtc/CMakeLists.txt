@@ -9,6 +9,7 @@ set(TEST_SRC
 # AMD only tests
 set(AMD_TEST_SRC
     customOptions.cc
+    hipRtcBfloat16.cc
     linker.cc
 )
 

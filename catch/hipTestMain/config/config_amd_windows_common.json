@@ -95,6 +95,7 @@
 	   "Unit_hipStreamSynchronize_NullStreamAndStreamPerThread",
 	   "Note: intermittent Seg fault failure ",
 	   "Unit_hipGraphAddEventRecordNode_Functional_WithoutFlags",
+	   "Unit_hipOccupancyMaxActiveBlocksPerMultiprocessor_Negative_Parameters",
 	   "Unit_hipGraphMemcpyNodeSetParamsToSymbol_Positive_Basic",
 	   "Unit_hipGraphExecMemcpyNodeSetParamsToSymbol_Positive_Basic",
 	   "Unit_hipGraphMemcpyNodeSetParamsFromSymbol_Positive_Basic",
@@ -108,6 +109,9 @@
 	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ClonedGrph",
 	   "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ChldNode",
 	   "Unit_hipMemGetAddressRange_Negative",
+	   "NOTE: The following 2 tests are disabled due to defect - EXSWHTEC-238",
+	   "Unit_hipDrvMemcpy3D_Positive_Array",
+	   "Unit_hipDrvMemcpy3DAsync_Positive_Array",
 	   "Unit_hipMemGetAddressRange_Positive",
 	   "Note: devicelib hangs and failures",
 	   "Unit_deviceAllocation_Malloc_PerThread_PrimitiveDataType",
@@ -167,6 +171,8 @@
 	   "SWDEV-402082 - PAL Backend fails to reserve address on GPU except first one",
 	   "Unit_hipGraphInstantiateWithFlags_FlagAutoFreeOnLaunch_check",
 	   "SWDEV-398981 fails in stress test",
-	   "Unit_hipStreamCreateWithPriority_MulthreadDefaultflag"
+	   "Unit_hipStreamCreateWithPriority_MulthreadDefaultflag",
+	   "Note: UUID returned empty on some windows nodes",
+	   "Unit_hipDeviceGetUuid_Positive"
 	]
 }

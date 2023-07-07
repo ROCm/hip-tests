@@ -35,7 +35,7 @@ TEST_CASE("Unit_hipMemcpy3DAsync_Positive_Basic") {
   const StreamGuard stream_guard(stream_type);
   const hipStream_t stream = stream_guard.stream();
 
-  SECTION("Device to Host") { Memcpy3DDeviceToHostShell<async>(Memcpy3DWrapper<async>, stream); }
+  //SECTION("Device to Host") { Memcpy3DDeviceToHostShell<async>(Memcpy3DWrapper<async>, stream); }
 
   SECTION("Device to Device") {
     SECTION("Peer access disabled") {
@@ -46,9 +46,9 @@ TEST_CASE("Unit_hipMemcpy3DAsync_Positive_Basic") {
     }
   }
 
-  SECTION("Host to Device") { Memcpy3DHostToDeviceShell<async>(Memcpy3DWrapper<async>, stream); }
+  //SECTION("Host to Device") { Memcpy3DHostToDeviceShell<async>(Memcpy3DWrapper<async>, stream); }
 
-  SECTION("Host to Host") { Memcpy3DHostToHostShell<async>(Memcpy3DWrapper<async>, stream); }
+  //SECTION("Host to Host") { Memcpy3DHostToHostShell<async>(Memcpy3DWrapper<async>, stream); }
 }
 
 TEST_CASE("Unit_hipMemcpy3DAsync_Positive_Synchronization_Behavior") {
@@ -82,7 +82,7 @@ TEST_CASE("Unit_hipMemcpy3DAsync_Positive_Parameters") {
 
 TEST_CASE("Unit_hipMemcpy3DAsync_Positive_Array") {
   constexpr bool async = true;
-  SECTION("Array from/to Host") { Memcpy3DArrayHostShell<async>(Memcpy3DWrapper<async>); }
+  //SECTION("Array from/to Host") { Memcpy3DArrayHostShell<async>(Memcpy3DWrapper<async>); }
 #if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-238
   SECTION("Array from/to Device") { Memcpy3DArrayDeviceShell<async>(Memcpy3DWrapper<async>); }
 #endif

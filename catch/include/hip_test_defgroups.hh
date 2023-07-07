@@ -86,3 +86,9 @@ THE SOFTWARE.
  * This section describes the stream management types & functions of HIP runtime API.
  * @}
  */
+
+ /**
+ * @defgroup ComplexTest Complex type
+ * @{
+ * This section describes tests for the Complex type functions.
+ */

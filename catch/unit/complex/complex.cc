@@ -18,6 +18,11 @@ THE SOFTWARE.
 */
 
 #include "complex_function_common.hh"
+#include "complex_cast_negative_kernels_rtc.hh"
+#include "complex_make_negative_kernels_rtc.hh"
+#include "complex_negative_kernels_1Arg_rtc.hh"
+#include "complex_negative_kernels_2Arg_rtc.hh"
+#include "complex_negative_kernels_3Arg_rtc.hh"
 
 TEMPLATE_TEST_CASE("Unit_Device_Complex_Unary_Device_Sanity_Positive", "", hipFloatComplex,
                    hipDoubleComplex) {
@@ -47,6 +52,14 @@ TEMPLATE_TEST_CASE("Unit_Device_Complex_Unary_Host_Sanity_Positive", "", hipFloa
       ComplexFunctionUnaryHostTest(function, input_val);
     }
   }
+}
+
+TEST_CASE("Unit_Device_Complex_Unary_Negative_Parameters_RTC") {
+  ComplexTypeRTCWrapper<28>(kComplexConj);
+  ComplexTypeRTCWrapper<24>(kComplexReal);
+  ComplexTypeRTCWrapper<24>(kComplexImag);
+  ComplexTypeRTCWrapper<24>(kComplexAbs);
+  ComplexTypeRTCWrapper<24>(kComplexSqabs);
 }
 
 TEMPLATE_TEST_CASE("Unit_Device_Complex_Binary_Device_Sanity_Positive", "", hipFloatComplex,
@@ -83,6 +96,13 @@ TEMPLATE_TEST_CASE("Unit_Device_Complex_Binary_Host_Sanity_Positive", "", hipFlo
   }
 }
 
+TEST_CASE("Unit_Device_Complex_Binary_Negative_Parameters_RTC") {
+  ComplexTypeRTCWrapper<44>(kComplexAdd);
+  ComplexTypeRTCWrapper<44>(kComplexSub);
+  ComplexTypeRTCWrapper<44>(kComplexMul);
+  ComplexTypeRTCWrapper<44>(kComplexDiv);
+}
+
 TEMPLATE_TEST_CASE("Unit_Device_Complex_hipCfma_Device_Sanity_Positive", "", hipFloatComplex,
                    hipDoubleComplex) {
   decltype(TestType().x) input1_r = GENERATE(-4.75, 0, 1.75);
@@ -113,6 +133,10 @@ TEMPLATE_TEST_CASE("Unit_Device_Complex_hipCfma_Host_Sanity_Positive", "", hipFl
   TestType input_val3 = MakeComplexType<TestType>(input3_r, input3_i);
 
   ComplexFunctionTernaryHostTest(ComplexFunction::kFma, input_val1, input_val2, input_val3);
+}
+
+TEST_CASE("Unit_Device_Complex_hipCfma_Negative_Parameters_RTC") {
+  ComplexTypeRTCWrapper<60>(kComplexFma);
 }
 
 TEMPLATE_TEST_CASE("Unit_Device_make_Complex_Device_Positive", "", hipFloatComplex,
@@ -167,6 +191,13 @@ TEST_CASE("Unit_Device_make_hipComplex_Host_Positive") {
   REQUIRE(result.y == input_i);
 }
 #endif
+
+TEST_CASE("Unit_Device_make_Complex_Negative_Parameters_RTC") {
+  ComplexTypeRTCWrapper<18>(kMakeHipComplex);
+  ComplexTypeRTCWrapper<18>(kMakeHipFloatComplex);
+  ComplexTypeRTCWrapper<18>(kMakeHipDoubleComplex);
+}
+
 TEMPLATE_TEST_CASE("Unit_Device_Complex_Cast_Device_Sanity_Positive", "", hipFloatComplex,
                    hipDoubleComplex) {
   decltype(TestType().x) input_r = GENERATE(-0.25, 0, 0.25);
@@ -197,4 +228,9 @@ TEMPLATE_TEST_CASE("Unit_Device_Complex_Cast_Host_Sanity_Positive", "", hipFloat
 
   REQUIRE(result.x == static_cast<decltype(CastType_t<TestType>().x)>(input_r));
   REQUIRE(result.y == static_cast<decltype(CastType_t<TestType>().x)>(input_i));
+}
+
+TEST_CASE("Unit_Device_Complex_Cast_Negative_Parameters_RTC") {
+  ComplexTypeRTCWrapper<14>(kComplexDoubleToFloat);
+  ComplexTypeRTCWrapper<14>(kComplexFloatToDouble);
 }

@@ -24,6 +24,24 @@ THE SOFTWARE.
 #include "complex_negative_kernels_2Arg_rtc.hh"
 #include "complex_negative_kernels_3Arg_rtc.hh"
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Test that checks unary complex functions on device for reduced set of input values. The
+ * results are compared against manually calculated ones:
+ *    -# hipConj, hipConjf
+ *    -# hipCreal, hipCrealf
+ *    -# hipCimag, hipCimagf
+ *    -# hipCabs, hipCabsf
+ *    -# hipCsqabs, hipCsqabsf
+ *
+ * Test source
+ * ------------------------
+ *  - unit/complex/complex.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_Device_Complex_Unary_Device_Sanity_Positive", "", hipFloatComplex,
                    hipDoubleComplex) {
   decltype(TestType().x) input_r = GENERATE(-4.75, 0, 1.75);
@@ -39,6 +57,24 @@ TEMPLATE_TEST_CASE("Unit_Device_Complex_Unary_Device_Sanity_Positive", "", hipFl
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Test that checks unary complex functions on host for reduced set of input values. The
+ * results are compared against manually calculated ones:
+ *    -# hipConj, hipConjf
+ *    -# hipCreal, hipCrealf
+ *    -# hipCimag, hipCimagf
+ *    -# hipCabs, hipCabsf
+ *    -# hipCsqabs, hipCsqabsf
+ *
+ * Test source
+ * ------------------------
+ *  - unit/complex/complex.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_Device_Complex_Unary_Host_Sanity_Positive", "", hipFloatComplex,
                    hipDoubleComplex) {
   decltype(TestType().x) input_r = GENERATE(-4.75, 0, 1.75);
@@ -54,6 +90,18 @@ TEMPLATE_TEST_CASE("Unit_Device_Complex_Unary_Host_Sanity_Positive", "", hipFloa
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - RTCs kernels that pass argument of invalid type for unary complex functions.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/complex/complex.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device_Complex_Unary_Negative_Parameters_RTC") {
   ComplexTypeRTCWrapper<28>(kComplexConj);
   ComplexTypeRTCWrapper<24>(kComplexReal);
@@ -62,6 +110,23 @@ TEST_CASE("Unit_Device_Complex_Unary_Negative_Parameters_RTC") {
   ComplexTypeRTCWrapper<24>(kComplexSqabs);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Test that checks binary complex functions on device for reduced set of input values. The
+ * results are compared against manually calculated ones:
+ *    -# hipCadd, hipCaddf
+ *    -# hipCsub, hipCsubf
+ *    -# hipCmul, hipCmulf
+ *    -# hipCdiv, hipCdivf
+ *
+ * Test source
+ * ------------------------
+ *  - unit/complex/complex.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_Device_Complex_Binary_Device_Sanity_Positive", "", hipFloatComplex,
                    hipDoubleComplex) {
   decltype(TestType().x) input1_r = GENERATE(-4.75, 0, 1.75);
@@ -79,6 +144,23 @@ TEMPLATE_TEST_CASE("Unit_Device_Complex_Binary_Device_Sanity_Positive", "", hipF
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Test that checks binary complex functions on host for reduced set of input values. The
+ * results are compared against manually calculated ones:
+ *    -# hipCadd, hipCaddf
+ *    -# hipCsub, hipCsubf
+ *    -# hipCmul, hipCmulf
+ *    -# hipCdiv, hipCdivf
+ *
+ * Test source
+ * ------------------------
+ *  - unit/complex/complex.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_Device_Complex_Binary_Host_Sanity_Positive", "", hipFloatComplex,
                    hipDoubleComplex) {
   decltype(TestType().x) input1_r = GENERATE(-4.75, 0, 1.75);
@@ -96,6 +178,18 @@ TEMPLATE_TEST_CASE("Unit_Device_Complex_Binary_Host_Sanity_Positive", "", hipFlo
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - RTCs kernels that pass argument of invalid type for binary complex functions.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/complex/complex.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device_Complex_Binary_Negative_Parameters_RTC") {
   ComplexTypeRTCWrapper<44>(kComplexAdd);
   ComplexTypeRTCWrapper<44>(kComplexSub);
@@ -103,6 +197,19 @@ TEST_CASE("Unit_Device_Complex_Binary_Negative_Parameters_RTC") {
   ComplexTypeRTCWrapper<44>(kComplexDiv);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Test that checks hipCfma/hipCfmaf complex functions on device for reduced set of input
+ * values. The results are compared against manually calculated ones.
+ *
+ * Test source
+ * ------------------------
+ *  - unit/complex/complex.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_Device_Complex_hipCfma_Device_Sanity_Positive", "", hipFloatComplex,
                    hipDoubleComplex) {
   decltype(TestType().x) input1_r = GENERATE(-4.75, 0, 1.75);
@@ -119,6 +226,19 @@ TEMPLATE_TEST_CASE("Unit_Device_Complex_hipCfma_Device_Sanity_Positive", "", hip
   ComplexFunctionTernaryDeviceTest(ComplexFunction::kFma, input_val1, input_val2, input_val3);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Test that checks hipCfma/hipCfmaf complex functions on host for reduced set of input
+ * values. The results are compared against manually calculated ones.
+ *
+ * Test source
+ * ------------------------
+ *  - unit/complex/complex.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_Device_Complex_hipCfma_Host_Sanity_Positive", "", hipFloatComplex,
                    hipDoubleComplex) {
   decltype(TestType().x) input1_r = GENERATE(-4.75, 0, 1.75);
@@ -135,10 +255,35 @@ TEMPLATE_TEST_CASE("Unit_Device_Complex_hipCfma_Host_Sanity_Positive", "", hipFl
   ComplexFunctionTernaryHostTest(ComplexFunction::kFma, input_val1, input_val2, input_val3);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - RTCs kernels that pass argument of invalid type for hipCfma/hipCfmaf complex function.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/complex/complex.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device_Complex_hipCfma_Negative_Parameters_RTC") {
   ComplexTypeRTCWrapper<60>(kComplexFma);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Test that checks make_hipFloatComplex/make_hipDoubleComplex functions on device for reduced
+ * set of input values. The results are compared against manually calculated ones.
+ *
+ * Test source
+ * ------------------------
+ *  - unit/complex/complex.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_Device_make_Complex_Device_Positive", "", hipFloatComplex,
                    hipDoubleComplex) {
   decltype(TestType().x) input_r = GENERATE(-0.25, 0, 0.25);
@@ -155,6 +300,19 @@ TEMPLATE_TEST_CASE("Unit_Device_make_Complex_Device_Positive", "", hipFloatCompl
   REQUIRE(result_h.ptr()[0].y == input_i);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Test that checks make_hipFloatComplex/make_hipDoubleComplex functions on device for reduced
+ * set of input values. The results are compared against manually calculated ones.
+ *
+ * Test source
+ * ------------------------
+ *  - unit/complex/complex.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_Device_make_Complex_Host_Positive", "", hipFloatComplex,
                    hipDoubleComplex) {
   decltype(TestType().x) input_r = GENERATE(-0.25, 0, 0.25);
@@ -165,7 +323,21 @@ TEMPLATE_TEST_CASE("Unit_Device_make_Complex_Host_Positive", "", hipFloatComplex
   REQUIRE(result.x == input_r);
   REQUIRE(result.y == input_i);
 }
-#if HT_AMD //EXSWHTEC-321
+
+#if HT_AMD  // EXSWHTEC-321
+/**
+ * Test Description
+ * ------------------------
+ *    - Test that checks make_hipComplex functions on device for reduced set of input values. The
+ * results are compared against manually calculated ones.
+ *
+ * Test source
+ * ------------------------
+ *  - unit/complex/complex.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device_make_hipComplex_Device_Positive") {
   float input_r = GENERATE(-0.25, 0, 0.25);
   float input_i = GENERATE(-1.75, 0, 1.75);
@@ -181,6 +353,19 @@ TEST_CASE("Unit_Device_make_hipComplex_Device_Positive") {
   REQUIRE(result_h.ptr()[0].y == input_i);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Test that checks make_hipComplex functions on host for reduced set of input values. The
+ * results are compared against manually calculated ones.
+ *
+ * Test source
+ * ------------------------
+ *  - unit/complex/complex.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device_make_hipComplex_Host_Positive") {
   float input_r = GENERATE(-0.25, 0, 0.25);
   float input_i = GENERATE(-1.75, 0, 1.75);
@@ -192,12 +377,37 @@ TEST_CASE("Unit_Device_make_hipComplex_Host_Positive") {
 }
 #endif
 
+/**
+ * Test Description
+ * ------------------------
+ *    - RTCs kernels that pass argument of invalid type for make complex functions.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/complex/complex.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device_make_Complex_Negative_Parameters_RTC") {
   ComplexTypeRTCWrapper<18>(kMakeHipComplex);
   ComplexTypeRTCWrapper<18>(kMakeHipFloatComplex);
   ComplexTypeRTCWrapper<18>(kMakeHipDoubleComplex);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Test that checks hipComplexDoubleToFloat/hipComplexFloatToDouble functions on device for
+ * reduced set of input values. The results are compared against manually calculated ones.
+ *
+ * Test source
+ * ------------------------
+ *  - unit/complex/complex.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_Device_Complex_Cast_Device_Sanity_Positive", "", hipFloatComplex,
                    hipDoubleComplex) {
   decltype(TestType().x) input_r = GENERATE(-0.25, 0, 0.25);
@@ -218,6 +428,19 @@ TEMPLATE_TEST_CASE("Unit_Device_Complex_Cast_Device_Sanity_Positive", "", hipFlo
   REQUIRE(result_h.ptr()[0].y == static_cast<decltype(CastType_t<TestType>().x)>(input_i));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Test that checks hipComplexDoubleToFloat/hipComplexFloatToDouble functions on host for
+ * reduced set of input values. The results are compared against manually calculated ones.
+ *
+ * Test source
+ * ------------------------
+ *  - unit/complex/complex.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_Device_Complex_Cast_Host_Sanity_Positive", "", hipFloatComplex,
                    hipDoubleComplex) {
   decltype(TestType().x) input_r = GENERATE(-0.25, 0, 0.25);
@@ -230,6 +453,18 @@ TEMPLATE_TEST_CASE("Unit_Device_Complex_Cast_Host_Sanity_Positive", "", hipFloat
   REQUIRE(result.y == static_cast<decltype(CastType_t<TestType>().x)>(input_i));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - RTCs kernels that pass argument of invalid type for complex cast functions.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/complex/complex.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device_Complex_Cast_Negative_Parameters_RTC") {
   ComplexTypeRTCWrapper<14>(kComplexDoubleToFloat);
   ComplexTypeRTCWrapper<14>(kComplexFloatToDouble);

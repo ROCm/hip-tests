@@ -36,7 +36,7 @@ __global__ void MakeComplexTypeKernel(T* const output_val, decltype(T().x) const
                                       decltype(T().x) const input_val2) {
   *output_val = MakeComplexType<T>(input_val1, input_val2);
 }
-#if HT_AMD //EXSWHTEC-321
+#if HT_AMD  // EXSWHTEC-321
 __global__ void MakeHipComplexTypeKernel(hipComplex* const output_val, float const input_val1,
                                          float const input_val2) {
   *output_val = make_hipComplex(input_val1, input_val2);

@@ -57,7 +57,6 @@
 	   "Unit_hipIpcGetMemHandle_Positive_Unique_Handles_Separate_Allocations",
 	   "Unit_hipStreamCreateWithFlags_DefaultStreamInteraction",
 	   "Unit_hipStreamWaitEvent_UninitializedStream_Negative",
-	   "Unit_hipDeviceSetSharedMemConfig_Negative_Parameters",
 	   "Unit_hipMemset3DSync",
 	   "Unit_hipStreamAddCallback_StrmSyncTiming",
 	   "Disabling test tracked SWDEV-394199",

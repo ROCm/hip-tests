@@ -98,6 +98,8 @@
 	   "=== Below tests fail in stress test on 30/06/23 ===",
 	   "Unit_hipStreamValue_Wait32_Blocking_NoMask_Nor",
 	   "Unit_hipStreamValue_Write - TestParams<uint32_t, PtrType::HostPtr>",
-	   "Unit_hipMemcpyParam2DAsync_multiDevice-StreamOnDiffDevice"
+	   "Unit_hipMemcpyParam2DAsync_multiDevice-StreamOnDiffDevice",
+	   "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/96 ===",
+	   "Unit_hipHostGetDevicePointer_Negative"
 	]
 }

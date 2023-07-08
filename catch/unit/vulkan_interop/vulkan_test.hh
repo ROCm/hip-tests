@@ -21,7 +21,6 @@ THE SOFTWARE.
 
 #include <vulkan/vulkan.h>
 
-
 #ifdef _WIN64
 
 #include <Windows.h>
@@ -33,10 +32,10 @@ THE SOFTWARE.
 #include <windef.h>
 #include <aclapi.h>
 #include <securitybaseapi.h>
+#include <vulkan/vulkan_win32.h>
 
 #endif
 
-#include <vulkan/vulkan_win32.h>
 #include <vector>
 #include <hip_test_common.hh>
 #include <hip/hip_runtime_api.h>

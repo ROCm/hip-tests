@@ -65,6 +65,19 @@ static inline constexpr int rank() {
   return sizeof(T) / sizeof(decltype(T::x));
 }
 
+#ifdef __HIP_PLATFORM_NVIDIA__
+template <typename T,
+    typename std::enable_if<std::is_same<T, int4>::value ||
+                            std::is_same<T, short4>::value ||
+                            std::is_same<T, char4>::value ||
+                            std::is_same<T, float4>::value>::type *t = nullptr>
+static inline bool operator!=(const T& a, const T& b)
+{
+    return (a.x != b.x) || (a.y != b.y) || (a.z != b.z) || (a.w != b.w);
+}
+#endif
+
+
 template<typename T>
 static inline T getRandom() {
   double r = 0;
@@ -139,43 +152,42 @@ bool runTest(hipModule_t &module, const char *refName, const char *funcName) {
     }
   }
 
-  hipArray *array;
-  HIP_ARRAY_DESCRIPTOR desc;
-  desc.Format = format;
-  desc.NumChannels = channels;
-  desc.Width = width;
-  desc.Height = height;
-  HIP_CHECK(hipArrayCreate(&array, &desc));
+  hipChannelFormatDesc channelDesc = hipCreateChannelDesc<T>();
+  hipArray_t array;
+  HIP_CHECK(hipMallocArray(&array, &channelDesc, width, height));
 
-  hip_Memcpy2D copyParam;
-  memset(&copyParam, 0, sizeof(copyParam));
-  copyParam.dstMemoryType = hipMemoryTypeArray;
-  copyParam.dstArray = array;
-  copyParam.srcMemoryType = hipMemoryTypeHost;
-  copyParam.srcHost = hData;
-  copyParam.srcPitch = width * sizeof(T);
-  copyParam.WidthInBytes = copyParam.srcPitch;
-  copyParam.Height = height;
-  HIP_CHECK(hipMemcpyParam2D(&copyParam));
+  const size_t spitch = width * sizeof(T);
 
-  textureReference *texref;
-  HIP_CHECK(hipModuleGetTexRef(&texref, module, refName));
-  HIP_CHECK(hipTexRefSetAddressMode(texref, 0, hipAddressModeClamp));
-  HIP_CHECK(hipTexRefSetAddressMode(texref, 1, hipAddressModeClamp));
-  HIP_CHECK(hipTexRefSetFilterMode(texref, hipFilterModePoint));
-  HIP_CHECK(hipTexRefSetFlags(texref, HIP_TRSF_READ_AS_INTEGER));
-  HIP_CHECK(hipTexRefSetFormat(texref, format, channels));
-  HIP_CHECK(hipTexRefSetArray(texref, array, HIP_TRSA_OVERRIDE_FORMAT));
+  HIP_CHECK(hipMemcpy2DToArray(array, 0, 0, hData, spitch, width * sizeof(T),
+                        height, hipMemcpyHostToDevice));
+
+  hipResourceDesc resDesc;
+  memset(&resDesc, 0, sizeof(resDesc));
+  resDesc.resType = hipResourceTypeArray;
+  resDesc.res.array.array = array;
+
+  hipTextureDesc texDesc;
+  memset(&texDesc, 0, sizeof(texDesc));
+  texDesc.addressMode[0] = hipAddressModeClamp;
+  texDesc.addressMode[1] = hipAddressModeClamp;
+  texDesc.filterMode = hipFilterModePoint;
+  texDesc.readMode = hipReadModeElementType;
+  texDesc.normalizedCoords = 0;
+
+  hipTextureObject_t texObj;
+  HIP_CHECK(hipCreateTextureObject(&texObj, &resDesc, &texDesc, nullptr));
 
   T *dData = NULL;
   HIP_CHECK(hipMalloc((void** )&dData, size));
 
   struct {
     void *_Ad;
+    hipTextureObject_t _texObj;
     unsigned int _Bd;
     unsigned int _Cd;
   } args;
   args._Ad = (void*) dData;
+  args._texObj = texObj;
   args._Bd = width;
   args._Cd = height;
 
@@ -192,7 +204,7 @@ bool runTest(hipModule_t &module, const char *refName, const char *funcName) {
   HIP_CHECK(
       hipModuleLaunchKernel(Function, 16, 16, 1, temp1, temp2, 1, 0, 0, NULL,
                             (void** )&config));
-  hipDeviceSynchronize();
+  HIP_CHECK(hipDeviceSynchronize());
 
   T *hOutputData = (T*) malloc(size);
   memset(hOutputData, 0, size);
@@ -207,7 +219,7 @@ bool runTest(hipModule_t &module, const char *refName, const char *funcName) {
       }
     }
   }
-  HIP_CHECK(hipUnbindTexture(texref));
+  HIP_CHECK(hipDestroyTextureObject(texObj));
   HIP_CHECK(hipFree(dData));
   HIP_CHECK(hipFreeArray(array));
   free(hOutputData);
@@ -230,7 +242,8 @@ int main(int argc, char** argv) {
     printf("Texture is not support on the device. Skipped.\n");
     return 0;
   }
-  hipInit(0);
+  HIP_CHECK(hipInit(0));
+  HIP_CHECK(hipSetDevice(0));
   hipModule_t module;
   HIP_CHECK(hipModuleLoad(&module, fileName));
   testResult = testResult && runTest<char>(module, "texChar", "tex2dKernelChar");

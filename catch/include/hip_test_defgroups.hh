@@ -102,7 +102,14 @@ THE SOFTWARE.
  */
 
 /**
- * @defgroup KernelTest Kernel Functions Management
+ * @defgroup MemoryTest memory Management APIs
+ * @{
+ * This section describes the memory management types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+* @defgroup KernelTest Kernel Functions Management
  * @{
  * This section describes the various kernel functions invocation.
  * @}

@@ -1,6 +1,13 @@
 {
     "DisabledTests":
-  [
+	[
+	   "Unit_hipFuncSetCacheConfig_Negative_Not_Supported",
+	   "Unit_hipFuncSetSharedMemConfig_Negative_Not_Supported",
+	   "Unit_hipFuncSetAttribute_Positive_MaxDynamicSharedMemorySize_Not_Supported",
+	   "Unit_hipFuncSetAttribute_Positive_PreferredSharedMemoryCarveout_Not_Supported",
+	   "=== Below test fails in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/85 ===",
+	   "Unit_hipFuncSetAttribute_Negative_Parameters",
+	   "=== Below test fails in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/215 ===",
      "Unit_ChannelDescriptor_Positive_Basic_1D - long",
      "Unit_ChannelDescriptor_Positive_Basic_1D - unsigned long",
      "Unit_ChannelDescriptor_Positive_Basic_1D - ulong1",
@@ -12,5 +19,5 @@
      "Unit_ChannelDescriptor_Positive_Basic_3D - long3",
      "Unit_ChannelDescriptor_Positive_Basic_4D - ulong4",
      "Unit_ChannelDescriptor_Positive_Basic_4D - long4"
-  ]
+	]
 }

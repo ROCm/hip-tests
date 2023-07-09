@@ -158,7 +158,9 @@ TEST_CASE("Unit_hipEventElapsedTime_NotReady_Negative") {
   // Record start event
   HIP_CHECK(hipEventRecord(start, nullptr));
 
-  HipTest::runKernelForDuration(std::chrono::milliseconds(1000));
+  HipTest::BlockingContext b_context{nullptr};
+  b_context.block_stream();  // blocked stream
+  REQUIRE(b_context.is_blocked());
 
   // Record stop event
   HIP_CHECK(hipEventRecord(stop, nullptr));
@@ -166,7 +168,8 @@ TEST_CASE("Unit_hipEventElapsedTime_NotReady_Negative") {
   // stop event has not been completed
   float tElapsed = 1.0f;
   HIP_CHECK_ERROR(hipEventQuery(stop), hipErrorNotReady);
-  HIP_ASSERT(hipEventElapsedTime(&tElapsed,start,stop) == hipErrorNotReady);
+  HIP_ASSERT(hipEventElapsedTime(&tElapsed, start, stop) == hipErrorNotReady);
+  b_context.unblock_stream();
 
   HIP_CHECK(hipStreamSynchronize(nullptr));
   HIP_CHECK(hipEventDestroy(start));

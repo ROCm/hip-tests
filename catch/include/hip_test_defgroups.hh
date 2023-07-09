@@ -73,6 +73,13 @@ THE SOFTWARE.
  */
 
 /**
+ * @defgroup DeviceLanguageTest Device Language
+ * @{
+ * This section describes tests for the Device Language API.
+ * @}
+ */
+
+/**
  * @defgroup ExecutionTest Execution Control
  * @{
  * This section describes tests for the execution control functions of HIP runtime API.

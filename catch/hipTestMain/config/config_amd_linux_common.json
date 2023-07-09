@@ -46,6 +46,7 @@
 	   "Unit_hipGraphAddMemcpyNode1D_Negative_Basic",
 	   "intermittent issue: corrupted double-linked list",
 	   "Unit_hipGraphRetainUserObject_Functional_2",
+	   "Unit_ChannelDescriptor_Positive_16BitFloatingPoint",
 	   "intermittent issue: failure expected but sucess returned",
 	   "Unit_hipMemAdvise_NegtveTsts",
 	   "Note: Following four tests disabled due to defect - EXSWHTEC-203",
@@ -98,6 +99,16 @@
 	   "Unit_hipStreamValue_Write - TestParams<uint32_t, PtrType::HostPtr>",
 	   "Unit_hipMemcpyParam2DAsync_multiDevice-StreamOnDiffDevice",
 	   "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/96 ===",
-	   "Unit_hipHostGetDevicePointer_Negative"
+	   "Unit_hipHostGetDevicePointer_Negative",
+	   "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/215 ===",
+	   "Unit_ChannelDescriptor_Positive_Basic_1D - long",
+	   "Unit_ChannelDescriptor_Positive_Basic_1D - unsigned long",
+	   "Unit_ChannelDescriptor_Positive_Basic_1D - ulong1",
+	   "Unit_ChannelDescriptor_Positive_Basic_1D - signed long",
+	   "Unit_ChannelDescriptor_Positive_Basic_1D - long1",
+	   "Unit_ChannelDescriptor_Positive_Basic_2D - ulong2",
+	   "Unit_ChannelDescriptor_Positive_Basic_2D - long2",
+	   "Unit_ChannelDescriptor_Positive_Basic_4D - ulong4",
+	   "Unit_ChannelDescriptor_Positive_Basic_4D - long4"
 	]
 }

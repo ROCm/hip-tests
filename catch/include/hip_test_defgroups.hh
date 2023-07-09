@@ -73,6 +73,13 @@ THE SOFTWARE.
  */
 
 /**
+ * @defgroup ExecutionTest Execution Control
+ * @{
+ * This section describes tests for the execution control functions of HIP runtime API.
+ * @}
+ */
+
+/**
  * @defgroup ShflTest warp shuffle function Management
  * @{
  * This section describes the warp shuffle types & functions of HIP runtime API.
@@ -93,9 +100,24 @@ THE SOFTWARE.
  * This section describes the stream management types & functions of HIP runtime API.
  * @}
  */
+
 /**
  * @defgroup DynamicLoadingTest Kernel Loading Management
  * @{
  * This section describes the different kernel launch approaches.
+ * @}
+ */
+
+/**
+ * @defgroup MemoryTest memory Management APIs
+ * @{
+ * This section describes the memory management types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+* @defgroup KernelTest Kernel Functions Management
+ * @{
+ * This section describes the various kernel functions invocation.
  * @}
  */

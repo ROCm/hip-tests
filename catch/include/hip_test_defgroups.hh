@@ -102,6 +102,13 @@ THE SOFTWARE.
  */
 
 /**
+ * @defgroup DynamicLoadingTest Kernel Loading Management
+ * @{
+ * This section describes the different kernel launch approaches.
+ * @}
+ */
+
+/**
  * @defgroup MemoryTest memory Management APIs
  * @{
  * This section describes the memory management types & functions of HIP runtime API.

@@ -184,7 +184,8 @@ void SanityCheck(VectorOperation operation, T vector, decltype(T().x) value1,
 }
 
 template <typename T>
-__device__ __host__ void PerformVectorOperation(VectorOperation operation, T* vector1, T* vector2) {
+__device__ __host__ void PerformVectorOperation(VectorOperation operation, T* vector1,
+                                                const T& vector2) {
   if (operation == VectorOperation::kIncrementPrefix) {
     ++(*vector1);
   } else if (operation == VectorOperation::kIncrementPostfix) {
@@ -194,25 +195,25 @@ __device__ __host__ void PerformVectorOperation(VectorOperation operation, T* ve
   } else if (operation == VectorOperation::kDecrementPostfix) {
     (*vector1)--;
   } else if (operation == VectorOperation::kAddAssign) {
-    *vector1 += *vector2;
+    *vector1 += vector2;
   } else if (operation == VectorOperation::kSubtractAssign) {
-    *vector1 -= *vector2;
+    *vector1 -= vector2;
   } else if (operation == VectorOperation::kMultiplyAssign) {
-    *vector1 *= *vector2;
+    *vector1 *= vector2;
   } else if (operation == VectorOperation::kDivideAssign) {
-    *vector1 /= *vector2;
+    *vector1 /= vector2;
   } else if (operation == VectorOperation::kAdd) {
-    *vector1 = *vector1 + *vector2;
+    *vector1 = *vector1 + vector2;
   } else if (operation == VectorOperation::kSubtract) {
-    *vector1 = *vector1 - *vector2;
+    *vector1 = *vector1 - vector2;
   } else if (operation == VectorOperation::kMultiply) {
-    *vector1 = *vector1 * *vector2;
+    *vector1 = *vector1 * vector2;
   } else if (operation == VectorOperation::kDivide) {
-    *vector1 = *vector1 / *vector2;
+    *vector1 = *vector1 / vector2;
   } else if (operation == VectorOperation::kEqual) {
-    *vector1 = (*vector1 == *vector2) ? 2 * *vector1 : 3 * *vector1;
+    *vector1 = (*vector1 == vector2) ? 2 * *vector1 : 3 * *vector1;
   } else if (operation == VectorOperation::kNotEqual) {
-    *vector1 = (*vector1 != *vector2) ? 2 * *vector1 : 3 * *vector1;
+    *vector1 = (*vector1 != vector2) ? 2 * *vector1 : 3 * *vector1;
   } else {
     if constexpr (std::is_signed_v<decltype(T().x)>) {
       if (operation == VectorOperation::kNegate) {
@@ -223,29 +224,29 @@ __device__ __host__ void PerformVectorOperation(VectorOperation operation, T* ve
       if (operation == VectorOperation::kBitwiseNot) {
         *vector1 = ~(*vector1);
       } else if (operation == VectorOperation::kModuloAssign) {
-        *vector1 %= *vector2;
+        *vector1 %= vector2;
       } else if (operation == VectorOperation::kBitwiseXorAssign) {
-        *vector1 ^= *vector2;
+        *vector1 ^= vector2;
       } else if (operation == VectorOperation::kBitwiseOrAssign) {
-        *vector1 |= *vector2;
+        *vector1 |= vector2;
       } else if (operation == VectorOperation::kBitwiseAndAssign) {
-        *vector1 &= *vector2;
+        *vector1 &= vector2;
       } else if (operation == VectorOperation::kRightShiftAssign) {
-        *vector1 >>= *vector2;
+        *vector1 >>= vector2;
       } else if (operation == VectorOperation::kLeftShiftAssign) {
-        *vector1 <<= *vector2;
+        *vector1 <<= vector2;
       } else if (operation == VectorOperation::kModulo) {
-        *vector1 = *vector1 % *vector2;
+        *vector1 = *vector1 % vector2;
       } else if (operation == VectorOperation::kBitwiseXor) {
-        *vector1 = *vector1 ^ *vector2;
+        *vector1 = *vector1 ^ vector2;
       } else if (operation == VectorOperation::kBitwiseOr) {
-        *vector1 = *vector1 | *vector2;
+        *vector1 = *vector1 | vector2;
       } else if (operation == VectorOperation::kBitwiseAnd) {
-        *vector1 = *vector1 & *vector2;
+        *vector1 = *vector1 & vector2;
       } else if (operation == VectorOperation::kRightShift) {
-        *vector1 = *vector1 >> *vector2;
+        *vector1 = *vector1 >> vector2;
       } else if (operation == VectorOperation::kLeftShift) {
-        *vector1 = *vector1 << *vector2;
+        *vector1 = *vector1 << vector2;
       }
     }
   }
@@ -302,7 +303,7 @@ T PerformVectorOperationHost(VectorOperation operation, decltype(T().x) value1,
   if constexpr (two_vectors) {
     T vector2{};
     MakeVectorType(&vector2, value2);
-    PerformVectorOperation(operation, &vector1, &vector2);
+    PerformVectorOperation(operation, &vector1, vector2);
   } else {
     PerformVectorOperation(operation, &vector1, value2);
   }
@@ -317,7 +318,7 @@ __global__ void VectorOperationKernel(VectorOperation operation, T* vector1, dec
   if constexpr (two_vectors) {
     T vector2{};
     MakeVectorType(&vector2, value2);
-    PerformVectorOperation(operation, vector1, &vector2);
+    PerformVectorOperation(operation, vector1, vector2);
   } else {
     PerformVectorOperation(operation, vector1, value2);
   }

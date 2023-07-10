@@ -338,7 +338,7 @@ template <int expected_errors_num> void VectorTypesRTCWrapper(const char* progra
  *    - unit/vector_types/vector_types.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= Hip version
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_VectorOperators_Negative_Parameters_RTC") {
   VectorTypesRTCWrapper<8>(kNegateUnsignedChar);

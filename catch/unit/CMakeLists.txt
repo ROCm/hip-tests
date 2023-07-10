@@ -39,7 +39,6 @@ add_subdirectory(context)
 add_subdirectory(module)
 add_subdirectory(dynamicLoading)
 add_subdirectory(g++)
-add_subdirectory(module)
 add_subdirectory(channelDescriptor)
 add_subdirectory(executionControl)
 

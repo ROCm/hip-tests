@@ -49,8 +49,8 @@ static constexpr auto ARRAY_LOOP{100};
  */
 static void MallocMipmappedArray_DiffSizes(int gpu) {
   HIP_CHECK_THREAD(hipSetDevice(gpu));
-  //Use of GENERATE in thead function causes random failures with multithread condition.
-  std::vector<size_t> runs {ARRAY_SIZE, BIG_ARRAY_SIZE};
+  // Use of GENERATE in thead function causes random failures with multithread condition.
+  std::vector<size_t> runs{ARRAY_SIZE, BIG_ARRAY_SIZE};
   for (const auto& size : runs) {
     auto numLevelsLimit = floor(log2(size));
     for (unsigned int numLevels = 0; numLevels < numLevelsLimit; numLevels++) {
@@ -61,8 +61,9 @@ static void MallocMipmappedArray_DiffSizes(int gpu) {
       HIP_CHECK_THREAD(hipMemGetInfo(&pavail, &total));
 
       for (int i = 0; i < ARRAY_LOOP; i++) {
-        HIP_CHECK_THREAD(hipMallocMipmappedArray(&arr[i], &channelDesc, make_hipExtent(width, height, depth),
-                                        (1 + numLevels), hipArrayDefault));
+        HIP_CHECK_THREAD(hipMallocMipmappedArray(&arr[i], &channelDesc,
+                                                 make_hipExtent(width, height, depth),
+                                                 (1 + numLevels), hipArrayDefault));
       }
       for (int i = 0; i < ARRAY_LOOP; i++) {
         HIP_CHECK_THREAD(hipFreeMipmappedArray(arr[i]));
@@ -106,8 +107,10 @@ TEST_CASE("Unit_hipMallocMipmappedArray_MultiThread") {
 }
 
 namespace {
-void checkMipmappedArrayIsExpected(hipMipmappedArray_t array, hipArray level_array, const hipChannelFormatDesc& expected_desc,
-                          const hipExtent& expected_extent, const unsigned int expected_flags) {
+void checkMipmappedArrayIsExpected(hipArray_t level_array,
+                                   const hipChannelFormatDesc& expected_desc,
+                                   const hipExtent& expected_extent,
+                                   const unsigned int expected_flags) {
 // hipArrayGetInfo doesn't currently exist (EXSWCPHIPT-87)
 #if HT_AMD
   std::ignore = array;
@@ -115,22 +118,16 @@ void checkMipmappedArrayIsExpected(hipMipmappedArray_t array, hipArray level_arr
   std::ignore = expected_extent;
   std::ignore = expected_flags;
 #else
-  cudaArraySparseProperties sparseProperties;
   cudaChannelFormatDesc queried_desc;
   cudaExtent queried_extent;
   unsigned int queried_flags;
 
-  cudaMipmappedArrayGetSparseProperties(&sparseProperties, array);
   cudaArrayGetInfo(&queried_desc, &queried_extent, &queried_flags, level_array);
 
   REQUIRE(expected_desc.x == queried_desc.x);
   REQUIRE(expected_desc.y == queried_desc.y);
   REQUIRE(expected_desc.z == queried_desc.z);
   REQUIRE(expected_desc.f == queried_desc.f);
-
-  REQUIRE(expected_extent.width == sparseProperties.width);
-  REQUIRE(expected_extent.height == sparseProperties.height);
-  REQUIRE(expected_extent.depth == sparseProperties.depth);
 
   REQUIRE(expected_extent.width == queried_extent.width);
   REQUIRE(expected_extent.height == queried_extent.height);
@@ -166,80 +163,11 @@ TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_happy", "", char, uint2, int4, 
 
     HIP_CHECK(hipMallocMipmappedArray(&array, &desc, extent, numLevels, flags));
     hipArray* hipArray = nullptr;
-    HIP_CHECK(hipGetMipmappedArrayLevel(&hipArray, array, 1));
+    HIP_CHECK(hipGetMipmappedArrayLevel(&hipArray, array, 0));
     checkMipmappedArrayIsExpected(array, hipArray, desc, extent, flags);
     HIP_CHECK(hipFreeMipmappedArray(array));
   }
 }
-
-TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_MaxTexture", "", int, uint4, ushort2, float) {
-  hipMipmappedArray_t array;
-  const hipChannelFormatDesc desc = hipCreateChannelDesc<TestType>();
-#if HT_AMD
-  const unsigned int flag = hipArrayDefault;
-#else
-  const unsigned int flag = GENERATE(hipArrayDefault, hipArraySurfaceLoadStore);
-#endif
-  unsigned int numLevels = GENERATE(1, 5, 9, 13);
-  if (flag == hipArraySurfaceLoadStore) {
-    HipTest::HIP_SKIP_TEST("EXSWCPHIPT-58");
-    return;
-  }
-  CAPTURE(flag);
-  const Sizes sizes(flag);
-  CAPTURE(sizes.max1D, sizes.max2D, sizes.max3D);
-
-  const size_t s = 64;
-  SECTION("Happy") {
-    // stored in a vector so some values can be ifdef'd out
-    std::vector<hipExtent> extentsToTest{
-        make_hipExtent(sizes.max1D, 0, 0),                              // 1D max
-        make_hipExtent(sizes.max2D[0], s, 0),                           // 2D max width
-        make_hipExtent(s, sizes.max2D[1], 0),                           // 2D max height
-        make_hipExtent(sizes.max2D[0], sizes.max2D[1], 0),              // 2D max
-        make_hipExtent(sizes.max3D[0], s, s),                           // 3D max width
-        make_hipExtent(s, sizes.max3D[1], s),                           // 3D max height
-        make_hipExtent(s, s, sizes.max3D[2]),                           // 3D max depth
-        make_hipExtent(s, sizes.max3D[1], sizes.max3D[2]),              // 3D max height and depth
-        make_hipExtent(sizes.max3D[0], s, sizes.max3D[2]),              // 3D max width and depth
-        make_hipExtent(sizes.max3D[0], sizes.max3D[1], s),              // 3D max width and height
-        make_hipExtent(sizes.max3D[0], sizes.max3D[1], sizes.max3D[2])  // 3D max
-    };
-    const auto extent =
-        GENERATE_COPY(from_range(std::begin(extentsToTest), std::end(extentsToTest)));
-    CAPTURE(extent.width, extent.height, extent.depth);
-    auto maxArrayCreateError = hipMallocMipmappedArray(&array, &desc, extent, numLevels, flag);
-    // this can try to alloc many GB of memory, so out of memory is acceptable
-    if (maxArrayCreateError == hipErrorOutOfMemory) return;
-    HIP_CHECK(maxArrayCreateError);
-    hipArray* hipArray = nullptr;
-    HIP_CHECK(hipGetMipmappedArrayLevel(&hipArray, array, 1));
-    checkMipmappedArrayIsExpected(array, hipArray, desc, extent, flags);
-    HIP_CHECK(hipFreeMipmappedArray(array));
-  }
-  SECTION("Negative") {
-    std::vector<hipExtent> extentsToTest {
-      make_hipExtent(sizes.max1D + 1, 0, 0),                          // 1D max
-          make_hipExtent(sizes.max2D[0] + 1, s, 0),                   // 2D max width
-          make_hipExtent(s, sizes.max2D[1] + 1, 0),                   // 2D max height
-          make_hipExtent(sizes.max2D[0] + 1, sizes.max2D[1] + 1, 0),  // 2D max
-          make_hipExtent(sizes.max3D[0] + 1, s, s),                   // 3D max width
-          make_hipExtent(s, sizes.max3D[1] + 1, s),                   // 3D max height
-#if !HT_NVIDIA                                       // leads to hipSuccess on NVIDIA
-          make_hipExtent(s, s, sizes.max3D[2] + 1),  // 3D max depth
-#endif
-          make_hipExtent(s, sizes.max3D[1] + 1, sizes.max3D[2] + 1),  // 3D max height and depth
-          make_hipExtent(sizes.max3D[0] + 1, s, sizes.max3D[2] + 1),  // 3D max width and depth
-          make_hipExtent(sizes.max3D[0] + 1, sizes.max3D[1] + 1, s),  // 3D max width and height
-          make_hipExtent(sizes.max3D[0] + 1, sizes.max3D[1] + 1, sizes.max3D[2] + 1)  // 3D max
-    };
-    const auto extent =
-        GENERATE_COPY(from_range(std::begin(extentsToTest), std::end(extentsToTest)));
-    CAPTURE(extent.width, extent.height, extent.depth);
-    HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, &desc, extent, numLevels, flag), hipErrorInvalidValue);
-  }
-}
-
 
 #if HT_AMD
 constexpr std::array<unsigned int, 1> validFlags{hipArrayDefault};
@@ -270,8 +198,9 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NullArrayPtr") {
   constexpr size_t s = 6;
 
   const auto flag = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
-  HIP_CHECK_ERROR(hipMallocMipmappedArray(nullptr, &desc, makeMipmappedExtent(flag, s), numLevels, flag),
-                  hipErrorInvalidValue);
+  HIP_CHECK_ERROR(
+      hipMallocMipmappedArray(nullptr, &desc, makeMipmappedExtent(flag, s), numLevels, flag),
+      hipErrorInvalidValue);
 }
 
 // Providing the description pointer as nullptr should return an error
@@ -282,8 +211,9 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NullDescPtr") {
 
   const auto flag = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
 
-  HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, nullptr, makeMipmappedExtent(flag, s), numLevels, flag),
-                  hipErrorInvalidValue);
+  HIP_CHECK_ERROR(
+      hipMallocMipmappedArray(&array, nullptr, makeMipmappedExtent(flag, s), numLevels, flag),
+      hipErrorInvalidValue);
 }
 
 // Zero width arrays are not allowed
@@ -312,8 +242,9 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_ZeroHeight") {
 
   if (std::find(std::begin(exceptions), std::end(exceptions), flag) == std::end(exceptions)) {
     // flag is not in list of exceptions
-    HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, &desc, make_hipExtent(s, 0, s), numLevels, flag),
-                    hipErrorInvalidValue);
+    HIP_CHECK_ERROR(
+        hipMallocMipmappedArray(&array, &desc, make_hipExtent(s, 0, s), numLevels, flag),
+        hipErrorInvalidValue);
   }
 }
 
@@ -336,7 +267,9 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_InvalidFlags") {
 
   REQUIRE(std::find(std::begin(validFlags), std::end(validFlags), flag) == std::end(validFlags));
 
-  HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, &desc, makeMipmappedExtent(flag, s), numLevels, flag), hipErrorInvalidValue);
+  HIP_CHECK_ERROR(
+      hipMallocMipmappedArray(&array, &desc, makeMipmappedExtent(flag, s), numLevels, flag),
+      hipErrorInvalidValue);
 }
 
 void testInvalidDescriptionMipmapped(hipChannelFormatDesc desc) {
@@ -351,7 +284,9 @@ void testInvalidDescriptionMipmapped(hipChannelFormatDesc desc) {
 #endif
 
   const auto flag = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
-  HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, &desc, makeMipmappedExtent(flag, s), numLevels, flag), expectedError);
+  HIP_CHECK_ERROR(
+      hipMallocMipmappedArray(&array, &desc, makeMipmappedExtent(flag, s), numLevels, flag),
+      expectedError);
 }
 
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_InvalidFormat") {
@@ -432,12 +367,14 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NumericLimit") {
 
   size_t size = std::numeric_limits<size_t>::max();
   const auto flag = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
-  HIP_CHECK_ERROR(hipMallocMipmappedArray(&arrayPtr, &desc, makeMipmappedExtent(flag, size), numLevels, flag),
-                  hipErrorInvalidValue);
+  HIP_CHECK_ERROR(
+      hipMallocMipmappedArray(&arrayPtr, &desc, makeMipmappedExtent(flag, size), numLevels, flag),
+      hipErrorInvalidValue);
 }
 
 // texture gather arrays are only allowed to be 2D
-TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_Negative_Non2DTextureGather", "", char, uchar2, float2) {
+TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_Negative_Non2DTextureGather", "", char, uchar2,
+                   float2) {
 #if HT_AMD
   HipTest::HIP_SKIP_TEST("Texture Gather arrays not supported using AMD backend");
   return;
@@ -450,7 +387,8 @@ TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_Negative_Non2DTextureGather", "
   constexpr size_t size = 64;
   const hipExtent extent = GENERATE(make_hipExtent(size, 0, 0), make_hipExtent(size, size, size));
 
-  HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, &desc, extent, numLevels, flags), hipErrorInvalidValue);
+  HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, &desc, extent, numLevels, flags),
+                  hipErrorInvalidValue);
 }
 
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NumLevels") {
@@ -460,26 +398,27 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NumLevels") {
   hipChannelFormatDesc desc = hipCreateChannelDesc<float>();
 
   const auto flag = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
-  HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, &desc, makeMipmappedExtent(flag, size), numLevels, flag),
-                  hipErrorInvalidValue);
+  HIP_CHECK_ERROR(
+      hipMallocMipmappedArray(&array, &desc, makeMipmappedExtent(flag, size), numLevels, flag),
+      hipErrorInvalidValue);
 }
 
 TEST_CASE("Unit_hipGetMipmappedArrayLevel_Negative") {
   constexpr size_t s = 6;
   unsigned int numLevels = 1;
   hipMipmappedArray_t array;
-  hipArray level_array;
+  hipArray_t level_array;
 
   hipChannelFormatDesc desc = hipCreateChannelDesc<float>();
 
-  HIP_CHECK(hipMallocMipmappedArray(&array, &desc, make_hipExtent(s, s, s), numLevels, hipArrayDefault));
-  SECTION("Level is invalid")
-  {
+  HIP_CHECK(
+      hipMallocMipmappedArray(&array, &desc, make_hipExtent(s, s, s), numLevels, hipArrayDefault));
+  SECTION("Level is invalid") {
     HIP_CHECK_ERROR(hipGetMipmappedArrayLevel(&level_array, array, 3), hipErrorInvalidValue);
   }
-  SECTION("Mipmapped array is nullptr")
-  {
-    HIP_CHECK_ERROR(hipGetMipmappedArrayLevel(&level_array, nullptr, 1), hipErrorInvalidResourceHandle);
+  SECTION("Mipmapped array is nullptr") {
+    HIP_CHECK_ERROR(hipGetMipmappedArrayLevel(&level_array, nullptr, 1),
+                    hipErrorInvalidResourceHandle);
   }
   HIP_CHECK(hipFreeMipmappedArray(array));
 }

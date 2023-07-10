@@ -27,11 +27,12 @@ hipBindTextureToMipmappedArray api when parameters are invalid
 
 texture<float, 2, hipReadModeElementType> texRef;
 
-#if !defined(__HIP_NO_IMAGE_SUPPORT)
 __global__ void tex2DKernel(float* outputData, int width, float level) {
+#if !defined(__HIP_NO_IMAGE_SUPPORT) || !__HIP_NO_IMAGE_SUPPORT
   int x = blockIdx.x * blockDim.x + threadIdx.x;
   int y = blockIdx.y * blockDim.y + threadIdx.y;
   outputData[y * width + x] = tex2DLod<float>(texRef, x, y, level);
+#endif
 }
 
 static void runMipMapTest(unsigned int width, unsigned int height, unsigned int mipmap_level) {
@@ -109,7 +110,6 @@ static void runMipMapTest(unsigned int width, unsigned int height, unsigned int 
   HIP_CHECK(hipFreeMipmappedArray(mip_array_ptr));
   free(hData);
 }
-#endif
 
 TEST_CASE("Unit_hipTextureMipmapRef2D_Positive_Check") {
   CHECK_IMAGE_SUPPORT

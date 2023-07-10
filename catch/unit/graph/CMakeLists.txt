@@ -69,20 +69,7 @@ set(TEST_SRC
   hipStreamBeginCapture.cc
   hipStreamBeginCapture_old.cc
   hipStreamIsCapturing.cc
-  hipStreamIsCapturing_old.cc)
-
-if(HIP_PLATFORM MATCHES "amd")
-  set(AMD_SRC
-    hipStreamCaptureExtModuleLaunchKernel.cc
-  )
-  set(TEST_SRC ${TEST_SRC} ${AMD_SRC})
-endif()
-
-hip_add_exe_to_target(NAME GraphsTest1
-                      TEST_SRC ${TEST_SRC}
-                      TEST_TARGET_NAME build_tests)
-
-set(TEST_SRC
+  hipStreamIsCapturing_old.cc
   hipStreamGetCaptureInfo.cc
   hipStreamGetCaptureInfo_old.cc
   hipStreamEndCapture.cc
@@ -131,9 +118,15 @@ set(TEST_SRC
   hipGraphKernelNodeGetAttribute.cc
   hipGraphKernelNodeSetAttribute.cc)
 
+if(HIP_PLATFORM MATCHES "amd")
+  set(AMD_SRC
+    hipStreamCaptureExtModuleLaunchKernel.cc)
+  set(TEST_SRC ${TEST_SRC} ${AMD_SRC})
+endif()
+
 add_custom_target(add_Kernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/add_Kernel.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../graph/add_Kernel.code -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 
-hip_add_exe_to_target(NAME GraphsTest2
+hip_add_exe_to_target(NAME GraphsTest
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests)
 

@@ -130,6 +130,8 @@ set(TEST_SRC
   hipGraphKernelNodeGetAttribute.cc
   hipGraphKernelNodeSetAttribute.cc)
 
+add_custom_target(add_Kernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/add_Kernel.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../graph/add_Kernel.code -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
+
 hip_add_exe_to_target(NAME GraphsTest2
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests)
@@ -138,3 +140,5 @@ if(HIP_PLATFORM MATCHES "amd")
   add_custom_target(hipMatMul COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/hipMatMul.cc -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/graph/hipMatMul.code -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
   add_dependencies(build_tests hipMatMul)
 endif()
+
+add_dependencies(build_tests add_Kernel.code)

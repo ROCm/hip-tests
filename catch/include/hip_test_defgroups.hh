@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2021 - 2023 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -73,6 +73,20 @@ THE SOFTWARE.
  */
 
 /**
+ * @defgroup DeviceLanguageTest Device Language
+ * @{
+ * This section describes tests for the Device Language API.
+ * @}
+ */
+
+/**
+ * @defgroup ExecutionTest Execution Control
+ * @{
+ * This section describes tests for the execution control functions of HIP runtime API.
+ * @}
+ */
+
+/**
  * @defgroup ShflTest warp shuffle function Management
  * @{
  * This section describes the warp shuffle types & functions of HIP runtime API.
@@ -91,5 +105,26 @@ THE SOFTWARE.
  * @defgroup StreamTest Stream Management
  * @{
  * This section describes the stream management types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup DynamicLoadingTest Kernel Loading Management
+ * @{
+ * This section describes the different kernel launch approaches.
+ * @}
+ */
+
+/**
+ * @defgroup MemoryTest memory Management APIs
+ * @{
+ * This section describes the memory management types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+* @defgroup KernelTest Kernel Functions Management
+ * @{
+ * This section describes the various kernel functions invocation.
  * @}
  */

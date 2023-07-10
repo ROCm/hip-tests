@@ -59,12 +59,14 @@ add_custom_target(copyKernel.s
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 endif()
 
+if(HIP_PLATFORM MATCHES "amd")
 hip_add_exe_to_target(NAME ModuleTest
   TEST_SRC ${TEST_SRC}
   TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
-
-if(HIP_PLATFORM MATCHES "amd")
 add_dependencies(build_tests copyKernel.code copyKernel.s empty_module.code)
-else()
+elseif(HIP_PLATFORM MATCHES "nvidia")
+hip_add_exe_to_target(NAME ModuleTest
+  TEST_SRC ${TEST_SRC}
+  TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC} COMPILE_OPTIONS --Wno-deprecated-declarations)
 add_dependencies(build_tests empty_module.code)
 endif()

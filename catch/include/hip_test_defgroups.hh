@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2021 - 2023 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,58 @@ THE SOFTWARE.
 /**
  * @defgroup GraphTest Graph Management
  * @{
- * This section describes the graph management types & functions of HIP runtime API.
+ * This section describes tests for the graph management types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup DeviceTest Device Management
+ * @{
+ * This section describes tests for device management functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup EventTest Event Management
+ * @{
+ * This section describes tests for the event management functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup ErrorTest Error Handling
+ * @{
+ * This section describes tests for the error handling functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup PeerToPeerTest PeerToPeer Device Memory Access
+ * @{
+ * This section describes tests for the PeerToPeer device memory access functions of HIP runtime
+ * API.
+ * @warning PeerToPeer support is experimental.
+ * @}
+ */
+
+/**
+ * @defgroup DriverTest Initialization and Version
+ * @{
+ * This section describes tests for the initialization and version functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup DeviceLanguageTest Device Language
+ * @{
+ * This section describes tests for the Device Language API.
+ * @}
+ */
+
+/**
+ * @defgroup ExecutionTest Execution Control
+ * @{
+ * This section describes tests for the execution control functions of HIP runtime API.
  * @}
  */
 
@@ -56,7 +107,7 @@ THE SOFTWARE.
  * @addtogroup hipStreamWaitValue32 hipStreamWaitValue32
  * @{
  * @ingroup StreamMTest
- * `hipStreamWaitValue32(hipStream_t stream, void* ptr, uint32_t value, 
+ * `hipStreamWaitValue32(hipStream_t stream, void* ptr, uint32_t value,
  * unsigned int flags, uint32_t mask __dparm(0xFFFFFFFF))` -
  * Enqueues a wait command to the stream, all operations enqueued on this stream after this, will
  * not execute until the defined wait condition is true.
@@ -75,7 +126,7 @@ THE SOFTWARE.
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_NoMask_Eq"){}
+TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_NoMask_Eq") {}
 /**
  * Test Description
  * ------------------------
@@ -89,7 +140,7 @@ TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_NoMask_Eq"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_NoMask_Eq"){}
+TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_NoMask_Eq") {}
 /**
  * Test Description
  * ------------------------
@@ -103,7 +154,7 @@ TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_NoMask_Eq"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_NoMask_Gte"){}
+TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_NoMask_Gte") {}
 /**
  * Test Description
  * ------------------------
@@ -117,7 +168,7 @@ TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_NoMask_Gte"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_NoMask_Gte"){}
+TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_NoMask_Gte") {}
 /**
  * Test Description
  * ------------------------
@@ -131,7 +182,7 @@ TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_NoMask_Gte"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_NoMask_And"){}
+TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_NoMask_And") {}
 /**
  * Test Description
  * ------------------------
@@ -145,7 +196,7 @@ TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_NoMask_And"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_NoMask_And"){}
+TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_NoMask_And") {}
 /**
  * Test Description
  * ------------------------
@@ -159,7 +210,7 @@ TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_NoMask_And"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_NoMask_Nor"){}
+TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_NoMask_Nor") {}
 /**
  * Test Description
  * ------------------------
@@ -173,7 +224,7 @@ TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_NoMask_Nor"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_NoMask_Nor"){}
+TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_NoMask_Nor") {}
 /**
  * Test Description
  * ------------------------
@@ -187,7 +238,7 @@ TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_NoMask_Nor"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_Mask_Gte"){}
+TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_Mask_Gte") {}
 /**
  * Test Description
  * ------------------------
@@ -201,7 +252,7 @@ TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_Mask_Gte"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_Mask_Gte"){}
+TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_Mask_Gte") {}
 /**
  * Test Description
  * ------------------------
@@ -215,7 +266,7 @@ TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_Mask_Gte"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_Mask_Eq_1"){}
+TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_Mask_Eq_1") {}
 /**
  * Test Description
  * ------------------------
@@ -229,7 +280,7 @@ TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_Mask_Eq_1"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_Mask_Eq_1"){}
+TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_Mask_Eq_1") {}
 /**
  * Test Description
  * ------------------------
@@ -243,7 +294,7 @@ TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_Mask_Eq_1"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_Mask_Eq_2"){}
+TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_Mask_Eq_2") {}
 /**
  * Test Description
  * ------------------------
@@ -257,7 +308,7 @@ TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_Mask_Eq_2"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_Mask_Eq_2"){}
+TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_Mask_Eq_2") {}
 /**
  * Test Description
  * ------------------------
@@ -271,7 +322,7 @@ TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_Mask_Eq_2"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_Mask_And"){}
+TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_Mask_And") {}
 /**
  * Test Description
  * ------------------------
@@ -285,8 +336,8 @@ TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_Mask_And"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_Mask_And"){}
-TEST_CASE("Unit_hipStreamValue_Negative_InvalidMemory"){}
+TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_Mask_And") {}
+TEST_CASE("Unit_hipStreamValue_Negative_InvalidMemory") {}
 /**
  * End doxygen group hipStreamWaitValue32.
  * @}
@@ -296,7 +347,7 @@ TEST_CASE("Unit_hipStreamValue_Negative_InvalidMemory"){}
  * @addtogroup hipStreamWaitValue64 hipStreamWaitValue64
  * @{
  * @ingroup StreamMTest
- * `hipStreamWaitValue64(hipStream_t stream, void* ptr, uint64_t value, 
+ * `hipStreamWaitValue64(hipStream_t stream, void* ptr, uint64_t value,
  * unsigned int flags, uint64_t mask __dparm(0xFFFFFFFFFFFFFFFF))` -
  * Enqueues a wait command to the stream, all operations enqueued  on this stream after this, will
  * not execute until the defined wait condition is true.
@@ -320,7 +371,7 @@ TEST_CASE("Unit_hipStreamValue_Negative_InvalidMemory"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_NoMask_Eq"){}
+TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_NoMask_Eq") {}
 /**
  * Test Description
  * ------------------------
@@ -334,7 +385,7 @@ TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_NoMask_Eq"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_NoMask_Eq"){}
+TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_NoMask_Eq") {}
 /**
  * Test Description
  * ------------------------
@@ -348,7 +399,7 @@ TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_NoMask_Eq"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_NoMask_Gte"){}
+TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_NoMask_Gte") {}
 /**
  * Test Description
  * ------------------------
@@ -362,7 +413,7 @@ TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_NoMask_Gte"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_NoMask_Gte"){}
+TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_NoMask_Gte") {}
 /**
  * Test Description
  * ------------------------
@@ -376,7 +427,7 @@ TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_NoMask_Gte"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_NoMask_And"){}
+TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_NoMask_And") {}
 /**
  * Test Description
  * ------------------------
@@ -390,7 +441,7 @@ TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_NoMask_And"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_NoMask_And"){}
+TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_NoMask_And") {}
 /**
  * Test Description
  * ------------------------
@@ -404,7 +455,7 @@ TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_NoMask_And"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_NoMask_Nor"){}
+TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_NoMask_Nor") {}
 /**
  * Test Description
  * ------------------------
@@ -418,7 +469,7 @@ TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_NoMask_Nor"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_NoMask_Nor"){}
+TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_NoMask_Nor") {}
 /**
  * Test Description
  * ------------------------
@@ -432,7 +483,7 @@ TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_NoMask_Nor"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_Mask_Gte_1"){}
+TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_Mask_Gte_1") {}
 /**
  * Test Description
  * ------------------------
@@ -446,7 +497,7 @@ TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_Mask_Gte_1"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_Gte_1"){}
+TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_Gte_1") {}
 /**
  * Test Description
  * ------------------------
@@ -460,7 +511,7 @@ TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_Gte_1"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_Mask_Gte_2"){}
+TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_Mask_Gte_2") {}
 /**
  * Test Description
  * ------------------------
@@ -474,7 +525,7 @@ TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_Mask_Gte_2"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_Gte_2"){}
+TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_Gte_2") {}
 /**
  * Test Description
  * ------------------------
@@ -488,7 +539,7 @@ TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_Gte_2"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_Mask_Eq_1"){}
+TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_Mask_Eq_1") {}
 /**
  * Test Description
  * ------------------------
@@ -502,7 +553,7 @@ TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_Mask_Eq_1"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_Eq_1"){}
+TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_Eq_1") {}
 /**
  * Test Description
  * ------------------------
@@ -516,7 +567,7 @@ TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_Eq_1"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_Mask_Eq_2"){}
+TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_Mask_Eq_2") {}
 /**
  * Test Description
  * ------------------------
@@ -530,7 +581,7 @@ TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_Mask_Eq_2"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_Eq_2"){}
+TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_Eq_2") {}
 /**
  * Test Description
  * ------------------------
@@ -544,7 +595,7 @@ TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_Eq_2"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_Mask_And"){}
+TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_Mask_And") {}
 /**
  * Test Description
  * ------------------------
@@ -558,7 +609,7 @@ TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_Mask_And"){}
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_And"){}
+TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_And") {}
 /**
  * End doxygen group hipStreamWaitValue64.
  * @}
@@ -594,7 +645,15 @@ TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_And"){}
 /**
  * @defgroup StreamOTest Ordered Memory Allocator
  * @{
- * This section describes the tests for Stream Ordered Memory Allocator functions of HIP runtime API.
+ * This section describes the tests for Stream Ordered Memory Allocator functions of HIP runtime
+ * API.
+ */
+
+/**
+ * @defgroup ContextTest Context Management
+ * @{
+ * This section describes tests for the context management functions of HIP runtime API.
+ * @warning All Context Management APIs are **deprecated** and shall not be implemented.
  * @}
  */
 
@@ -602,5 +661,26 @@ TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_And"){}
  * @defgroup StreamTest Stream Management
  * @{
  * This section describes the stream management types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup DynamicLoadingTest Kernel Loading Management
+ * @{
+ * This section describes the different kernel launch approaches.
+ * @}
+ */
+
+/**
+ * @defgroup MemoryTest memory Management APIs
+ * @{
+ * This section describes the memory management types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup KernelTest Kernel Functions Management
+ * @{
+ * This section describes the various kernel functions invocation.
  * @}
  */

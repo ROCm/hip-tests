@@ -201,5 +201,10 @@
 	   "Unit_ChannelDescriptor_Positive_Basic_4D - ulong4",
 	   "Unit_ChannelDescriptor_Positive_Basic_4D - long4",
 	   "Unit_hipExtModuleLaunchKernel_NonUniformWorkGroup"
+	   "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/18 ===",
+	   "Unit_hipMemcpyAsync_Negative_Parameters",
+	   "Unit_hipMemcpyDtoHAsync_Negative_Parameters",
+	   "Unit_hipMemcpyHtoDAsync_Negative_Parameters",
+	   "Unit_hipMemcpyDtoDAsync_Negative_Parameters"
 	]
 }

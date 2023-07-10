@@ -109,6 +109,7 @@
 	   "Unit_ChannelDescriptor_Positive_Basic_2D - ulong2",
 	   "Unit_ChannelDescriptor_Positive_Basic_2D - long2",
 	   "Unit_ChannelDescriptor_Positive_Basic_4D - ulong4",
-	   "Unit_ChannelDescriptor_Positive_Basic_4D - long4"
+	   "Unit_ChannelDescriptor_Positive_Basic_4D - long4",
+	   "Unit_hipExtModuleLaunchKernel_NonUniformWorkGroup"
 	]
 }

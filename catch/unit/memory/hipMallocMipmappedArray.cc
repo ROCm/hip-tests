@@ -164,7 +164,7 @@ TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_happy", "", char, uint2, int4, 
     HIP_CHECK(hipMallocMipmappedArray(&array, &desc, extent, numLevels, flags));
     hipArray* hipArray = nullptr;
     HIP_CHECK(hipGetMipmappedArrayLevel(&hipArray, array, 0));
-    checkMipmappedArrayIsExpected(array, hipArray, desc, extent, flags);
+    checkMipmappedArrayIsExpected(hipArray, desc, extent, flags);
     HIP_CHECK(hipFreeMipmappedArray(array));
   }
 }

@@ -32,6 +32,7 @@ set(TEST_SRC
     ${TEST_SRC}
     hipExtModuleLaunchKernel.cc
 )
+endif()
 
 # Note to pass arch use format like -DOFFLOAD_ARCH_STR="--offload-arch=gfx900  --offload-arch=gfx906"
 # having space at the start/end of OFFLOAD_ARCH_STR can cause build failures
@@ -43,6 +44,7 @@ add_custom_target(empty_module.code
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 
+if(HIP_PLATFORM MATCHES "amd")
 add_custom_target(copyKernel.code
                   COMMAND ${CMAKE_CXX_COMPILER} -mcode-object-version=5 --genco ${OFFLOAD_ARCH_STR}
                   ${CMAKE_CURRENT_SOURCE_DIR}/copyKernel.cc
@@ -55,10 +57,14 @@ add_custom_target(copyKernel.s
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copyKernel.s
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
+endif()
 
 hip_add_exe_to_target(NAME ModuleTest
   TEST_SRC ${TEST_SRC}
   TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
 
+if(HIP_PLATFORM MATCHES "amd")
 add_dependencies(build_tests copyKernel.code copyKernel.s empty_module.code)
+else()
+add_dependencies(build_tests empty_module.code)
 endif()

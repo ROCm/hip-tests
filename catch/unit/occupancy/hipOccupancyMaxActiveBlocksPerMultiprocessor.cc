@@ -20,7 +20,8 @@ THE SOFTWARE.
 #include "occupancy_common.hh"
 
 /**
- * @addtogroup hipOccupancyMaxActiveBlocksPerMultiprocessor hipOccupancyMaxActiveBlocksPerMultiprocessor
+ * @addtogroup hipOccupancyMaxActiveBlocksPerMultiprocessor
+ * hipOccupancyMaxActiveBlocksPerMultiprocessor
  * @{
  * @ingroup OccupancyTest
  * `hipOccupancyMaxActiveBlocksPerMultiprocessor(int* numBlocks, const void* f,
@@ -174,7 +175,8 @@ TEST_CASE("Unit_hipOccupancyMaxActiveBlocksPerMultiprocessor_Positive_TemplateIn
  */
 
 /**
- * @addtogroup hipOccupancyMaxActiveBlocksPerMultiprocessorWithFlags hipOccupancyMaxActiveBlocksPerMultiprocessorWithFlags
+ * @addtogroup hipOccupancyMaxActiveBlocksPerMultiprocessorWithFlags
+ * hipOccupancyMaxActiveBlocksPerMultiprocessorWithFlags
  * @{
  * @ingroup OccupancyTest
  * `hipOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(int* numBlocks, const void* f,

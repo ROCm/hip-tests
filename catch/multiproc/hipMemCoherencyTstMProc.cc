@@ -33,6 +33,7 @@
    */
 
 #include <hip_test_common.hh>
+#include <hip_test_features.hh>
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
@@ -158,11 +159,12 @@ TEST_CASE("Unit_malloc_CoherentTst") {
     hipDeviceProp_t prop;
     HIPCHECK(hipGetDeviceProperties(&prop, 0));
     char *p = NULL;
-    p = strstr(prop.gcnArchName, "gfx90a");
-    if (p) {
+
+    if (CheckIfFeatSupported(CTFeatures::CT_FEATURE_FINEGRAIN_HWSUPPORT, prop.gcnArchName)) {
       WARN("gfx90a gpu found on this system!!");
       GpuId[0] = 1;
     }
+
     // Write concatenated string and close writing end
     write(fd1[1], GpuId, 2 * sizeof(int));
     close(fd1[1]);

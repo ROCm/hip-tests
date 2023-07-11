@@ -22,6 +22,7 @@ THE SOFTWARE.
 
 #pragma once
 #include "hip_test_context.hh"
+
 #include <catch.hpp>
 #include <atomic>
 #include <chrono>
@@ -30,6 +31,7 @@ THE SOFTWARE.
 #include <iomanip>
 #include <mutex>
 #include <cstdlib>
+#include <thread>
 
 #define HIP_PRINT_STATUS(status) INFO(hipGetErrorName(status) << " at line: " << __LINE__);
 
@@ -363,13 +365,13 @@ template <> struct MemTraits<MemcpyAsync> {
 
 
 namespace {
-static __global__ void waitKernel(clock_t offset) {
+static __global__ void waitKernel(size_t offset) {
   auto start = clock();
   while ((clock() - start) < offset) {
   }
 }
 
-static __global__ void waitKernel_gfx11(clock_t offset) {
+static __global__ void waitKernel_gfx11(size_t offset) {
 #if HT_AMD
   auto start = wall_clock64();
   while ((wall_clock64() - start) < offset) {
@@ -385,8 +387,8 @@ static size_t findTicksPerSecond() {
   int device;
   HIP_CHECK(hipGetDevice(&device));
   HIP_CHECK(hipGetDeviceProperties(&prop, device));
-  clock_t devFreq = static_cast<clock_t>(prop.clockRate);  // in kHz
-  clock_t clockTicksPerSecond = devFreq * 1000;
+  size_t devFreq = static_cast<size_t>(prop.clockRate);  // in kHz
+  size_t clockTicksPerSecond = devFreq * 1000;
 
   // init
   hipEvent_t start, stop;
@@ -442,6 +444,52 @@ static inline void runKernelForDuration(std::chrono::milliseconds duration,
   hipLaunchKernelGGL(waitKernel_used, dim3(1), dim3(1), 0, stream, ticksPerSecond * millis / 1000);
 }
 
+class BlockingContext {
+  std::atomic_bool blocked{true};
+  hipStream_t stream;
+
+ public:
+  BlockingContext(hipStream_t s) : stream(s), blocked(true) {}
+
+  BlockingContext(const BlockingContext& in) {
+    blocked = in.blocked_val();
+    stream = in.stream_val();
+  }
+
+  BlockingContext(const BlockingContext&& in) {
+    blocked = in.blocked_val();
+    stream = in.stream_val();
+  }
+
+  void reset() { blocked = true; }
+
+  BlockingContext& operator=(const BlockingContext& in) {
+    blocked = in.blocked_val();
+    stream = in.stream_val();
+    return *this;
+  }
+
+  void block_stream() {
+    blocked = true;
+    auto blocking_callback = [](hipStream_t, hipError_t, void* data) {
+      auto blocked = reinterpret_cast<std::atomic_bool*>(data);
+      while (blocked->load()) {
+        // Yield this thread till we are waiting
+        std::this_thread::yield();
+      }
+    };
+    HIP_CHECK(hipStreamAddCallback(stream, blocking_callback, (void*)&blocked, 0));
+  }
+
+  void unblock_stream() {
+    blocked = false;
+  }
+
+  bool is_blocked() const { return hipStreamQuery(stream) == hipErrorNotReady; }
+
+  bool blocked_val() const { return blocked.load(); }
+  hipStream_t stream_val() const { return stream; }
+};
 }  // namespace HipTest
 
 // This must be called in the beginning of image test app's main() to indicate whether image

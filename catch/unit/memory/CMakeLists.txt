@@ -108,7 +108,8 @@ set(TEST_SRC
     hipMemRangeGetAttributes.cc
     hipStreamAttachMemAsync.cc
     hipMemRangeGetAttributes_old.cc
-    hipMemGetAddressRange.cc)
+    hipMemGetAddressRange.cc
+    hipHmmOvrSubscriptionTst.cc)
 
 if(HIP_PLATFORM MATCHES "amd")
   set(TEST_SRC

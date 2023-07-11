@@ -67,6 +67,7 @@ THE SOFTWARE.
 */
 
 #include <hip_test_common.hh>
+#include <hip_test_features.hh>
 #if __linux__
 #include <unistd.h>
 #include <sys/mman.h>
@@ -232,15 +233,6 @@ TEST_CASE("Unit_hipMemAdvise_NegtveTsts") {
     std::string str;
     HIP_CHECK(hipGetDeviceCount(&NumDevs));
     HIP_CHECK(hipMallocManaged(&Hmm, MEM_SIZE * 2, hipMemAttachGlobal));
-#if HT_AMD
-    // Passing invalid value(99) device param
-    IfTestPassed &= CheckError(hipMemAdvise(Hmm, MEM_SIZE * 2,
-                               hipMemAdviseSetReadMostly, 99), __LINE__);
-
-    // Passing invalid value(-12) device param
-    IfTestPassed &= CheckError(hipMemAdvise(Hmm, MEM_SIZE * 2,
-                               hipMemAdviseSetReadMostly, -12), __LINE__);
-#endif
     // Passing NULL as first parameter instead of valid pointer to a memory
     IfTestPassed &= CheckError(hipMemAdvise(NULL, MEM_SIZE * 2,
                                hipMemAdviseSetReadMostly, 0), __LINE__);
@@ -378,6 +370,12 @@ TEST_CASE("Unit_hipMemAdvise_ReadMostly") {
       WARN("out value: " << out);
       IfTestPassed = false;
     }
+    // hipMemAdvise should succeed for SetReadMostly and UnsetReadMostly
+    // irrespective of the device
+    HIP_CHECK(hipMemAdvise(Hmm, MEM_SIZE, hipMemAdviseSetReadMostly, 99));
+
+    HIP_CHECK(hipMemAdvise(Hmm, MEM_SIZE, hipMemAdviseUnsetReadMostly, -12));
+     
     HIP_CHECK(hipFree(Hmm));
     REQUIRE(IfTestPassed);
   } else {
@@ -664,7 +662,7 @@ TEST_CASE("Unit_hipMemAdvise_TstAlignedAllocMem") {
     WARN("Unable to turn on HSA_XNACK, hence terminating the Test case!");
     REQUIRE(false);
   }
-  // The following code block checks for gfx90a so as to skip if the device is not MI200
+  // The following code block checks for gfx90a,940,941,942 so as to skip if the device is not
 
   hipDeviceProp_t prop;
   int device;
@@ -672,7 +670,7 @@ TEST_CASE("Unit_hipMemAdvise_TstAlignedAllocMem") {
   HIP_CHECK(hipGetDeviceProperties(&prop, device));
   std::string gfxName(prop.gcnArchName);
 
-  if ((gfxName == "gfx90a" || gfxName.find("gfx90a:")) == 0) {
+  if (CheckIfFeatSupported(CTFeatures::CT_FEATURE_HMM, prop.gcnArchName)) {
     int stat = 0;
     if (fork() == 0) {
       // The below part should be inside fork
@@ -729,9 +727,9 @@ TEST_CASE("Unit_hipMemAdvise_TstAlignedAllocMem") {
       }
     }
   } else {
-      SUCCEED("Memory model feature is only supported for gfx90a, Hence"
+      SUCCEED("Memory model feature is only supported for gfx90a, gfx940, gx941, gfx942, Hence"
               "skipping the testcase for this GPU " << device);
-      WARN("Memory model feature is only supported for gfx90a, Hence"
+      WARN("Memory model feature is only supported for gfx90a, gfx940, gx941, gfx942, Hence"
               "skipping the testcase for this GPU " << device);
   }
 

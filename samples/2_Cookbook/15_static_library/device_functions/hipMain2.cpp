@@ -23,8 +23,15 @@
 #include <hip/hip_runtime.h>
 #include <hip/hip_runtime_api.h>
 #include <iostream>
+#include <stdexcept>
 
-#define HIP_ASSERT(status) assert(status == hipSuccess)
+#define HIP_ASSERT(status)                                                                         \
+  {                                                                                                \
+    if ((status != hipSuccess)) {                                                                  \
+      std::cerr << "Failed in: " << __LINE__ << " on hip call: " #status << std::endl;             \
+      throw std::runtime_error("generic failure");                                                 \
+    }                                                                                              \
+  }
 #define LEN 512
 
 extern __device__ int square_me(int);

@@ -13,13 +13,21 @@ set(TEST_SRC
     syncthreadsand.cc
     syncthreadscount.cc
     syncthreadsor.cc
+    deviceAllocation.cc
     Atomic_func.cc
+    DoublePrecisionIntrinsics.cc
+    DoublePrecisionMathDevice.cc
+    DoublePrecisionMathHost.cc
+    FloatMathPrecise.cc
+    IntegerIntrinsics.cc
+    SinglePrecisionIntrinsics.cc
+    SinglePrecisionMathDevice.cc
+    SinglePrecisionMathHost.cc
+    SimpleAtomicsTest.cc
+    hipTestAtomicAdd.cc
+    hipStdComplex.cc
+    hipTestClock.cc
 )
-
-if(UNIX)
-    set(TEST_SRC ${TEST_SRC}
-        deviceAllocation.cc)
-endif()
 
 # AMD only tests
 set(AMD_TEST_SRC
@@ -30,6 +38,7 @@ set(AMD_TEST_SRC
     floatTM.cc
     hipMathFunctions.cc
     hmax_hmin.cc
+    bfloat16.cc
 )
 set(AMD_ARCH_SPEC_TEST_SRC
     AtomicAdd_Coherent_withunsafeflag.cc
@@ -52,18 +61,51 @@ set(AMD_ARCH_SPEC_TEST_SRC
 
 # Note to pass arch use format like -DOFFLOAD_ARCH_STR="--offload-arch=gfx900  --offload-arch=gfx906"
 # having space at the start/end of OFFLOAD_ARCH_STR can cause build failures
-if(UNIX)
-    add_custom_target(kerDevAllocMultCO.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/kerDevAllocMultCO.cc -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/deviceLib/kerDevAllocMultCO.code -I${HIP_PATH}/include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include)
-    add_custom_target(kerDevWriteMultCO.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/kerDevWriteMultCO.cc -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/deviceLib/kerDevWriteMultCO.code -I${HIP_PATH}/include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include)
-    add_custom_target(kerDevFreeMultCO.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/kerDevFreeMultCO.cc -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/deviceLib/kerDevFreeMultCO.code -I${HIP_PATH}/include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include)
-    add_custom_target(kerDevAllocSingleKer.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/kerDevAllocSingleKer.cc -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/deviceLib/kerDevAllocSingleKer.code -I${HIP_PATH}/include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include)
-endif()
+add_custom_target(kerDevAllocMultCO.code
+                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
+                  ${CMAKE_CURRENT_SOURCE_DIR}/kerDevAllocMultCO.cc
+                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/deviceLib/kerDevAllocMultCO.code
+                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/
+                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
+add_custom_target(kerDevWriteMultCO.code
+                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
+                  ${CMAKE_CURRENT_SOURCE_DIR}/kerDevWriteMultCO.cc
+                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/deviceLib/kerDevWriteMultCO.code
+                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/
+                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
+add_custom_target(kerDevFreeMultCO.code
+                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
+                  ${CMAKE_CURRENT_SOURCE_DIR}/kerDevFreeMultCO.cc
+                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/deviceLib/kerDevFreeMultCO.code
+                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/
+                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
+add_custom_target(kerDevAllocSingleKer.code
+                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
+                  ${CMAKE_CURRENT_SOURCE_DIR}/kerDevAllocSingleKer.cc
+                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/deviceLib/kerDevAllocSingleKer.code
+                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/
+                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
+
+# Accepted archs to compile this cmake file
+set(ACCEPTED_OFFLOAD_ARCHS gfx90a gfx940 gfx941 gfx942)
+function(CheckAcceptedArchs OFFLOAD_ARCH_STR_LOCAL)
+  set(ARCH_CHECK -1 PARENT_SCOPE)
+  string(REGEX MATCHALL "--offload-arch=gfx[0-9a-z]+" OFFLOAD_ARCH_LIST ${OFFLOAD_ARCH_STR_LOCAL})
+  foreach(OFFLOAD_ARCH IN LISTS OFFLOAD_ARCH_LIST)
+    string(REGEX MATCHALL "--offload-arch=(gfx[0-9a-z]+)" matches ${OFFLOAD_ARCH})
+    if (CMAKE_MATCH_COUNT EQUAL 1)
+      if (CMAKE_MATCH_1 IN_LIST ACCEPTED_OFFLOAD_ARCHS)
+        set(ARCH_CHECK 1 PARENT_SCOPE)
+      endif()         # CMAKE_MATCH_1
+    endif()        # CMAKE_MATCH_COUNT
+  endforeach()   # OFFLOAD_ARCH_LIST
+endfunction()  # CheckAcceptedArchs
 
 if(HIP_PLATFORM MATCHES "amd")
     if (DEFINED OFFLOAD_ARCH_STR)
-      string(FIND ${OFFLOAD_ARCH_STR} "gfx90a" ARCH_CHECK)
+      CheckAcceptedArchs(${OFFLOAD_ARCH_STR})
     elseif(DEFINED $ENV{HCC_AMDGPU_TARGET})
-      string(FIND $ENV{HCC_AMDGPU_TARGET} "gfx90a" ARCH_CHECK)
+      CheckAcceptedArchs($ENV{HCC_AMDGPU_TARGET})
     else()
       set(ARCH_CHECK -1)
     endif()
@@ -96,6 +138,4 @@ elseif(HIP_PLATFORM MATCHES "nvidia")
                       COMPILE_OPTIONS --Wno-deprecated-declarations)
 endif()
 
-if(UNIX)
-    add_dependencies(build_tests kerDevAllocMultCO.code kerDevWriteMultCO.code kerDevFreeMultCO.code kerDevAllocSingleKer.code)
-endif()
+add_dependencies(build_tests kerDevAllocMultCO.code kerDevWriteMultCO.code kerDevFreeMultCO.code kerDevAllocSingleKer.code)

@@ -82,3 +82,135 @@ struct vector_info<ushort4>
 template <>
 struct vector_info<uchar4>
     : type_and_size_and_format<unsigned char, 4, HIP_AD_FORMAT_UNSIGNED_INT8> {};
+
+template <
+  typename T,
+  typename std::enable_if<std::is_scalar<T>::value == false>::type* = nullptr>
+static inline __host__ __device__ constexpr int rank() {
+  return sizeof(T) / sizeof(decltype(T::x));
+}
+
+template<
+  typename T,
+  typename std::enable_if<rank<T>() == 1>::type* = nullptr>
+static inline bool isEqual(const T &val0, const T &val1) {
+  return val0.x == val1.x;
+}
+
+template<
+  typename T,
+  typename std::enable_if<rank<T>() == 2>::type* = nullptr>
+static inline bool isEqual(const T &val0, const T &val1) {
+  return val0.x == val1.x &&
+         val0.y == val1.y;
+}
+
+template<
+  typename T,
+  typename std::enable_if<rank<T>() == 4>::type* = nullptr>
+static inline bool isEqual(const T &val0, const T &val1) {
+  return val0.x == val1.x &&
+         val0.y == val1.y &&
+         val0.z == val1.z &&
+         val0.w == val1.w;
+}
+
+template<
+  typename T,
+  typename std::enable_if<std::is_scalar<T>::value>::type* = nullptr>
+static inline bool isEqual(const T &val0, const T &val1) {
+  return val0 == val1;
+}
+
+template<
+  typename T,
+  typename std::enable_if<rank<T>() == 1>::type* = nullptr>
+const std::string getString(const T& t)
+{
+  std::ostringstream os;
+  os<< "(" << t.x << ")";
+  return os.str();
+}
+
+template<
+  typename T,
+  typename std::enable_if<rank<T>() == 2>::type* = nullptr>
+const std::string getString(const T& t)
+{
+  std::ostringstream os;
+  os<< "(" << t.x << ", " << t.y << ")";
+  return os.str();
+}
+
+template<
+  typename T,
+  typename std::enable_if<rank<T>() == 3>::type* = nullptr>
+const std::string getString(const T& t)
+{
+  std::ostringstream os;
+  os<< "(" << t.x << ", " << t.y << ", " << t.z << ")";
+  return os.str();
+}
+
+template<
+  typename T,
+  typename std::enable_if<rank<T>() == 4>::type* = nullptr>
+const std::string getString(const T& t)
+{
+  std::ostringstream os;
+  os<< "(" << t.x << ", " << t.y << ", " << t.z << ", " << t.w << ")";
+  return os.str();
+}
+
+template<
+  typename T,
+  typename std::enable_if<std::is_scalar<T>::value>::type* = nullptr>
+std::string getString(const T& t)
+{
+  std::ostringstream os;
+  os << t;
+  return os.str();
+}
+
+template<typename T>
+static inline T getRandom() {
+  double r = 0;
+  if (std::is_signed<T>::value) {
+    r = (std::rand() - RAND_MAX / 2.0) / (RAND_MAX / 2.0 + 1.);
+  } else {
+    r = std::rand() / (RAND_MAX + 1.);
+  }
+  return static_cast<T>(std::numeric_limits < T > ::max() * r);
+}
+
+template<
+  typename T,
+  typename std::enable_if<rank<T>() == 1>::type* = nullptr>
+static inline void initVal(T &val) {
+  val.x = getRandom<decltype(T::x)>();
+}
+
+template<
+  typename T,
+  typename std::enable_if<rank<T>() == 2>::type* = nullptr>
+static inline void initVal(T &val) {
+  val.x = getRandom<decltype(T::x)>();
+  val.y = getRandom<decltype(T::x)>();
+}
+
+template<
+  typename T,
+  typename std::enable_if<rank<T>() == 4>::type* = nullptr>
+static inline void initVal(T &val) {
+  val.x = getRandom<decltype(T::x)>();
+  val.y = getRandom<decltype(T::x)>();
+  val.z = getRandom<decltype(T::x)>();
+  val.w = getRandom<decltype(T::x)>();
+}
+
+template<
+  typename T,
+  typename std::enable_if<std::is_scalar<T>::value>::type* = nullptr>
+static inline void initVal(T &val) {
+  val = getRandom<T>();
+}

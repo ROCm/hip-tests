@@ -365,13 +365,13 @@ template <> struct MemTraits<MemcpyAsync> {
 
 
 namespace {
-static __global__ void waitKernel(clock_t offset) {
+static __global__ void waitKernel(size_t offset) {
   auto start = clock();
   while ((clock() - start) < offset) {
   }
 }
 
-static __global__ void waitKernel_gfx11(clock_t offset) {
+static __global__ void waitKernel_gfx11(size_t offset) {
 #if HT_AMD
   auto start = wall_clock64();
   while ((wall_clock64() - start) < offset) {
@@ -387,8 +387,8 @@ static size_t findTicksPerSecond() {
   int device;
   HIP_CHECK(hipGetDevice(&device));
   HIP_CHECK(hipGetDeviceProperties(&prop, device));
-  clock_t devFreq = static_cast<clock_t>(prop.clockRate);  // in kHz
-  clock_t clockTicksPerSecond = devFreq * 1000;
+  size_t devFreq = static_cast<size_t>(prop.clockRate);  // in kHz
+  size_t clockTicksPerSecond = devFreq * 1000;
 
   // init
   hipEvent_t start, stop;

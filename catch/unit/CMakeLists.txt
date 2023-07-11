@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2021-2023 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,13 @@ add_subdirectory(compiler)
 add_subdirectory(errorHandling)
 add_subdirectory(cooperativeGrps)
 add_subdirectory(context)
+add_subdirectory(dynamicLoading)
+add_subdirectory(g++)
+add_subdirectory(module)
+add_subdirectory(channelDescriptor)
+add_subdirectory(executionControl)
 add_subdirectory(complex)
+
 if(HIP_PLATFORM STREQUAL "amd")
 add_subdirectory(callback)
 #add_subdirectory(clock)

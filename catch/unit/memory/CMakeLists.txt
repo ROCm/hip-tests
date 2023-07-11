@@ -109,6 +109,7 @@ set(TEST_SRC
     hipMemAdvise.cc
     hipMemRangeGetAttributes.cc
     hipFreeAsync.cc
+    hipMallocAsync.cc
     hipStreamAttachMemAsync.cc
     hipMemRangeGetAttributes_old.cc
     hipMemGetAddressRange.cc)

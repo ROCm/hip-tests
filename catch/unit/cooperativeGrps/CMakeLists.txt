@@ -12,6 +12,11 @@ set(TEST_SRC
   hipCGCoalescedGroupTypeShfl_down.cc
   hipCGCoalescedGroupTypeShfl_up.cc
   hipCGCoalescedGroupTypeShfl.cc
+  hipCGMultiGridGroupTypeViaBaseType.cc
+  hipCGMultiGridGroupTypeViaPublicApi.cc
+  coalesced_groups_shfl_down.cc
+  coalesced_groups_shfl_up.cc
+  simple_coalesced_groups.cc
 )
 if(HIP_PLATFORM STREQUAL "nvidia")
   set_source_files_properties(hipCGMultiGridGroupType.cc PROPERTIES COMPILE_FLAGS "-D_CG_ABI_EXPERIMENTAL -rdc=true -gencode arch=compute_60,code=sm_60 -gencode arch=compute_70,code=sm_70 -gencode arch=compute_80,code=sm_80")

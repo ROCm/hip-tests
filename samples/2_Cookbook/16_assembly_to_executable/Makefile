@@ -21,15 +21,15 @@ ifeq ($(OS),Windows_NT)
  $(error Makefile is not supported on windows platform. Please use cmake instead to build sample.)
 endif
 ROCM_PATH?= $(wildcard /opt/rocm/)
-HIP_PATH?= $(wildcard $(ROCM_PATH)/hip)
+HIP_PATH?= $(ROCM_PATH)
 ifeq (,$(HIP_PATH))
 	HIP_PATH=../../..
 endif
 
 HIPCC=$(HIP_PATH)/bin/hipcc
-CLANG=$(HIP_PATH)/../llvm/bin/clang
-LLVM_MC=$(HIP_PATH)/../llvm/bin/llvm-mc
-CLANG_OFFLOAD_BUNDLER=$(HIP_PATH)/../llvm/bin/clang-offload-bundler
+CLANG=$(HIP_PATH)/llvm/bin/clang
+LLVM_MC=$(HIP_PATH)/llvm/bin/llvm-mc
+CLANG_OFFLOAD_BUNDLER=$(HIP_PATH)/llvm/bin/clang-offload-bundler
 
 SRCS=square.cpp
 
@@ -47,6 +47,10 @@ GPU_ARCH2=gfx906
 GPU_ARCH3=gfx908
 GPU_ARCH4=gfx1010
 GPU_ARCH5=gfx1030
+GPU_ARCH6=gfx1100
+GPU_ARCH7=gfx1101
+GPU_ARCH8=gfx1102
+GPU_ARCH9=gfx1103
 
 .PHONY: test
 
@@ -54,7 +58,7 @@ all: src_to_asm asm_to_exec
 
 src_to_asm:
 	$(HIPCC) -c -S --cuda-host-only -target x86_64-linux-gnu -o $(SQ_HOST_ASM) $(SRCS)
-	$(HIPCC) -c -S --cuda-device-only --offload-arch=$(GPU_ARCH1) --offload-arch=$(GPU_ARCH2) --offload-arch=$(GPU_ARCH3) --offload-arch=$(GPU_ARCH4) --offload-arch=$(GPU_ARCH5) $(SRCS)
+	$(HIPCC) -c -S --cuda-device-only --offload-arch=$(GPU_ARCH1) --offload-arch=$(GPU_ARCH2) --offload-arch=$(GPU_ARCH3) --offload-arch=$(GPU_ARCH4) --offload-arch=$(GPU_ARCH5) --offload-arch=$(GPU_ARCH6) --offload-arch=$(GPU_ARCH7) --offload-arch=$(GPU_ARCH8) --offload-arch=$(GPU_ARCH9) $(SRCS)
 
 # You may modify the .s assembly files before the next step
 # By default, their names will be:
@@ -73,7 +77,11 @@ asm_to_exec:
 	$(CLANG) -target amdgcn-amd-amdhsa -mcpu=$(GPU_ARCH3) square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH3).s -o square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH3).o
 	$(CLANG) -target amdgcn-amd-amdhsa -mcpu=$(GPU_ARCH4) square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH4).s -o square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH4).o
 	$(CLANG) -target amdgcn-amd-amdhsa -mcpu=$(GPU_ARCH5) square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH5).s -o square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH5).o
-	$(CLANG_OFFLOAD_BUNDLER) -type=o -bundle-align=4096 -targets=host-x86_64-unknown-linux,hip-amdgcn-amd-amdhsa-$(GPU_ARCH1),hip-amdgcn-amd-amdhsa-$(GPU_ARCH2),hip-amdgcn-amd-amdhsa-$(GPU_ARCH3),hip-amdgcn-amd-amdhsa-$(GPU_ARCH4),hip-amdgcn-amd-amdhsa-$(GPU_ARCH5) -inputs=/dev/null,square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH1).o,square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH2).o,square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH3).o,square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH4).o,square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH5).o -outputs=$(SQ_DEVICE_HIPFB)
+	$(CLANG) -target amdgcn-amd-amdhsa -mcpu=$(GPU_ARCH6) square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH6).s -o square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH6).o
+	$(CLANG) -target amdgcn-amd-amdhsa -mcpu=$(GPU_ARCH7) square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH7).s -o square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH7).o
+	$(CLANG) -target amdgcn-amd-amdhsa -mcpu=$(GPU_ARCH8) square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH8).s -o square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH8).o
+	$(CLANG) -target amdgcn-amd-amdhsa -mcpu=$(GPU_ARCH9) square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH9).s -o square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH9).o				
+	$(CLANG_OFFLOAD_BUNDLER) -type=o -bundle-align=4096 -targets=host-x86_64-unknown-linux,hip-amdgcn-amd-amdhsa-$(GPU_ARCH1),hip-amdgcn-amd-amdhsa-$(GPU_ARCH2),hip-amdgcn-amd-amdhsa-$(GPU_ARCH3),hip-amdgcn-amd-amdhsa-$(GPU_ARCH4),hip-amdgcn-amd-amdhsa-$(GPU_ARCH5),hip-amdgcn-amd-amdhsa-$(GPU_ARCH6),hip-amdgcn-amd-amdhsa-$(GPU_ARCH7),hip-amdgcn-amd-amdhsa-$(GPU_ARCH8),hip-amdgcn-amd-amdhsa-$(GPU_ARCH9) -inputs=/dev/null,square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH1).o,square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH2).o,square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH3).o,square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH4).o,square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH5).o,square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH6).o,square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH7).o,square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH8).o,square-hip-amdgcn-amd-amdhsa-$(GPU_ARCH9).o -outputs=$(SQ_DEVICE_HIPFB)
 	$(LLVM_MC) $(MCIN_OBJ_GEN) -o $(SQ_DEVICE_OBJ) --filetype=obj
 	$(HIPCC) $(SQ_HOST_OBJ) $(SQ_DEVICE_OBJ) -o $(SQ_ASM_EXE)
 

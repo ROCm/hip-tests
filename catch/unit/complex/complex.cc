@@ -25,6 +25,14 @@ THE SOFTWARE.
 #include "complex_negative_kernels_3Arg_rtc.hh"
 
 /**
+ * @addtogroup complex complex
+ * @{
+ * @ingroup ComplexTest
+ * Contains unit tests for complex type functions
+ */
+
+
+/**
  * Test Description
  * ------------------------
  *    - Test that checks unary complex functions on device for reduced set of input values. The

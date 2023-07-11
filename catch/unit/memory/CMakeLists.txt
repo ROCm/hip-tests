@@ -29,7 +29,9 @@ set(TEST_SRC
     hipMemcpy2DToArrayAsync.cc
     hipMemcpy2DToArrayAsync_old.cc
     hipMemcpy3D.cc
+    hipMemcpy3D_old.cc
     hipMemcpy3DAsync.cc
+    hipMemcpy3DAsync_old.cc
     hipMemcpyParam2D.cc
     hipMemcpyParam2DAsync.cc
     hipMemcpy2D.cc
@@ -81,6 +83,8 @@ set(TEST_SRC
     hipMemcpy_old.cc
     hipMemcpy_derivatives.cc
     hipMemcpyAsync.cc
+    hipMemcpyAsync_old.cc
+    hipMemcpyAsync_derivatives.cc
     hipMemsetFunctional.cc
     hipMalloc.cc
     hipMallocPitch.cc
@@ -90,7 +94,9 @@ set(TEST_SRC
     hipArrayCreate.cc
     hipArray3DCreate.cc
     hipDrvMemcpy3D.cc
+    hipDrvMemcpy3D_old.cc
     hipDrvMemcpy3DAsync.cc
+    hipDrvMemcpy3DAsync_old.cc
     hipPointerGetAttribute.cc
     hipDrvPtrGetAttributes.cc
     hipMemPrefetchAsync.cc
@@ -102,6 +108,8 @@ set(TEST_SRC
     hipMemAdvise_old.cc
     hipMemAdvise.cc
     hipMemRangeGetAttributes.cc
+    hipFreeAsync.cc
+    hipMallocAsync.cc
     hipStreamAttachMemAsync.cc
     hipMemRangeGetAttributes_old.cc
     hipMemGetAddressRange.cc)
@@ -118,13 +126,6 @@ if(HIP_PLATFORM MATCHES "amd")
       hipMemVmm.cc)
 else()
   set(TEST_SRC ${TEST_SRC} hipGetSymbolSizeAddress.cc)
-endif()
-
-# skipped due to os related code in tests need to work on them when all the
-# tests are enabled
-if(UNIX)
-  set(TEST_SRC ${TEST_SRC} hipHmmOvrSubscriptionTst.cc
-               hipMemoryAllocateCoherent.cc)
 endif()
 
 hip_add_exe_to_target(NAME MemoryTest

@@ -19,21 +19,43 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/*
-Testcase Scenarios :
-Unit_hipEventElapsedTime_NullCheck - Test unsuccessful hipEventElapsedTime when either event passed as nullptr
-Unit_hipEventElapsedTime_DisableTiming - Test unsuccessful hipEventElapsedTime when events are created with hipEventDisableTiming flag
-Unit_hipEventElapsedTime_DifferentDevices - Test unsuccessful hipEventElapsedTime when events are recorded on different devices
-Unit_hipEventElapsedTime_NotReady_Negative - Test unsuccessful hipEventElapsedTime when an event has not been completed
-Unit_hipEventElapsedTime - Test time elapsed between two recorded events with hipEventElapsedTime api
-*/
 
 #include <hip_test_common.hh>
-
 #include <hip_test_checkers.hh>
-
 #include <iostream>
 
+/**
+ * @addtogroup hipEventElapsedTime hipEventElapsedTime
+ * @{
+ * @ingroup EventTest
+ * `hipEventElapsedTime(float* ms, hipEvent_t start, hipEvent_t stop)` -
+ * Return the elapsed time between two events.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipEvent
+ *  - @ref Unit_hipEventIpc
+ *  - @ref Unit_hipEventMGpuMThreads_1
+ *  - @ref Unit_hipEventMGpuMThreads_2
+ *  - @ref Unit_hipEventMGpuMThreads_3
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When output parameter for time is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When first event is `nullptr`
+ *      - Expected output: return `hipErrorInvalidHandle`
+ *    -# When second event is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/event/Unit_hipEventElapsedTime.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipEventElapsedTime_NullCheck") {
   hipEvent_t start = nullptr, end = nullptr;
   float tms = 1.0f;
@@ -45,6 +67,19 @@ TEST_CASE("Unit_hipEventElapsedTime_NullCheck") {
 #endif
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Calculates elapsed time when events are created with disable timing flag
+ *    -# When flag is set to disable timing
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/event/Unit_hipEventElapsedTime.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipEventElapsedTime_DisableTiming") {
   float timeElapsed = 1.0f;
   hipEvent_t start, stop;
@@ -55,6 +90,19 @@ TEST_CASE("Unit_hipEventElapsedTime_DisableTiming") {
   HIP_CHECK(hipEventDestroy(stop));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Calculates elapsed time when events are recorded on different devices
+ *    -# When start and stop events are recorded on different devices
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/event/Unit_hipEventElapsedTime.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipEventElapsedTime_DifferentDevices") {
   int devCount = 0;
   HIP_CHECK(hipGetDeviceCount(&devCount));
@@ -86,6 +134,20 @@ TEST_CASE("Unit_hipEventElapsedTime_DifferentDevices") {
 
 
 #if HT_AMD /* Disabled because frequency based wait is timing out on nvidia platforms */
+/**
+ * Test Description
+ * ------------------------
+ *  - Calculates elapsed time when an event has not been completed.
+ *    -# When the stop event has not finished yet
+ *      - Expected output: return `hipErrorNotReady`
+ * Test source
+ * ------------------------
+ *  - unit/event/Unit_hipEventElapsedTime.cc
+ * Test requirements
+ * ------------------------
+ *  - Platform specific (AMD)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipEventElapsedTime_NotReady_Negative") {
   hipEvent_t start;
   HIP_CHECK(hipEventCreate(&start));
@@ -96,7 +158,9 @@ TEST_CASE("Unit_hipEventElapsedTime_NotReady_Negative") {
   // Record start event
   HIP_CHECK(hipEventRecord(start, nullptr));
 
-  HipTest::runKernelForDuration(std::chrono::milliseconds(1000));
+  HipTest::BlockingContext b_context{nullptr};
+  b_context.block_stream();  // blocked stream
+  REQUIRE(b_context.is_blocked());
 
   // Record stop event
   HIP_CHECK(hipEventRecord(stop, nullptr));
@@ -104,13 +168,26 @@ TEST_CASE("Unit_hipEventElapsedTime_NotReady_Negative") {
   // stop event has not been completed
   float tElapsed = 1.0f;
   HIP_CHECK_ERROR(hipEventQuery(stop), hipErrorNotReady);
-  HIP_ASSERT(hipEventElapsedTime(&tElapsed,start,stop) == hipErrorNotReady);
+  HIP_ASSERT(hipEventElapsedTime(&tElapsed, start, stop) == hipErrorNotReady);
+  b_context.unblock_stream();
 
+  HIP_CHECK(hipStreamSynchronize(nullptr));
   HIP_CHECK(hipEventDestroy(start));
   HIP_CHECK(hipEventDestroy(stop));
 }
 #endif // HT_AMD
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Calculates elapsed time between two successfully created and recorded events.
+ * Test source
+ * ------------------------
+ *  - unit/event/Unit_hipEventElapsedTime.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipEventElapsedTime") {
   hipEvent_t start;
   HIP_CHECK(hipEventCreate(&start));

@@ -42,13 +42,34 @@ void findAPICallInFile(HipAPI& hip_api, std::string test_module_file) {
   std::string api_call_with_assert{"(" + hip_api.getName() + "("};
   std::string api_call_with_assignment{"= " + hip_api.getName() + "("};
   std::string api_call_with_parameter{", " + hip_api.getName() + "("};
+  std::string api_call_with_return{"return " + hip_api.getName() + "("};
+  std::string api_call_in_line("{ " + hip_api.getName() + "(");
+  std::string api_member{"." + hip_api.getName() + "("};
+  std::string api_newline{"  " + hip_api.getName() + "("};
+  std::string api_templated{" " + hip_api.getName() + "<"};
+
+  std::string api_restriction{hip_api.getFileRestriction()};
+  bool found_restriction{false};
 
   while (std::getline(test_module_file_handler, line)) {
     ++line_number;
+
+    if (api_restriction != "" && line.find(api_restriction) != std::string::npos) {
+      found_restriction = true;
+    }
+
     if ((line.find(api_call_with_assert) != std::string::npos) ||
         (line.find(api_call_with_assignment) != std::string::npos) ||
-        (line.find(api_call_with_parameter) != std::string::npos)) {
-      hip_api.addFileOccurrence(FileOccurrence(test_module_file, line_number));
+        (line.find(api_call_with_parameter) != std::string::npos) ||
+        (line.find(api_call_with_return) != std::string::npos) ||
+        (line.find(api_call_in_line) != std::string::npos) ||
+        (line.find(api_member) != std::string::npos) ||
+        (line.find(api_newline) != std::string::npos) ||
+        (line.find(hip_api.getName() + "(") == 0) ||
+        (line.find(api_templated) != std::string::npos)) {
+      if (api_restriction == "" || found_restriction) {
+        hip_api.addFileOccurrence(FileOccurrence(test_module_file, line_number));
+      }
     }
   }
 
@@ -59,7 +80,7 @@ void findAPICallInFile(HipAPI& hip_api, std::string test_module_file) {
 Used to find all HIP API test cases within the passed test .cc files.
 Matching test case is detected when the HIP API in defined within doxygen comment.
 */
-void findAPITestCaseInFile(HipAPI& hip_api, std::string test_module_file) {
+void findAPITestCaseInFileByDoxygen(HipAPI& hip_api, std::string test_module_file) {
   std::fstream test_module_file_handler;
   test_module_file_handler.open(test_module_file);
 
@@ -80,7 +101,10 @@ void findAPITestCaseInFile(HipAPI& hip_api, std::string test_module_file) {
     }
 
     if (hip_api.getName() != current_api_name) {
-      continue;
+      if (std::find(hip_api.device_groups.begin(), hip_api.device_groups.end(), current_api_name) ==
+          hip_api.device_groups.end()) {
+        continue;
+      }
     }
 
     if (line.find(ref_test_case) != std::string::npos) {
@@ -100,14 +124,44 @@ void findAPITestCaseInFile(HipAPI& hip_api, std::string test_module_file) {
 }
 
 /*
+Used to find all HIP API test cases within the passed test .cc files.
+Matching test case is detected when the HIP API in defined within doxygen comment.
+*/
+void findAPITestCaseInFileByAPIName(HipAPI& hip_api, std::string test_module_file) {
+  std::fstream test_module_file_handler;
+  test_module_file_handler.open(test_module_file);
+
+  int line_number{0};
+  std::string line;
+
+  std::string test_case_definition{"TEST_CASE("};
+  std::string test_case{"None"};
+
+  while (std::getline(test_module_file_handler, line)) {
+    ++line_number;
+
+    if (line.find(test_case_definition) != std::string::npos) {
+      test_case = line.substr(line.find("\"") + 1);
+      test_case = test_case.substr(0, test_case.find("\""));
+      if (test_case.find("_" + hip_api.getName() + "_") != std::string::npos) {
+        hip_api.addTestCase(TestCaseOccurrence{test_case, test_module_file, line_number});
+      }
+    }
+  }
+
+  test_module_file_handler.close();
+}
+
+/*
 Used to iterate through all passed test .cc files and search for passed
 HIP API instance. This instance shall be used to update occurrences.
 */
 void searchForAPI(HipAPI& hip_api, std::vector<std::string>& test_module_files) {
   std::cout << "Searching for " << hip_api.getName() << " in test module files." << std::endl;
-  for (auto const& test_module_file: test_module_files) {
+  for (auto const& test_module_file : test_module_files) {
     findAPICallInFile(hip_api, test_module_file);
-    findAPITestCaseInFile(hip_api, test_module_file);
+    findAPITestCaseInFileByDoxygen(hip_api, test_module_file);
+    findAPITestCaseInFileByAPIName(hip_api, test_module_file);
   }
 }
 
@@ -115,7 +169,7 @@ void searchForAPI(HipAPI& hip_api, std::vector<std::string>& test_module_files) 
 Used to extract all HIP APIs from the passed header file.
 */
 std::vector<HipAPI> extractHipAPIs(std::string& hip_api_header_file,
-    std::vector<std::string>& api_group_names, bool start_groups) {
+                                   std::vector<std::string>& api_group_names, bool start_groups) {
   std::fstream hip_header_file_handler;
   hip_header_file_handler.open(hip_api_header_file);
 
@@ -148,8 +202,9 @@ std::vector<HipAPI> extractHipAPIs(std::string& hip_api_header_file,
     ++line_number;
 
     // Declarations of the HIP APIs start after the HIP API group has been defined.
-    if ((line.find(group_definition) != std::string::npos || line.find(add_group_definition) != std::string::npos)
-        && line.find(start_of_api_groups) != std::string::npos) {
+    if ((line.find(group_definition) != std::string::npos ||
+         line.find(add_group_definition) != std::string::npos) &&
+        line.find(start_of_api_groups) != std::string::npos) {
       api_group_names_start = true;
       continue;
     }
@@ -167,24 +222,21 @@ std::vector<HipAPI> extractHipAPIs(std::string& hip_api_header_file,
     /*
     If the API is deprecated, raise a flag and go to the
     next line where the API is declared.
-    */ 
+    */
     if (line.find(deprecated_line) != std::string::npos) {
-      std::getline(hip_header_file_handler, line);
-      ++line_number;
       deprecated_flag = true;
-    } else {
-      deprecated_flag = false;
+      continue;
     }
 
     if (line.find(group_definition) != std::string::npos) {
-      std::string group_name = line.substr(line.find(group_definition) + group_definition.length() + 1);
+      std::string group_name =
+          line.substr(line.find(group_definition) + group_definition.length() + 1);
       group_name = group_name.substr(group_name.find(' ') + 1);
       api_group_names.push_back(group_name);
       api_group_names_tracker.push_back(group_name);
-    }
-    else if (line.find(add_group_definition) != std::string::npos)
-    {
-      std::string group_name = line.substr(line.find(add_group_definition) + add_group_definition.length() + 1);
+    } else if (line.find(add_group_definition) != std::string::npos) {
+      std::string group_name =
+          line.substr(line.find(add_group_definition) + add_group_definition.length() + 1);
       group_name = group_name.substr(group_name.find(' ') + 1);
       api_group_names.push_back(group_name);
       api_group_names_tracker.push_back(group_name);
@@ -196,7 +248,9 @@ std::vector<HipAPI> extractHipAPIs(std::string& hip_api_header_file,
     to track the last defined group, because of the nested cases.
     */
     if (line.find(end_group_definition) != std::string::npos) {
-      api_group_names_tracker.pop_back();
+      if (!api_group_names_tracker.empty()) {
+        api_group_names_tracker.pop_back();
+      }
     }
 
     /*
@@ -207,16 +261,14 @@ std::vector<HipAPI> extractHipAPIs(std::string& hip_api_header_file,
         - Extract the name from that substring by finding the last "hip".
     Avoid comments.
     */
-    if (line.find(hip_api_prefix) != std::string::npos && 
-        line.find("(") != std::string::npos &&
-        line.find("  ") != 0 &&
-        line.find(" *") != 0) {
+    if (line.find(hip_api_prefix) != std::string::npos && line.find("(") != std::string::npos &&
+        line.find("  ") != 0 && line.find(" *") != 0) {
       std::string api_name_no_brackets{line.substr(0, line.find("("))};
       /*
       If there is no hip substring, then there is no valid API in that line.
       */
       if (api_name_no_brackets.rfind(hip_api_prefix) == std::string::npos) {
-          continue;
+        continue;
       }
 
       /*
@@ -233,13 +285,15 @@ std::vector<HipAPI> extractHipAPIs(std::string& hip_api_header_file,
         If the API is not present in the global list of HIP APIs, add it.
         */
         HipAPI hip_api{api_name, deprecated_flag, api_group_names_tracker.back()};
-        if(std::find(hip_apis.begin(), hip_apis.end(), hip_api) == hip_apis.end())
-        {
-            hip_apis.push_back(hip_api);
+        if (std::find(hip_apis.begin(), hip_apis.end(), hip_api) == hip_apis.end()) {
+          hip_apis.push_back(hip_api);
         }
       } else {
         std::cout << "[SKIP_FROM_COV] Group not detected for \"" << api_name << "\" in file \""
-            << hip_api_header_file << "\", line " << line_number << std::endl;
+                  << hip_api_header_file << "\", line " << line_number << std::endl;
+      }
+      if (deprecated_flag) {
+        deprecated_flag = false;
       }
     }
   }
@@ -249,13 +303,82 @@ std::vector<HipAPI> extractHipAPIs(std::string& hip_api_header_file,
 }
 
 /*
+Used to extract all HIP APIs from the passed header file.
+*/
+std::vector<HipAPI> extractDeviceAPIs(std::string& apis_list_file,
+                                      std::vector<std::string>& api_group_names) {
+  std::fstream apis_list_file_handler;
+  apis_list_file_handler.open(apis_list_file);
+
+  std::string line;
+  std::vector<HipAPI> device_apis;
+
+  /*
+  Each HIP API has prefix hip in the name. Groups are marked with @defgroup, and the
+  main group that shall be considered is HIP API. Before that group is defined, lines
+  of code shall not be considered.
+  */
+  int line_number{0};
+  bool group_start{false};
+  bool device_groups_start{false};
+  std::string restriction{""};
+  std::string file_restriction_definition{"File restriction: "};
+  std::string device_groups_definition{"Device groups: ("};
+  std::vector<std::string> device_groups;
+
+  while (std::getline(apis_list_file_handler, line)) {
+    ++line_number;
+
+    if (line.find("[") != std::string::npos) {
+      std::string group_name = line.substr(0, line.rfind(" "));
+      api_group_names.push_back(group_name);
+      group_start = true;
+      continue;
+    }
+
+    if (line.find("]") != std::string::npos) {
+      group_start = false;
+      device_groups.clear();
+      restriction = "";
+      continue;
+    }
+
+    if (line.find(file_restriction_definition) != std::string::npos) {
+      restriction =
+          line.substr(line.find(file_restriction_definition) + file_restriction_definition.size());
+      continue;
+    }
+
+    if (line.find(device_groups_definition) != std::string::npos) {
+      std::getline(apis_list_file_handler, line);
+      while (line.find(")") == std::string::npos) {
+        std::string group_name = line;
+        group_name.erase(std::remove(group_name.begin(), group_name.end(), ' '), group_name.end());
+        device_groups.push_back(group_name);
+        std::getline(apis_list_file_handler, line);
+      }
+      std::getline(apis_list_file_handler, line);
+    }
+
+    if (group_start) {
+      std::string api_name = line.substr(line.rfind(" ") + 1);
+      HipAPI hip_api{api_name, false, api_group_names.back(), restriction};
+      hip_api.device_groups = device_groups;
+      device_apis.push_back(hip_api);
+    }
+  }
+
+  apis_list_file_handler.close();
+  return device_apis;
+}
+
+/*
 Used to extract test .cc files from the passed tests root directory.
 Goes through all subdirectories and searches for .cc and .hh files for
 HIP API invocations.
 Implements BFS algorithm to avoid recursion.
 */
-std::vector<std::string> extractTestModuleFiles(std::string& tests_root_directory)
-{
+std::vector<std::string> extractTestModuleFiles(std::string& tests_root_directory) {
   std::vector<std::string> directory_queue;
   directory_queue.push_back(tests_root_directory);
   std::vector<std::string> test_module_files;
@@ -263,11 +386,11 @@ std::vector<std::string> extractTestModuleFiles(std::string& tests_root_director
   while (!directory_queue.empty()) {
     std::string processed_entry = directory_queue.back();
     directory_queue.pop_back();
-    for (const auto& entry: std::filesystem::directory_iterator(processed_entry)) {
+    for (const auto& entry : std::filesystem::directory_iterator(processed_entry)) {
       if (std::filesystem::is_directory(entry.path())) {
         directory_queue.push_back(entry.path());
       } else {
-        if (entry.path().string().find(".cc") != std::string::npos || 
+        if (entry.path().string().find(".cc") != std::string::npos ||
             entry.path().string().find(".hh") != std::string::npos) {
           test_module_files.push_back(entry.path());
         }
@@ -278,7 +401,6 @@ std::vector<std::string> extractTestModuleFiles(std::string& tests_root_director
   return test_module_files;
 }
 
-std::string findAbsolutePathOfFile(std::string file_path)
-{
+std::string findAbsolutePathOfFile(std::string file_path) {
   return std::filesystem::canonical(std::filesystem::absolute(file_path));
 }

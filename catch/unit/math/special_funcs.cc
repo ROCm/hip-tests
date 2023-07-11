@@ -274,7 +274,7 @@ TEST_CASE("Unit_Device_erfcxf_Sanity_Positive") {
                                             2.82091252e-3f,
                                             1.12837693e-3f,
                                             0.f};
-  SpecialSimpleTest<float>(erfcx_kernel<float>, ULPValidatorBuilderFactory<float>(5), input.data(),
+  SpecialSimpleTest<float>(erfcx_kernel<float>, ULPValidatorBuilderFactory<float>(4), input.data(),
                            reference.data(), input.size());
 }
 
@@ -305,7 +305,7 @@ TEST_CASE("Unit_Device_erfcx_Sanity_Positive") {
                                              2.8209126572120466e-3,
                                              1.1283769103507188e-3,
                                              0.};
-  SpecialSimpleTest<double>(erfcx_kernel<double>, ULPValidatorBuilderFactory<double>(5),
+  SpecialSimpleTest<double>(erfcx_kernel<double>, ULPValidatorBuilderFactory<double>(4),
                             input.data(), reference.data(), input.size());
 }
 

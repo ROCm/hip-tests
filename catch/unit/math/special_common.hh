@@ -104,7 +104,6 @@ void BesselSinglePrecisionRangeTest(kernel_bessel_n_sig<float> kernel,
   MathTest math_test(kernel, max_batch_size);
   std::fill_n(x1s.ptr(), max_batch_size, n_input);
 
-  uint32_t val = 0u;
   const auto num_threads = thread_pool.thread_count();
 
   size_t inserted = 0u;
@@ -121,15 +120,13 @@ void BesselSinglePrecisionRangeTest(kernel_bessel_n_sig<float> kernel,
 template <typename T, typename F, typename ValidatorBuilder>
 void SpecialSimpleTest(F kernel, const ValidatorBuilder& validator_builder, const T* x,
                        const T* ref, size_t num_args) {
-  const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
-
   LinearAllocGuard<T> x_dev{LinearAllocs::hipMalloc, num_args * sizeof(T)};
   LinearAllocGuard<T> y{LinearAllocs::hipHostMalloc, num_args * sizeof(T)};
   LinearAllocGuard<T> y_dev{LinearAllocs::hipMalloc, num_args * sizeof(T)};
 
   HIP_CHECK(hipMemcpy(x_dev.ptr(), x, num_args * sizeof(T), hipMemcpyHostToDevice));
 
-  kernel<<<grid_size, block_size>>>(y_dev.ptr(), num_args, x_dev.ptr());
+  kernel<<<1, num_args>>>(y_dev.ptr(), num_args, x_dev.ptr());
   HIP_CHECK(hipGetLastError());
 
   HIP_CHECK(hipMemcpy(y.ptr(), y_dev.ptr(), num_args * sizeof(T), hipMemcpyDeviceToHost));

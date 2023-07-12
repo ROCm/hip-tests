@@ -6,6 +6,9 @@ set(TEST_SRC
   hipCGMultiGridGroupType.cc
   hipCGMultiGridGroupTypeViaBaseType.cc
   hipCGMultiGridGroupTypeViaPublicApi.cc
+  coalesced_groups_shfl_down_old.cc
+  coalesced_groups_shfl_up_old.cc
+  simple_coalesced_groups_old.cc
   coalesced_group.cc
 )
 if(HIP_PLATFORM STREQUAL "nvidia")

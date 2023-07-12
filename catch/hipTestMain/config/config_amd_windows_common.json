@@ -180,7 +180,7 @@
 	   "Unit_hipMemcpyPeerAsync_Positive_ZeroSize",
 	   "Disabling test tracked SWDEV-391718",
 	   "Unit_hipMemRangeGetAttribute_TstCountParam",
-	   "Unit_hipStreamAddCallback_StrmSyncTiming"
+	   "Unit_hipStreamAddCallback_StrmSyncTiming",
 	   "SWDEV-402082 - PAL Backend fails to reserve address on GPU except first one",
 	   "Unit_hipGraphInstantiateWithFlags_FlagAutoFreeOnLaunch_check",
 	   "SWDEV-398981 fails in stress test",

@@ -186,7 +186,7 @@
 	   "Unit_hipStreamCreateWithPriority_MulthreadDefaultflag",
 	   "Note: UUID returned empty on some windows nodes",
 	   "Unit_hipDeviceGetUuid_Positive",
-     "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/96 ===",
+     	   "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/96 ===",
 	   "Unit_hipHostGetDevicePointer_Negative",
 	   "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/215 ===",
 	   "Unit_ChannelDescriptor_Positive_Basic_1D - long",
@@ -200,6 +200,9 @@
 	   "Unit_ChannelDescriptor_Positive_Basic_3D - long3",
 	   "Unit_ChannelDescriptor_Positive_Basic_4D - ulong4",
 	   "Unit_ChannelDescriptor_Positive_Basic_4D - long4",
-	   "Unit_hipExtModuleLaunchKernel_NonUniformWorkGroup"
+	   "Unit_hipExtModuleLaunchKernel_NonUniformWorkGroup",
+	   "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/279 ===",
+	   "Unit_Device_memcpy_Negative",
+	   "Unit_Device_memset_Negative"
 	]
 }

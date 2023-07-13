@@ -17,7 +17,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "warp_common.hh"
+#include "warp_vote_common.hh"
 
 #include <bitset>
 
@@ -44,7 +44,7 @@ __global__ void kernel_ballot(uint64_t* const out, const uint64_t* const active_
       __ballot((predicate & (static_cast<uint64_t>(1) << warp.thread_rank())));
 }
 
-class WarpBallot : public WarpTest<WarpBallot, uint64_t> {
+class WarpBallot : public WarpVoteTest<WarpBallot, uint64_t> {
  public:
   void launch_kernel(uint64_t* const arr_dev, const uint64_t* const active_masks) {
     auto test_case = GENERATE(range(0, 5));
@@ -110,5 +110,11 @@ TEST_CASE("Unit_Warp_Ballot_Positive_Basic") {
     return;
   }
 
-  WarpBallot().run();
+  SECTION("Warp Ballot with specified active mask") {
+    WarpBallot().run(false);
+  }
+
+  SECTION("Warp Ballot with random active mask") {
+    WarpBallot().run(true);
+  }
 }

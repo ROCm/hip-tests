@@ -17,7 +17,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "warp_common.hh"
+#include "warp_shfl_common.hh"
 
 #include <bitset>
 
@@ -44,7 +44,7 @@ __global__ void shfl_up(T* const out, const T* const in, const uint64_t* const a
   out[grid.thread_rank()] = __shfl_up(var, deltas[block.thread_rank() % width], width);
 }
 
-template <typename T> class WarpShflUp : public WarpTest<WarpShflUp<T>, T> {
+template <typename T> class WarpShflUp : public WarpShflTest<WarpShflUp<T>, T> {
  public:
   void launch_kernel(T* const arr_dev, T* const input_dev, const uint64_t* const active_masks) {
     width_ = generate_width(this->warp_size_);

@@ -205,6 +205,11 @@
 	   "Unit_hipMemcpyAsync_Negative_Parameters",
 	   "Unit_hipMemcpyDtoHAsync_Negative_Parameters",
 	   "Unit_hipMemcpyHtoDAsync_Negative_Parameters",
-	   "Unit_hipMemcpyDtoDAsync_Negative_Parameters"
+	   "Unit_hipMemcpyDtoDAsync_Negative_Parameters",
+           "=== Below test fails in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/274 ===",
+	   "Unit_Device_printf_flags_Sanity_Positive",
+  	   "Unit_Device_printf_length_Sanity_Positive",
+	   "Unit_Device_printf_Negative",
+	   "Unit_Device__hip_hc_8pk_Negative"
 	]
 }

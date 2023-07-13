@@ -17,7 +17,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "warp_common.hh"
+#include "warp_vote_common.hh"
 
 #include <bitset>
 
@@ -43,7 +43,7 @@ __global__ void kernel_any(int* const out, const uint64_t* const active_masks, u
   out[grid.thread_rank()] = __any((predicate & (static_cast<uint64_t>(1) << warp.thread_rank())));
 }
 
-class WarpAny : public WarpTest<WarpAny, int> {
+class WarpAny : public WarpVoteTest<WarpAny, int> {
  public:
   void launch_kernel(int* const arr_dev, const uint64_t* const active_masks) {
     auto test_case = GENERATE(range(0, 5));
@@ -109,5 +109,11 @@ TEST_CASE("Unit_Warp_Vote_Any_Positive_Basic") {
     return;
   }
 
-  WarpAny().run();
+  SECTION("Warp Vote Any with specified active mask") {
+    WarpAny().run(false);
+  }
+
+  SECTION("Warp Vote Any with random active mask") {
+    WarpAny().run(true);
+  }
 }

@@ -20,35 +20,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "hipAPI.h"
-#include <iomanip>
+#include <hip_test_common.hh>
 
-class HipAPIGroup {
-  friend bool operator==(const HipAPIGroup& l_hip_api_group, const HipAPIGroup& r_hip_api_group);
+TEST_CASE("Unit_hipFreeAsync_negative") {
+  HIP_CHECK(hipSetDevice(0));
+  void* p = nullptr;
+  hipStream_t stream{nullptr};
+  hipStreamCreate(&stream);
 
- public:
-  HipAPIGroup(std::string group_name, std::vector<HipAPI>& hip_apis);
-  std::string getName() const;
-  int getTotalNumberOfAPIs() const;
-  int getTotalNumberOfCalls() const;
-  int getTotalNumberOfTestCases() const;
-  int getNumberOfCalledAPIs() const;
-  int getNumberOfNotCalledAPIs() const;
-  int getNumberOfDeprecatedAPIs() const;
-  float getPercentageOfCalledAPIs() const;
-  std::string getBasicStatsXML() const;
-  std::string getBasicStatsHTML() const;
-  std::string createHTMLReport() const;
-  bool isDeprecated() const;
+  SECTION("dev_ptr is nullptr") { REQUIRE(hipFreeAsync(nullptr, stream) != hipSuccess); }
 
- private:
-  std::string group_name;
-  int total_number_of_apis;
-  int number_of_api_calls;
-  float percentage_of_called_apis;
-  int number_of_test_cases;
-  std::string parent_group_name;
-  std::vector<HipAPI> called_apis;
-  std::vector<HipAPI> not_called_apis;
-  std::vector<HipAPI> deprecated_apis;
-};
+  SECTION("invalid stream handle") {
+    HIP_CHECK(hipMallocAsync(static_cast<void**>(&p), 100, stream));
+    HIP_CHECK(hipStreamSynchronize(stream));
+    hipError_t error = hipFreeAsync(p, reinterpret_cast<hipStream_t>(-1));
+    HIP_CHECK(hipFreeAsync(p, stream));
+    HIP_CHECK(hipStreamSynchronize(stream));
+    REQUIRE(error != hipSuccess);
+  }
+
+  HIP_CHECK(hipStreamSynchronize(stream));
+  HIP_CHECK(hipStreamDestroy(stream));
+}

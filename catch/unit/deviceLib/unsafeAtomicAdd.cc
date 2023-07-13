@@ -21,6 +21,7 @@ THE SOFTWARE.
 */
 
 #include <hip_test_common.hh>
+#include <hip_test_features.hh>
 
 #include <hip/hiprtc.h>
 #include <hip/hip_runtime.h>
@@ -52,7 +53,7 @@ TEST_CASE("Unit_unsafeAtomicAdd") {
   HIP_CHECK(hipGetDeviceProperties(&props, device));
   std::string gfxName(props.gcnArchName);
 
-  if (gfxName == "gfx90a" || gfxName.find("gfx90a:") == 0) {
+  if (CheckIfFeatSupported(CTFeatures::CT_FEATURE_FINEGRAIN_HWSUPPORT, gfxName)) {
     hiprtcProgram prog;
     hiprtcCreateProgram(&prog,        // prog
                         kernel,       // buffer

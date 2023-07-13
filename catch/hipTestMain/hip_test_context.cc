@@ -6,6 +6,7 @@
 #include <regex>
 #include "hip_test_context.hh"
 #include "hip_test_filesystem.hh"
+#include "hip_test_features.hh"
 
 void TestContext::detectOS() {
 #if (HT_WIN == 1)

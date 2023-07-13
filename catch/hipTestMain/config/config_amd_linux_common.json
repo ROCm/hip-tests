@@ -110,9 +110,6 @@
 	   "Unit_ChannelDescriptor_Positive_Basic_2D - long2",
 	   "Unit_ChannelDescriptor_Positive_Basic_4D - ulong4",
 	   "Unit_ChannelDescriptor_Positive_Basic_4D - long4",
-	   "Unit_hipExtModuleLaunchKernel_NonUniformWorkGroup",
-	   "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/279 ===",
-	   "Unit_Device_memcpy_Negative",
-	   "Unit_Device_memset_Negative"
+	   "Unit_hipExtModuleLaunchKernel_NonUniformWorkGroup"
 	]
 }

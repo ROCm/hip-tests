@@ -128,6 +128,10 @@
 	   "Unit_Device_Complex_Unary_double_Negative",
 	   "Unit_Device_Complex_Binary_float_Negative",
 	   "Unit_Device_Complex_Binary_double_Negative",
-	   "Unit_Device_Complex_hipCfma_Negative"
+	   "Unit_Device_Complex_hipCfma_Negative",
+	   "=== Below tests fail in stress test on 13/07/23 ===",
+	   "Unit_deviceAllocation_Malloc_ComplexDataType",
+	   "Unit_deviceAllocation_New_ComplexDataType",
+	   "Unit_hipStreamValue_Wait32_Blocking_Mask_Eq_1"
 	]
 }

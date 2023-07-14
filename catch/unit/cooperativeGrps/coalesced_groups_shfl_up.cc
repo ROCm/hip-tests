@@ -40,7 +40,7 @@ __device__ int prefix_sum_kernel(coalesced_group const& g, int val) {
   for (int i = 1; i < sz; i <<= 1) {
     int temp = g.shfl_up(val, i);
 
-    if (g.thread_rank() >= i) {
+    if ((int)g.thread_rank() >= i) {
       val += temp;
     }
   }
@@ -60,7 +60,7 @@ __global__ void kernel_shfl_up (int * dPtr, int *dResults, int lane_delta, int c
 
 }
 
-__global__ void kernel_cg_group_partition(int* dPtr, unsigned int tileSz, int cg_sizes) {
+__global__ void kernel_cg_group_partition_shfl_up(int* dPtr, unsigned int tileSz, int cg_sizes) {
 
   int id = threadIdx.x + blockIdx.x * blockDim.x;
   if (id % cg_sizes == 0) {
@@ -110,7 +110,7 @@ void printResults(int* ptr, int size) {
   std::cout << '\n';
 }
 
-void verifyResults(int* cpu, int* gpu, int size) {
+void verifyResultsCoalescedGroupsShflUp(int* cpu, int* gpu, int size) {
   for (unsigned int i = 0; i < size / sizeof(int); i++) {
     if (cpu[i] != gpu[i]) {
       INFO(" Results do not match.");
@@ -132,14 +132,14 @@ static void test_group_partition(unsigned tileSz) {
 
     int arrSize = blockSize * threadsPerBlock * sizeof(int);
 
-    hipHostMalloc(&hPtr, arrSize);
-    hipMalloc(&dPtr, arrSize);
+    HIPCHECK(hipHostMalloc(&hPtr, arrSize));
+    HIPCHECK(hipMalloc(&dPtr, arrSize));
 
     // Launch Kernel
-    hipLaunchKernelGGL(kernel_cg_group_partition, blockSize, threadsPerBlock,
+    hipLaunchKernelGGL(kernel_cg_group_partition_shfl_up, blockSize, threadsPerBlock,
                      threadsPerBlock * sizeof(int), 0, dPtr, tileSz, i);
     HIP_CHECK(hipGetLastError()); 
-    hipMemcpy(hPtr, dPtr, arrSize, hipMemcpyDeviceToHost);
+    HIPCHECK(hipMemcpy(hPtr, dPtr, arrSize, hipMemcpyDeviceToHost));
     err = hipDeviceSynchronize();
     if (err != hipSuccess) {
       fprintf(stderr, "Failed to launch kernel (error code %s)!\n", hipGetErrorString(err));
@@ -153,12 +153,12 @@ static void test_group_partition(unsigned tileSz) {
     //std::cout << "\nPrefix sum results on GPU\n";
     //printResults(hPtr, tileSz);
     std::cout << "\n";
-    verifyResults(hPtr, cpuPrefixSum, tileSz);
+    verifyResultsCoalescedGroupsShflUp(hPtr, cpuPrefixSum, tileSz);
     std::cout << "Results verified!\n";
 
     delete[] cpuPrefixSum;
-    hipFree(hPtr);
-    hipFree(dPtr);
+    HIPCHECK(hipHostFree(hPtr));
+    HIPCHECK(hipFree(dPtr));
   }
 }
 
@@ -185,7 +185,7 @@ static void test_shfl_up() {
 
     int arrSize = blockSize * threadsPerBlock * sizeof(int);
 
-    hipHostMalloc(&hPtr, arrSize);
+    HIPCHECK(hipHostMalloc(&hPtr, arrSize));
     // Fill up the array
     for (int i = 0; i < WAVE_SIZE; i++) {
       hPtr[i] = rand() % 1000;
@@ -200,14 +200,14 @@ static void test_shfl_up() {
     //printf("Printing cpu results arr\n");
     //printResults(cpuResultsArr, WAVE_SIZE);
 
-    hipMalloc(&dPtr, group_size_in_bytes);
-    hipMalloc(&dResults, group_size_in_bytes);
+    HIPCHECK(hipMalloc(&dPtr, group_size_in_bytes));
+    HIPCHECK(hipMalloc(&dResults, group_size_in_bytes));
 
-    hipMemcpy(dPtr, hPtr, group_size_in_bytes, hipMemcpyHostToDevice);
+    HIPCHECK(hipMemcpy(dPtr, hPtr, group_size_in_bytes, hipMemcpyHostToDevice));
     // Launch Kernel
     hipLaunchKernelGGL(kernel_shfl_up, blockSize, threadsPerBlock,
                        threadsPerBlock * sizeof(int), 0, dPtr, dResults, lane_delta, i);
-    hipMemcpy(hPtr, dResults, group_size_in_bytes, hipMemcpyDeviceToHost);
+    HIPCHECK(hipMemcpy(hPtr, dResults, group_size_in_bytes, hipMemcpyDeviceToHost));
     HIP_CHECK(hipGetLastError()); 
     err = hipDeviceSynchronize();
     if (err != hipSuccess) {
@@ -216,22 +216,21 @@ static void test_shfl_up() {
     //printf("GPU computation array :\n");
     //printResults(hPtr, WAVE_SIZE);
 
-    verifyResults(hPtr, cpuResultsArr, group_size_in_bytes);
+    verifyResultsCoalescedGroupsShflUp(hPtr, cpuResultsArr, group_size_in_bytes);
     std::cout << "Results verified!\n";
 
-    hipFree(hPtr);
-    hipFree(dPtr);
+    HIPCHECK(hipHostFree(hPtr));
+    HIPCHECK(hipFree(dPtr));
     free(cpuResultsArr);
   }
 }
 
-TEST_CASE("Unit_coalesced_groups_shfl_down") {
+TEST_CASE("Unit_coalesced_groups_shfl_up") {
   // Use default device for validating the test
   int deviceId;
   ASSERT_EQUAL(hipGetDevice(&deviceId), hipSuccess);
   hipDeviceProp_t deviceProperties;
   ASSERT_EQUAL(hipGetDeviceProperties(&deviceProperties, deviceId), hipSuccess);
-  int maxThreadsPerBlock = deviceProperties.maxThreadsPerBlock;
 
   for (int i = 0; i < 100; i++) {
       test_shfl_up();

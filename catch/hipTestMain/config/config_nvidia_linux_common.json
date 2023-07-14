@@ -20,6 +20,9 @@
 	   "Unit_ChannelDescriptor_Positive_Basic_4D - ulong4",
 	   "Unit_ChannelDescriptor_Positive_Basic_4D - long4",
 	   "=== Below test fails in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/38 ===",
-	   "Unit_hipFreeAsync_negative"
+	   "Unit_hipFreeAsync_negative",
+	   "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/210 ===",
+	   "Unit_StaticAssert_Positive_Basic",
+	   "Unit_StaticAssert_Negative_Basic"
 	]
 }

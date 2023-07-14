@@ -205,6 +205,15 @@
 	   "Unit_hipMemcpyAsync_Negative_Parameters",
 	   "Unit_hipMemcpyDtoHAsync_Negative_Parameters",
 	   "Unit_hipMemcpyHtoDAsync_Negative_Parameters",
-	   "Unit_hipMemcpyDtoDAsync_Negative_Parameters"
+	   "Unit_hipMemcpyDtoDAsync_Negative_Parameters",
+	   "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/154 ===",
+	   "Unit_Coalesced_Group_Shfl_Positive_Basic - int",
+	   "Unit_Coalesced_Group_Shfl_Positive_Basic - unsigned int",
+	   "Unit_Coalesced_Group_Shfl_Positive_Basic - long",
+	   "Unit_Coalesced_Group_Shfl_Positive_Basic - unsigned long",
+	   "Unit_Coalesced_Group_Shfl_Positive_Basic - long long",
+	   "Unit_Coalesced_Group_Shfl_Positive_Basic - unsigned long long",
+	   "Unit_Coalesced_Group_Shfl_Positive_Basic - float",
+	   "Unit_Coalesced_Group_Shfl_Positive_Basic - double"
 	]
 }

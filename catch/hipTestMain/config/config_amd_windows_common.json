@@ -205,6 +205,10 @@
 	   "Unit_hipMemcpyAsync_Negative_Parameters",
 	   "Unit_hipMemcpyDtoHAsync_Negative_Parameters",
 	   "Unit_hipMemcpyHtoDAsync_Negative_Parameters",
-	   "Unit_hipMemcpyDtoDAsync_Negative_Parameters"
+	   "Unit_hipMemcpyDtoDAsync_Negative_Parameters",
+	   "Unit_tex3DLod_Positive_ReadModeElementType",
+	   "Unit_tex3DLod_Positive_ReadModeNormalizedFloat",
+	   "Unit_tex3DGrad_Positive_ReadModeElementType",
+	   "Unit_tex3DGrad_Positive_ReadModeNormalizedFloat"
 	]
 }

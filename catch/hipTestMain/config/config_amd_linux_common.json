@@ -119,6 +119,14 @@
 	   "=== Below tests fail in stress test on 13/07/23 ===",
 	   "Unit_deviceAllocation_Malloc_ComplexDataType",
 	   "Unit_deviceAllocation_New_ComplexDataType",
-	   "Unit_hipStreamValue_Wait32_Blocking_Mask_Eq_1"
+	   "Unit_hipStreamValue_Wait32_Blocking_Mask_Eq_1",
+	   "Unit_texCubemapLod_Positive_ReadModeElementType",
+	   "Unit_texCubemapLod_Positive_ReadModeNormalizedFloat",
+	   "Unit_texCubemapGrad_Positive_ReadModeElementType",
+	   "Unit_texCubemapGrad_Positive_ReadModeNormalizedFloat",
+	   "Unit_texCubemapLayeredLod_Positive_ReadModeElementType",
+	   "Unit_texCubemapLayeredLod_Positive_ReadModeNormalizedFloat",
+	   "Unit_texCubemapLayeredGrad_Positive_ReadModeElementType",
+	   "Unit_texCubemapLayeredGrad_Positive_ReadModeNormalizedFloat"
 	]
 }

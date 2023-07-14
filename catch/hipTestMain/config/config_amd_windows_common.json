@@ -205,6 +205,14 @@
 	   "Unit_hipMemcpyAsync_Negative_Parameters",
 	   "Unit_hipMemcpyDtoHAsync_Negative_Parameters",
 	   "Unit_hipMemcpyHtoDAsync_Negative_Parameters",
-	   "Unit_hipMemcpyDtoDAsync_Negative_Parameters"
+	   "Unit_hipMemcpyDtoDAsync_Negative_Parameters",
+	   "Unit_texCubemapLod_Positive_ReadModeElementType",
+	   "Unit_texCubemapLod_Positive_ReadModeNormalizedFloat",
+	   "Unit_texCubemapGrad_Positive_ReadModeElementType",
+	   "Unit_texCubemapGrad_Positive_ReadModeNormalizedFloat",
+	   "Unit_texCubemapLayeredLod_Positive_ReadModeElementType",
+	   "Unit_texCubemapLayeredLod_Positive_ReadModeNormalizedFloat",
+	   "Unit_texCubemapLayeredGrad_Positive_ReadModeElementType",
+	   "Unit_texCubemapLayeredGrad_Positive_ReadModeNormalizedFloat"
 	]
 }

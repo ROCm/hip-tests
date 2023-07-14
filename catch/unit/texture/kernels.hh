@@ -34,6 +34,14 @@ __host__ __device__ inline float GetCoordinate(size_t iteration, size_t N, size_
 }
 
 template <typename TexelType>
+__global__ void tex1DfetchKernel(TexelType* const out, size_t N, hipTextureObject_t tex_obj) {
+  const auto tid = cg::this_grid().thread_rank();
+  if (tid >= N) return;
+
+  out[tid] = tex1D<TexelType>(tex_obj, tid);
+}
+
+template <typename TexelType>
 __global__ void tex1DKernel(TexelType* const out, size_t N, hipTextureObject_t tex_obj,
                             size_t width, size_t num_subdivisions, bool normalized_coords) {
   const auto tid = cg::this_grid().thread_rank();

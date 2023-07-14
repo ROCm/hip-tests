@@ -87,7 +87,9 @@ set(AMD_TEST_SRC
     hip_test_make_type.cc
     bfloat16.cc
     AtomicsWithRandomActiveLanesInWavefront.cc
+    fp16_ops.cc
 )
+
 set(AMD_ARCH_SPEC_TEST_SRC
     AtomicAdd_Coherent_withunsafeflag.cc
     AtomicAdd_Coherent_withoutflag.cc

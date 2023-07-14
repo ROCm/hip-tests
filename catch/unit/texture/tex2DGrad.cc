@@ -71,7 +71,7 @@ TEMPLATE_TEST_CASE("Unit_tex2DGrad_Positive_ReadModeElementType", "", char, unsi
   tex2DGradKernel<vec4<TestType>><<<dim_grid, dim_block>>>(
       fixture.out_alloc_d.ptr(), params.NumItersX(), params.NumItersY(), fixture.tex.object(),
       params.Width(), params.Height(), params.num_subdivisions, params.tex_desc.normalizedCoords,
-      float2(0.5f, 0.5f), float2(0.5f, 0.5f));
+      float2{0.5f, 0.5f}, float2{0.5f, 0.5f});
   HIP_CHECK(hipGetLastError());
 
   fixture.LoadOutput();
@@ -142,7 +142,7 @@ TEMPLATE_TEST_CASE("Unit_tex2DGrad_Positive_ReadModeNormalizedFloat", "", char, 
   tex2DGradKernel<vec4<float>><<<dim_grid, dim_block>>>(
       fixture.out_alloc_d.ptr(), params.NumItersX(), params.NumItersY(), fixture.tex.object(),
       params.Width(), params.Height(), params.num_subdivisions, params.tex_desc.normalizedCoords,
-      float2(0.5f, 0.5f), float2(0.5f, 0.5f));
+      float2{0.5f, 0.5f}, float2{0.5f, 0.5f});
   HIP_CHECK(hipGetLastError());
 
   fixture.LoadOutput();

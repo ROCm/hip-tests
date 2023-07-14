@@ -63,10 +63,10 @@ template <typename TexelType> class TextureReference {
     };
 
     TexelType texel;
-    texel.x = IndexVec4(T_i0j0, comp);
-    texel.y = IndexVec4(T_i1j0, comp);
-    texel.z = IndexVec4(T_i0j1, comp);
-    texel.w = IndexVec4(T_i1j1, comp);
+    texel.x = IndexVec4(T_i0j1, comp);
+    texel.y = IndexVec4(T_i1j1, comp);
+    texel.z = IndexVec4(T_i1j0, comp);
+    texel.w = IndexVec4(T_i0j0, comp);
 
     return texel;
   }

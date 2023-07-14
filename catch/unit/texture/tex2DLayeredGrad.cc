@@ -71,7 +71,7 @@ TEMPLATE_TEST_CASE("Unit_tex2DLayeredGrad_Positive_ReadModeElementType", "", cha
   tex2DLayeredGradKernel<vec4<TestType>><<<dim_grid, dim_block>>>(
       fixture.out_alloc_d.ptr(), params.NumItersX(), params.NumItersY(), fixture.tex.object(),
       params.Width(), params.Height(), params.num_subdivisions, params.tex_desc.normalizedCoords, 0,
-      float2(0.5f, 0.5f), float2(0.5f, 0.5f));
+      float2{0.5f, 0.5f}, float2{0.5f, 0.5f});
   HIP_CHECK(hipGetLastError());
 
   fixture.LoadOutput();
@@ -142,7 +142,7 @@ TEMPLATE_TEST_CASE("Unit_tex2DLayeredGrad_Positive_ReadModeNormalizedFloat", "",
   tex2DLayeredGradKernel<vec4<float>><<<dim_grid, dim_block>>>(
       fixture.out_alloc_d.ptr(), params.NumItersX(), params.NumItersY(), fixture.tex.object(),
       params.Width(), params.Height(), params.num_subdivisions, params.tex_desc.normalizedCoords, 0,
-      float2(0.5f, 0.5f), float2(0.5f, 0.5f));
+      float2{0.5f, 0.5f}, float2{0.5f, 0.5f});
   HIP_CHECK(hipGetLastError());
 
   fixture.LoadOutput();

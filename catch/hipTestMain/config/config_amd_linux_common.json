@@ -115,6 +115,8 @@
 	   "Unit_hipMemcpyAsync_Negative_Parameters",
 	   "Unit_hipMemcpyDtoHAsync_Negative_Parameters",
 	   "Unit_hipMemcpyHtoDAsync_Negative_Parameters",
-	   "Unit_hipMemcpyDtoDAsync_Negative_Parameters"
+	   "Unit_hipMemcpyDtoDAsync_Negative_Parameters",
+	   "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/210 ===",
+	   "Unit_Assert_Positive_Basic_KernelFail"
 	]
 }

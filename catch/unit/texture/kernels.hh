@@ -76,6 +76,73 @@ __global__ void tex2DKernel(TexelType* const out, size_t N_x, size_t N_y,
 }
 
 template <typename TexelType>
+__global__ void tex2DGradKernel(TexelType* const out, size_t N_x, size_t N_y,
+                                hipTextureObject_t tex_obj, size_t width, size_t height,
+                                size_t num_subdivisions, bool normalized_coords, float2 dx,
+                                float2 dy) {
+  const auto tid_x = blockIdx.x * blockDim.x + threadIdx.x;
+  if (tid_x >= N_x) return;
+
+  const auto tid_y = blockIdx.y * blockDim.y + threadIdx.y;
+  if (tid_y >= N_y) return;
+
+  float x = GetCoordinate(tid_x, N_x, width, num_subdivisions, normalized_coords);
+  float y = GetCoordinate(tid_y, N_y, height, num_subdivisions, normalized_coords);
+
+  out[tid_y * N_x + tid_x] = tex2DGrad<TexelType>(tex_obj, x, y, dx, dy);
+}
+
+template <typename TexelType>
+__global__ void tex2DLayeredGradKernel(TexelType* const out, size_t N_x, size_t N_y,
+                                       hipTextureObject_t tex_obj, size_t width, size_t height,
+                                       size_t num_subdivisions, bool normalized_coords, float layer,
+                                       float2 dx, float2 dy) {
+  const auto tid_x = blockIdx.x * blockDim.x + threadIdx.x;
+  if (tid_x >= N_x) return;
+
+  const auto tid_y = blockIdx.y * blockDim.y + threadIdx.y;
+  if (tid_y >= N_y) return;
+
+  float x = GetCoordinate(tid_x, N_x, width, num_subdivisions, normalized_coords);
+  float y = GetCoordinate(tid_y, N_y, height, num_subdivisions, normalized_coords);
+
+  out[tid_y * N_x + tid_x] = tex2DLayeredGrad<TexelType>(tex_obj, x, y, layer, dx, dy);
+}
+
+template <typename TexelType>
+__global__ void tex2DLodKernel(TexelType* const out, size_t N_x, size_t N_y,
+                               hipTextureObject_t tex_obj, size_t width, size_t height,
+                               size_t num_subdivisions, bool normalized_coords, float level) {
+  const auto tid_x = blockIdx.x * blockDim.x + threadIdx.x;
+  if (tid_x >= N_x) return;
+
+  const auto tid_y = blockIdx.y * blockDim.y + threadIdx.y;
+  if (tid_y >= N_y) return;
+
+  float x = GetCoordinate(tid_x, N_x, width, num_subdivisions, normalized_coords);
+  float y = GetCoordinate(tid_y, N_y, height, num_subdivisions, normalized_coords);
+
+  out[tid_y * N_x + tid_x] = tex2DLod<TexelType>(tex_obj, x, y, level);
+}
+
+template <typename TexelType>
+__global__ void tex2DLayeredLodKernel(TexelType* const out, size_t N_x, size_t N_y,
+                                      hipTextureObject_t tex_obj, size_t width, size_t height,
+                                      size_t num_subdivisions, bool normalized_coords, int layer,
+                                      float level) {
+  const auto tid_x = blockIdx.x * blockDim.x + threadIdx.x;
+  if (tid_x >= N_x) return;
+
+  const auto tid_y = blockIdx.y * blockDim.y + threadIdx.y;
+  if (tid_y >= N_y) return;
+
+  float x = GetCoordinate(tid_x, N_x, width, num_subdivisions, normalized_coords);
+  float y = GetCoordinate(tid_y, N_y, height, num_subdivisions, normalized_coords);
+
+  out[tid_y * N_x + tid_x] = tex2DLayeredLod<TexelType>(tex_obj, x, y, layer, level);
+}
+
+template <typename TexelType>
 __global__ void tex3DKernel(TexelType* const out, size_t N_x, size_t N_y, size_t N_z,
                             hipTextureObject_t tex_obj, size_t width, size_t height, size_t depth,
                             size_t num_subdivisions, bool normalized_coords) {

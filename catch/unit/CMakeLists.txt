@@ -18,11 +18,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-#add_subdirectory(rtc)
-#add_subdirectory(deviceLib)
+add_subdirectory(rtc)
+add_subdirectory(deviceLib)
 add_subdirectory(graph)
 add_subdirectory(memory)
-#add_subdirectory(stream)
+add_subdirectory(stream)
 add_subdirectory(event)
 add_subdirectory(occupancy)
 add_subdirectory(device)
@@ -30,7 +30,7 @@ add_subdirectory(printf)
 add_subdirectory(texture)
 add_subdirectory(surface)
 add_subdirectory(streamperthread)
-#add_subdirectory(kernel)
+add_subdirectory(kernel)
 add_subdirectory(multiThread)
 add_subdirectory(compiler)
 add_subdirectory(errorHandling)

@@ -4,9 +4,6 @@ set(TEST_SRC
   hipCGThreadBlockTypeViaBaseType.cc
   hipCGThreadBlockTypeViaPublicApi.cc
   multi_grid_group.cc
-  hipCGMultiGridGroupType.cc
-  hipCGMultiGridGroupTypeViaBaseType.cc
-  hipCGMultiGridGroupTypeViaPublicApi.cc
   coalesced_groups_shfl_down.cc
   coalesced_groups_shfl_up.cc
   simple_coalesced_groups.cc

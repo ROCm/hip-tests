@@ -125,3 +125,25 @@ __global__ void tex2DLayeredKernel(TexelType* const out, size_t N_x, size_t N_y,
 
   out[tid_y * N_x + tid_x] = tex2DLayered<TexelType>(tex_obj, x, y, layer);
 }
+
+template <typename TexelType>
+__global__ void texCubemapLayeredKernel(TexelType* const out, size_t N_x, size_t N_y, size_t N_z,
+                                        hipTextureObject_t tex_obj, size_t width, size_t height,
+                                        size_t depth, size_t num_subdivisions,
+                                        bool normalized_coords, size_t layer) {
+  const auto tid_x = blockIdx.x * blockDim.x + threadIdx.x;
+  if (tid_x >= N_x) return;
+
+  const auto tid_y = blockIdx.y * blockDim.y + threadIdx.y;
+  if (tid_y >= N_y) return;
+
+  const auto tid_z = blockIdx.z * blockDim.z + threadIdx.z;
+  if (tid_z >= N_z) return;
+
+  float x = GetCoordinate(tid_x, N_x, width, num_subdivisions, normalized_coords);
+  float y = GetCoordinate(tid_y, N_y, height, num_subdivisions, normalized_coords);
+  float z = GetCoordinate(tid_z, N_z, depth, num_subdivisions, normalized_coords);
+
+  out[tid_z * N_x * N_y + tid_y * N_x + tid_x] =
+      texCubemapLayered<TexelType>(tex_obj, x, y, z, layer);
+}

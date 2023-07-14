@@ -71,30 +71,30 @@ template <typename TestType> struct TextureTestParams {
     tex_desc.readMode = read_mode;
 
     tex_desc.filterMode = hipFilterModePoint;
-    // if (is_floating_point || tex_desc.readMode == hipReadModeNormalizedFloat) {
-    //   tex_desc.filterMode = GENERATE(hipFilterModePoint, hipFilterModeLinear);
-    // }
+    if (is_floating_point || tex_desc.readMode == hipReadModeNormalizedFloat) {
+      tex_desc.filterMode = GENERATE(hipFilterModePoint, hipFilterModeLinear);
+    }
 
-    tex_desc.normalizedCoords = GENERATE(false);
+    tex_desc.normalizedCoords = GENERATE(false, true);
 
     auto address_mode_x = hipAddressModeClamp;
     auto address_mode_y = address_mode_x;
     auto address_mode_z = address_mode_y;
 
-    // if (tex_desc.normalizedCoords) {
-    //   address_mode_x = GENERATE(hipAddressModeClamp, hipAddressModeBorder, hipAddressModeWrap,
-    //                             hipAddressModeMirror);
-    //   if (extent.height)
-    //     address_mode_y = GENERATE(hipAddressModeClamp, hipAddressModeBorder, hipAddressModeWrap,
-    //                               hipAddressModeMirror);
-    //   if (extent.depth)
-    //     address_mode_z = GENERATE(hipAddressModeClamp, hipAddressModeBorder, hipAddressModeWrap,
-    //                               hipAddressModeMirror);
-    // } else {
-    //   address_mode_x = GENERATE(hipAddressModeClamp, hipAddressModeBorder);
-    //   if (extent.height) address_mode_y = GENERATE(hipAddressModeClamp, hipAddressModeBorder);
-    //   if (extent.depth) address_mode_z = GENERATE(hipAddressModeClamp, hipAddressModeBorder);
-    // }
+    if (tex_desc.normalizedCoords) {
+      address_mode_x = GENERATE(hipAddressModeClamp, hipAddressModeBorder, hipAddressModeWrap,
+                                hipAddressModeMirror);
+      if (extent.height)
+        address_mode_y = GENERATE(hipAddressModeClamp, hipAddressModeBorder, hipAddressModeWrap,
+                                  hipAddressModeMirror);
+      if (extent.depth)
+        address_mode_z = GENERATE(hipAddressModeClamp, hipAddressModeBorder, hipAddressModeWrap,
+                                  hipAddressModeMirror);
+    } else {
+      address_mode_x = GENERATE(hipAddressModeClamp, hipAddressModeBorder);
+      if (extent.height) address_mode_y = GENERATE(hipAddressModeClamp, hipAddressModeBorder);
+      if (extent.depth) address_mode_z = GENERATE(hipAddressModeClamp, hipAddressModeBorder);
+    }
 
     tex_desc.addressMode[0] = address_mode_x;
     if (extent.height) tex_desc.addressMode[1] = address_mode_y;
@@ -120,7 +120,7 @@ template <typename TestType, bool normalized_read = false> struct TextureTestFix
       : params{p},
         host_alloc{LinearAllocs::hipHostMalloc, sizeof(VecType) * params.Size()},
         tex_h{host_alloc.ptr(), params.extent, params.layers},
-        tex_alloc_d{params.LayeredExtent(), hipArrayCubemap},
+        tex_alloc_d{params.LayeredExtent(), params.Flags()},
         tex{ResDesc(), &params.tex_desc},
         out_alloc_d{LinearAllocs::hipMalloc, sizeof(OutType) * params.NumIters()},
         out_alloc_h(params.NumIters()) {}

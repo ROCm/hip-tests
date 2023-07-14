@@ -43,6 +43,7 @@ set(TEST_SRC
     hipTextureObj1DCheckSRGBModes.cc
     hipTextureObj2DCheckSRGBModes.cc
     texCubemap.cc
+    texCubemapLayered.cc
 )
 
 hip_add_exe_to_target(NAME TextureTest

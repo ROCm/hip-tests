@@ -18,9 +18,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+# Common Tests - Test independent of all platforms
 set(COMMON_SHARED_SRC DriverContext.cc)
 
-# Common Tests - Test independent of all platforms
+# FIXME: cjatin
+# This is a temp hack to pass it on windows since it has a char limit for
+# command line. Eventually we need to use rsp files with ninja on windows.
+# But this exposes several problems with hipcc and build system on windows.
+# While those are fixed, this hack should allow us to pass windows CI.
 set(TEST_SRC
     memset.cc
     malloc.cc
@@ -63,7 +68,27 @@ set(TEST_SRC
     hipMemAdviseMmap.cc
     hipMallocManaged.cc
     hipMemRangeGetAttribute.cc
-    hipMemRangeGetAttribute_old.cc
+    hipMemRangeGetAttribute_old.cc)
+
+if(HIP_PLATFORM MATCHES "amd")
+  set(TEST_SRC
+      ${TEST_SRC}
+      hipMemPtrGetInfo.cc
+      hipPointerGetAttributes.cc
+      hipMemCoherencyTst.cc
+      hipExtMallocWithFlags.cc
+      hipMallocMngdMultiThread.cc
+      hipArray.cc
+      hipMemVmm.cc)
+else()
+  set(TEST_SRC ${TEST_SRC} hipGetSymbolSizeAddress.cc)
+endif()
+
+hip_add_exe_to_target(NAME MemoryTest1
+  TEST_SRC ${TEST_SRC}
+  TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
+
+set(TEST_SRC
     hipMemcpyFromSymbol.cc
     hipPtrGetAttribute.cc
     hipMemPoolApi.cc
@@ -83,6 +108,8 @@ set(TEST_SRC
     hipMemcpy_old.cc
     hipMemcpy_derivatives.cc
     hipMemcpyAsync.cc
+    hipMemcpyAsync_old.cc
+    hipMemcpyAsync_derivatives.cc
     hipMemsetFunctional.cc
     hipMalloc.cc
     hipMallocPitch.cc
@@ -106,24 +133,12 @@ set(TEST_SRC
     hipMemAdvise_old.cc
     hipMemAdvise.cc
     hipMemRangeGetAttributes.cc
+    hipFreeAsync.cc
+    hipMallocAsync.cc
     hipStreamAttachMemAsync.cc
     hipMemRangeGetAttributes_old.cc
     hipMemGetAddressRange.cc)
 
-if(HIP_PLATFORM MATCHES "amd")
-  set(TEST_SRC
-      ${TEST_SRC}
-      hipMemPtrGetInfo.cc
-      hipPointerGetAttributes.cc
-      hipMemCoherencyTst.cc
-      hipExtMallocWithFlags.cc
-      hipMallocMngdMultiThread.cc
-      hipArray.cc
-      hipMemVmm.cc)
-else()
-  set(TEST_SRC ${TEST_SRC} hipGetSymbolSizeAddress.cc)
-endif()
-
-hip_add_exe_to_target(NAME MemoryTest
+hip_add_exe_to_target(NAME MemoryTest2
   TEST_SRC ${TEST_SRC}
   TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})

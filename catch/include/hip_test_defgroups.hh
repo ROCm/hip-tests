@@ -135,3 +135,9 @@ THE SOFTWARE.
  * This section describes tests for the Device Language API.
  * @}
  */
+
+/**
+ * @defgroup DeviceLanguageTest Device Language
+ * @{
+ * This section describes tests for the Device Language API.
+ */

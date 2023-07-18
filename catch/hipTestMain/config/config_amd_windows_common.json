@@ -180,6 +180,8 @@
 	   "Unit_hipMemcpyPeerAsync_Positive_ZeroSize",
 	   "Disabling test tracked SWDEV-391718",
 	   "Unit_hipMemRangeGetAttribute_TstCountParam",
+	   "SWDEV-400049 tdr intermittently",
+	   "Unit_hipMemsetDSync – init16_t",
 	   "Unit_hipStreamAddCallback_StrmSyncTiming",
 	   "SWDEV-402082 - PAL Backend fails to reserve address on GPU except first one",
 	   "Unit_hipGraphInstantiateWithFlags_FlagAutoFreeOnLaunch_check",

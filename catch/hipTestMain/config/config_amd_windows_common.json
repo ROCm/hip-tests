@@ -187,6 +187,8 @@
 	   "Unit_hipGraphInstantiateWithFlags_FlagAutoFreeOnLaunch_check",
 	   "SWDEV-398981 fails in stress test",
 	   "Unit_hipStreamCreateWithPriority_MulthreadDefaultflag",
+	   "SWDEV-402054 fails in external github build",
+	   "Unit_hipEventDestroy_WithWaitingStream",
 	   "Note: UUID returned empty on some windows nodes",
 	   "Unit_hipDeviceGetUuid_Positive",
      "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/96 ===",

@@ -37,6 +37,13 @@ THE SOFTWARE.
  */
 
 /**
+ * @defgroup VectorTypeTest Vector types
+ * @{
+ * This section describes tests for the Vector type functions and operators.
+ * @}
+ */
+
+/**
  * @defgroup DeviceTest Device Management
  * @{
  * This section describes tests for device management functions of HIP runtime API.

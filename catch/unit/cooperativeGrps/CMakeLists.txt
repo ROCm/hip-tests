@@ -6,6 +6,7 @@ set(TEST_SRC
   hipCGMultiGridGroupType.cc
   hipCGMultiGridGroupTypeViaBaseType.cc
   hipCGMultiGridGroupTypeViaPublicApi.cc
+  grid_group.cc
   coalesced_groups_shfl_down.cc
   coalesced_groups_shfl_up.cc
   simple_coalesced_groups.cc

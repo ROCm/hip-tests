@@ -128,3 +128,10 @@ THE SOFTWARE.
  * This section describes the various kernel functions invocation.
  * @}
  */
+
+/**
+ * @defgroup DeviceLanguageTest Device Language
+ * @{
+ * This section describes tests for the Device Language API.
+ * @}
+ */

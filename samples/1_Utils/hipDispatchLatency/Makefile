@@ -35,7 +35,7 @@ hipDispatchLatency.out: hipDispatchLatency.cpp
 	$(HIPCC) $(CXXFLAGS) hipDispatchLatency.cpp -o $@
 
 hipDispatchEnqueueRateMT.out: hipDispatchEnqueueRateMT.cpp
-	$(HIPCC) $(CXXFLAGS) hipDispatchEnqueueRateMT.cpp -o $@
+	$(HIPCC) $(CXXFLAGS) hipDispatchEnqueueRateMT.cpp -lpthread -o $@
 
 test_kernel.code: test_kernel.cpp
 	$(HIP_PATH)/bin/hipcc --genco  $(GENCO_FLAGS) $^ -o $@

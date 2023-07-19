@@ -20,6 +20,7 @@ THE SOFTWARE.
 #pragma once
 
 #include <chrono>
+#include <optional>
 
 #include <hip_test_common.hh>
 #include <hip/hip_runtime_api.h>
@@ -52,6 +53,20 @@ template <typename It, typename T> void ArrayFindIfNot(It begin, It end, const T
 template <typename T>
 void ArrayFindIfNot(T* const array, const T expected_value, const size_t num_elements) {
   ArrayFindIfNot(array, array + num_elements, expected_value);
+}
+
+template <typename T, typename F>
+static inline void ArrayAllOf(const T* arr, uint32_t count, F value_gen) {
+  for (auto i = 0u; i < count; ++i) {
+    const std::optional<T> expected_val = value_gen(i);
+    if (!expected_val.has_value()) continue;
+    // Using require on every iteration leads to a noticeable performance loss on large arrays,
+    // even when the require passes.
+    if (arr[i] != expected_val.value()) {
+      INFO("Mismatch at index: " << i);
+      REQUIRE(arr[i] == expected_val.value());
+    }
+  }
 }
 
 template <typename T, typename F>
@@ -134,7 +149,6 @@ inline void LaunchDelayKernel(const std::chrono::milliseconds interval, const hi
     HIPCHECK(hipDeviceGetAttribute(&ticks_per_ms, hipDeviceAttributeClockRate, 0));
   }
   Delay<<<1, 1, 0, stream>>>(interval.count(), ticks_per_ms);
-  HIP_CHECK(hipGetLastError());
 }
 
 template <typename... Attributes>

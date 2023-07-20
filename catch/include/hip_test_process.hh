@@ -85,6 +85,10 @@ class SpawnProc {
       INFO("Testing that capture file does not exist already: " << tmpFileName);
       REQUIRE(!fs::exists(tmpFileName));
     }
+    if (TestContext::get().isWindows()) {
+      exeName = (exeName.find(" ", 0) == std::string::npos) ? exeName : ("\"" + exeName + "\"");
+      tmpFileName = (tmpFileName.find(" ", 0) == std::string::npos) ? tmpFileName : ("\"" + tmpFileName + "\"");
+    }
   }
 
   int run(std::string commandLineArgs = "") {
@@ -99,6 +103,9 @@ class SpawnProc {
     if (captureOutput) {
       execCmd += " > ";
       execCmd += tmpFileName;
+    }
+    if (TestContext::get().isWindows()) {
+      execCmd = (execCmd.find(" ", 0) == std::string::npos) ? execCmd : ("\"" + execCmd + "\"");
     }
     auto res = std::system(execCmd.c_str());
 

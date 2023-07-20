@@ -155,7 +155,7 @@ template <typename Derived> class Benchmark {
       time_ = .0;
     }
 
-    float sum = std::reduce(cbegin(samples), cend(samples));
+    float sum = std::accumulate(cbegin(samples), cend(samples), .0);
     float mean = sum / samples.size();
 
     float deviation =

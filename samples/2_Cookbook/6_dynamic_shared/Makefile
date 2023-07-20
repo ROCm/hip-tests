@@ -32,6 +32,7 @@ TARGET=hcc
 
 SOURCES = dynamic_shared.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
+INCLUDES  := -I../../common
 
 EXECUTABLE=./dynamic_shared
 
@@ -40,7 +41,7 @@ EXECUTABLE=./dynamic_shared
 
 all: $(EXECUTABLE) test
 
-CXXFLAGS =-g
+CXXFLAGS =-g $(INCLUDES)
 CXX=$(HIPCC)
 
 

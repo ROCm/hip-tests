@@ -22,6 +22,7 @@ THE SOFTWARE.
 #ifdef __HIP_PLATFORM_AMD__
 #include "hip/hip_ext.h"
 #endif
+#include "hip_helper.h"
 #include <iostream>
 #include <fstream>
 #include <chrono>
@@ -40,16 +41,6 @@ THE SOFTWARE.
 #define FILENAME "test_kernel.code"
 #define failed(...)                                                                                \
     abort();
-
-#define HIPCHECK(error)                                                                            \
-    {                                                                                              \
-        hipError_t localError = error;                                                             \
-        if ((localError != hipSuccess) && (localError != hipErrorPeerAccessAlreadyEnabled)) {      \
-            printf("error: '%s'(%d) from %s at %s:%d\n",  hipGetErrorString(localError),           \
-                   localError, #error, __FILE__, __LINE__);                                        \
-                   failed("API returned error code.");                                             \
-        }                                                                                          \
-    }
 
 
 __global__ void EmptyKernel() {}
@@ -87,12 +78,12 @@ void hipModuleLaunchKernel_enqueue_rate(const std::vector<char>& buffer, std::at
 {
     //resources necessary for this thread
     hipStream_t stream;
-    HIPCHECK(hipStreamCreate(&stream));
+    checkHipErrors(hipStreamCreate(&stream));
     hipModule_t module;
     hipFunction_t function;
 
-    HIPCHECK(hipModuleLoadData(&module, &buffer[0]));
-    HIPCHECK(hipModuleGetFunction(&function, module, "test"));
+    checkHipErrors(hipModuleLoadData(&module, &buffer[0]));
+    checkHipErrors(hipModuleGetFunction(&function, module, "test"));
 
     void* kernel_params = nullptr;
     std::array<float, TOTAL_RUN_COUNT> results;
@@ -103,13 +94,13 @@ void hipModuleLaunchKernel_enqueue_rate(const std::vector<char>& buffer, std::at
 
     for (auto i = 0; i < TOTAL_RUN_COUNT; ++i) {
         auto start = std::chrono::high_resolution_clock::now();
-        HIPCHECK(hipModuleLaunchKernel(function, 1, 1, 1, 1, 1, 1, 0, stream, &kernel_params, nullptr));
+        checkHipErrors(hipModuleLaunchKernel(function, 1, 1, 1, 1, 1, 1, 0, stream, &kernel_params, nullptr));
         auto stop = std::chrono::high_resolution_clock::now();
         results[i] = std::chrono::duration<double, std::milli>(stop - start).count();
     }
-    HIPCHECK(hipModuleUnload(module));
+    checkHipErrors(hipModuleUnload(module));
     print_timing("Thread ID : " + std::to_string(tid) + " , " + "hipModuleLaunchKernel enqueue rate", results);
-    HIPCHECK(hipStreamDestroy(stream));
+    checkHipErrors(hipStreamDestroy(stream));
 }
 
 // Measure time taken to enqueue a kernel on the GPU using hipLaunchKernelGGL
@@ -117,7 +108,7 @@ void hipLaunchKernelGGL_enqueue_rate(const std::vector<char>& buffer, std::atomi
 {
     //resources necessary for this thread
     hipStream_t stream;
-    HIPCHECK(hipStreamCreate(&stream));
+    checkHipErrors(hipStreamCreate(&stream));
     std::array<float, TOTAL_RUN_COUNT> results;
 
     //synchronize all threads, before running
@@ -131,7 +122,7 @@ void hipLaunchKernelGGL_enqueue_rate(const std::vector<char>& buffer, std::atomi
         results[i] = std::chrono::duration<double, std::milli>(stop - start).count();
     }
     print_timing("Thread ID : " + std::to_string(tid) + " , " + "hipLaunchKernelGGL enqueue rate", results);
-    HIPCHECK(hipStreamDestroy(stream));
+    checkHipErrors(hipStreamDestroy(stream));
 }
 
 // Simple thread pool

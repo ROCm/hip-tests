@@ -31,7 +31,7 @@ THE SOFTWARE.
 #define SIZE LEN * sizeof(float)
 
 #define fileName "vcpy_kernel.code"
-#define HIP_CHECK(cmd)                                                                             \
+#define checkHipErrors(cmd)                                                                             \
     {                                                                                              \
         hipError_t status = cmd;                                                                   \
         if (status != hipSuccess) {                                                                \
@@ -64,23 +64,23 @@ int main() {
     hipMemcpyHtoD(hipDeviceptr_t(Ad), A, SIZE);
     hipMemcpyHtoD((hipDeviceptr_t)(Bd), B, SIZE);
     hipModule_t Module;
-    HIP_CHECK(hipModuleLoad(&Module, fileName));
+    checkHipErrors(hipModuleLoad(&Module, fileName));
 
     float myDeviceGlobal_h = 42.0;
     float* deviceGlobal;
     size_t deviceGlobalSize;
-    HIP_CHECK(hipModuleGetGlobal((void**)&deviceGlobal, &deviceGlobalSize, Module, "myDeviceGlobal"));
-    HIP_CHECK(hipMemcpyHtoD(hipDeviceptr_t(deviceGlobal), &myDeviceGlobal_h, deviceGlobalSize));
+    checkHipErrors(hipModuleGetGlobal((void**)&deviceGlobal, &deviceGlobalSize, Module, "myDeviceGlobal"));
+    checkHipErrors(hipMemcpyHtoD(hipDeviceptr_t(deviceGlobal), &myDeviceGlobal_h, deviceGlobalSize));
 
 #define ARRAY_SIZE 16
 
     float myDeviceGlobalArray_h[ARRAY_SIZE];
     float *myDeviceGlobalArray;
     size_t myDeviceGlobalArraySize;
-    HIP_CHECK(hipModuleGetGlobal((void**)&myDeviceGlobalArray, &myDeviceGlobalArraySize, Module, "myDeviceGlobalArray"));
+    checkHipErrors(hipModuleGetGlobal((void**)&myDeviceGlobalArray, &myDeviceGlobalArraySize, Module, "myDeviceGlobalArray"));
     for (int i = 0; i < ARRAY_SIZE; i++) {
         myDeviceGlobalArray_h[i] = i * 1000.0f;
-        HIP_CHECK(hipMemcpyHtoD(hipDeviceptr_t(myDeviceGlobalArray), &myDeviceGlobalArray_h, myDeviceGlobalArraySize));
+        checkHipErrors(hipMemcpyHtoD(hipDeviceptr_t(myDeviceGlobalArray), &myDeviceGlobalArray_h, myDeviceGlobalArraySize));
     }
 
     struct {
@@ -98,8 +98,8 @@ int main() {
 
     {
         hipFunction_t Function;
-        HIP_CHECK(hipModuleGetFunction(&Function, Module, "hello_world"));
-        HIP_CHECK(hipModuleLaunchKernel(Function, 1, 1, 1, LEN, 1, 1, 0, 0, NULL, (void**)&config));
+        checkHipErrors(hipModuleGetFunction(&Function, Module, "hello_world"));
+        checkHipErrors(hipModuleLaunchKernel(Function, 1, 1, 1, LEN, 1, 1, 0, 0, NULL, (void**)&config));
 
         hipMemcpyDtoH(B, Bd, SIZE);
 
@@ -123,13 +123,13 @@ int main() {
 
     {
         hipFunction_t Function;
-        HIP_CHECK(hipModuleGetFunction(&Function, Module, "test_globals"));
+        checkHipErrors(hipModuleGetFunction(&Function, Module, "test_globals"));
         int val =-1;
-        HIP_CHECK(hipFuncGetAttribute(&val, HIP_FUNC_ATTRIBUTE_SHARED_SIZE_BYTES,Function));
+        checkHipErrors(hipFuncGetAttribute(&val, HIP_FUNC_ATTRIBUTE_SHARED_SIZE_BYTES,Function));
         printf("Shared Size Bytes = %d\n",val);
-        HIP_CHECK(hipFuncGetAttribute(&val, HIP_FUNC_ATTRIBUTE_NUM_REGS, Function));
+        checkHipErrors(hipFuncGetAttribute(&val, HIP_FUNC_ATTRIBUTE_NUM_REGS, Function));
         printf("Num Regs = %d\n",val);
-        HIP_CHECK(hipModuleLaunchKernel(Function, 1, 1, 1, LEN, 1, 1, 0, 0, NULL, (void**)&config));
+        checkHipErrors(hipModuleLaunchKernel(Function, 1, 1, 1, LEN, 1, 1, 0, 0, NULL, (void**)&config));
 
         hipMemcpyDtoH(B, Bd, SIZE);
 

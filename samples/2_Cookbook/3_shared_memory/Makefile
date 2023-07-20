@@ -32,6 +32,7 @@ TARGET=hcc
 
 SOURCES = sharedMemory.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
+INCLUDES  := -I../../common
 
 EXECUTABLE=./sharedMemory
 
@@ -40,7 +41,7 @@ EXECUTABLE=./sharedMemory
 
 all: $(EXECUTABLE) test
 
-CXXFLAGS =-g
+CXXFLAGS =-g $(INCLUDES)
 CXX=$(HIPCC)
 
 

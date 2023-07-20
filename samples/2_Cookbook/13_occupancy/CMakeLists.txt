@@ -40,5 +40,7 @@ set(CMAKE_BUILD_TYPE Release)
 # Create the excutable
 add_executable(occupancy occupancy.cpp)
 
+target_include_directories(occupancy PRIVATE ../../common)
+
 # Link with HIP
 target_link_libraries(occupancy hip::host)

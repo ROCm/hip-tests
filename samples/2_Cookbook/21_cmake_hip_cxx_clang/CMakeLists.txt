@@ -30,5 +30,7 @@ find_package(hip REQUIRED)
 # Create the excutable
 add_executable(square square.cpp)
 
+target_include_directories(square PRIVATE ../../common)
+
 # Link with HIP
 target_link_libraries(square hip::device)

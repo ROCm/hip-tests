@@ -51,6 +51,8 @@ set(MY_NVCC_OPTIONS)
 set_source_files_properties(${MY_SOURCE_FILES} PROPERTIES HIP_SOURCE_PROPERTY_FORMAT 1)
 hip_add_executable(${MY_TARGET_NAME} ${MY_SOURCE_FILES} HIPCC_OPTIONS ${MY_HIPCC_OPTIONS} CLANG_OPTIONS ${MY_CLANG_OPTIONS} NVCC_OPTIONS ${MY_NVCC_OPTIONS})
 
+target_include_directories(${MY_TARGET_NAME} PRIVATE ../../common)
+
 # Search for rocm in common locations
 list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/hip ${ROCM_PATH})
 find_package(hip QUIET CONFIG)

@@ -19,13 +19,8 @@ THE SOFTWARE.
 
 #include "hip/hip_runtime.h"
 #include <iostream>
+#include "hip_helper.h"
 #define NUM 1000000
-
-#define HIP_CHECK(status)                                                                          \
-    if (status != hipSuccess) {                                                                    \
-        std::cout << "Got Status: " << status << " at Line: " << __LINE__ << std::endl;            \
-        exit(0);                                                                                   \
-    }
 
 // Device (Kernel) function
 __global__ void multiply(float* C, float* A, float* B, int N){
@@ -47,11 +42,11 @@ void multiplyCPU(float* C, float* A, float* B, int N){
 void launchKernel(float* C, float* A, float* B, bool manual){
 
      hipDeviceProp_t devProp;
-     HIP_CHECK(hipGetDeviceProperties(&devProp, 0));
+     checkHipErrors(hipGetDeviceProperties(&devProp, 0));
 
      hipEvent_t start, stop;
-     HIP_CHECK(hipEventCreate(&start));
-     HIP_CHECK(hipEventCreate(&stop));
+     checkHipErrors(hipEventCreate(&start));
+     checkHipErrors(hipEventCreate(&stop));
      float eventMs = 1.0f;
      const unsigned threadsperblock = 32;
      const unsigned blocks = (NUM/threadsperblock)+1;
@@ -66,28 +61,28 @@ void launchKernel(float* C, float* A, float* B, bool manual){
 	std::cout << std::endl << "Manual Configuration with block size " << blockSize << std::endl;
      }
      else{
-	HIP_CHECK(hipOccupancyMaxPotentialBlockSize(&mingridSize, &blockSize, multiply, 0, 0));
+	checkHipErrors(hipOccupancyMaxPotentialBlockSize(&mingridSize, &blockSize, multiply, 0, 0));
 	std::cout << std::endl << "Automatic Configuation based on hipOccupancyMaxPotentialBlockSize " << std::endl;
 	std::cout << "Suggested blocksize is " << blockSize << ", Minimum gridsize is " << mingridSize << std::endl;
 	gridSize = (NUM/blockSize)+1;
      }
 
      // Record the start event
-     HIP_CHECK(hipEventRecord(start, NULL));
+     checkHipErrors(hipEventRecord(start, NULL));
 
      // Launching the Kernel from Host
      hipLaunchKernelGGL(multiply, dim3(gridSize), dim3(blockSize), 0, 0, C, A, B, NUM);
 
      // Record the stop event
-     HIP_CHECK(hipEventRecord(stop, NULL));
-     HIP_CHECK(hipEventSynchronize(stop));
+     checkHipErrors(hipEventRecord(stop, NULL));
+     checkHipErrors(hipEventSynchronize(stop));
 
-     HIP_CHECK(hipEventElapsedTime(&eventMs, start, stop));
+     checkHipErrors(hipEventElapsedTime(&eventMs, start, stop));
      printf("kernel Execution time = %6.3fms\n", eventMs);
 
      //Calculate Occupancy
      int numBlock = 0;
-     HIP_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor(&numBlock, multiply, blockSize, 0));
+     checkHipErrors(hipOccupancyMaxActiveBlocksPerMultiprocessor(&numBlock, multiply, blockSize, 0));
 
      if(devProp.maxThreadsPerMultiProcessor){
 	std::cout << "Theoretical Occupancy is " << (double)numBlock* blockSize/devProp.maxThreadsPerMultiProcessor * 100 << "%" << std::endl;
@@ -113,14 +108,14 @@ int main() {
      }
 
      // allocate the memory on the device side
-     HIP_CHECK(hipMalloc((void**)&Ad, NUM * sizeof(float)));
-     HIP_CHECK(hipMalloc((void**)&Bd, NUM * sizeof(float)));
-     HIP_CHECK(hipMalloc((void**)&C0d, NUM * sizeof(float)));
-     HIP_CHECK(hipMalloc((void**)&C1d, NUM * sizeof(float)));
+     checkHipErrors(hipMalloc((void**)&Ad, NUM * sizeof(float)));
+     checkHipErrors(hipMalloc((void**)&Bd, NUM * sizeof(float)));
+     checkHipErrors(hipMalloc((void**)&C0d, NUM * sizeof(float)));
+     checkHipErrors(hipMalloc((void**)&C1d, NUM * sizeof(float)));
 
      // Memory transfer from host to device
-     HIP_CHECK(hipMemcpy(Ad,A,NUM * sizeof(float), hipMemcpyHostToDevice));
-     HIP_CHECK(hipMemcpy(Bd,B,NUM * sizeof(float), hipMemcpyHostToDevice));
+     checkHipErrors(hipMemcpy(Ad,A,NUM * sizeof(float), hipMemcpyHostToDevice));
+     checkHipErrors(hipMemcpy(Bd,B,NUM * sizeof(float), hipMemcpyHostToDevice));
 
      //Kernel launch with manual/default block size
      launchKernel(C0d, Ad, Bd, 1);
@@ -129,8 +124,8 @@ int main() {
      launchKernel(C1d, Ad, Bd, 0);
 
      // Memory transfer from device to host
-     HIP_CHECK(hipMemcpy(C0,C0d, NUM * sizeof(float), hipMemcpyDeviceToHost));
-     HIP_CHECK(hipMemcpy(C1,C1d, NUM * sizeof(float), hipMemcpyDeviceToHost));
+     checkHipErrors(hipMemcpy(C0,C0d, NUM * sizeof(float), hipMemcpyDeviceToHost));
+     checkHipErrors(hipMemcpy(C1,C1d, NUM * sizeof(float), hipMemcpyDeviceToHost));
 
      // CPU computation
      multiplyCPU(cpuC, A, B, NUM);
@@ -163,10 +158,10 @@ int main() {
 	printf("\nAutomatic Test PASSED!\n");
      }
 
-     HIP_CHECK(hipFree(Ad));
-     HIP_CHECK(hipFree(Bd));
-     HIP_CHECK(hipFree(C0d));
-     HIP_CHECK(hipFree(C1d));
+     checkHipErrors(hipFree(Ad));
+     checkHipErrors(hipFree(Bd));
+     checkHipErrors(hipFree(C0d));
+     checkHipErrors(hipFree(C1d));
 
      free(A);
      free(B);

@@ -26,13 +26,14 @@ ifeq (,$(HIP_PATH))
 	HIP_PATH=../../..
 endif
 HIPCC=$(HIP_PATH)/bin/hipcc
+INCLUDES  := -I../../common
 
 EXE=hipInfo
 
 all: install
 
 $(EXE): hipInfo.cpp
-	$(HIPCC) hipInfo.cpp -o $@
+	$(HIPCC) hipInfo.cpp $(INCLUDES) -o $@
 
 install: $(EXE)
 	cp $(EXE) $(HIP_PATH)/bin

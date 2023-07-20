@@ -40,5 +40,7 @@ set(CMAKE_BUILD_TYPE Release)
 # Create the excutable
 add_executable(gpuarch gpuarch.cpp)
 
+target_include_directories(gpuarch PRIVATE ../../common)
+
 # Link with HIP
 target_link_libraries(gpuarch hip::host)

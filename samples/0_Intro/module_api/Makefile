@@ -27,20 +27,21 @@ ifeq (,$(HIP_PATH))
 endif
 HIPCC=$(HIP_PATH)/bin/hipcc
 HIP_PLATFORM=$(shell $(HIP_PATH)/bin/hipconfig --compiler)
+INCLUDES  := -I../../common
 
 all: vcpy_kernel.code runKernel.hip.out launchKernelHcc.hip.out defaultDriver.hip.out
 
 runKernel.hip.out: runKernel.cpp
-	$(HIPCC) $(HIPCC_FLAGS) $< -o $@
+	$(HIPCC) $(HIPCC_FLAGS) $(INCLUDES) $< -o $@
 
 launchKernelHcc.hip.out: launchKernelHcc.cpp
-	$(HIPCC) $(HIPCC_FLAGS) $< -o $@
+	$(HIPCC) $(HIPCC_FLAGS) $(INCLUDES) $< -o $@
 
 defaultDriver.hip.out: defaultDriver.cpp
-	$(HIPCC)  $(HIPCC_FLAGS) $< -o $@
+	$(HIPCC)  $(HIPCC_FLAGS) $(INCLUDES) $< -o $@
 
 vcpy_kernel.code: vcpy_kernel.cpp
-	$(HIPCC)  --genco  $(GENCO_FLAGS) $^ -o $@
+	$(HIPCC)  --genco  $(GENCO_FLAGS) $(INCLUDES) $^ -o $@
 
 clean:
 	rm -f *.code *.out

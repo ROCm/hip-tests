@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 // hip header file
 #include "hip/hip_runtime.h"
-
+#include "hip_helper.h"
 
 #define WIDTH 1024
 
@@ -61,7 +61,7 @@ int main() {
     float* gpuTransposeMatrix;
 
     hipDeviceProp_t devProp;
-    hipGetDeviceProperties(&devProp, 0);
+    checkHipErrors(hipGetDeviceProperties(&devProp, 0));
 
     std::cout << "Device name " << devProp.name << std::endl;
 
@@ -78,11 +78,11 @@ int main() {
     }
 
     // allocate the memory on the device side
-    hipMalloc((void**)&gpuMatrix, NUM * sizeof(float));
-    hipMalloc((void**)&gpuTransposeMatrix, NUM * sizeof(float));
+    checkHipErrors(hipMalloc((void**)&gpuMatrix, NUM * sizeof(float)));
+    checkHipErrors(hipMalloc((void**)&gpuTransposeMatrix, NUM * sizeof(float)));
 
     // Memory transfer from host to device
-    hipMemcpy(gpuMatrix, Matrix, NUM * sizeof(float), hipMemcpyHostToDevice);
+    checkHipErrors(hipMemcpy(gpuMatrix, Matrix, NUM * sizeof(float), hipMemcpyHostToDevice));
 
     // Lauching kernel from host
     hipLaunchKernelGGL(matrixTranspose, dim3(WIDTH / THREADS_PER_BLOCK_X, WIDTH / THREADS_PER_BLOCK_Y),
@@ -90,7 +90,7 @@ int main() {
                     gpuMatrix, WIDTH);
 
     // Memory transfer from device to host
-    hipMemcpy(TransposeMatrix, gpuTransposeMatrix, NUM * sizeof(float), hipMemcpyDeviceToHost);
+    checkHipErrors(hipMemcpy(TransposeMatrix, gpuTransposeMatrix, NUM * sizeof(float), hipMemcpyDeviceToHost));
 
     // CPU MatrixTranspose computation
     matrixTransposeCPUReference(cpuTransposeMatrix, Matrix, WIDTH);
@@ -110,8 +110,8 @@ int main() {
     }
 
     // free the resources on device side
-    hipFree(gpuMatrix);
-    hipFree(gpuTransposeMatrix);
+    checkHipErrors(hipFree(gpuMatrix));
+    checkHipErrors(hipFree(gpuTransposeMatrix));
 
     // free the resources on host side
     free(Matrix);

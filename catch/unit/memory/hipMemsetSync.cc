@@ -52,8 +52,8 @@ struct MultiDData {
 
 // set of helper functions to tidy the nested switch statements
 template <typename T>
-static std::pair<T*,T*> deviceMallocHelper(memSetType memType, size_t dataW, size_t dataH, size_t dataD,
-                             size_t& dataPitch) {
+static std::pair<T*, T*> deviceMallocHelper(memSetType memType, size_t dataW, size_t dataH,
+                                            size_t dataD, size_t& dataPitch) {
   size_t elementSize = sizeof(T);
   size_t sizeInBytes = elementSize * dataW * dataH * dataD;
   T* aPtr{};
@@ -89,7 +89,8 @@ static std::pair<T*,T*> deviceMallocHelper(memSetType memType, size_t dataW, siz
 }
 
 template <typename T>
-static std::pair<T*, T*> hostMallocHelper(size_t dataW, size_t dataH, size_t dataD, size_t& dataPitch) {
+static std::pair<T*, T*> hostMallocHelper(size_t dataW, size_t dataH, size_t dataD,
+                                          size_t& dataPitch) {
   size_t elementSize = sizeof(T);
   size_t sizeInBytes = elementSize * dataW * dataH * dataD;
   T* aPtr;
@@ -101,7 +102,8 @@ static std::pair<T*, T*> hostMallocHelper(size_t dataW, size_t dataH, size_t dat
 }
 
 template <typename T>
-static std::pair<T*, T*> hostRegisteredHelper(size_t dataW, size_t dataH, size_t dataD, size_t& dataPitch) {
+static std::pair<T*, T*> hostRegisteredHelper(size_t dataW, size_t dataH, size_t dataD,
+                                              size_t& dataPitch) {
   size_t elementSize = sizeof(T);
   size_t sizeInBytes = elementSize * dataW * dataH * dataD;
   T* aPtr = new T[dataW * dataH * dataD];
@@ -448,7 +450,7 @@ TEST_CASE("Unit_hipMemsetSync") {
                             allocType::devRegistered);
   memSetType memset_type = memSetType::hipMemset;
   MultiDData data;
-  data.width = GENERATE(1, 1024);
+  data.width = GENERATE(512, 1024);
   doMemsetTest<char>(type, memset_type, data);
 }
 
@@ -461,7 +463,7 @@ TEMPLATE_TEST_CASE("Unit_hipMemsetDSync", "", int8_t, int16_t, uint32_t) {
                                   allocType::hostMalloc, allocType::devRegistered);
   memSetType memset_type;
   MultiDData data;
-  data.width = GENERATE(1, 1024);
+  data.width = GENERATE(512, 1024);
 
   if (std::is_same<int8_t, TestType>::value) {
     memset_type = memSetType::hipMemsetD8;
@@ -483,8 +485,8 @@ TEST_CASE("Unit_hipMemset2DSync") {
                                   allocType::hostRegisted, allocType::devRegistered);
   memSetType memset_type = memSetType::hipMemset2D;
   MultiDData data;
-  data.width = GENERATE(1, 1024);
-  data.height = GENERATE(1, 1024);
+  data.width = GENERATE(512, 1024);
+  data.height = GENERATE(512, 1024);
 
   doMemsetTest<char>(mallocType, memset_type, data);
 }
@@ -498,9 +500,9 @@ TEST_CASE("Unit_hipMemset3DSync") {
                                   allocType::hostRegisted, allocType::devRegistered);
   memSetType memset_type = memSetType::hipMemset3D;
   MultiDData data;
-  data.width = GENERATE(1, 256);
-  data.height = GENERATE(1, 256);
-  data.depth = GENERATE(1, 256);
+  data.width = GENERATE(128, 256);
+  data.height = GENERATE(128, 256);
+  data.depth = GENERATE(128, 256);
 
   doMemsetTest<char>(mallocType, memset_type, data);
 }

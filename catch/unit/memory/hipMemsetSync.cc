@@ -21,6 +21,7 @@ THE SOFTWARE.
 */
 
 #include <hip_test_common.hh>
+#include <utils.hh>
 /*
  * These testcases verify that synchronous memset functions are asynchronous with respect to the
  * host except when the target is pinned host memory or a Unified Memory region
@@ -406,7 +407,7 @@ void runTests(allocType type, memSetType memsetType, MultiDData data, hipStream_
   std::pair<T*, T*> aPtr = initMemory<T>(type, memsetType, data);
   using namespace std::chrono_literals;
   const std::chrono::duration<uint64_t, std::milli> delay = 100ms;
-  HipTest::runKernelForDuration(delay, stream);
+  LaunchDelayKernel(delay, stream);
   memsetCheck(aPtr.first, testValue, memsetType, data, async, stream);
 
   if (async || type == allocType::deviceMalloc) {

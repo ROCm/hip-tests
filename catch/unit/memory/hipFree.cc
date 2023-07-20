@@ -25,7 +25,7 @@ THE SOFTWARE.
 #include <hip_array_common.hh>
 #include "hipArrayCommon.hh"
 #include "DriverContext.hh"
-
+#include <utils.hh>
 /*
  * This testcase verifies [ hipFree || hipFreeArray || hipFreeType::ArrayDestroy ||
  * hipFreeType::HostFree with hipHostMalloc ]
@@ -54,7 +54,7 @@ TEST_CASE("Unit_hipFreeImplicitSyncDev") {
   size_t size_mult = GENERATE(1, 32, 64, 128, 256);
   HIP_CHECK(hipMalloc(&devPtr, sizeof(*devPtr) * size_mult));
 
-  HipTest::runKernelForDuration(delay);
+  LaunchDelayKernel(delay);
   // make sure device is busy
   HIP_CHECK_ERROR(hipStreamQuery(nullptr), hipErrorNotReady);
   HIP_CHECK(hipFree(devPtr));
@@ -67,7 +67,7 @@ TEST_CASE("Unit_hipFreeImplicitSyncHost") {
 
   HIP_CHECK(hipHostMalloc(&hostPtr, sizeof(*hostPtr) * size_mult));
 
-  HipTest::runKernelForDuration(delay);
+  LaunchDelayKernel(delay);
   // make sure device is busy
   HIP_CHECK_ERROR(hipStreamQuery(nullptr), hipErrorNotReady);
   HIP_CHECK(hipHostFree(hostPtr));
@@ -88,7 +88,7 @@ TEMPLATE_TEST_CASE("Unit_hipFreeImplicitSyncArray", "", char, float, float2, flo
     hipChannelFormatDesc desc = hipCreateChannelDesc<TestType>();
 
     HIP_CHECK(hipMallocArray(&arrayPtr, &desc, width, height, hipArrayDefault));
-    HipTest::runKernelForDuration(delay);
+    LaunchDelayKernel(delay);
     // make sure device is busy
     HIP_CHECK_ERROR(hipStreamQuery(nullptr), hipErrorNotReady);
     HIP_CHECK(hipFreeArray(arrayPtr));
@@ -103,7 +103,7 @@ TEMPLATE_TEST_CASE("Unit_hipFreeImplicitSyncArray", "", char, float, float2, flo
     cuDesc.Format = vec_info::format;
     cuDesc.NumChannels = vec_info::size;
     HIP_CHECK(hipArrayCreate(&cuArrayPtr, &cuDesc));
-    HipTest::runKernelForDuration(delay);
+    LaunchDelayKernel(delay);
     // make sure device is busy
     HIP_CHECK_ERROR(hipStreamQuery(nullptr), hipErrorNotReady);
     HIP_CHECK(hipArrayDestroy(cuArrayPtr));
@@ -120,7 +120,7 @@ TEMPLATE_TEST_CASE("Unit_hipFreeImplicitSyncArray", "", char, float, float2, flo
   hipChannelFormatDesc desc = hipCreateChannelDesc<TestType>();
 
   HIP_CHECK(hipMallocArray(&arrayPtr, &desc, extent.width, extent.height, hipArrayDefault));
-  HipTest::runKernelForDuration(delay);
+  LaunchDelayKernel(delay);
   // make sure device is busy
   HIP_CHECK_ERROR(hipStreamQuery(nullptr), hipErrorNotReady);
   // Second free segfaults

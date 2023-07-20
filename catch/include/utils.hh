@@ -122,9 +122,17 @@ template <typename T> __global__ void VectorSet(T* const vec, const T value, siz
 // Will execute for atleast interval milliseconds
 static __global__ void Delay(uint32_t interval, const uint32_t ticks_per_ms) {
   while (interval--) {
-    uint64_t start = clock();
-    while (clock() - start < ticks_per_ms) {
+    #if HT_AMD
+    uint64_t start = wall_clock64();
+    while (wall_clock64() - start < ticks_per_ms) {
+      __builtin_amdgcn_s_sleep(10);
     }
+    #endif
+    #if HT_NVIDIA
+    uint64_t start = clock64();
+    while (clock64() - start < ticks_per_ms) {
+    }
+    #endif
   }
 }
 
@@ -140,14 +148,14 @@ __global__ void Iota(T* const out, size_t pitch, size_t w, size_t h, size_t d) {
   }
 }
 
-inline void LaunchDelayKernel(const std::chrono::milliseconds interval, const hipStream_t stream) {
+inline void LaunchDelayKernel(const std::chrono::milliseconds interval, const hipStream_t stream = nullptr) {
   int ticks_per_ms = 0;
-  // Clock rate is in kHz => number of clock ticks in a millisecond
-  if (IsGfx11()) {
-    HIPCHECK(hipDeviceGetAttribute(&ticks_per_ms, hipDeviceAttributeWallClockRate, 0));
-  } else {
-    HIPCHECK(hipDeviceGetAttribute(&ticks_per_ms, hipDeviceAttributeClockRate, 0));
-  }
+  #if HT_AMD
+  HIPCHECK(hipDeviceGetAttribute(&ticks_per_ms, hipDeviceAttributeWallClockRate, 0));
+  #endif
+  #if HT_NVIDIA
+  HIPCHECK(hipDeviceGetAttribute(&ticks_per_ms, hipDeviceAttributeClockRate, 0));
+  #endif
   Delay<<<1, 1, 0, stream>>>(interval.count(), ticks_per_ms);
 }
 

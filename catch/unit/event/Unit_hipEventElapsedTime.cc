@@ -23,7 +23,7 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 #include <iostream>
-
+#include <utils.hh>
 /**
  * @addtogroup hipEventElapsedTime hipEventElapsedTime
  * @{
@@ -158,10 +158,7 @@ TEST_CASE("Unit_hipEventElapsedTime_NotReady_Negative") {
   // Record start event
   HIP_CHECK(hipEventRecord(start, nullptr));
 
-  HipTest::BlockingContext b_context{nullptr};
-  b_context.block_stream();  // blocked stream
-  REQUIRE(b_context.is_blocked());
-
+  LaunchDelayKernel(std::chrono::milliseconds(1000));
   // Record stop event
   HIP_CHECK(hipEventRecord(stop, nullptr));
 
@@ -169,7 +166,6 @@ TEST_CASE("Unit_hipEventElapsedTime_NotReady_Negative") {
   float tElapsed = 1.0f;
   HIP_CHECK_ERROR(hipEventQuery(stop), hipErrorNotReady);
   HIP_ASSERT(hipEventElapsedTime(&tElapsed, start, stop) == hipErrorNotReady);
-  b_context.unblock_stream();
 
   HIP_CHECK(hipStreamSynchronize(nullptr));
   HIP_CHECK(hipEventDestroy(start));

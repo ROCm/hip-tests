@@ -90,7 +90,6 @@
 	   "Unit_hipMemGetInfo_ParaNonDiv",
 	   "Unit_hipMemGetInfo_ParaMultiSmall",
 	   "Unit_hipMemGetInfo_Negative",
-	   "Unit_hipMemsetDSync - int8_t",
 	   "Unit_hipGraphClone_Test_hipGraphExecMemcpyNodeSetParams",
 	   "Unit_hipGraphClone_Test_hipGraphMemcpyNodeSetParams1D_and_exec",
 	   "Unit_hipStreamValue_Wait64_Blocking_NoMask_And",

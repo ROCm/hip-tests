@@ -27,7 +27,8 @@ THE SOFTWARE.
 #include <catch.hpp>
 #include <atomic>
 #include <chrono>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdlib>
 #include <iostream>
 #include <iomanip>
 #include <mutex>

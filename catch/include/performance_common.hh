@@ -25,12 +25,21 @@ THE SOFTWARE.
 #include <algorithm>
 #include <chrono>
 #include <memory>
+#include <numeric>
 #include <type_traits>
 #include <vector>
 
 #include <cmd_options.hh>
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
+
+#if defined(_WIN32)
+#if defined(_WIN64)
+typedef __int64 ssize_t;
+#else   // !_WIN64
+typedef __int32 ssize_t;
+#endif  // !_WIN64
+#endif  /*_WIN32*/
 
 class Timer {
  public:
@@ -102,7 +111,7 @@ template <typename Derived> class Benchmark {
   Benchmark()
       : iterations_(cmd_options.iterations),
         warmups_(cmd_options.warmups),
-        display_output_(cmd_options.display),
+        display_output_(!cmd_options.no_display),
         progress_bar_(cmd_options.progress) {
     benchmark_name_ = Catch::getResultCapture().getCurrentTestName();
   }
@@ -146,12 +155,12 @@ template <typename Derived> class Benchmark {
       time_ = .0;
     }
 
-    float sum = std::reduce(cbegin(samples), cend(samples));
+    float sum = std::accumulate(cbegin(samples), cend(samples), .0);
     float mean = sum / samples.size();
 
     float deviation =
         std::accumulate(cbegin(samples), cend(samples), .0,
-                    [mean](float sum, float next) { return sum + std::pow(next - mean, 2); });
+                        [mean](float sum, float next) { return sum + std::pow(next - mean, 2); });
     deviation = sqrt(deviation / samples.size());
 
     float best = *std::min_element(cbegin(samples), cend(samples));

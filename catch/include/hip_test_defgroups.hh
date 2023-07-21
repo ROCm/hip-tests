@@ -20,6 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#include <hip_test_common.hh>
+
 // Test groups are named based on the group names from hip_api_runtime.h, with adding "Test" suffix
 
 /**

@@ -27,83 +27,15 @@ THE SOFTWARE.
 
 class Memcpy3DAsyncBenchmark : public Benchmark<Memcpy3DAsyncBenchmark> {
  public:
-  void operator()(const hipExtent extent, hipMemcpyKind kind, bool enable_peer_access) {
-    const StreamGuard stream_guard(Streams::created);
-    const hipStream_t stream = stream_guard.stream();
-
-    if (kind == hipMemcpyDeviceToHost) {
-      LinearAllocGuard3D<int> device_allocation(extent);
-      LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, device_allocation.width() * 
-                                            device_allocation.height() * device_allocation.depth());
-      hipMemcpy3DParms params = CreateMemcpy3DParam(make_hipPitchedPtr(host_allocation.ptr(),
-                                                                       device_allocation.width(),
-                                                                       device_allocation.width(),
-                                                                       device_allocation.height()),
-                                                    make_hipPos(0, 0, 0), device_allocation.pitched_ptr(),
-                                                    make_hipPos(0, 0, 0),
-                                                    device_allocation.extent(), kind);
-      TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
-        HIP_CHECK(hipMemcpy3D(&params));
-      }
-      HIP_CHECK(hipStreamSynchronize(stream));
-    } else if (kind == hipMemcpyHostToDevice) {
-      LinearAllocGuard3D<int> device_allocation(extent);
-      LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, device_allocation.pitch() * 
-                                            device_allocation.height() * device_allocation.depth());
-      hipMemcpy3DParms params = CreateMemcpy3DParam(device_allocation.pitched_ptr(), make_hipPos(0, 0, 0),
-                                                    make_hipPitchedPtr(host_allocation.ptr(),
-                                                                       device_allocation.pitch(),
-                                                                       device_allocation.width(),
-                                                                       device_allocation.height()),
-                                                    make_hipPos(0, 0, 0), device_allocation.extent(), kind);
-      TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
-        HIP_CHECK(hipMemcpy3D(&params));
-      }
-      HIP_CHECK(hipStreamSynchronize(stream));
-    } else if (kind == hipMemcpyHostToHost) {
-      LinearAllocGuard3D<int> device_allocation(extent);
-      LinearAllocGuard<int> src_allocation(LinearAllocs::hipHostMalloc, extent.width * 
-                                           extent.height * extent.depth);
-      LinearAllocGuard<int> dst_allocation(LinearAllocs::hipHostMalloc, extent.width * 
-                                           extent.height * extent.depth);
-      hipMemcpy3DParms params = CreateMemcpy3DParam(make_hipPitchedPtr(dst_allocation.ptr(), extent.width, extent.width, extent.height),
-                                                    make_hipPos(0, 0, 0),
-                                                    make_hipPitchedPtr(src_allocation.ptr(), extent.width, extent.width, extent.height),
-                                                    make_hipPos(0, 0, 0), extent, kind);
-      TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
-        HIP_CHECK(hipMemcpy3D(&params));
-      }
-      HIP_CHECK(hipStreamSynchronize(stream));
-    } else {
-      // hipMemcpyDeviceToDevice
-      int src_device = 0;
-      int dst_device = 1;
-
-      if (enable_peer_access) {
-        int can_access_peer = 0;
-        HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, src_device, dst_device));
-        if (!can_access_peer) {
-          INFO("Peer access cannot be enabled between devices " << src_device << " and " << dst_device);
-          REQUIRE(can_access_peer);
-        }
-        HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));
-      } else {
-        dst_device = 0;
-      }
-      LinearAllocGuard3D<int> src_allocation(extent);
-      HIP_CHECK(hipSetDevice(dst_device));
-      LinearAllocGuard3D<int> dst_allocation(extent);
-
-      HIP_CHECK(hipSetDevice(src_device));
-      hipMemcpy3DParms params = CreateMemcpy3DParam(dst_allocation.pitched_ptr(),
-                                                    make_hipPos(0, 0, 0),
-                                                    src_allocation.pitched_ptr(),
-                                                    make_hipPos(0, 0, 0), dst_allocation.extent(), kind);
-      TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
-        HIP_CHECK(hipMemcpy3D(&params));
-      }
-      HIP_CHECK(hipStreamSynchronize(stream));
+  void operator()(const hipPitchedPtr& dst_ptr, const hipPitchedPtr& src_ptr,
+                  const hipExtent extent, hipMemcpyKind kind, const hipStream_t& stream) {
+    hipMemcpy3DParms params = CreateMemcpy3DParam(dst_ptr, make_hipPos(0, 0, 0),
+                                                  src_ptr, make_hipPos(0, 0, 0),
+                                                  extent, kind);
+    TIMED_SECTION_STREAM(kTimerTypeEvent, stream) {
+      HIP_CHECK(hipMemcpy3DAsync(&params, stream));
     }
+    HIP_CHECK(hipStreamSynchronize(stream));
   }
 };
 
@@ -111,7 +43,48 @@ static void RunBenchmark(const hipExtent extent, hipMemcpyKind kind, bool enable
   Memcpy3DAsyncBenchmark benchmark;
   benchmark.AddSectionName("(" + std::to_string(extent.width) + ", " + std::to_string(extent.height)
                            + ", " + std::to_string(extent.depth) + ")");
-  benchmark.Run(extent, kind, enable_peer_access);
+
+  const StreamGuard stream_guard(Streams::created);
+  const hipStream_t stream = stream_guard.stream();
+
+  if (kind == hipMemcpyDeviceToHost) {
+    LinearAllocGuard3D<int> device_allocation(extent);
+    LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, device_allocation.width() * 
+                                          device_allocation.height() * device_allocation.depth());
+    benchmark.Run(make_hipPitchedPtr(host_allocation.ptr(), device_allocation.width(),
+                                     device_allocation.width(), device_allocation.height()),
+                  device_allocation.pitched_ptr(), device_allocation.extent(), kind, stream);
+  } else if (kind == hipMemcpyHostToDevice) {
+    LinearAllocGuard3D<int> device_allocation(extent);
+    LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, device_allocation.pitch() * 
+                                          device_allocation.height() * device_allocation.depth());
+    benchmark.Run(device_allocation.pitched_ptr(),
+                  make_hipPitchedPtr(host_allocation.ptr(),
+                                     device_allocation.pitch(),
+                                     device_allocation.width(),
+                                     device_allocation.height()),
+                  device_allocation.extent(), kind, stream);
+  } else if (kind == hipMemcpyHostToHost) {
+    LinearAllocGuard3D<int> device_allocation(extent);
+    LinearAllocGuard<int> src_allocation(LinearAllocs::hipHostMalloc, extent.width * 
+                                         extent.height * extent.depth);
+    LinearAllocGuard<int> dst_allocation(LinearAllocs::hipHostMalloc, extent.width * 
+                                         extent.height * extent.depth);
+    benchmark.Run(make_hipPitchedPtr(dst_allocation.ptr(), extent.width, extent.width, extent.height),
+                  make_hipPitchedPtr(src_allocation.ptr(), extent.width, extent.width, extent.height),
+                  extent, kind, stream);
+  } else {
+    // hipMemcpyDeviceToDevice
+    int src_device = std::get<0>(GetDeviceIds(enable_peer_access));
+    int dst_device = std::get<1>(GetDeviceIds(enable_peer_access));
+  
+    LinearAllocGuard3D<int> src_allocation(extent);
+    HIP_CHECK(hipSetDevice(dst_device));
+    LinearAllocGuard3D<int> dst_allocation(extent);
+    HIP_CHECK(hipSetDevice(src_device));
+    benchmark.Run(dst_allocation.pitched_ptr(), src_allocation.pitched_ptr(),
+                  dst_allocation.extent(), kind, stream);
+  }
 }
 
 /**

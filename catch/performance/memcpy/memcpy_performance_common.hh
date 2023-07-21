@@ -22,8 +22,7 @@ THE SOFTWARE.
 #include <performance_common.hh>
 
 static hip_Memcpy2D CreateMemcpy2DParam(void* dst, size_t dpitch, void* src, size_t spitch,
-                                        size_t width, size_t height, hipMemcpyKind kind,
-                                        hipStream_t stream=nullptr) {
+                                        size_t width, size_t height, hipMemcpyKind kind) {
   hip_Memcpy2D params = {0};
   const hipExtent src_offset = {0};
   const hipExtent dst_offset = {0};
@@ -96,4 +95,23 @@ static hipMemcpy3DParms CreateMemcpy3DParam(hipPitchedPtr dst_ptr, hipPos dst_po
   params.extent = extent;
   params.kind = kind;
   return params;
+}
+
+static std::tuple<int, int> GetDeviceIds(bool enable_peer_access) {
+  int src_device = 0;
+  int dst_device = 1;
+
+  if (enable_peer_access) {
+    int can_access_peer = 0;
+    HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, src_device, dst_device));
+    if (!can_access_peer) {
+      INFO("Peer access cannot be enabled between devices " << src_device << " and " << dst_device);
+      REQUIRE(can_access_peer);
+    }
+    HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));
+  } else {
+    dst_device = 0;
+  }
+
+  return {src_device, dst_device};
 }

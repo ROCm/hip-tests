@@ -27,15 +27,9 @@ THE SOFTWARE.
 
 class MemcpyAtoHBenchmark : public Benchmark<MemcpyAtoHBenchmark> {
  public:
-  void operator()(LinearAllocs host_allocation_type, size_t width) {
-    const unsigned int flag = hipArrayDefault;
-    size_t allocation_size = width * sizeof(int);
-
-    LinearAllocGuard<int> host_allocation(LinearAllocs::hipHostMalloc, allocation_size);
-    ArrayAllocGuard<int> array_allocation(make_hipExtent(width, 0, 0), flag);
-
-    TIMED_SECTION(kTimerTypeEvent) {
-      HIP_CHECK(hipMemcpyAtoH(host_allocation.ptr(), array_allocation.ptr(), 0, allocation_size));
+  void operator()(void* dst, hipArray* src_array, size_t allocation_size) {
+    TIMED_SECTION(kTimerTypeCpu) {
+      HIP_CHECK(hipMemcpyAtoH(dst, src_array, 0, allocation_size));
     }
   }
 };
@@ -44,7 +38,11 @@ static void RunBenchmark(LinearAllocs host_allocation_type, size_t width) {
   MemcpyAtoHBenchmark benchmark;
   benchmark.AddSectionName(std::to_string(width));
   benchmark.AddSectionName(GetAllocationSectionName(host_allocation_type));
-  benchmark.Run(host_allocation_type, width);
+
+  size_t allocation_size = width * sizeof(int);
+  LinearAllocGuard<int> host_allocation(host_allocation_type, allocation_size);
+  ArrayAllocGuard<int> array_allocation(make_hipExtent(width, 0, 0), hipArrayDefault);
+  benchmark.Run(host_allocation.ptr(), array_allocation.ptr(), allocation_size);
 }
 
 /**

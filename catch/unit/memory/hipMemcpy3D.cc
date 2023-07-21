@@ -31,7 +31,7 @@ THE SOFTWARE.
 TEST_CASE("Unit_hipMemcpy3D_Positive_Basic") {
   constexpr bool async = false;
 
-  //SWDEV-409754 SECTION("Device to Host") { Memcpy3DDeviceToHostShell<async>(Memcpy3DWrapper<>); }
+  SECTION("Device to Host") { Memcpy3DDeviceToHostShell<async>(Memcpy3DWrapper<>); }
 
   SECTION("Device to Device") {
     SECTION("Peer access disabled") {
@@ -40,9 +40,9 @@ TEST_CASE("Unit_hipMemcpy3D_Positive_Basic") {
     SECTION("Peer access enabled") { Memcpy3DDeviceToDeviceShell<async, true>(Memcpy3DWrapper<>); }
   }
 
-  //SWDEV-409754 SECTION("Host to Device") { Memcpy3DHostToDeviceShell<async>(Memcpy3DWrapper<>); }
+  SECTION("Host to Device") { Memcpy3DHostToDeviceShell<async>(Memcpy3DWrapper<>); }
 
-  //SWDEV-409754 SECTION("Host to Host") { Memcpy3DHostToHostShell<async>(Memcpy3DWrapper<>); }
+  SECTION("Host to Host") { Memcpy3DHostToHostShell<async>(Memcpy3DWrapper<>); }
 }
 
 TEST_CASE("Unit_hipMemcpy3D_Positive_Synchronization_Behavior") {
@@ -74,7 +74,7 @@ TEST_CASE("Unit_hipMemcpy3D_Positive_Parameters") {
 
 TEST_CASE("Unit_hipMemcpy3D_Positive_Array") {
   constexpr bool async = false;
-  //SWDEV-409754 SECTION("Array from/to Host") { Memcpy3DArrayHostShell<async>(Memcpy3DWrapper<async>); }
+  SECTION("Array from/to Host") { Memcpy3DArrayHostShell<async>(Memcpy3DWrapper<async>); }
 #if HT_NVIDIA  // Disabled on AMD due to defect - EXSWHTEC-238
   SECTION("Array from/to Device") { Memcpy3DArrayDeviceShell<async>(Memcpy3DWrapper<async>); }
 #endif

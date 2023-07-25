@@ -19,6 +19,7 @@ THE SOFTWARE.
 
 #include <chrono>
 #include <hip_test_common.hh>
+#include <utils.hh>
 
 namespace hipStreamCreateWithFlagsTests {
 
@@ -69,11 +70,11 @@ TEST_CASE("Unit_hipStreamCreateWithFlags_DefaultStreamInteraction") {
   constexpr auto delay = std::chrono::milliseconds(500);
 
   SECTION("default stream waiting for created stream") {
-    HipTest::runKernelForDuration(delay, stream);
+    LaunchDelayKernel(delay, stream);
     REQUIRE(hipStreamQuery(defaultStream) == expectedError);
   }
   SECTION("created stream waiting for default stream") {
-    HipTest::runKernelForDuration(delay, defaultStream);
+    LaunchDelayKernel(delay, defaultStream);
     REQUIRE(hipStreamQuery(stream) == expectedError);
   }
 

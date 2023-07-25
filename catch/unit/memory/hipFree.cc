@@ -76,6 +76,8 @@ TEST_CASE("Unit_hipFreeImplicitSyncHost") {
 
 #if HT_NVIDIA
 TEMPLATE_TEST_CASE("Unit_hipFreeImplicitSyncArray", "", char, float, float2, float4) {
+  CHECK_IMAGE_SUPPORT
+
   using vec_info = vector_info<TestType>;
   DriverContext ctx;
 
@@ -113,6 +115,8 @@ TEMPLATE_TEST_CASE("Unit_hipFreeImplicitSyncArray", "", char, float, float2, flo
 #else  // AMD
 
 TEMPLATE_TEST_CASE("Unit_hipFreeImplicitSyncArray", "", char, float, float2, float4) {
+  CHECK_IMAGE_SUPPORT
+
   hipArray_t arrayPtr{};
   hipExtent extent{};
   extent.width = GENERATE(32, 128, 256, 512, 1024);
@@ -242,6 +246,8 @@ TEST_CASE("Unit_hipFreeDoubleArrayDestroy") {
 #else  // AMD
 
 TEST_CASE("Unit_hipFreeDoubleArray") {
+  CHECK_IMAGE_SUPPORT
+
   size_t width = GENERATE(32, 512, 1024);
   size_t height = GENERATE(0, 32, 512, 1024);
   hipArray_t arrayPtr{};
@@ -373,6 +379,8 @@ TEMPLATE_TEST_CASE("Unit_hipFreeMultiTArray", "", char, int, float2, float4) {
 #else
 
 TEMPLATE_TEST_CASE("Unit_hipFreeMultiTArray", "", char, int, float2, float4) {
+  CHECK_IMAGE_SUPPORT
+
   using vec_info = vector_info<TestType>;
 
   hipExtent extent{};

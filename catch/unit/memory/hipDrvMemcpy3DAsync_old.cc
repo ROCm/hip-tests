@@ -522,8 +522,9 @@ void DrvMemcpy3DAsync<T>::DeAllocateMemory() {
 }
 
 /* Verifying hipDrvMemcpy3DAsync API Host to Array for different datatypes */
-TEMPLATE_TEST_CASE("Unit_hipDrvMemcpy3DAsync_MultipleDataTypes", "",
-                   uint8_t, int, float) {
+TEMPLATE_TEST_CASE("Unit_hipDrvMemcpy3DAsync_MultipleDataTypes", "", uint8_t, int, float) {
+  CHECK_IMAGE_SUPPORT
+
   for (int i = 1; i < 25; i++) {
     if (std::is_same<TestType, float>::value) {
       DrvMemcpy3DAsync<TestType> memcpy3d_float(i, i, i,
@@ -543,6 +544,8 @@ TEMPLATE_TEST_CASE("Unit_hipDrvMemcpy3DAsync_MultipleDataTypes", "",
 
 /* This testcase verifies H2D copy of hipDrvMemcpy3DAsync API */
 TEST_CASE("Unit_hipDrvMemcpy3DAsync_HosttoDevice") {
+  CHECK_IMAGE_SUPPORT
+
   DrvMemcpy3DAsync<float> memcpy3d_D2H_float(10, 10, 1, HIP_AD_FORMAT_FLOAT);
   memcpy3d_D2H_float.HostDevice_DrvMemcpy3DAsync();
 }
@@ -558,6 +561,8 @@ TEST_CASE("Unit_hipDrvMemcpy3DAsync_Negative") {
 /* This testcase verifies extent validation scenarios of
    hipDrvMemcpy3DAsync API */
 TEST_CASE("Unit_hipDrvMemcpy3DAsync_ExtentValidation") {
+  CHECK_IMAGE_SUPPORT
+
   DrvMemcpy3DAsync<float> memcpy3d(10, 10, 1, HIP_AD_FORMAT_FLOAT);
   memcpy3d.Extent_Validation();
 }
@@ -566,6 +571,8 @@ TEST_CASE("Unit_hipDrvMemcpy3DAsync_ExtentValidation") {
 change scenario for hipDrvMemcpy3DAsync API */
 #if HT_AMD
 TEST_CASE("Unit_hipDrvMemcpy3DAsync_H2DDeviceContextChange") {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {
@@ -580,6 +587,8 @@ TEST_CASE("Unit_hipDrvMemcpy3DAsync_H2DDeviceContextChange") {
 /* This testcase verifies Host to Array copy in device context
 change scenario for hipDrvMemcpy3DAsync API */
 TEST_CASE("Unit_hipDrvMemcpy3DAsync_Host2ArrayDeviceContextChange") {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {

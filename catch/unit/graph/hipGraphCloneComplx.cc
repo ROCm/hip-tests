@@ -482,6 +482,8 @@ static void hipGraphClone_Test_hipGraphMemcpyNodeSetParams() {
 }
 
 TEST_CASE("Unit_hipGraphClone_Test_hipGraphMemcpyNodeSetParams") {
+  CHECK_IMAGE_SUPPORT
+
   hipGraphClone_Test_hipGraphMemcpyNodeSetParams();
 }
 
@@ -1873,6 +1875,9 @@ static void hipGraphClone_Test_All_API(int dev) {
  Run all the above writen test cases for multiple GPU scenarios */
 
 TEST_CASE("Unit_hipGraphClone_multi_GPU_test") {
+  //FIXME: This test tests 3D as well, decouple it
+  CHECK_IMAGE_SUPPORT
+
   int devcount = 0;
   HIP_CHECK(hipGetDeviceCount(&devcount));
   // If only single GPU is detected then return

@@ -59,6 +59,8 @@ static __global__ void var_update(int* data) {
 /* Allocate memory using different Allocation APIs and check whether
    correct memory type and device oridinal are returned */
 TEST_CASE("Unit_hipPointerGetAttribute_MemoryTypes") {
+  CHECK_IMAGE_SUPPORT
+
   HIP_CHECK(hipSetDevice(0));
   size_t pitch_A;
   size_t width{NUM_W * sizeof(char)};

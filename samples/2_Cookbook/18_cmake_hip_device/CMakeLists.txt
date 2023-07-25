@@ -22,11 +22,15 @@ project(cmake_hip_device_test)
 
 cmake_minimum_required(VERSION 3.10.2)
 
+include_directories(../../common)
+
 # Find hip
 find_package(hip REQUIRED)
 
 # Create the excutable
 add_executable(test_cpp square.cpp)
+
+target_include_directories(test_cpp PRIVATE ../../common)
 
 # Link with HIP
 target_link_libraries(test_cpp hip::device)

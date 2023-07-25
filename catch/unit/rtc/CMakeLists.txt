@@ -3,11 +3,13 @@ set(TEST_SRC
     saxpy.cc
     warpsize.cc
     hipRtcFunctional.cc
+    hipStreamCaptureRtc.cc
 )
 
 # AMD only tests
 set(AMD_TEST_SRC
     customOptions.cc
+    hipRtcBfloat16.cc
     linker.cc
 )
 

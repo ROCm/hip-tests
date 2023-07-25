@@ -30,6 +30,7 @@ HIPCC=$(HIP_PATH)/bin/hipcc
 CLANG=$(HIP_PATH)/llvm/bin/clang
 LLVM_MC=$(HIP_PATH)/llvm/bin/llvm-mc
 CLANG_OFFLOAD_BUNDLER=$(HIP_PATH)/llvm/bin/clang-offload-bundler
+INCLUDES  := -I../../common
 
 SRCS=square.cpp
 
@@ -57,8 +58,8 @@ GPU_ARCH9=gfx1103
 all: src_to_asm asm_to_exec
 
 src_to_asm:
-	$(HIPCC) -c -S --cuda-host-only -target x86_64-linux-gnu -o $(SQ_HOST_ASM) $(SRCS)
-	$(HIPCC) -c -S --cuda-device-only --offload-arch=$(GPU_ARCH1) --offload-arch=$(GPU_ARCH2) --offload-arch=$(GPU_ARCH3) --offload-arch=$(GPU_ARCH4) --offload-arch=$(GPU_ARCH5) --offload-arch=$(GPU_ARCH6) --offload-arch=$(GPU_ARCH7) --offload-arch=$(GPU_ARCH8) --offload-arch=$(GPU_ARCH9) $(SRCS)
+	$(HIPCC) -c -S $(INCLUDES) --cuda-host-only -target x86_64-linux-gnu -o $(SQ_HOST_ASM) $(SRCS)
+	$(HIPCC) -c -S $(INCLUDES) --cuda-device-only --offload-arch=$(GPU_ARCH1) --offload-arch=$(GPU_ARCH2) --offload-arch=$(GPU_ARCH3) --offload-arch=$(GPU_ARCH4) --offload-arch=$(GPU_ARCH5) --offload-arch=$(GPU_ARCH6) --offload-arch=$(GPU_ARCH7) --offload-arch=$(GPU_ARCH8) --offload-arch=$(GPU_ARCH9) $(SRCS)
 
 # You may modify the .s assembly files before the next step
 # By default, their names will be:

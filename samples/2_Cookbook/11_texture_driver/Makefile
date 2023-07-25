@@ -27,11 +27,12 @@ ifeq (,$(HIP_PATH))
 endif
 HIPCC=$(HIP_PATH)/bin/hipcc
 HIP_PLATFORM=$(shell $(HIP_PATH)/bin/hipconfig --compiler)
+INCLUDES  := -I../../common
 
 all: tex2dKernel.code texture2dDrv.out
 
 texture2dDrv.out: texture2dDrv.cpp
-	$(HIPCC) $(HIPCC_FLAGS) $< -o $@
+	$(HIPCC) $(HIPCC_FLAGS) $(INCLUDES) $< -o $@
 	
 tex2dKernel.code: tex2dKernel.cpp
 	$(HIPCC)  --genco  $(GENCO_FLAGS) $^ -o $@

@@ -39,5 +39,7 @@ set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 # Create the excutable
 add_executable(unroll unroll.cpp)
 
+target_include_directories(unroll PRIVATE ../../common)
+
 # Link with HIP
 target_link_libraries(unroll hip::host)

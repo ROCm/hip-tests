@@ -261,6 +261,7 @@ add_subdirectory(perftests ${CATCH_BUILD_DIR}/perftests)
 if(UNIX)
    add_subdirectory(multiproc ${CATCH_BUILD_DIR}/multiproc)
 endif()
+add_subdirectory(performance ${CATCH_BUILD_DIR}/performance)
 
 cmake_policy(POP)
 

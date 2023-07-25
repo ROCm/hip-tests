@@ -50,5 +50,7 @@ add_custom_target(
 
 add_dependencies(runKernel.hip.out codeobj)
 
+target_include_directories(runKernel.hip.out PRIVATE ../../common)
+
 # Link with HIP
 target_link_libraries(runKernel.hip.out hip::host)

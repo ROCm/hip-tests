@@ -132,11 +132,26 @@ add_custom_target(kerDevAllocSingleKer.code
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 
+# Accepted archs to compile this cmake file
+set(ACCEPTED_OFFLOAD_ARCHS gfx90a gfx940 gfx941 gfx942)
+function(CheckAcceptedArchs OFFLOAD_ARCH_STR_LOCAL)
+  set(ARCH_CHECK -1 PARENT_SCOPE)
+  string(REGEX MATCHALL "--offload-arch=gfx[0-9a-z]+" OFFLOAD_ARCH_LIST ${OFFLOAD_ARCH_STR_LOCAL})
+  foreach(OFFLOAD_ARCH IN LISTS OFFLOAD_ARCH_LIST)
+    string(REGEX MATCHALL "--offload-arch=(gfx[0-9a-z]+)" matches ${OFFLOAD_ARCH})
+    if (CMAKE_MATCH_COUNT EQUAL 1)
+      if (CMAKE_MATCH_1 IN_LIST ACCEPTED_OFFLOAD_ARCHS)
+        set(ARCH_CHECK 1 PARENT_SCOPE)
+      endif()         # CMAKE_MATCH_1
+    endif()        # CMAKE_MATCH_COUNT
+  endforeach()   # OFFLOAD_ARCH_LIST
+endfunction()  # CheckAcceptedArchs
+
 if(HIP_PLATFORM MATCHES "amd")
     if (DEFINED OFFLOAD_ARCH_STR)
-      string(FIND ${OFFLOAD_ARCH_STR} "gfx90a" ARCH_CHECK)
+      CheckAcceptedArchs(${OFFLOAD_ARCH_STR})
     elseif(DEFINED $ENV{HCC_AMDGPU_TARGET})
-      string(FIND $ENV{HCC_AMDGPU_TARGET} "gfx90a" ARCH_CHECK)
+      CheckAcceptedArchs($ENV{HCC_AMDGPU_TARGET})
     else()
       set(ARCH_CHECK -1)
     endif()

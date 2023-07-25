@@ -36,6 +36,7 @@ TARGET=hcc
 
 SOURCES = shfl.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
+INCLUDES  := -I../../common
 
 EXECUTABLE=./shfl
 
@@ -44,7 +45,7 @@ EXECUTABLE=./shfl
 
 all: $(EXECUTABLE) test
 
-CXXFLAGS =-g
+CXXFLAGS =-g $(INCLUDES)
 CXX=$(HIPCC)
 
 

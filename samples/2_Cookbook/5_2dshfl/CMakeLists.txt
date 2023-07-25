@@ -39,5 +39,7 @@ set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 # Create the excutable
 add_executable(2dshfl 2dshfl.cpp)
 
+target_include_directories(2dshfl PRIVATE ../../common)
+
 # Link with HIP
 target_link_libraries(2dshfl hip::host)

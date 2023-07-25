@@ -39,6 +39,8 @@ Functional -
 /* Test verifies hipGraphMemcpyNodeGetParams API Negative scenarios.
  */
 TEST_CASE("Unit_hipGraphMemcpyNodeGetParams_Negative") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr int width{SIZE}, height{SIZE}, depth{SIZE};
   hipArray *devArray;
   hipChannelFormatKind formatKind = hipChannelFormatKindSigned;
@@ -145,6 +147,8 @@ static bool memcpyNodeCompare(hipMemcpy3DParms *mNode1,
 }
 
 TEST_CASE("Unit_hipGraphMemcpyNodeGetParams_Functional") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr int width{SIZE}, height{SIZE}, depth{SIZE};
   hipArray *devArray;
   hipChannelFormatKind formatKind = hipChannelFormatKindSigned;

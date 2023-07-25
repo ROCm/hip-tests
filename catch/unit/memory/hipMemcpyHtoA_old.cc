@@ -43,8 +43,9 @@ Output: "A_d" output of hipMemcpyHtoA is copied to "hData" host variable
 
 The same scenario is then verified with pinned host memory
 */
-TEMPLATE_TEST_CASE("Unit_hipMemcpyHtoA_Basic", "[hipMemcpyHtoA]",
-                   char, int, float) {
+TEMPLATE_TEST_CASE("Unit_hipMemcpyHtoA_Basic", "[hipMemcpyHtoA]", char, int, float) {
+  CHECK_IMAGE_SUPPORT
+
   HIP_CHECK(hipSetDevice(0));
   auto memtype_check =  GENERATE(0, 1);
   hipArray *A_d;
@@ -95,9 +96,9 @@ Output: "A_d" output of hipMemcpyHtoA is copied to "hData" host variable
         validated the result with "B_h"
 */
 #if HT_AMD
-TEMPLATE_TEST_CASE("Unit_hipMemcpyHtoA_multiDevice-PeerDeviceContext",
-                   "[hipMemcpyHtoA]",
-                   char, int, float) {
+TEMPLATE_TEST_CASE("Unit_hipMemcpyHtoA_multiDevice-PeerDeviceContext", "[hipMemcpyHtoA]", char, int,
+                   float) {
+  CHECK_IMAGE_SUPPORT
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {
@@ -149,6 +150,8 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyHtoA_multiDevice-PeerDeviceContext",
 This testcase verifies the negative scenarios of hipMemcpyHtoA API
 */
 TEST_CASE("Unit_hipMemcpyHtoA_Negative") {
+  CHECK_IMAGE_SUPPORT
+
   HIP_CHECK(hipSetDevice(0));
   hipArray *A_d;
   float *hData{nullptr}, *B_h{nullptr};
@@ -190,6 +193,8 @@ SWDEV-274683
 */
 #if HT_NVIDIA
 TEST_CASE("Unit_hipMemcpyHtoA_SizeCheck") {
+  CHECK_IMAGE_SUPPORT
+
   HIP_CHECK(hipSetDevice(0));
   hipArray *A_d;
   float *hData{nullptr}, *B_h{nullptr}, *def_data{nullptr};

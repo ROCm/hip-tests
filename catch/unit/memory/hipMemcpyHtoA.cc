@@ -35,6 +35,8 @@ hipMemcpyHtoA api when parameters are invalid
 
 
 TEST_CASE("Unit_hipMemcpyHtoA_Positive_Default") {
+  CHECK_IMAGE_SUPPORT
+
   using namespace std::placeholders;
 
   const auto width = GENERATE(512, 1024, 2048);
@@ -44,6 +46,8 @@ TEST_CASE("Unit_hipMemcpyHtoA_Positive_Default") {
 }
 
 TEST_CASE("Unit_hipMemcpyHtoA_Positive_Synchronization_Behavior") {
+  CHECK_IMAGE_SUPPORT
+
   using namespace std::placeholders;
 
   const auto width = GENERATE(512, 1024, 2048);
@@ -60,6 +64,8 @@ SWDEV-274683
 */
 #if HT_NVIDIA
 TEST_CASE("Unit_hipMemcpyHtoA_Positive_ZeroCount") {
+  CHECK_IMAGE_SUPPORT
+
   const auto width = 1024;
   const auto height = 0;
   const auto allocation_size = width * sizeof(int);
@@ -85,6 +91,8 @@ TEST_CASE("Unit_hipMemcpyHtoA_Positive_ZeroCount") {
 #endif
 
 TEST_CASE("Unit_hipMemcpyHtoA_Negative_Parameters") {
+  CHECK_IMAGE_SUPPORT
+
   using namespace std::placeholders;
 
   const auto width = 1024;

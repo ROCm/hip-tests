@@ -44,6 +44,8 @@ static constexpr auto NUM_H{10};
  *         and verifying A_h with Phi
  */
 TEST_CASE("Unit_hipMemcpy2DFromArrayAsync_Basic") {
+  CHECK_IMAGE_SUPPORT
+
   HIP_CHECK(hipSetDevice(0));
   hipArray *A_d{nullptr};
   size_t width{sizeof(float)*NUM_W};
@@ -88,6 +90,8 @@ TEST_CASE("Unit_hipMemcpy2DFromArrayAsync_Basic") {
  * of hipMemcpy2DFromArrayAsync API
  */
 TEST_CASE("Unit_hipMemcpy2DFromArrayAsync_ExtentValidation") {
+  CHECK_IMAGE_SUPPORT
+
   HIP_CHECK(hipSetDevice(0));
   hipArray *A_d{nullptr};
   size_t width{sizeof(float)*NUM_W};
@@ -167,6 +171,8 @@ TEST_CASE("Unit_hipMemcpy2DFromArrayAsync_ExtentValidation") {
  *         and verifying A_h with PinnedMem[0](i.e., 10)
  */
 TEST_CASE("Unit_hipMemcpy2DFromArrayAsync_PinnedHostMemSameGpu") {
+  CHECK_IMAGE_SUPPORT
+
   HIP_CHECK(hipSetDevice(0));
   hipArray *A_d{nullptr};
   constexpr auto def_val{10};
@@ -212,6 +218,8 @@ TEST_CASE("Unit_hipMemcpy2DFromArrayAsync_PinnedHostMemSameGpu") {
  * OUTPUT: validating the result by comparing A_h and E_h
  */
 TEST_CASE("Unit_hipMemcpy2DFromArrayAsync_multiDevicePinnedHostMem") {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices = 0;
   constexpr auto def_val{10};
   HIP_CHECK(hipGetDeviceCount(&numDevices));
@@ -273,6 +281,8 @@ TEST_CASE("Unit_hipMemcpy2DFromArrayAsync_multiDevicePinnedHostMem") {
  *         and verifying A_h with Phi
  * */
 TEST_CASE("Unit_hipMemcpy2DFromArrayAsync_multiDeviceContextChange") {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {
@@ -320,6 +330,8 @@ TEST_CASE("Unit_hipMemcpy2DFromArrayAsync_multiDeviceContextChange") {
  * of hipMemcpy2DFromArrayAsync API
  */
 TEST_CASE("Unit_hipMemcpy2DFromArrayAsync_Negative") {
+  CHECK_IMAGE_SUPPORT
+
   HIP_CHECK(hipSetDevice(0));
   hipArray *A_d{nullptr};
   size_t width{sizeof(float)*NUM_W};

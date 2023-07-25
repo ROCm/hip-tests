@@ -657,9 +657,9 @@ void Memcpy3DAsync<T>::simple_Memcpy3DAsync() {
 This testcase verifies hipMemcpyAsync for different datatypes
 and different sizes
 */
-TEMPLATE_TEST_CASE("Unit_hipMemcpy3DAsync_Basic",
-                   "[hipMemcpy3DAsync]",
-                   int, unsigned int, float) {
+TEMPLATE_TEST_CASE("Unit_hipMemcpy3DAsync_Basic", "[hipMemcpy3DAsync]", int, unsigned int, float) {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   int device = -1;
@@ -692,6 +692,8 @@ This testcase performs the extent validation scenarios of
 hipMemcpy3D API
 */
 TEST_CASE("Unit_hipMemcpy3DAsync_ExtentValidation") {
+  CHECK_IMAGE_SUPPORT
+
   Memcpy3DAsync<int> memcpy3d(width, height, depth,
                               hipChannelFormatKindSigned);
   memcpy3d.Extent_Validation();
@@ -702,6 +704,8 @@ This testcase performs the negative scenarios of
 hipMemcpy3DAsync API
 */
 TEST_CASE("Unit_hipMemcpy3DAsync_multiDevice-Negative") {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {
@@ -718,6 +722,8 @@ This testcase performs the D2H,H2D and D2D on peer
 GPU device
 */
 TEST_CASE("Unit_hipMemcpy3DAsync_multiDevice-D2D") {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {
@@ -743,6 +749,8 @@ allocating memory in one GPU and creating stream
 in another GPU
 */
 TEST_CASE("Unit_hipMemcpy3DAsync_multiDevice-DiffStream") {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {

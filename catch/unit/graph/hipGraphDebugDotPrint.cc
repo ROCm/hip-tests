@@ -295,6 +295,8 @@ static void hipGraphDebugDotPrint_Functional(const char* fName,
    Verify that DOT file get created or not for each flag passed. */
 
 TEST_CASE("Unit_hipGraphDebugDotPrint_Functional") {
+  CHECK_IMAGE_SUPPORT
+
   SECTION("Call with hipGraphDebugDotFlagsVerbose flag") {
     hipGraphDebugDotPrint_Functional("./graphDotFileFuncVerbose.dot",
                                      hipGraphDebugDotFlagsVerbose);

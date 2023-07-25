@@ -66,6 +66,8 @@ Testcase Scenarios : Functional
  */
 
 TEST_CASE("Unit_hipGraphAddMemcpyNode_Negative") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr int width{10}, height{10}, depth{10};
   hipArray *devArray1;
   hipChannelFormatKind formatKind = hipChannelFormatKindSigned;
@@ -479,6 +481,8 @@ static void validateMemcpyNode1DArray(bool peerAccess = false) {
  * Tests also verify memcpy node addition with 1D, 2D and 3D objects.
  */
 TEST_CASE("Unit_hipGraphAddMemcpyNode_BasicFunctional") {
+  CHECK_IMAGE_SUPPORT
+
   SECTION("Memcpy with 3D array on default device") {
     validateMemcpyNode3DArray();
   }
@@ -499,6 +503,8 @@ TEST_CASE("Unit_hipGraphAddMemcpyNode_BasicFunctional") {
  * Tests also verify memcpy node addition with 1D, 2D and 3D objects.
  */
 TEST_CASE("Unit_hipGraphAddMemcpyNode_PeerAccessFunctional") {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices{}, peerAccess{};
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {

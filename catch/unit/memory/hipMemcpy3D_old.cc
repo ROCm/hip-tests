@@ -550,8 +550,9 @@ void Memcpy3D<T>::simple_Memcpy3D() {
  This testcase performs hipMemcpy3D API validation for 
  different datatypes and different sizes
 */
-TEMPLATE_TEST_CASE("Unit_hipMemcpy3D_Basic", "[hipMemcpy3D]",
-    int, unsigned int, float) {
+TEMPLATE_TEST_CASE("Unit_hipMemcpy3D_Basic", "[hipMemcpy3D]", int, unsigned int, float) {
+  CHECK_IMAGE_SUPPORT
+
   int device = -1;
   HIP_CHECK(hipGetDevice(&device));
   hipDeviceProp_t prop;
@@ -581,6 +582,8 @@ This testcase performs the extent validation scenarios of
 hipMemcpy3D API
 */
 TEST_CASE("Unit_hipMemcpy3D_ExtentValidation") {
+  CHECK_IMAGE_SUPPORT
+
   Memcpy3D<int> memcpy3d(width, height, depth,
                          hipChannelFormatKindSigned);
   memcpy3d.Extent_Validation();
@@ -591,6 +594,8 @@ This testcase performs the negative scenarios of
 hipMemcpy3D API
 */
 TEST_CASE("Unit_hipMemcpy3D_multiDevice-Negative") {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {
@@ -607,6 +612,8 @@ This testcase performs the D2H,H2D and D2D on peer
 GPU device
 */
 TEST_CASE("Unit_hipMemcpy3D_multiDevice-OnPeerDevice") {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {

@@ -26,8 +26,9 @@ ifeq (,$(HIP_PATH))
 	HIP_PATH=../../..
 endif
 HIPCC=$(HIP_PATH)/bin/hipcc -std=c++11
+INCLUDES  := -I../../common
 
-CXXFLAGS = -O3
+CXXFLAGS = -O3 $(INCLUDES)
 
 all: test_kernel.code hipDispatchLatency.out hipDispatchEnqueueRateMT.out
 
@@ -35,7 +36,7 @@ hipDispatchLatency.out: hipDispatchLatency.cpp
 	$(HIPCC) $(CXXFLAGS) hipDispatchLatency.cpp -o $@
 
 hipDispatchEnqueueRateMT.out: hipDispatchEnqueueRateMT.cpp
-	$(HIPCC) $(CXXFLAGS) hipDispatchEnqueueRateMT.cpp -o $@
+	$(HIPCC) $(CXXFLAGS) hipDispatchEnqueueRateMT.cpp -lpthread -o $@
 
 test_kernel.code: test_kernel.cpp
 	$(HIP_PATH)/bin/hipcc --genco  $(GENCO_FLAGS) $^ -o $@

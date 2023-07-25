@@ -29,6 +29,7 @@ ifeq (,$(HIP_PATH))
 endif
 HIP_PLATFORM=$(shell $(HIP_PATH)/bin/hipconfig --platform)
 HIPCC=$(HIP_PATH)/bin/hipcc
+INCLUDES  := -I../../common
 
 # Show how to use PLATFORM to specify different options for each compiler:
 ifeq (${HIP_PLATFORM}, nvcc)
@@ -38,7 +39,7 @@ endif
 EXE=bit_extract
 
 $(EXE): bit_extract.cpp
-	$(HIPCC) $(HIPCC_FLAGS) $< -o $@
+	$(HIPCC) $(HIPCC_FLAGS) $(INCLUDES) $< -o $@
 
 all: $(EXE)
 

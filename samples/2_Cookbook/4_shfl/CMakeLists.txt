@@ -40,5 +40,7 @@ set(CMAKE_BUILD_TYPE Release)
 # Create the excutable
 add_executable(shfl shfl.cpp)
 
+target_include_directories(shfl PRIVATE ../../common)
+
 # Link with HIP
 target_link_libraries(shfl hip::host)

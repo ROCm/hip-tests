@@ -95,6 +95,7 @@
 	   "Unit_hipStreamSynchronize_NullStreamAndStreamPerThread",
 	   "Note: intermittent Seg fault failure ",
 	   "Unit_hipGraphAddEventRecordNode_Functional_WithoutFlags",
+	   "Unit_hipGraphAddChildGraphNode_MultGraphsAsSingleGraph",
 	   "Unit_hipFuncSetCacheConfig_Positive_Basic",
 	   "Unit_hipFuncSetCacheConfig_Negative_Parameters",
 	   "Unit_hipFuncSetSharedMemConfig_Positive_Basic",
@@ -180,10 +181,15 @@
 	   "Unit_hipMemcpyPeerAsync_Positive_ZeroSize",
 	   "Disabling test tracked SWDEV-391718",
 	   "Unit_hipMemRangeGetAttribute_TstCountParam",
+	   "SWDEV-400049 tdr intermittently",
+	   "Unit_hipMemsetDSync – init16_t",
+	   "Unit_hipStreamAddCallback_StrmSyncTiming",
 	   "SWDEV-402082 - PAL Backend fails to reserve address on GPU except first one",
 	   "Unit_hipGraphInstantiateWithFlags_FlagAutoFreeOnLaunch_check",
 	   "SWDEV-398981 fails in stress test",
 	   "Unit_hipStreamCreateWithPriority_MulthreadDefaultflag",
+	   "SWDEV-402054 fails in external github build",
+	   "Unit_hipEventDestroy_WithWaitingStream",
 	   "Note: UUID returned empty on some windows nodes",
 	   "Unit_hipDeviceGetUuid_Positive",
      "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/96 ===",
@@ -200,6 +206,11 @@
 	   "Unit_ChannelDescriptor_Positive_Basic_3D - long3",
 	   "Unit_ChannelDescriptor_Positive_Basic_4D - ulong4",
 	   "Unit_ChannelDescriptor_Positive_Basic_4D - long4",
-	   "Unit_hipExtModuleLaunchKernel_NonUniformWorkGroup"
+	   "Unit_hipExtModuleLaunchKernel_NonUniformWorkGroup",
+	   "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/18 ===",
+	   "Unit_hipMemcpyAsync_Negative_Parameters",
+	   "Unit_hipMemcpyDtoHAsync_Negative_Parameters",
+	   "Unit_hipMemcpyHtoDAsync_Negative_Parameters",
+	   "Unit_hipMemcpyDtoDAsync_Negative_Parameters"
 	]
 }

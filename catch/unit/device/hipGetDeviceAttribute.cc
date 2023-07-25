@@ -462,7 +462,7 @@ constexpr AttributeToStringMap<57> kCommonAttributes{{
     {hipDeviceAttributeMemoryClockRate, "hipDeviceAttributeMemoryClockRate"},
     {hipDeviceAttributeComputeCapabilityMinor, "hipDeviceAttributeComputeCapabilityMinor"},
     {hipDeviceAttributeMultiprocessorCount, "hipDeviceAttributeMultiprocessorCount"},
-    {hipDeviceAttributeName, "hipDeviceAttributeName"},
+    {hipDeviceAttributeUnused1, "hipDeviceAttributeUnused1"},
     {hipDeviceAttributePageableMemoryAccess, "hipDeviceAttributePageableMemoryAccess"},
     {hipDeviceAttributePageableMemoryAccessUsesHostPageTables,
      "hipDeviceAttributePageableMemoryAccessUsesHostPageTables"},
@@ -520,17 +520,17 @@ constexpr AttributeToStringMap<33> kCudaOnlyAttributes{
      {hipDeviceAttributeStreamPrioritiesSupported, "hipDeviceAttributeStreamPrioritiesSupported"},
      {hipDeviceAttributeSurfaceAlignment, "hipDeviceAttributeSurfaceAlignment"},
      {hipDeviceAttributeTccDriver, "hipDeviceAttributeTccDriver"},
-     {hipDeviceAttributeUuid, "hipDeviceAttributeUuid"}}};
+     {hipDeviceAttributeUnused2, "hipDeviceAttributeUnused2"}}};
 #endif
 
 #if HT_AMD
 constexpr AttributeToStringMap<17> kAmdOnlyAttributes{{
     {hipDeviceAttributeClockInstructionRate, "hipDeviceAttributeClockInstructionRate"},
-    {hipDeviceAttributeArch, "hipDeviceAttributeArch"},
+    {hipDeviceAttributeUnused3, "hipDeviceAttributeUnused3"},
     {hipDeviceAttributeMaxSharedMemoryPerMultiprocessor,
      "hipDeviceAttributeMaxSharedMemoryPerMultiprocessor"},
-    {hipDeviceAttributeGcnArch, "hipDeviceAttributeGcnArch"},
-    {hipDeviceAttributeGcnArchName, "hipDeviceAttributeGcnArchName"},
+    {hipDeviceAttributeUnused4, "hipDeviceAttributeUnused4"},
+    {hipDeviceAttributeUnused5, "hipDeviceAttributeUnused5"},
     {hipDeviceAttributeHdpMemFlushCntl, "hipDeviceAttributeHdpMemFlushCntl"},
     {hipDeviceAttributeHdpRegFlushCntl, "hipDeviceAttributeHdpRegFlushCntl"},
     {hipDeviceAttributeCooperativeMultiDeviceUnmatchedFunc,

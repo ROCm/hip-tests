@@ -50,6 +50,8 @@ void testInvalidDescription(HIP_ARRAY3D_DESCRIPTOR desc) {
 
 TEMPLATE_TEST_CASE("Unit_hipArray3DCreate_happy", "", char, uchar2, uint2, int4, short4, float,
                    float2, float4) {
+  CHECK_IMAGE_SUPPORT
+
   using vec_info = vector_info<TestType>;
   DriverContext ctx;
 
@@ -88,6 +90,8 @@ TEMPLATE_TEST_CASE("Unit_hipArray3DCreate_happy", "", char, uchar2, uint2, int4,
 
 TEMPLATE_TEST_CASE("Unit_hipArray3DCreate_MaxTexture", "", int, uint4, short, ushort2,
                    unsigned char, float, float4) {
+  CHECK_IMAGE_SUPPORT
+
   using vec_info = vector_info<TestType>;
   DriverContext ctx;
 
@@ -207,6 +211,8 @@ constexpr HIP_ARRAY3D_DESCRIPTOR defaultDescriptor(unsigned int flags, size_t si
 
 // Providing the array pointer as nullptr should return an error
 TEST_CASE("Unit_hipArray3DCreate_Negative_NullArrayPtr") {
+  CHECK_IMAGE_SUPPORT
+
   auto desc = defaultDescriptor(0, 64);
 
   DriverContext ctx;
@@ -215,6 +221,8 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_NullArrayPtr") {
 
 // Providing the description pointer as nullptr should return an error
 TEST_CASE("Unit_hipArray3DCreate_Negative_NullDescPtr") {
+  CHECK_IMAGE_SUPPORT
+
   DriverContext ctx;
   hiparray array;
   HIP_CHECK_ERROR(hipArray3DCreate(&array, nullptr), hipErrorInvalidValue);
@@ -223,6 +231,8 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_NullDescPtr") {
 
 // Zero width arrays are not allowed
 TEST_CASE("Unit_hipArray3DCreate_Negative_ZeroWidth") {
+  CHECK_IMAGE_SUPPORT
+
   DriverContext ctx;
 
   unsigned int flags = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
@@ -235,6 +245,8 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_ZeroWidth") {
 
 // Zero height arrays are only allowed for 1D arrays and layered arrays
 TEST_CASE("Unit_hipArray3DCreate_Negative_ZeroHeight") {
+  CHECK_IMAGE_SUPPORT
+
   DriverContext ctx;
 
   unsigned int flags = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
@@ -255,6 +267,8 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_ZeroHeight") {
 
 // Arrays must be created with a valid data format
 TEST_CASE("Unit_hipArray3DCreate_Negative_InvalidFormat") {
+  CHECK_IMAGE_SUPPORT
+
   DriverContext ctx;
 
   unsigned int flags = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
@@ -269,6 +283,8 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_InvalidFormat") {
 
 // An array must have either 1,2, or 4 channels
 TEST_CASE("Unit_hipArray3DCreate_Negative_NumChannels") {
+  CHECK_IMAGE_SUPPORT
+
   DriverContext ctx;
   unsigned int flags = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
   auto desc = defaultDescriptor(flags, 6);
@@ -279,6 +295,8 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_NumChannels") {
 
 // Using invalid flags should result in an error
 TEST_CASE("Unit_hipArray3DCreate_Negative_InvalidFlags") {
+  CHECK_IMAGE_SUPPORT
+
   DriverContext ctx;
 
   // FIXME: use the same flags for both tests when the values exist for hip
@@ -304,6 +322,8 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_InvalidFlags") {
 
 // hipArray3DCreate should handle the max numeric value gracefully.
 TEST_CASE("Unit_hipArray3DCreate_Negative_NumericLimit") {
+  CHECK_IMAGE_SUPPORT
+
   DriverContext ctx;
 
   unsigned int flags = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
@@ -315,6 +335,8 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_NumericLimit") {
 // texture gather arrays may only be 2D
 TEMPLATE_TEST_CASE("Unit_hipArray3DCreate_Negative_Non2DTextureGather", "", char, uint2, int4,
                    float2, float4) {
+  CHECK_IMAGE_SUPPORT
+
 #if HT_AMD
   HipTest::HIP_SKIP_TEST("Texture Gather arrays not supported using AMD backend");
   return;

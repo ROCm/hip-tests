@@ -44,8 +44,9 @@ static constexpr size_t NUM_H{10};
  *
  */
 TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2DAsync_multiDevice-StreamOnDiffDevice",
-                   "[hipMemcpyParam2DAsync]", char, float, int,
-                   double, long double) {
+                   "[hipMemcpyParam2DAsync]", char, float, int, double, long double) {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {
@@ -131,9 +132,10 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2DAsync_multiDevice-StreamOnDiffDevice",
  * it with the initalized data "C_h".
  *
  */
-TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2DAsync_multiDevice-D2D",
-                   "[hipMemcpyParam2DAsync]", char,
+TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2DAsync_multiDevice-D2D", "[hipMemcpyParam2DAsync]", char,
                    int, float, double, long double) {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {
@@ -219,9 +221,10 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2DAsync_multiDevice-D2D",
  *
  * Validating the result by comparing "A_h" to "C_h"
  */
-TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2DAsync_multiDevice-H2D-D2H",
-                   "[hipMemcpyParam2DAsync]", char,
-                   int, float, double, long double) {
+TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2DAsync_multiDevice-H2D-D2H", "[hipMemcpyParam2DAsync]",
+                   char, int, float, double, long double) {
+  CHECK_IMAGE_SUPPORT
+
   // 1 refers to pinned host memory and 0 refers
   // to unpinned memory
   auto memory_type = GENERATE(0, 1);
@@ -324,6 +327,8 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2DAsync_multiDevice-H2D-D2H",
  * This testcase verifies the extent validation scenarios
  */
 TEST_CASE("Unit_hipMemcpyParam2DAsync_ExtentValidation") {
+  CHECK_IMAGE_SUPPORT
+
   HIP_CHECK(hipSetDevice(0));
   char* A_h{nullptr}, *B_h{nullptr}, *C_h{nullptr},
       * A_d{nullptr};
@@ -402,6 +407,8 @@ TEST_CASE("Unit_hipMemcpyParam2DAsync_ExtentValidation") {
  * This testcase verifies the negative scenarios
  */
 TEST_CASE("Unit_hipMemcpyParam2DAsync_Negative") {
+  CHECK_IMAGE_SUPPORT
+
   HIP_CHECK(hipSetDevice(0));
   float* A_h{nullptr}, *B_h{nullptr}, *C_h{nullptr},
        * A_d{nullptr};

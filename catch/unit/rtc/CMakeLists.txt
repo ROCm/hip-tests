@@ -3,7 +3,6 @@ set(TEST_SRC
     saxpy.cc
     warpsize.cc
     hipRtcFunctional.cc
-    shfl.cc
     hipStreamCaptureRtc.cc
 )
 
@@ -12,6 +11,7 @@ set(AMD_TEST_SRC
     customOptions.cc
     hipRtcBfloat16.cc
     linker.cc
+    shfl.cc
 )
 
 if(HIP_PLATFORM MATCHES "nvidia")

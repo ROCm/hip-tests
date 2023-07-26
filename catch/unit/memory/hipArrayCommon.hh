@@ -67,12 +67,6 @@ template <typename T> void checkDataIsAscending(const std::vector<T>& hostData) 
   REQUIRE(allMatch);
 }
 
-inline size_t getFreeMem() {
-  size_t free = 0, total = 0;
-  HIP_CHECK(hipMemGetInfo(&free, &total));
-  return free;
-}
-
 struct Sizes {
   int max1D;
   std::array<int, 2> max2D;

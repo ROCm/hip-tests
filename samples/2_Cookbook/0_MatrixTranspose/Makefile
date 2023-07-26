@@ -30,6 +30,7 @@ HIPCC=$(HIP_PATH)/bin/hipcc
 
 TARGET=hcc
 
+INCLUDES  := -I../../common
 SOURCES = MatrixTranspose.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 
@@ -40,7 +41,7 @@ EXECUTABLE=./MatrixTranspose
 
 all: $(EXECUTABLE) test
 
-CXXFLAGS =-g
+CXXFLAGS =-g $(INCLUDES)
 CXX=$(HIPCC)
 
 

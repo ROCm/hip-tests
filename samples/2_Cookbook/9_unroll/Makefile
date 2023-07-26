@@ -36,6 +36,7 @@ TARGET=hcc
 
 SOURCES = unroll.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
+INCLUDES  := -I../../common
 
 EXECUTABLE=./unroll
 
@@ -44,7 +45,7 @@ EXECUTABLE=./unroll
 
 all: $(EXECUTABLE) test
 
-CXXFLAGS =-g
+CXXFLAGS =-g $(INCLUDES)
 CXX=$(HIPCC)
 
 

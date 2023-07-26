@@ -40,5 +40,7 @@ set(CMAKE_BUILD_TYPE Release)
 # Create the excutable
 add_executable(inline_asm inline_asm.cpp)
 
+target_include_directories(inline_asm PRIVATE ../../common)
+
 # Link with HIP
 target_link_libraries(inline_asm hip::host)

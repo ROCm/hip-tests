@@ -16,7 +16,8 @@
 		"Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Multiple_Semaphores",
 		"Unit_hipSignalExternalSemaphoresAsync_Vulkan_Negative_Parameters",
 		"Unit_hipImportExternalSemaphore_Vulkan_Negative_Parameters",
-		"Unit_hipDestroyExternalSemaphore_Vulkan_Negative_Parameters"
+		"Unit_hipDestroyExternalSemaphore_Vulkan_Negative_Parameters",
+		"Unit_Grid_Group_Sync_Positive_Basic"
 	]
 
 }

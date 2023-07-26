@@ -26,18 +26,13 @@ THE SOFTWARE.
 #include <fstream>
 #include <vector>
 #include <hip/hip_hcc.h>
+#include "hip_helper.h"
 
 #define LEN 64
 #define SIZE LEN << 2
 
 #define fileName "vcpy_kernel.code"
 #define kernel_name "hello_world"
-
-#define HIP_CHECK(status)                                                                          \
-    if (status != hipSuccess) {                                                                    \
-        std::cout << "Got Status: " << status << " at Line: " << __LINE__ << std::endl;            \
-        exit(0);                                                                                   \
-    }
 
 int main() {
     float *A, *B;
@@ -53,18 +48,18 @@ int main() {
     hipInit(0);
     hipDevice_t device;
     hipCtx_t context;
-    hipDeviceGet(&device, 0);
-    hipCtxCreate(&context, 0, device);
+    checkHipErrors(hipDeviceGet(&device, 0));
+    checkHipErrors(hipCtxCreate(&context, 0, device));
 
-    hipMalloc((void**)&Ad, SIZE);
-    hipMalloc((void**)&Bd, SIZE);
+    checkHipErrors(hipMalloc((void**)&Ad, SIZE));
+    checkHipErrors(hipMalloc((void**)&Bd, SIZE));
 
-    hipMemcpyHtoD(Ad, A, SIZE);
-    hipMemcpyHtoD(Bd, B, SIZE);
+    checkHipErrors(hipMemcpyHtoD(Ad, A, SIZE));
+    checkHipErrors(hipMemcpyHtoD(Bd, B, SIZE));
     hipModule_t Module;
     hipFunction_t Function;
-    HIP_CHECK(hipModuleLoad(&Module, fileName));
-    HIP_CHECK(hipModuleGetFunction(&Function, Module, kernel_name));
+    checkHipErrors(hipModuleLoad(&Module, fileName));
+    checkHipErrors(hipModuleGetFunction(&Function, Module, kernel_name));
 
     struct {
         void* _Ad;
@@ -79,9 +74,9 @@ int main() {
     void* config[] = {HIP_LAUNCH_PARAM_BUFFER_POINTER, &args, HIP_LAUNCH_PARAM_BUFFER_SIZE, &size,
                       HIP_LAUNCH_PARAM_END};
 
-    HIP_CHECK(hipModuleLaunchKernel(Function, 1, 1, 1, LEN, 1, 1, 0, 0, NULL, (void**)&config));
+    checkHipErrors(hipModuleLaunchKernel(Function, 1, 1, 1, LEN, 1, 1, 0, 0, NULL, (void**)&config));
 
-    hipMemcpyDtoH(B, Bd, SIZE);
+    checkHipErrors(hipMemcpyDtoH(B, Bd, SIZE));
 
     int mismatchCount = 0;
     for (uint32_t i = 0; i < LEN; i++) {
@@ -97,10 +92,10 @@ int main() {
         std::cout << "FAILED!\n";
     };
 
-    hipFree(Ad);
+    checkHipErrors(hipFree(Ad));
     hipFree(Bd);
     delete[] A;
     delete[] B;
-    hipCtxDestroy(context);
+    checkHipErrors(hipCtxDestroy(context));
     return 0;
 }

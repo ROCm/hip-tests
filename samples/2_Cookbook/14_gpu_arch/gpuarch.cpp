@@ -25,12 +25,6 @@ THE SOFTWARE.
 #define SIZE                (BLOCKS_PER_GRID * THREADS_PER_BLOCK)
 #define NOT_SUPPORTED       -99  // dummy number indicates unsupported operation
 
-#define HIP_STATUS_CHECK(status)                                                                   \
-  if (status != hipSuccess) {                                                                      \
-    std::cout << "Got Status: " << status << " at Line: " << __LINE__ << std::endl;                \
-    exit(0);                                                                                       \
-  }
-
 // Using __gfx*__ macro one can have GPU architecture specific code flow
 // For example: If below kernel runs on gfx908 it will increment 'in' by 'value' and store into
 // 'out'
@@ -57,8 +51,8 @@ int main() {
   int32_t* hInput = static_cast<int32_t*>(malloc(NBytes));
   int32_t* hOutput = static_cast<int32_t*>(malloc(NBytes));
 
-  HIP_STATUS_CHECK(hipMalloc(&dInput, NBytes));
-  HIP_STATUS_CHECK(hipMalloc(&dOutput, NBytes));
+  checkHipErrors(hipMalloc(&dInput, NBytes));
+  checkHipErrors(hipMalloc(&dOutput, NBytes));
 
   // Initialize host input/output buffers
   for (int i = 0; i < SIZE; ++i) {
@@ -67,14 +61,14 @@ int main() {
   }
 
   // Initialize device input buffer
-  HIP_STATUS_CHECK(hipMemcpy(dInput, hInput, NBytes, hipMemcpyHostToDevice));
+  checkHipErrors(hipMemcpy(dInput, hInput, NBytes, hipMemcpyHostToDevice));
 
   // Launch kernel
   hipLaunchKernelGGL(incrementKernel, dim3(BLOCKS_PER_GRID), dim3(THREADS_PER_BLOCK), 0, 0, dInput,
                      dOutput, incrementValue, SIZE);
 
   // Copy result back to host buffer
-  HIP_STATUS_CHECK(hipMemcpy(hOutput, dOutput, NBytes, hipMemcpyDeviceToHost));
+  checkHipErrors(hipMemcpy(hOutput, dOutput, NBytes, hipMemcpyDeviceToHost));
 
   bool flag = true;
   // verify data

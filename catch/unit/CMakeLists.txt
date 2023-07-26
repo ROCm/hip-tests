@@ -44,7 +44,8 @@ add_subdirectory(executionControl)
 
 if(HIP_PLATFORM STREQUAL "amd")
 add_subdirectory(callback)
-#add_subdirectory(clock)
+add_subdirectory(clock)
 # Vulkan interop APIs currently undefined for Nvidia
 add_subdirectory(vulkan_interop)
 endif()
+add_subdirectory(vector_types)

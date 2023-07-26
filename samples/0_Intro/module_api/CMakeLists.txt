@@ -22,6 +22,8 @@ project(module_api)
 
 cmake_minimum_required(VERSION 3.10)
 
+include_directories(../../common)
+
 if (NOT DEFINED ROCM_PATH )
      set ( ROCM_PATH "/opt/rocm"  CACHE STRING "Default ROCM installation directory." )
 endif ()

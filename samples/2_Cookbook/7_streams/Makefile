@@ -32,6 +32,7 @@ TARGET=hcc
 
 SOURCES = stream.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
+INCLUDES  := -I../../common
 
 EXECUTABLE=./stream
 
@@ -40,7 +41,7 @@ EXECUTABLE=./stream
 
 all: $(EXECUTABLE) test
 
-CXXFLAGS =-g
+CXXFLAGS =-g $(INCLUDES)
 CXX=$(HIPCC)
 
 

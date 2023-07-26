@@ -26,7 +26,7 @@ ifeq (,$(HIP_PATH))
 	HIP_PATH=../../..
 endif
 HIPCC=$(HIP_PATH)/bin/hipcc
-
+INCLUDES  := -I../../common
 EXE=./gpuarch
 
 .PHONY: test
@@ -34,7 +34,7 @@ EXE=./gpuarch
 all: test
 
 $(EXE): gpuarch.cpp
-	$(HIPCC) $^ -o $@
+	$(HIPCC) $(INCLUDES) $^ -o $@
 
 test: $(EXE)
 	$(EXE)

@@ -95,6 +95,7 @@ TEST_CASE("Unit_hipDeviceTotalMem_ValidateTotalMem") {
   HIP_CHECK(hipDeviceTotalMem(&totMem, device));
 
   size_t free = 0, total = 0;
+  HIP_CHECK(hipSetDevice(devNo));
   HIP_CHECK(hipMemGetInfo(&free, &total));
 
   REQUIRE(totMem == prop.totalGlobalMem);

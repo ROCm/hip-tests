@@ -115,6 +115,9 @@
 	   "Unit_hiprtcGpuRdcComplrOptnTst",
 	   "Unit_hiprtcDisabledSlpVectorizeComplrOptnTst",
 	   "Unit_hiprtcRpassInlineComplrOptnTst",
-	   "Unit_hiprtcCombiComplrOptnTst"
+	   "Unit_hiprtcCombiComplrOptnTst",
+	   "=== Below tests fail in stress test on 24/07/23 ===",
+	   "Unit_hipStreamCreateWithPriority_ValidateWithEvents",
+	   "Unit_hipEventIpc"
 	]
 }

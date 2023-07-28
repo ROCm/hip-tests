@@ -184,6 +184,7 @@ TEST_CASE("Unit_hipTextureMipmapRef2D_Negative_Parameters") {
   texRef.addressMode[1] = hipAddressModeWrap;
   texRef.filterMode = hipFilterModePoint;
   texRef.normalized = 0;
+  hipError_t ret;
 
   SECTION("textureReference is nullptr") {
     ret = hipBindTextureToMipmappedArray(nullptr, mip_array_ptr, &channelDesc);
@@ -191,7 +192,7 @@ TEST_CASE("Unit_hipTextureMipmapRef2D_Negative_Parameters") {
   }
 
   SECTION("MipmappedArray is nullptr") {
-    ret = hipBindTextureToMipmappedArray(&texRef, nullptr, &channelDesc);
+    hipError_t ret = hipBindTextureToMipmappedArray(&texRef, nullptr, &channelDesc);
     REQUIRE(ret != hipSuccess);
   }
 

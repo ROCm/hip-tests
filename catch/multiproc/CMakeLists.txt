@@ -17,7 +17,9 @@ set(TEST_SRC
     hipMemGetInfoMProc.cc
 )
 
-add_custom_target(dummy_kernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${CMAKE_CURRENT_SOURCE_DIR}/dummy_kernel.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../multiproc/dummy_kernel.code -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include)
+if(UNIX)
+    add_custom_target(dummy_kernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${CMAKE_CURRENT_SOURCE_DIR}/dummy_kernel.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../multiproc/dummy_kernel.code -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include)
+endif()
 
 # the last argument linker libraries is required for this test but optional to the function
 if(HIP_PLATFORM MATCHES "nvidia")
@@ -31,5 +33,8 @@ hip_add_exe_to_target(NAME MultiProc
                       TEST_TARGET_NAME build_tests
                       LINKER_LIBS hiprtc)
 endif()
-add_dependencies(build_tests dummy_kernel.code)
+
+if(UNIX)
+    add_dependencies(build_tests dummy_kernel.code)
+endif()
 

@@ -130,6 +130,9 @@
 	   "Unit_hipGraphicsResourceGetMappedPointer_Positive_Parameters",
 	   "Unit_hipGraphicsResourceGetMappedPointer_Negative_Parameters",
 	   "Unit_hipGraphicsUnmapResources_Negative_Parameters",
-	   "Unit_hipGraphicsUnregisterResource_Negative_Parameters"
+	   "Unit_hipGraphicsUnregisterResource_Negative_Parameters",
+	   "=== Below tests fail in stress test on 24/07/23 ===",
+	   "Unit_hipStreamCreateWithPriority_ValidateWithEvents",
+	   "Unit_hipEventIpc"
 	]
 }

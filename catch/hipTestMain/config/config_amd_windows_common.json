@@ -164,7 +164,6 @@
 	   "Unit_hipGraphExecMemsetNodeSetParams_Positive_Basic - uint16_t",
 	   "Unit_hipGraphExecMemsetNodeSetParams_Positive_Basic - uint32_t",
 	   "Unit_hipGraphMemsetNodeSetParams_Positive_Basic - uint8_t",
-	   "Unit_hipDeviceGetUuid_Positive"
 	   "Unit_hipStreamWaitEvent_UninitializedStream_Negative",
 	   "Unit_hipDeviceGetUuid_Positive",
 	   "Disabling test tracked SWDEV-394199",

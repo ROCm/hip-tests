@@ -30,7 +30,7 @@ __device__ __host__ inline void throw_std_bad_alloc() {
   #endif
 }
 
-__global__ void FloatMathPrecise() {
+__global__ void FloatMathPreciseKernel() {
   int iX;
   float fX, fY;
   acosf(1.0f);
@@ -127,7 +127,7 @@ __global__ void FloatMathPrecise() {
 
 TEST_CASE("Unit_TestIncludeMathPreciseFloat") {
   hipError_t err;
-  err = hipLaunchKernel(reinterpret_cast<void *>(FloatMathPrecise),
+  err = hipLaunchKernel(reinterpret_cast<void *>(FloatMathPreciseKernel),
                     dim3(1, 1, 1),
                     dim3(1, 1, 1), 0, 0, 0);
   REQUIRE(err == hipSuccess);

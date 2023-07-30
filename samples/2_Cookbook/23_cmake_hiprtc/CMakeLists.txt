@@ -18,9 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-project(cmake_hiprtc_test)
-
 cmake_minimum_required(VERSION 3.10.2)
+
+project(cmake_hiprtc_test)
 
 # Find hiprtc
 find_package(hiprtc REQUIRED)

@@ -20,9 +20,9 @@
 
 #Follow "README.md" to generate square.cpp if it's missing
 
-project(square)
-
 cmake_minimum_required(VERSION 3.10)
+
+project(square)
 
 if (NOT DEFINED ROCM_PATH )
      set ( ROCM_PATH "/opt/rocm"  CACHE STRING "Default ROCM installation directory." )

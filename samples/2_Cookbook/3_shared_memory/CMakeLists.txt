@@ -18,9 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-project(sharedMemory)
-
 cmake_minimum_required(VERSION 3.10)
+
+project(sharedMemory)
 
 if (NOT DEFINED ROCM_PATH )
      set ( ROCM_PATH "/opt/rocm"  CACHE STRING "Default ROCM installation directory." )

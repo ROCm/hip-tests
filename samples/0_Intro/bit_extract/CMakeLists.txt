@@ -18,9 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-project(bit_extract)
-
 cmake_minimum_required(VERSION 3.10)
+
+project(bit_extract)
 
 if(NOT WIN32 AND NOT DEFINED __HIP_ENABLE_PCH)
   set(__HIP_ENABLE_PCH ON CACHE BOOL "enable/disable pre-compiled hip headers")

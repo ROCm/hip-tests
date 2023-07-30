@@ -18,9 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-project(dynamic_shared)
-
 cmake_minimum_required(VERSION 3.10)
+
+project(dynamic_shared)
 
 include_directories(../../common)
 

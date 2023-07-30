@@ -23,9 +23,9 @@
 set(CMAKE_C_COMPILER_WORKS 1)
 set(CMAKE_CXX_COMPILER_WORKS 1)
 
-project(hipInfo)
-
 cmake_minimum_required(VERSION 3.10)
+
+project(hipInfo)
 
 # flag is set to ON in compute build for windows
 option(HIPINFO_INTERNAL_BUILD "Enable building hipInfo from compute" OFF)

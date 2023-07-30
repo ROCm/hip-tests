@@ -21,12 +21,14 @@
 
 # hipcc.bat fails to qualify as a valid compiler for CMAKE_CXX_COMPILER_ID = ROCMClang
 # so  the simple compiler test is skipped and forced to use hipcc.bat as compiler
+
+cmake_minimum_required(VERSION 3.10)
+
 set(CMAKE_C_COMPILER_WORKS 1)
 set(CMAKE_CXX_COMPILER_WORKS 1)
 set(CMAKE_CXX_STANDARD 14)
 project(hipVulkan)
 
-cmake_minimum_required(VERSION 3.10)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake;${CMAKE_MODULE_PATH}")
 
 if (NOT DEFINED ROCM_PATH )

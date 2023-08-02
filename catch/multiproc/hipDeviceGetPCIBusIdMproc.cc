@@ -46,7 +46,7 @@ void getDeviceCount(int *pdevCnt) {
   pipe(fd);
 
   // disable visible_devices env from shell
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
   unsetenv("CUDA_VISIBLE_DEVICES");
 #else
   unsetenv("ROCR_VISIBLE_DEVICES");
@@ -101,7 +101,7 @@ bool testWithMaskedDevices(int actualNumGPUs) {
     snprintf(visibleDeviceString, MAX_SIZE, "%d", VISIBLE_DEVICE);
 
     // disable visible_devices env from shell
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
     unsetenv("CUDA_VISIBLE_DEVICES");
     setenv("CUDA_VISIBLE_DEVICES", visibleDeviceString, 1);
     HIP_CHECK(hipInit(0));

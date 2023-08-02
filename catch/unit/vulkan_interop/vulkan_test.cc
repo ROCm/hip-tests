@@ -39,11 +39,12 @@ VkFence VulkanTest::CreateFence() {
 
 VkSemaphore VulkanTest::CreateExternalSemaphore(VkSemaphoreType sem_type, uint64_t initial_value) {
   VkExportSemaphoreCreateInfoKHR export_sem_create_info = {};
+  VkSemaphoreTypeCreateInfo timeline_create_info = {};
+
   export_sem_create_info.sType = VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO_KHR;
   export_sem_create_info.handleTypes = _sem_handle_type;
 
   if (sem_type == VK_SEMAPHORE_TYPE_TIMELINE) {
-    VkSemaphoreTypeCreateInfo timeline_create_info = {};
     timeline_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
     timeline_create_info.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
     timeline_create_info.initialValue = initial_value;

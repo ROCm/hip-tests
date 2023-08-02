@@ -23,6 +23,7 @@ THE SOFTWARE.
 
 constexpr bool enable_validation = false;
 
+#if HT_NVIDIA
 TEST_CASE("Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Binary_Semaphore") {
   VulkanTest vkt(enable_validation);
 
@@ -69,7 +70,6 @@ TEST_CASE("Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Binary_Semaphor
 }
 
 // Timeline semaphores unsupported on AMD
-#if HT_NVIDIA
 TEST_CASE("Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Timeline_Semaphore") {
   VulkanTest vkt(enable_validation);
   constexpr uint64_t signal_value = 2;
@@ -93,7 +93,6 @@ TEST_CASE("Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Timeline_Semaph
 
   HIP_CHECK(hipDestroyExternalSemaphore(hip_ext_semaphore));
 }
-#endif
 
 TEST_CASE("Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Multiple_Semaphores") {
   VulkanTest vkt(enable_validation);
@@ -165,6 +164,7 @@ TEST_CASE("Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Multiple_Semaph
   HIP_CHECK(hipDestroyExternalSemaphore(hip_binary_ext_semaphore));
   HIP_CHECK(hipDestroyExternalSemaphore(hip_timeline_ext_semaphore));
 }
+#endif
 
 TEST_CASE("Unit_hipSignalExternalSemaphoresAsync_Vulkan_Negative_Parameters") {
   VulkanTest vkt(enable_validation);

@@ -82,7 +82,7 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2DAsync_multiDevice-StreamOnDiffDevice",
       HIP_CHECK(hipStreamSynchronize(stream));
       // Device to Device
       hip_Memcpy2D desc = {};
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
       desc.srcMemoryType = CU_MEMORYTYPE_DEVICE;
 #else
       desc.srcMemoryType = hipMemoryTypeDevice;
@@ -90,7 +90,7 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2DAsync_multiDevice-StreamOnDiffDevice",
       desc.srcHost = A_d;
       desc.srcDevice = hipDeviceptr_t(A_d);
       desc.srcPitch = pitch_A;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
       desc.dstMemoryType = CU_MEMORYTYPE_DEVICE;
 #else
       desc.dstMemoryType = hipMemoryTypeDevice;
@@ -170,7 +170,7 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2DAsync_multiDevice-D2D", "[hipMemcpyPara
 
       // Device to Device
       hip_Memcpy2D desc = {};
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
       desc.srcMemoryType = CU_MEMORYTYPE_DEVICE;
 #else
       desc.srcMemoryType = hipMemoryTypeDevice;
@@ -178,7 +178,7 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2DAsync_multiDevice-D2D", "[hipMemcpyPara
       desc.srcHost = A_d;
       desc.srcDevice = hipDeviceptr_t(A_d);
       desc.srcPitch = pitch_A;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
       desc.dstMemoryType = CU_MEMORYTYPE_DEVICE;
 #else
       desc.dstMemoryType = hipMemoryTypeDevice;
@@ -261,7 +261,7 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2DAsync_multiDevice-H2D-D2H", "[hipMemcpy
       // Host to Device
       hip_Memcpy2D desc = {};
       HIP_CHECK(hipStreamCreate(&stream));
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
       desc.srcMemoryType = CU_MEMORYTYPE_HOST;
 #else
       desc.srcMemoryType = hipMemoryTypeHost;
@@ -269,7 +269,7 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2DAsync_multiDevice-H2D-D2H", "[hipMemcpy
       desc.srcHost = C_h;
       desc.srcDevice = hipDeviceptr_t(C_h);
       desc.srcPitch = width;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
       desc.dstMemoryType = CU_MEMORYTYPE_DEVICE;
 #else
       desc.dstMemoryType = hipMemoryTypeDevice;
@@ -284,7 +284,7 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2DAsync_multiDevice-H2D-D2H", "[hipMemcpy
 
       // Device to Host
       memset(&desc, 0x0, sizeof(hip_Memcpy2D));
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
       desc.srcMemoryType = CU_MEMORYTYPE_DEVICE;
 #else
       desc.srcMemoryType = hipMemoryTypeDevice;
@@ -292,7 +292,7 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2DAsync_multiDevice-H2D-D2H", "[hipMemcpy
       desc.srcHost = A_d;
       desc.srcDevice = hipDeviceptr_t(A_d);
       desc.srcPitch = pitch_A;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
       desc.dstMemoryType = CU_MEMORYTYPE_HOST;
 #else
       desc.dstMemoryType = hipMemoryTypeHost;
@@ -353,7 +353,7 @@ TEST_CASE("Unit_hipMemcpyParam2DAsync_ExtentValidation") {
 
   // Device to Host
   hip_Memcpy2D desc = {};
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
   desc.srcMemoryType = CU_MEMORYTYPE_DEVICE;
 #else
   desc.srcMemoryType = hipMemoryTypeDevice;
@@ -361,7 +361,7 @@ TEST_CASE("Unit_hipMemcpyParam2DAsync_ExtentValidation") {
   desc.srcHost = A_d;
   desc.srcDevice = hipDeviceptr_t(A_d);
   desc.srcPitch = pitch_A;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
   desc.dstMemoryType = CU_MEMORYTYPE_HOST;
 #else
   desc.dstMemoryType = hipMemoryTypeHost;
@@ -429,7 +429,7 @@ TEST_CASE("Unit_hipMemcpyParam2DAsync_Negative") {
 
   // Device to Host
   hip_Memcpy2D desc = {};
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
   desc.srcMemoryType = CU_MEMORYTYPE_DEVICE;
 #else
   desc.srcMemoryType = hipMemoryTypeDevice;
@@ -437,7 +437,7 @@ TEST_CASE("Unit_hipMemcpyParam2DAsync_Negative") {
   desc.srcHost = A_d;
   desc.srcDevice = hipDeviceptr_t(A_d);
   desc.srcPitch = pitch_A;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
   desc.dstMemoryType = CU_MEMORYTYPE_HOST;
 #else
   desc.dstMemoryType = hipMemoryTypeHost;
@@ -455,7 +455,7 @@ TEST_CASE("Unit_hipMemcpyParam2DAsync_Negative") {
 
   SECTION("Null Pointer to Destination Device Pointer") {
     memset(&desc, 0x0, sizeof(hip_Memcpy2D));
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
     desc.srcMemoryType = CU_MEMORYTYPE_HOST;
 #else
     desc.srcMemoryType = hipMemoryTypeHost;
@@ -463,7 +463,7 @@ TEST_CASE("Unit_hipMemcpyParam2DAsync_Negative") {
     desc.srcHost = A_h;
     desc.srcDevice = hipDeviceptr_t(A_h);
     desc.srcPitch = width;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
     desc.dstMemoryType = CU_MEMORYTYPE_DEVICE;
 #else
     desc.dstMemoryType = hipMemoryTypeDevice;

@@ -32,7 +32,7 @@ TARGET=hcc
 
 SOURCES = inline_asm.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
-
+INCLUDES  := -I../../common
 EXECUTABLE=./inline_asm
 
 .PHONY: test
@@ -40,7 +40,7 @@ EXECUTABLE=./inline_asm
 
 all: $(EXECUTABLE) test
 
-CXXFLAGS =-g
+CXXFLAGS =-g $(INCLUDES)
 CXX=$(HIPCC)
 
 

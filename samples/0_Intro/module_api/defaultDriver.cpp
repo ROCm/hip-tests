@@ -24,6 +24,7 @@ THE SOFTWARE.
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include "hip_helper.h"
 
 #define LEN 64
 #define SIZE LEN << 2
@@ -45,25 +46,25 @@ int main() {
     hipInit(0);
     hipDevice_t device;
     hipCtx_t context;
-    hipDeviceGet(&device, 0);
-    hipCtxCreate(&context, 0, device);
+    checkHipErrors(hipDeviceGet(&device, 0));
+    checkHipErrors(hipCtxCreate(&context, 0, device));
 
-    hipMalloc((void**)&Ad, SIZE);
-    hipMalloc((void**)&Bd, SIZE);
+    checkHipErrors(hipMalloc((void**)&Ad, SIZE));
+    checkHipErrors(hipMalloc((void**)&Bd, SIZE));
 
-    hipMemcpyHtoD(Ad, A, SIZE);
-    hipMemcpyHtoD(Bd, B, SIZE);
+    checkHipErrors(hipMemcpyHtoD(Ad, A, SIZE));
+    checkHipErrors(hipMemcpyHtoD(Bd, B, SIZE));
 
     hipModule_t Module;
     hipFunction_t Function;
-    hipModuleLoad(&Module, fileName);
-    hipModuleGetFunction(&Function, Module, kernel_name);
+    checkHipErrors(hipModuleLoad(&Module, fileName));
+    checkHipErrors(hipModuleGetFunction(&Function, Module, kernel_name));
 
     void* args[2] = {&Ad, &Bd};
 
-    hipModuleLaunchKernel(Function, 1, 1, 1, LEN, 1, 1, 0, 0, args, nullptr);
+    checkHipErrors(hipModuleLaunchKernel(Function, 1, 1, 1, LEN, 1, 1, 0, 0, args, nullptr));
 
-    hipMemcpyDtoH(B, Bd, SIZE);
+    checkHipErrors(hipMemcpyDtoH(B, Bd, SIZE));
     int mismatchCount = 0;
     for (uint32_t i = 0; i < LEN; i++) {
         if (A[i] != B[i]) {
@@ -78,10 +79,10 @@ int main() {
         std::cout << "FAILED!\n";
     };
 
-    hipFree(Ad);
-    hipFree(Bd);
+    checkHipErrors(hipFree(Ad));
+    checkHipErrors(hipFree(Bd));
     delete[] A;
     delete[] B;
-    hipCtxDestroy(context);
+    checkHipErrors(hipCtxDestroy(context));
     return 0;
 }

@@ -18,7 +18,7 @@ THE SOFTWARE.
 */
 
 #include <hip_test_common.hh>
-
+#include <utils.hh>
 /**
  * @addtogroup hipEventQuery hipEventQuery
  * @{
@@ -29,35 +29,6 @@ THE SOFTWARE.
  * Test cases from other modules:
  *  - @ref Unit_hipEventIpc
  */
-
-// Since we can not use atomic*_system on every gpu, we will use wait based on clock rate.
-// This wont be accurate since current clock rate of a GPU varies depending on many variables
-// including thermals, load, utilization etc
-__global__ void waitKernel(int clockRate, int seconds) {
-  auto start = clock();
-  auto ms = seconds * 1000;
-  long long waitTill = clockRate * (long long)ms;
-  while (1) {
-    auto end = clock();
-    if ((end - start) > waitTill) {
-      return;
-    }
-  }
-}
-
-__global__ void waitKernel_gfx11(int clockRate, int seconds) {
-#if HT_AMD
-  auto start = wall_clock64();
-  auto ms = seconds * 1000;
-  long long waitTill = clockRate * (long long)ms;
-  while (1) {
-    auto end = wall_clock64();
-    if ((end - start) > waitTill) {
-      return;
-    }
-  }
-#endif
-}
 
 /**
  * Test Description
@@ -81,27 +52,17 @@ TEST_CASE("Unit_hipEventQuery_DifferentDevice") {
   HIP_CHECK(hipStreamCreate(&stream));
   REQUIRE(stream != nullptr);
 
-  hipDeviceProp_t prop{};
-  HIP_CHECK(hipGetDeviceProperties(&prop, 0));
-  auto clockRate = prop.clockRate;
-
-  // Start kernel on 1st device
   {
     HIP_CHECK(hipSetDevice(0));
     HIP_CHECK(hipEventRecord(event1, stream));
-
-    auto waitKernel_used = IsGfx11() ? waitKernel_gfx11 : waitKernel;
-    // Start kernel and wait for 3 seconds
-    // Make sure you increase this time if you add more tests here
-    waitKernel_used<<<1, 1, 0, stream>>>(clockRate, 3);
-
+    LaunchDelayKernel(std::chrono::milliseconds(3000), stream);
     HIP_CHECK(hipEventRecord(event2, stream));
 
     HIP_CHECK(hipEventSynchronize(event1));
     HIP_CHECK(hipEventQuery(event1));  // Should be done
 
     HIP_CHECK_ERROR(hipEventQuery(event2),
-                    hipErrorNotReady);  // Wont be done since kernel is waiting
+                    hipErrorNotReady);  // Wont be done since stream is blocked
   }
 
   // If other devices are available, set it
@@ -114,8 +75,6 @@ TEST_CASE("Unit_hipEventQuery_DifferentDevice") {
     HIP_CHECK(hipEventQuery(event1));
     HIP_CHECK_ERROR(hipEventQuery(event2), hipErrorNotReady);
 
-    // Sync
-    // if it hangs here it means GPU kernel cant see the value update by atomic store
     HIP_CHECK(hipEventSynchronize(event2));
 
     // Query, should be done now

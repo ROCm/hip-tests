@@ -50,5 +50,7 @@ add_custom_target(
 
 add_dependencies(texture2dDrv codeobj)
 
+target_include_directories(texture2dDrv PRIVATE ../../common)
+
 # Link with HIP
 target_link_libraries(texture2dDrv hip::host)

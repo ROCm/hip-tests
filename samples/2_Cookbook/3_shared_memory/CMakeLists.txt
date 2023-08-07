@@ -40,5 +40,7 @@ set(CMAKE_BUILD_TYPE Release)
 # Create the excutable
 add_executable(sharedMemory sharedMemory.cpp)
 
+target_include_directories(sharedMemory PRIVATE ../../common)
+
 # Link with HIP
 target_link_libraries(sharedMemory hip::host)

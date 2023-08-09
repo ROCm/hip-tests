@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 // hip header file
 #include "hip/hip_runtime.h"
+#include "hip_helper.h"
 
 #define LENGTH 4
 
@@ -59,7 +60,7 @@ int main() {
     int* gpuSumMatrix;
 
     hipDeviceProp_t devProp;
-    hipGetDeviceProperties(&devProp, 0);
+    checkHipErrors(hipGetDeviceProperties(&devProp, 0));
 
     std::cout << "Device name " << devProp.name << std::endl;
 
@@ -76,19 +77,19 @@ int main() {
     }
 
     // Allocated Device Memory
-    hipMalloc((void**)&gpuMatrix, SIZE * sizeof(int));
-    hipMalloc((void**)&gpuSumMatrix, LENGTH * sizeof(int));
+    checkHipErrors(hipMalloc((void**)&gpuMatrix, SIZE * sizeof(int)));
+    checkHipErrors(hipMalloc((void**)&gpuSumMatrix, LENGTH * sizeof(int)));
 
     // Memory Copy to Device
-    hipMemcpy(gpuMatrix, Matrix, SIZE * sizeof(int), hipMemcpyHostToDevice);
-    hipMemcpy(gpuSumMatrix, cpuSumMatrix, LENGTH * sizeof(float), hipMemcpyHostToDevice);
+    checkHipErrors(hipMemcpy(gpuMatrix, Matrix, SIZE * sizeof(int), hipMemcpyHostToDevice));
+    checkHipErrors(hipMemcpy(gpuSumMatrix, cpuSumMatrix, LENGTH * sizeof(float), hipMemcpyHostToDevice));
 
     // Launch device kernels
     hipLaunchKernelGGL(gpuMatrixRowSum, dim3(BLOCKS_PER_GRID), dim3(THREADS_PER_BLOCK), 0, 0,
                        gpuMatrix, gpuSumMatrix, LENGTH);
 
     // Memory copy back to device
-    hipMemcpy(sumMatrix, gpuSumMatrix, LENGTH * sizeof(int), hipMemcpyDeviceToHost);
+    checkHipErrors(hipMemcpy(sumMatrix, gpuSumMatrix, LENGTH * sizeof(int), hipMemcpyDeviceToHost));
 
     // Cpu implementation
     matrixRowSum(Matrix, cpuSumMatrix, LENGTH);
@@ -110,8 +111,8 @@ int main() {
     }
 
     // GPU Free
-    hipFree(gpuMatrix);
-    hipFree(gpuSumMatrix);
+    checkHipErrors(hipFree(gpuMatrix));
+    checkHipErrors(hipFree(gpuSumMatrix));
 
     // CPU Free
     free(Matrix);

@@ -311,7 +311,6 @@ TEST_CASE("Print_Out_Properties") {
             << properties.pageableMemoryAccessUsesHostPageTables << "\n";
 
 #if HT_AMD
-  std::cout << std::setw(w) << "gcnArch: " << properties.gcnArch << "\n";
   std::cout << std::setw(w) << "gcnArchName: " << std::string(properties.gcnArchName, 256) << "\n";
   std::cout << std::setw(w) << "asicRevision: " << properties.asicRevision << "\n";
   std::cout << std::setw(w)

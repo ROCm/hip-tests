@@ -22,6 +22,8 @@ project(dynamic_shared)
 
 cmake_minimum_required(VERSION 3.10)
 
+include_directories(../../common)
+
 if (NOT DEFINED ROCM_PATH )
      set ( ROCM_PATH "/opt/rocm"  CACHE STRING "Default ROCM installation directory." )
 endif ()
@@ -38,6 +40,8 @@ set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 
 # Create the excutable
 add_executable(dynamic_shared dynamic_shared.cpp)
+
+target_include_directories(dynamic_shared PRIVATE ../../common)
 
 # Link with HIP
 target_link_libraries(dynamic_shared hip::host)

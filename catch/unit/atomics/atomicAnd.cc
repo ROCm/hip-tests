@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@ THE SOFTWARE.
 
 #include "atomicAnd_negative_kernels_rtc.hh"
 #include "bitwise_common.hh"
+
 #include <hip_test_common.hh>
 
 /**
@@ -44,7 +45,7 @@ THE SOFTWARE.
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_SameAddress", "", int, unsigned int,
+TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_SameAddress", "", int, unsigned int, unsigned long,
                    unsigned long long) {
   for (auto current = 0; current < cmd_options.iterations; ++current) {
     DYNAMIC_SECTION("Same address " << current) {
@@ -67,7 +68,7 @@ TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_SameAddress", "", int, unsigned int,
  *  - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_Adjacent_Addresses", "", int, unsigned int,
-                   unsigned long long) {
+                   unsigned long, unsigned long long) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
 
@@ -82,7 +83,7 @@ TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_Adjacent_Addresses", "", int, unsign
 /**
  * Test Description
  * ------------------------
- *  - Performs atomicAnd from multiple threads on the scaterred addresses.
+ *  - Performs atomicAnd from multiple threads on the scattered addresses.
  *  - Uses only one device and launches one kernel.
  * Test source
  * ------------------------
@@ -92,7 +93,7 @@ TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_Adjacent_Addresses", "", int, unsign
  *  - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_Scattered_Addresses", "", int, unsigned int,
-                   unsigned long long) {
+                   unsigned long, unsigned long long) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
@@ -118,7 +119,7 @@ TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_Scattered_Addresses", "", int, unsig
  *  - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_Multi_Kernel_Same_Address", "", int, unsigned int,
-                   unsigned long long) {
+                   unsigned long, unsigned long long) {
   for (auto current = 0; current < cmd_options.iterations; ++current) {
     DYNAMIC_SECTION("Same address " << current) {
       Bitwise::SingleDeviceMultipleKernelTest<TestType, Bitwise::AtomicOperation::kAnd>(
@@ -140,7 +141,7 @@ TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_Multi_Kernel_Same_Address", "", int,
  *  - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_Multi_Kernel_Adjacent_Addresses", "", int, unsigned int,
-                   unsigned long long) {
+                   unsigned long, unsigned long long) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
 
@@ -155,7 +156,7 @@ TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_Multi_Kernel_Adjacent_Addresses", ""
 /**
  * Test Description
  * ------------------------
- *  - Performs atomicAnd from multiple threads on the scaterred addresses.
+ *  - Performs atomicAnd from multiple threads on the scattered addresses.
  *  - Uses only one device and launches multiple kernels.
  * Test source
  * ------------------------
@@ -165,7 +166,7 @@ TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_Multi_Kernel_Adjacent_Addresses", ""
  *  - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_atomicAnd_Positive_Multi_Kernel_Scattered_Addresses", "", int,
-                   unsigned int, unsigned long long) {
+                   unsigned int, unsigned long, unsigned long long) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;

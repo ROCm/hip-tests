@@ -1,5 +1,6 @@
 /*
-Copyright (c) 2021 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -25,8 +26,8 @@ THE SOFTWARE.
 Negative kernels used for the atomics negative Test Cases that are using RTC.
 */
 
-static constexpr auto kAtomicXor_int {
-  R"(
+static constexpr auto kAtomicXor_int{
+    R"(
     __global__ void atomicXor_int_v1(int* address, int* result) {
       *result = atomicXor(&address, 1234);
     }
@@ -72,11 +73,10 @@ static constexpr auto kAtomicXor_int {
     __global__ void atomicXor_int_v10(double* address, int* result) {
       *result = atomicXor(address, 1234);
     }
-  )"
-};
+  )"};
 
-static constexpr auto kAtomicXor_uint {
-  R"(
+static constexpr auto kAtomicXor_uint{
+    R"(
     __global__ void atomicXor_uint_v1(unsigned int* address, unsigned int* result) {
       *result = atomicXor(&address, 1234);
     }
@@ -122,11 +122,10 @@ static constexpr auto kAtomicXor_uint {
     __global__ void atomicXor_uint_v10(double* address, unsigned int* result) {
       *result = atomicXor(address, 1234);
     }
-  )"
-};
+  )"};
 
-static constexpr auto kAtomicXor_ulong {
-  R"(
+static constexpr auto kAtomicXor_ulong{
+    R"(
     __global__ void atomicXor_ulong_v1(unsigned long* address, unsigned long* result) {
       *result = atomicXor(&address, 1234);
     }
@@ -172,11 +171,10 @@ static constexpr auto kAtomicXor_ulong {
     __global__ void atomicXor_ulong_v10(double* address, unsigned long* result) {
       *result = atomicXor(address, 1234);
     }
-  )"
-};
+  )"};
 
-static constexpr auto kAtomicXor_ulonglong {
-  R"(
+static constexpr auto kAtomicXor_ulonglong{
+    R"(
     __global__ void atomicXor_ulonglong_v1(unsigned long long* address, unsigned long long* result) {
       *result = atomicXor(&address, 1234);
     }
@@ -222,5 +220,4 @@ static constexpr auto kAtomicXor_ulonglong {
     __global__ void atomicXor_ulonglong_v10(double* address, unsigned long long* result) {
       *result = atomicXor(address, 1234);
     }
-  )"
-};
+  )"};

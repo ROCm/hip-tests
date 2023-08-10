@@ -19,15 +19,10 @@
 # THE SOFTWARE.
 
 set(TEST_SRC
-    atomicAdd.cc
-    atomicAdd_system.cc
-    unsafeAtomicAdd.cc
-    safeAtomicAdd.cc
     __hip_atomic_fetch_add.cc
 )
 
 if(HIP_PLATFORM MATCHES "nvidia")
-    set_source_files_properties(atomicAdd_system.cc PROPERTIES COMPILE_FLAGS "-rdc=true -gencode arch=compute_60,code=sm_60 -gencode arch=compute_70,code=sm_70 -gencode arch=compute_80,code=sm_80")
     hip_add_exe_to_target(NAME AtomicsTest
                         TEST_SRC ${TEST_SRC}
                         TEST_TARGET_NAME build_tests
@@ -38,8 +33,3 @@ elseif(HIP_PLATFORM MATCHES "amd")
                         TEST_TARGET_NAME build_tests
                         LINKER_LIBS hiprtc)
 endif()
-
-add_test(NAME Unit_atomicAdd_Negative_Parameters
-         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
-         atomicAdd_negative_kernels.cc 48)

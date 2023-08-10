@@ -191,3 +191,17 @@ TEST_CASE("Unit_atomicMax_Negative_Parameters") {}
  * End doxygen group AtomicsTest.
  * @}
  */
+
+/**
+ * @defgroup ShflTest warp shuffle function Management
+ * @{
+ * This section describes the warp shuffle types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup StreamTest Stream Management
+ * @{
+ * This section describes the stream management types & functions of HIP runtime API.
+ * @}
+ */

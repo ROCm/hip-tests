@@ -51,7 +51,7 @@ THE SOFTWARE.
  *    - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Same_Address_Compile_Time", "", int, unsigned int,
-                   unsigned long long, float, double) {
+                   unsigned long, unsigned long long, float, double) {
   for (auto current = 0; current < cmd_options.iterations; ++current) {
     AtomicExchSameAddressTest<TestType, AtomicScopes::device>();
   }
@@ -84,8 +84,8 @@ TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Same_Address_Compile_Time", "", int
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEMPLATE_TEST_CASE("Unit_atomicExch_Positive", "", int, unsigned int, unsigned long long, float,
-                   double) {
+TEMPLATE_TEST_CASE("Unit_atomicExch_Positive", "", int, unsigned int, unsigned long,
+                   unsigned long long, float, double) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
@@ -132,7 +132,7 @@ TEMPLATE_TEST_CASE("Unit_atomicExch_Positive", "", int, unsigned int, unsigned l
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Multi_Kernel", "", int, unsigned int,
+TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Multi_Kernel", "", int, unsigned int, unsigned long,
                    unsigned long long, float, double) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));

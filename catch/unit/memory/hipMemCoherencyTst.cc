@@ -220,8 +220,14 @@ TEST_CASE("Unit_hipExtMallocWithFlags_CoherentTst") {
   if (managed == 1 && Pageable == 1) {
     // Allocating hipExtMallocWithFlags() memory with flags
     SECTION("hipExtMallocWithFlags with hipDeviceMallocFinegrained flag") {
-      HIP_CHECK(hipExtMallocWithFlags(reinterpret_cast<void**>(&Ptr), SIZE*2,
+      int dirAccess = 0;
+      HIP_CHECK(hipDeviceGetAttribute(&dirAccess, hipDeviceAttributeDirectManagedMemAccessFromHost,
+                                  0));
+      INFO("hipDeviceAttributeDirectManagedMemAccessFromHost: " << dirAccess);
+      if (dirAccess == 1) {
+        HIP_CHECK(hipExtMallocWithFlags(reinterpret_cast<void**>(&Ptr), SIZE*2,
                                       hipDeviceMallocFinegrained));
+      }
     }
     SECTION("hipExtMallocWithFlags with hipDeviceMallocSignalMemory flag") {
       // for hipMallocSignalMemory flag the size of memory must be 8

@@ -70,7 +70,7 @@ TEST_CASE("Unit_hipGetStreamDeviceId_Positive_Multithreaded_Basic") {
   const int device_count = HipTest::getDeviceCount();
 
   auto thread_function = [&]() {
-    for(unsigned int id = 0; id < device_count; ++id) {
+    for(int id = 0; id < device_count; ++id) {
       HIP_CHECK_THREAD(hipSetDevice(id));
 
       StreamGuard stream_guard{Streams::perThread};

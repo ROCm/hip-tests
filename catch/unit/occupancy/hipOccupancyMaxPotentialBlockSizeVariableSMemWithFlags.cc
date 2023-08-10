@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2022 - 2023 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -211,13 +211,11 @@ TEST_CASE("Unit_hipOccupancyMaxPotBlkSizeVariableSMemWithFlags_NegTst") {
     blockSizeToDynamicSMemSize, 0, 0);
     REQUIRE(ret == hipErrorInvalidValue);
   }
-#if HT_NVIDIA
   SECTION("invalid flag") {
     ret = hipOccupancyMaxPotentialBlockSizeVariableSMemWithFlags(&minGridSize,
     &blockSize, f1, blockSizeToDynamicSMemSize, 0, 0xffff);
     REQUIRE(ret == hipErrorInvalidValue);
   }
-#endif
 }
 
 /**

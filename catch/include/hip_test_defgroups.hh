@@ -37,6 +37,13 @@ THE SOFTWARE.
  */
 
 /**
+ * @defgroup VectorTypeTest Vector types
+ * @{
+ * This section describes tests for the Vector type functions and operators.
+ * @}
+ */
+
+/**
  * @defgroup DeviceTest Device Management
  * @{
  * This section describes tests for device management functions of HIP runtime API.
@@ -214,4 +221,17 @@ TEST_CASE("Unit_atomicOr_Negative_Parameters") {}
  * @{
  * This section describes the various kernel functions invocation.
  * @}
+ */
+
+/**
+ * @defgroup DeviceLanguageTest Device Language
+ * @{
+ * This section describes tests for the Device Language API.
+ * @}
+ */
+
+/**
+ * @defgroup DeviceLanguageTest Device Language
+ * @{
+ * This section describes tests for the Device Language API.
  */

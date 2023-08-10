@@ -57,6 +57,8 @@ add_executable(hipInfo hipInfo.cpp)
 # Link with HIP
 target_link_libraries(hipInfo hip::host)
 
+target_include_directories(hipInfo PRIVATE ../../common)
+
 # Used only when make install is called
 # when hipInfo is built as part of compute project
 # hipInfo.exe will be installed to install/hip/bin path

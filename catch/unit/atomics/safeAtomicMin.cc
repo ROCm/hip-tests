@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@ THE SOFTWARE.
 */
 
 #include "min_max_common.hh"
+
 #include <hip_test_common.hh>
 
 /**
@@ -79,7 +80,7 @@ TEMPLATE_TEST_CASE("Unit_safeAtomicMin_Positive_Adjacent_Addresses", "", float, 
 /**
  * Test Description
  * ------------------------
- *  - Performs safeAtomicMin from multiple threads on the scaterred addresses.
+ *  - Performs safeAtomicMin from multiple threads on the scattered addresses.
  *  - Uses only one device and launches one kernel.
  * Test source
  * ------------------------
@@ -150,7 +151,7 @@ TEMPLATE_TEST_CASE("Unit_safeAtomicMin_Positive_Multi_Kernel_Adjacent_Addresses"
 /**
  * Test Description
  * ------------------------
- *  - Performs safeAtomicMin from multiple threads on the scaterred addresses.
+ *  - Performs safeAtomicMin from multiple threads on the scattered addresses.
  *  - Uses only one device and launches multiple kernels.
  * Test source
  * ------------------------

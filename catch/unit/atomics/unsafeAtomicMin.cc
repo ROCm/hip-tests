@@ -21,6 +21,7 @@ THE SOFTWARE.
 */
 
 #include "min_max_common.hh"
+
 #include <hip_test_common.hh>
 
 /**
@@ -79,7 +80,7 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicMin_Positive_Adjacent_Addresses", "", float
 /**
  * Test Description
  * ------------------------
- *  - Performs unsafeAtomicMin from multiple threads on the scaterred addresses.
+ *  - Performs unsafeAtomicMin from multiple threads on the scattered addresses.
  *  - Uses only one device and launches one kernel.
  * Test source
  * ------------------------
@@ -150,7 +151,7 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicMin_Positive_Multi_Kernel_Adjacent_Addresse
 /**
  * Test Description
  * ------------------------
- *  - Performs unsafeAtomicMin from multiple threads on the scaterred addresses.
+ *  - Performs unsafeAtomicMin from multiple threads on the scattered addresses.
  *  - Uses only one device and launches multiple kernels.
  * Test source
  * ------------------------

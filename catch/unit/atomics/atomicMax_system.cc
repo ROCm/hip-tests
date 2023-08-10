@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@ THE SOFTWARE.
 */
 
 #include "min_max_common.hh"
+
 #include <hip_test_common.hh>
 
 /**
@@ -46,10 +47,10 @@ THE SOFTWARE.
  */
 #if HT_AMD
 TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Same_Address", "", int, unsigned int,
-                   unsigned long long, float, double) {
+                   unsigned long, unsigned long long, float, double) {
 #else
 TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Same_Address", "", int, unsigned int,
-                   unsigned long long) {
+                   unsigned long, unsigned long long) {
 #endif
   for (auto current = 0; current < cmd_options.iterations; ++current) {
     DYNAMIC_SECTION("Same address " << current) {
@@ -74,10 +75,10 @@ TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Same_Address", "", 
  */
 #if HT_AMD
 TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Adjacent_Addresses", "", int,
-                   unsigned int, unsigned long long, float, double) {
+                   unsigned int, unsigned long, unsigned long long, float, double) {
 #else
 TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Adjacent_Addresses", "", int,
-                   unsigned int, unsigned long long) {
+                   unsigned int, unsigned long, unsigned long long) {
 #endif
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
@@ -105,10 +106,10 @@ TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Adjacent_Addresses"
  */
 #if HT_AMD
 TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Scattered_Addresses", "", int,
-                   unsigned int, unsigned long long, float, double) {
+                   unsigned int, unsigned long, unsigned long long, float, double) {
 #else
 TEMPLATE_TEST_CASE("Unit_atomicMax_system_Positive_Peer_GPUs_Scattered_Addresses", "", int,
-                   unsigned int, unsigned long long) {
+                   unsigned int, unsigned long, unsigned long long) {
 #endif
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));

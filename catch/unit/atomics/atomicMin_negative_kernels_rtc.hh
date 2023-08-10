@@ -1,5 +1,6 @@
 /*
-Copyright (c) 2021 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -25,8 +26,8 @@ THE SOFTWARE.
 Negative kernels used for the atomics negative Test Cases that are using RTC.
 */
 
-static constexpr auto kAtomicMin_int {
-  R"(
+static constexpr auto kAtomicMin_int{
+    R"(
     __global__ void atomicMin_int_v1(int* address, int* result) {
       *result = atomicMin(&address, 1234);
     }
@@ -64,11 +65,10 @@ static constexpr auto kAtomicMin_int {
     __global__ void atomicMin_int_v8(long long* address, int* result) {
       *result = atomicMin(address, 1234);
     }
-  )"
-};
+  )"};
 
-static constexpr auto kAtomicMin_uint {
-  R"(
+static constexpr auto kAtomicMin_uint{
+    R"(
     __global__ void atomicMin_uint_v1(unsigned int* address, unsigned int* result) {
       *result = atomicMin(&address, 1234);
     }
@@ -106,11 +106,10 @@ static constexpr auto kAtomicMin_uint {
     __global__ void atomicMin_uint_v8(long long* address, unsigned int* result) {
       *result = atomicMin(address, 1234);
     }
-  )"
-};
+  )"};
 
-static constexpr auto kAtomicMin_ulong {
-  R"(
+static constexpr auto kAtomicMin_ulong{
+    R"(
     __global__ void atomicMin_ulong_v1(unsigned long* address, unsigned long* result) {
       *result = atomicMin(&address, 1234);
     }
@@ -148,11 +147,10 @@ static constexpr auto kAtomicMin_ulong {
     __global__ void atomicMin_ulong_v8(long long* address, unsigned long* result) {
       *result = atomicMin(address, 1234);
     }
-  )"
-};
+  )"};
 
-static constexpr auto kAtomicMin_ulonglong {
-  R"(
+static constexpr auto kAtomicMin_ulonglong{
+    R"(
     __global__ void atomicMin_ulonglong_v1(unsigned long long* address, unsigned long long* result) {
       *result = atomicMin(&address, 1234);
     }
@@ -190,11 +188,10 @@ static constexpr auto kAtomicMin_ulonglong {
     __global__ void atomicMin_ulonglong_v8(long long* address, unsigned long long* result) {
       *result = atomicMin(address, 1234);
     }
-  )"
-};
+  )"};
 
-static constexpr auto kAtomicMin_float {
-  R"(
+static constexpr auto kAtomicMin_float{
+    R"(
     __global__ void atomicMin_float_v1(float* address, float* result) {
       *result = atomicMin(&address, 1234.f);
     }
@@ -232,11 +229,10 @@ static constexpr auto kAtomicMin_float {
     __global__ void atomicMin_float_v8(long long* address, float* result) {
       *result = atomicMin(address, 1234);
     }
-  )"
-};
+  )"};
 
-static constexpr auto kAtomicMin_double {
-  R"(
+static constexpr auto kAtomicMin_double{
+    R"(
     __global__ void atomicMin_double_v1(double* address, double* result) {
       *result = atomicMin(&address, 1234.0);
     }
@@ -274,5 +270,4 @@ static constexpr auto kAtomicMin_double {
     __global__ void atomicMin_double_v8(long long* address, double* result) {
       *result = atomicMin(address, 1234.0);
     }
-  )"
-};
+  )"};

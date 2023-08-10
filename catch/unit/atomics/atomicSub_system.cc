@@ -38,7 +38,7 @@ THE SOFTWARE.
  * location, storing the return value into a separate output array slot corresponding to it. Once
  * complete, the output array and target memory is validated to contain all the expected values.
  * Several memory access patterns are tested:
- *      -# All threads exchange to a single, compile time deducible, memory location
+ *      -# All threads subtract from a single, compile time deducible, memory location
  *      -# Each thread targets an array containing warp_size elements, using tid % warp_size
  *         for indexing
  *      -# Same as the above, but the elements are spread out by L1 cache line size bytes.
@@ -54,7 +54,7 @@ THE SOFTWARE.
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Peer_GPUs", "", int, unsigned int,
+TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Peer_GPUs", "", int, unsigned int, unsigned long,
                    unsigned long long, float, double) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
@@ -87,7 +87,7 @@ TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Peer_GPUs", "", int, unsigned
  * it. While the kernel is running, the host performs atomic additions, in 4 threads, on the same
  * memory location(s). Once complete, the output array and target memory is validated to contain
  * all the expected values. Several memory access patterns are tested:
- *      -# All threads exchange to a single, compile time deducible, memory location
+ *      -# All threads subtract from a single, compile time deducible, memory location
  *      -# Each thread targets an array containing warp_size elements, using tid % warp_size
  *         for indexing
  *      -# Same as the above, but the elements are spread out by L1 cache line size bytes.
@@ -104,7 +104,7 @@ TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Peer_GPUs", "", int, unsigned
  *    - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Host_And_GPU", "", int, unsigned int,
-                   unsigned long long, float, double) {
+                   unsigned long, unsigned long long, float, double) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;
@@ -136,7 +136,7 @@ TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Host_And_GPU", "", int, unsig
  * it. While the kernel is running, the host performs atomic additions, in 4 threads, on the same
  * memory location(s). Once complete, the output array and target memory is validated to contain
  * all the expected values. Several memory access patterns are tested:
- *      -# All threads exchange to a single, compile time deducible, memory location
+ *      -# All threads subtract from a single, compile time deducible, memory location
  *      -# Each thread targets an array containing warp_size elements, using tid % warp_size
  *         for indexing
  *      -# Same as the above, but the elements are spread out by L1 cache line size bytes.
@@ -153,7 +153,7 @@ TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Host_And_GPU", "", int, unsig
  *    - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_atomicSub_system_Positive_Host_And_Peer_GPUs", "", int, unsigned int,
-                   unsigned long long, float, double) {
+                   unsigned long, unsigned long long, float, double) {
   int warp_size = 0;
   HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
   const auto cache_line_size = 128u;

@@ -32,7 +32,64 @@ THE SOFTWARE.
 /**
  * @defgroup GraphTest Graph Management
  * @{
- * This section describes the graph management types & functions of HIP runtime API.
+ * This section describes tests for the graph management types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup VectorTypeTest Vector types
+ * @{
+ * This section describes tests for the Vector type functions and operators.
+ * @}
+ */
+
+/**
+ * @defgroup DeviceTest Device Management
+ * @{
+ * This section describes tests for device management functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup EventTest Event Management
+ * @{
+ * This section describes tests for the event management functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup ErrorTest Error Handling
+ * @{
+ * This section describes tests for the error handling functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup PeerToPeerTest PeerToPeer Device Memory Access
+ * @{
+ * This section describes tests for the PeerToPeer device memory access functions of HIP runtime API.
+ * @warning PeerToPeer support is experimental.
+ * @}
+ */
+
+/**
+ * @defgroup DriverTest Initialization and Version
+ * @{
+ * This section describes tests for the initialization and version functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup DeviceLanguageTest Device Language
+ * @{
+ * This section describes tests for the Device Language API.
+ * @}
+ */
+
+/**
+ * @defgroup ExecutionTest Execution Control
+ * @{
+ * This section describes tests for the execution control functions of HIP runtime API.
  * @}
  */
 
@@ -44,8 +101,50 @@ THE SOFTWARE.
  */
 
 /**
- * @defgroup MemoryTest Memory Management
+ * @defgroup ContextTest Context Management
+ * @{
+ * This section describes tests for the context management functions of HIP runtime API.
+ * @warning All Context Management APIs are **deprecated** and shall not be implemented.
+ * @}
+ */
+
+/**
+ * @defgroup StreamTest Stream Management
+ * @{
+ * This section describes the stream management types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup DynamicLoadingTest Kernel Loading Management
+ * @{
+ * This section describes the different kernel launch approaches.
+ * @}
+ */
+
+/**
+ * @defgroup MemoryTest memory Management APIs
  * @{
  * This section describes the memory management types & functions of HIP runtime API.
  * @}
+ */
+
+/**
+* @defgroup KernelTest Kernel Functions Management
+ * @{
+ * This section describes the various kernel functions invocation.
+ * @}
+ */
+
+/**
+ * @defgroup DeviceLanguageTest Device Language
+ * @{
+ * This section describes tests for the Device Language API.
+ * @}
+ */
+
+/**
+ * @defgroup DeviceLanguageTest Device Language
+ * @{
+ * This section describes tests for the Device Language API.
  */

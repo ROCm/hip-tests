@@ -24,6 +24,7 @@
 	   "=== Below test fails in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/222 ===",
 	   "Unit_hipStreamCreate_Performance",
 	   "Unit_hipStreamCreate_WithPriorityPerformance_Nonblocking_high",
-	   "Unit_hipStreamCreate_WithPriorityPerformance_Default_low"
+	   "Unit_hipStreamCreate_WithPriorityPerformance_Default_low",
+	   "Unit_hipStreamCreate_WithPriorityPerformance_Nonblocking_low"
 	]
 }

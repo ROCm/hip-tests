@@ -30,6 +30,7 @@ TARGET=hcc
 
 SOURCES = hipEvent.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
+INCLUDES  := -I../../common
 
 EXECUTABLE=./hipEvent
 
@@ -38,7 +39,7 @@ EXECUTABLE=./hipEvent
 
 all: $(EXECUTABLE) test
 
-CXXFLAGS =-g
+CXXFLAGS =-g $(INCLUDES)
 CXX=$(HIPCC)
 
 

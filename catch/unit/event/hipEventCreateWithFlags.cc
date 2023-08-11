@@ -20,14 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
- * @addtogroup hipEventCreateWithFlags hipEventCreateWithFlags
- * @{
- * @ingroup EventTest
- * `hipEventCreateWithFlags (hipEvent_t *event, unsigned flags)` -
- * begins graph capture on a stream
- */
-
 #include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
 #include <hip_test_defgroups.hh>
@@ -37,6 +29,14 @@ constexpr size_t buffer_size = (1024*1024);
 constexpr int test_iteration_hstvismem = 5;
 constexpr int test_iteration_noncohmem = 10;
 constexpr int block_size = 512;
+
+/**
+ * @addtogroup hipEventCreateWithFlags hipEventCreateWithFlags
+ * @{
+ * @ingroup EventTest
+ * `hipEventCreateWithFlags (hipEvent_t *event, unsigned flags)` -
+ * begins graph capture on a stream
+ */
 
 /**
  * Test Description

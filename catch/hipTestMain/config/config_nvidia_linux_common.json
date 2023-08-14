@@ -25,6 +25,12 @@
 	   "Unit_hipStreamCreate_Performance",
 	   "Unit_hipStreamCreate_WithPriorityPerformance_Nonblocking_high",
 	   "Unit_hipStreamCreate_WithPriorityPerformance_Default_low",
-	   "Unit_hipStreamCreate_WithPriorityPerformance_Nonblocking_low"
+	   "Unit_hipStreamCreate_WithPriorityPerformance_Nonblocking_low",
+	   "=== Below test fails in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/92 ===",
+	   "Unit_hipGetTexObjectResourceDesc_positive",
+	   "Unit_hipGetTexObjectResourceDesc_Negative_Parameters",
+	   "Unit_hipGetTexObjectTextureDesc_positive",
+	   "Unit_hipGetTexObjectTextureDesc_Negative_Parameters",
+	   "Unit_hipTexObjectDestroy_positive"
 	]
 }

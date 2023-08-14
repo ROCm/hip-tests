@@ -14,6 +14,13 @@ set(AMD_TEST_SRC
     shfl.cc
 )
 
+if(UNIX)
+   set(AMD_TEST_SRC ${TEST_SRC}
+       RtcFunctions.cpp
+       RtcUtility.cpp
+       hiprtcComplrOptnTesting.cc)
+endif()
+
 if(HIP_PLATFORM MATCHES "nvidia")
   hip_add_exe_to_target(NAME RTC
                       TEST_SRC ${TEST_SRC}

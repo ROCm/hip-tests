@@ -108,6 +108,13 @@ THE SOFTWARE.
  */
 
 /**
+ * @defgroup EventTest Event Management
+ * @{
+ * This section describes the event management types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
  * @defgroup ContextTest Context Management
  * @{
  * This section describes tests for the context management functions of HIP runtime API.

@@ -116,9 +116,12 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_NonCoherentRTCnounsafeatomicflag", "", 
         TestType* result;
       } args_f{A_d, result_d};
       auto size = sizeof(args_f);
-      void* config_d[] = {HIP_LAUNCH_PARAM_BUFFER_POINTER, &args_f, HIP_LAUNCH_PARAM_BUFFER_SIZE,
-                          &size, HIP_LAUNCH_PARAM_END};
-      hipModuleLaunchKernel(f_kernel, 1, 1, 1, 1, 1, 1, 0, nullptr, nullptr, config_d);
+
+      void* config_d[] = {HIP_LAUNCH_PARAM_BUFFER_POINTER, &args_f,
+        HIP_LAUNCH_PARAM_BUFFER_SIZE,
+        &size, HIP_LAUNCH_PARAM_END};
+      HIP_CHECK(hipModuleLaunchKernel(f_kernel, 1, 1, 1, 1, 1, 1, 0,
+                            nullptr, nullptr, config_d));
       HIP_CHECK(hipDeviceSynchronize());
       REQUIRE(A_h[0] == INITIAL_VAL + INCREMENT_VAL);
       REQUIRE(*result == INITIAL_VAL);
@@ -200,9 +203,12 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_NonCoherentRTCunsafeatomicflag", "", fl
         TestType* result;
       } args_f{A_d, result_d};
       auto size = sizeof(args_f);
-      void* config_d[] = {HIP_LAUNCH_PARAM_BUFFER_POINTER, &args_f, HIP_LAUNCH_PARAM_BUFFER_SIZE,
-                          &size, HIP_LAUNCH_PARAM_END};
-      hipModuleLaunchKernel(f_kernel, 1, 1, 1, 1, 1, 1, 0, nullptr, nullptr, config_d);
+
+      void* config_d[] = {HIP_LAUNCH_PARAM_BUFFER_POINTER, &args_f,
+        HIP_LAUNCH_PARAM_BUFFER_SIZE,
+        &size, HIP_LAUNCH_PARAM_END};
+      HIP_CHECK(hipModuleLaunchKernel(f_kernel, 1, 1, 1, 1, 1, 1, 0,
+                            nullptr, nullptr, config_d));
       HIP_CHECK(hipDeviceSynchronize());
       REQUIRE(A_h[0] == INITIAL_VAL + INCREMENT_VAL);
       REQUIRE(*result == INITIAL_VAL);
@@ -286,7 +292,9 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_NonCoherentRTC", "", float, double) {
       auto size = sizeof(args_f);
       void* config_d[] = {HIP_LAUNCH_PARAM_BUFFER_POINTER, &args_f, HIP_LAUNCH_PARAM_BUFFER_SIZE,
                           &size, HIP_LAUNCH_PARAM_END};
-      hipModuleLaunchKernel(f_kernel, 1, 1, 1, 1, 1, 1, 0, nullptr, nullptr, config_d);
+
+      HIP_CHECK(hipModuleLaunchKernel(f_kernel, 1, 1, 1, 1, 1, 1, 0,
+                            nullptr, nullptr, config_d));
       HIP_CHECK(hipDeviceSynchronize());
       REQUIRE(A_h[0] == INITIAL_VAL + INCREMENT_VAL);
       REQUIRE(*result == INITIAL_VAL);

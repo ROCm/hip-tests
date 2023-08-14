@@ -21,7 +21,7 @@ THE SOFTWARE.
 #include <hip_array_common.hh>
 #include <vector>
 #include <iostream>
-
+#pragma clang diagnostic ignored "-Wunused-variable"
 template <typename T>
 __global__ void tex1dKernelFetch(T *val, hipTextureObject_t obj, int N) {
 #if !defined(__HIP_NO_IMAGE_SUPPORT) || !__HIP_NO_IMAGE_SUPPORT
@@ -79,7 +79,7 @@ bool runTest() {
   // Allocating the required buffer on gpu device
   T *texBuf, *texBufOut;
   T val[N], output[N];
-  hipGetLastError(); // Clear err due to negative tests
+  auto err = hipGetLastError(); // Clear err due to negative tests
   memset(output, 0, sizeof(output));
   std::srand(std::time(nullptr)); // use current time as seed for random generator
 

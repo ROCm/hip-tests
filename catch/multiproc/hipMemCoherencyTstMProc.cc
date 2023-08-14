@@ -131,7 +131,6 @@ TEST_CASE("Unit_malloc_CoherentTst") {
   p = strstr(prop.gcnArchName, "xnack+");
   if (p) {
     // Test Case execution begins from here
-    int stat = 0;
     int managed = 0;
     HIPCHECK(hipDeviceGetAttribute(&managed, hipDeviceAttributeManagedMemory,
                                     0));
@@ -162,7 +161,6 @@ TEST_CASE("Unit_malloc_CoherentTstWthAdvise") {
   char *p = NULL;
   p = strstr(prop.gcnArchName, "xnack+");
   if (p) {
-    int stat = 0;
     int managed = 0;
     HIP_CHECK(hipDeviceGetAttribute(&managed, hipDeviceAttributeManagedMemory,
                                     0));
@@ -195,7 +193,6 @@ TEST_CASE("Unit_mmap_CoherentTst") {
   char *p = NULL;
   p = strstr(prop.gcnArchName, "xnack+");
   if (p) {
-    int stat = 0;
     int managed = 0;
     HIP_CHECK(hipDeviceGetAttribute(&managed, hipDeviceAttributeManagedMemory,
                                     0));
@@ -233,7 +230,6 @@ TEST_CASE("Unit_mmap_CoherentTstWthAdvise") {
   char *p = NULL;
   p = strstr(prop.gcnArchName, "xnack+");
   if (p) {
-    int stat = 0;
     int managed = 0;
     HIP_CHECK(hipDeviceGetAttribute(&managed, hipDeviceAttributeManagedMemory,
                                     0));

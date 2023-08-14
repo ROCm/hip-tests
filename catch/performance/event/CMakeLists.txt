@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2022 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,41 +18,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-ROCM_PATH?= $(wildcard /opt/rocm/)
-HIP_PATH?= $(wildcard $(ROCM_PATH)/hip)
-ifeq (,$(HIP_PATH))
-	HIP_PATH=../../..
-endif
+set(TEST_SRC
+    hipEventCreate.cc
+    hipEventCreateWithFlags.cc
+    hipEventRecord.cc
+    hipEventDestroy.cc
+    hipEventSynchronize.cc
+    hipEventElapsedTime.cc
+    hipEventQuery.cc
+)
 
-HIPCC=$(HIP_PATH)/bin/hipcc
-
-TARGET=hcc
-
-SOURCES = hipEvent.cpp
-OBJECTS = $(SOURCES:.cpp=.o)
-INCLUDES  := -I../../common
-
-EXECUTABLE=./hipEvent
-
-.PHONY: test
-
-
-all: $(EXECUTABLE) test
-
-CXXFLAGS =-g $(INCLUDES)
-CXX=$(HIPCC)
-
-
-$(EXECUTABLE): $(OBJECTS)
-	$(HIPCC) $(OBJECTS) -o $@
-
-
-test: $(EXECUTABLE)
-	$(EXECUTABLE)
-
-
-clean:
-	rm -f $(EXECUTABLE)
-	rm -f $(OBJECTS)
-	rm -f $(HIP_PATH)/src/*.o
-
+hip_add_exe_to_target(NAME EventPerformance
+                      TEST_SRC ${TEST_SRC}
+                      TEST_TARGET_NAME build_tests
+                      COMPILE_OPTIONS -std=c++17)

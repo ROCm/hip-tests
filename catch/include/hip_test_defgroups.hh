@@ -94,6 +94,13 @@ THE SOFTWARE.
  */
 
 /**
+ * @defgroup TextureTest Texture Management
+ * @{
+ * This section describes tests for the texture management functions of HIP runtime API.
+ * @}
+ */
+
+ /**
  * @defgroup ShflTest warp shuffle function Management
  * @{
  * This section describes the warp shuffle types & functions of HIP runtime API.

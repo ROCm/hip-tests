@@ -12,6 +12,7 @@ set(AMD_TEST_SRC
     customOptions.cc
     hipRtcBfloat16.cc
     linker.cc
+    shfl.cc
 )
 
 add_custom_target(copyRtcHeaders ALL
@@ -21,6 +22,13 @@ add_custom_target(copyRtcHeaders ALL
   COMMAND ${CMAKE_COMMAND} -E copy_directory
   ${CMAKE_CURRENT_SOURCE_DIR}/headers
   ${CMAKE_CURRENT_BINARY_DIR}/headers)
+
+if(UNIX)
+   set(AMD_TEST_SRC ${TEST_SRC}
+       RtcFunctions.cpp
+       RtcUtility.cpp
+       hiprtcComplrOptnTesting.cc)
+endif()
 
 if(HIP_PLATFORM MATCHES "nvidia")
   hip_add_exe_to_target(NAME RTC

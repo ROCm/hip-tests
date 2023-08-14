@@ -33,6 +33,9 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
 
+#pragma clang diagnostic ignored "-Wunused-but-set-variable"
+#pragma clang diagnostic ignored "-Wunused-function"
+
 #if defined(_WIN32)
 #if defined(_WIN64)
 typedef __int64 ssize_t;
@@ -155,7 +158,7 @@ template <typename Derived> class Benchmark {
       time_ = .0;
     }
 
-    float sum = std::reduce(cbegin(samples), cend(samples));
+    float sum = std::accumulate(cbegin(samples), cend(samples), .0);
     float mean = sum / samples.size();
 
     float deviation =

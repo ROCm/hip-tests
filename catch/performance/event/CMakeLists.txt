@@ -18,5 +18,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-add_subdirectory(event)
-add_subdirectory(example)
+set(TEST_SRC
+    hipEventCreate.cc
+    hipEventCreateWithFlags.cc
+    hipEventRecord.cc
+    hipEventDestroy.cc
+    hipEventSynchronize.cc
+    hipEventElapsedTime.cc
+    hipEventQuery.cc
+)
+
+hip_add_exe_to_target(NAME EventPerformance
+                      TEST_SRC ${TEST_SRC}
+                      TEST_TARGET_NAME build_tests
+                      COMPILE_OPTIONS -std=c++17)

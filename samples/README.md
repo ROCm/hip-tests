@@ -12,6 +12,7 @@ make
 
 
 2.CMakeLists.txt can support shared and static libs of hip-rocclr runtime.
+The same steps can be followed for both.
 
 To build a sample, run in the sample folder,
 
@@ -19,15 +20,7 @@ mkdir -p build && cd build
 
 rm -rf * (to clear up)
 
-a. to build with shared libs, run
-
-cmake ..
-
-make
-
-b. to build with static libs, run
-
-cmake -DCMAKE_PREFIX_PATH="<ROCM_PATH>/llvm/lib/cmake" ..
+cmake -DCMAKE_PREFIX_PATH=<path/to/rocm> -DHIP_CXX_COMPILER=<path/to/clang> ..
 
 Then run,
 

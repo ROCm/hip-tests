@@ -229,8 +229,8 @@ TEST_CASE("Unit_BuiltinAtomicsRTC_fmaxCoherentGlobalMem") {
       void* config_d[] = {HIP_LAUNCH_PARAM_BUFFER_POINTER, &args_f,
         HIP_LAUNCH_PARAM_BUFFER_SIZE,
         &size, HIP_LAUNCH_PARAM_END};
-      hipModuleLaunchKernel(fmaxkernel, 1, 1, 1, 1, 1, 1, 0,
-          nullptr, nullptr, config_d);
+      HIP_CHECK(hipModuleLaunchKernel(fmaxkernel, 1, 1, 1, 1, 1, 1, 0,
+                nullptr, nullptr, config_d));
       HIP_CHECK(hipDeviceSynchronize());
       HIP_CHECK(hipMemcpy(B_h, result, sizeof(double), hipMemcpyDeviceToHost));
       REQUIRE(*B_h == 0);
@@ -324,8 +324,8 @@ TEST_CASE("Unit_BuiltinAtomicsRTC_fmaxNonCoherentGlobalFlatMem") {
       void* config_d[] = {HIP_LAUNCH_PARAM_BUFFER_POINTER, &args_f,
         HIP_LAUNCH_PARAM_BUFFER_SIZE,
         &size, HIP_LAUNCH_PARAM_END};
-      hipModuleLaunchKernel(fmaxkernel, 1, 1, 1, 1, 1, 1, 0,
-          nullptr, nullptr, config_d);
+      HIP_CHECK(hipModuleLaunchKernel(fmaxkernel, 1, 1, 1, 1, 1, 1, 0,
+                nullptr, nullptr, config_d));
       HIP_CHECK(hipDeviceSynchronize());
       HIP_CHECK(hipMemcpy(B_h, result, sizeof(double), hipMemcpyDeviceToHost));
       REQUIRE(*B_h == INITIAL_VAL);

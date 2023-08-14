@@ -31,7 +31,7 @@ THE SOFTWARE.
 */
 
 TEST_CASE("Unit_hipMemAdvise_MmapMem") {
-  int managed = 0, NUM_ELMS = 212992, PageableMem = 0;
+  int managed = 0, PageableMem = 0;
   INFO("The following are the attribute values related to HMM for"
          " device 0:\n");
   HIP_CHECK(hipDeviceGetAttribute(&managed,
@@ -54,6 +54,7 @@ TEST_CASE("Unit_hipMemAdvise_MmapMem") {
 #ifdef __linux__
     // For now this test is enabled only for linux platforms
     FILE *fptr;
+    int NUM_ELMS = 212992;
     fptr = fopen("ForTest1.txt", "w");
     for (int m = 0; m < NUM_ELMS; ++m) {
       putw(m, fptr);

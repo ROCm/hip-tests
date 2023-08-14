@@ -53,7 +53,7 @@ TEST_CASE("Unit_hipDeviceGetUuid_Positive") {
 
   // Atleast one non zero value
   size_t uuidSize = sizeof(uuid.bytes) / sizeof(uuid.bytes[0]);
-  for (int i = 0; i < uuidSize; i++) {
+  for (size_t i = 0; i < uuidSize; i++) {
     if (uuid.bytes[i] != 0) {
       uuidValid = true;
       break;

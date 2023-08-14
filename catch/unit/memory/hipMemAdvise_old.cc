@@ -666,7 +666,6 @@ TEST_CASE("Unit_hipMemAdvise_TstAlignedAllocMem") {
   std::string gfxName(prop.gcnArchName);
 
   if (gfxName.find("xnack+") != std::string::npos) {
-    int stat = 0;
     int managedMem = 0, pageMemAccess = 0;
     HIP_CHECK(hipDeviceGetAttribute(&pageMemAccess,
               hipDeviceAttributePageableMemoryAccess, 0));

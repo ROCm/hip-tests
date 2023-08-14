@@ -43,12 +43,7 @@ __global__ void readFromTexture(T* output, hipTextureObject_t texObj, size_t wid
   } else {
     const float v = y / (float)height;
     if (textureGather) {
-      // tex2Dgather not supported on __gfx90a__
-      #if !defined(__gfx90a__)
       output[y * width + x] = tex2Dgather<T>(texObj, u, v, ChannelToRead);
-      #else
-      #warning("tex2Dgather not supported on gfx90a");
-      #endif
     } else {
       output[y * width + x] = tex2D<T>(texObj, u, v);
     }

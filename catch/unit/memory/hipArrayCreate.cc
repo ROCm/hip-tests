@@ -54,7 +54,7 @@ static void ArrayCreate_DiffSizes(int gpu) {
   std::vector<std::pair<size_t, size_t>> runs {std::make_pair(NUM_W, NUM_H), std::make_pair(BIGNUM_W, BIGNUM_H)};
   for (const auto& size : runs) {
     std::array<HIP_ARRAY, ARRAY_LOOP> array;
-    size_t pavail, avail;
+    size_t pavail;
     HIP_CHECK_THREAD(hipMemGetInfo(&pavail, nullptr));
     HIP_ARRAY_DESCRIPTOR desc;
     desc.NumChannels = 1;

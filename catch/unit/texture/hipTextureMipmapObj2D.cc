@@ -98,7 +98,7 @@ static void runMipMapTest(unsigned int width, unsigned int height, unsigned int 
   hipLaunchKernelGGL(tex2DKernel, dim3(dimGrid), dim3(dimBlock), 0, 0, dData, textureObject, width,
                      (2 * mipmap_level));
   HIP_CHECK(hipGetLastError()); 
-  hipDeviceSynchronize();
+  HIP_CHECK(hipDeviceSynchronize());
 
   float* hOutputData = reinterpret_cast<float*>(malloc(size));
   REQUIRE(hOutputData != nullptr);

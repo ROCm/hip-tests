@@ -28,6 +28,8 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 #include <utils.hh>
 
+#pragma clang diagnostic ignored "-Wunused-variable"
+
 TEST_CASE("Unit_hipMemcpy3DAsync_Positive_Basic") {
   constexpr bool async = true;
 

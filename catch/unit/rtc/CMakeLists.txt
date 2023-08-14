@@ -11,6 +11,7 @@ set(AMD_TEST_SRC
     customOptions.cc
     hipRtcBfloat16.cc
     linker.cc
+    shfl.cc
 )
 
 if(UNIX)

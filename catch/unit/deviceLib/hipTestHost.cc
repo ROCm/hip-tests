@@ -147,9 +147,6 @@ __device__ bool check_modf() {
 __device__ bool check_nextafterf() {
     uint32_t len = 4;
     float Val[] = {0, -0.5, 0.9, -0.2};
-    float iPtr[] = {0, 0, 0, 0};
-    float frac[] = {0, -0.5, 0.9, -0.2};
-    float Out[] = {1, 1, 1, 1};
     for (int i = 0; i < len; i++) {
         if (nextafterf(Val[i], 1) - Val[i] > 0.0001) {
             return false;
@@ -161,9 +158,6 @@ __device__ bool check_nextafterf() {
 __device__ bool check_nextafter() {
     uint32_t len = 4;
     double Val[] = {0, -0.5, 0.9, -0.2};
-    double iPtr[] = {0, 0, 0, 0};
-    double frac[] = {0, -0.5, 0.9, -0.2};
-    double Out[] = {1, 1, 1, 1};
     for (int i = 0; i < len; i++) {
         if (nextafter(Val[i], 1) - Val[i] > 0.0001) {
             return false;

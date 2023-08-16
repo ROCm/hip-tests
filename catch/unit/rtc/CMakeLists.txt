@@ -26,8 +26,7 @@ add_custom_target(copyRtcHeaders ALL
 if(UNIX)
    set(AMD_TEST_SRC ${TEST_SRC}
        RtcFunctions.cpp
-       RtcUtility.cpp
-       hiprtcComplrOptnTesting.cc)
+       RtcUtility.cpp)
 endif()
 
 if(HIP_PLATFORM MATCHES "nvidia")

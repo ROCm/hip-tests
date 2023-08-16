@@ -180,7 +180,6 @@ TEST_CASE("Unit_hipGetSymbolAddressAndSize_Validation") {
   bool* checkOkD{nullptr};
   bool checkOk = false;
   size_t symbolSize{};
-  int* symbolArrAddress{};
   float* symbolVarAddress{};
 
   SECTION("Validate symbol size/address of static const variable") {

@@ -22,6 +22,8 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip_test_defgroups.hh>
 
+#pragma clang diagnostic ignored "-Wunused-parameter"
+
 __global__ void Empty(int param) {}
 
 /**

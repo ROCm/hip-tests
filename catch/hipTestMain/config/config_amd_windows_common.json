@@ -234,6 +234,8 @@
 	   "Unit_hiprtc_namehandling.Unit_hiprtc_namehandling",
 	   "Unit_hiprtc_getloweredname.Unit_hiprtc_getloweredname",
 	   "Unit_hiprtc_test_hip_bfloat16.Unit_hiprtc_test_hip_bfloat16",
-	   "Unit_RTC_LinkerAPI.Unit_RTC_LinkerAPI"
+	   "Unit_RTC_LinkerAPI.Unit_RTC_LinkerAPI",
+	   "Unit_hiprtc_half_shuffle",
+	   "Unit_hiprtc_includepath"
 	]
 }

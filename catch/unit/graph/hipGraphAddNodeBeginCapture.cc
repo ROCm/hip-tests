@@ -21,6 +21,7 @@ THE SOFTWARE.
 #include <hip_test_checkers.hh>
 #include <hip_test_kernels.hh>
 
+#pragma clang diagnostic ignored "-Wunused-parameter"
 #define SIZE (1024 * 1024)
 static size_t Nbytes = SIZE * sizeof(int);
 

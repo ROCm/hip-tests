@@ -36,6 +36,9 @@ validation. For PASS senario the function returns 1 or 0 otherwise.
 #include <hip_test_common.hh>
 #include "headers/printf_common.h"
 
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#pragma clang diagnostic ignored "-Wunused-variable"
+
 bool check_architecture(const char** Combination_CO,
                         int Combination_CO_size, int max_thread_pos,
                         int fast_math_present) {
@@ -305,7 +308,6 @@ bool check_denormals_enabled(const char** Combination_CO,
   for (auto& indx : double_vec_expected) {
     Expected_Results_int.push_back(static_cast<int>(indx));
   }
-  int pass_count = 0;
   int test_case, res_inc;
   for (test_case = 0, res_inc = 0; test_case < Input_Vals_int.size() &&
        res_inc < Expected_Results_int.size(); test_case+=2, res_inc++) {
@@ -378,8 +380,8 @@ bool check_denormals_enabled(const char** Combination_CO,
     hipFunction_t function;
     HIP_CHECK(hipModuleLoadData(&module, codec.data()));
     HIP_CHECK(hipModuleGetFunction(&function, module, kername));
-    hipError_t status = hipModuleLaunchKernel(function, 1, 1, 1, 1, 1, 1, 0, 0,
-                                              nullptr, kernel_parameter);
+    HIP_CHECK(hipModuleLaunchKernel(function, 1, 1, 1, 1, 1, 1, 0, 0,
+                                              nullptr, kernel_parameter));
     HIP_CHECK(hipMemcpy(result_h, result_d, sizeof(double),
                         hipMemcpyDeviceToHost));
     HIP_CHECK(hipDeviceSynchronize());
@@ -427,7 +429,6 @@ bool check_denormals_disabled(const char** Combination_CO,
                                         "Expected_Results_for_no", block_name);
   const char* kername = kernel_name.c_str();
   const char* compiler_option = retrieved_CO.c_str();
-  int CO_size = 1;
   std::vector<double> double_vec_input;
   for (auto& indx : Input_Vals) {
     double_vec_input.push_back(indx.get<double>());
@@ -444,7 +445,6 @@ bool check_denormals_disabled(const char** Combination_CO,
   for (auto& indx : double_vec_expected_for_no) {
     Expected_Results_for_no_int.push_back(static_cast<int>(indx));
   }
-  int pass_count = 0;
   int test_case, res_inc;
   for (test_case = 0, res_inc = 0; test_case < Input_Vals_int.size() &&
        res_inc < Expected_Results_for_no_int.size(); test_case+=2, res_inc++) {
@@ -517,8 +517,8 @@ bool check_denormals_disabled(const char** Combination_CO,
     hipFunction_t function;
     HIP_CHECK(hipModuleLoadData(&module, codec.data()));
     HIP_CHECK(hipModuleGetFunction(&function, module, kername));
-    hipError_t status = hipModuleLaunchKernel(function, 1, 1, 1, 1, 1, 1, 0, 0,
-                                              nullptr, kernel_parameter);
+    HIP_CHECK(hipModuleLaunchKernel(function, 1, 1, 1, 1, 1, 1, 0, 0,
+                                              nullptr, kernel_parameter));
     HIP_CHECK(hipMemcpy(result_h, result_d, sizeof(double),
                         hipMemcpyDeviceToHost));
     HIP_CHECK(hipDeviceSynchronize());
@@ -566,7 +566,7 @@ bool check_ffp_contract_off(const char** Combination_CO,
   for (auto& indx : retrieved_CO) {
     CO_vec.push_back(indx.get<std::string>());
   }
-  int CO_IRadded_size = 3, a = 0;
+  int CO_IRadded_size = 3;
   const char** CO_IRadded = new const char*[3];
   std::string hold = CO_vec[0];
   CO_IRadded[0] = hold.c_str();
@@ -626,7 +626,7 @@ bool check_ffp_contract_on(const char** Combination_CO,
   for (auto& indx : retrieved_CO) {
     CO_vec.push_back(indx.get<std::string>());
   }
-  int CO_IRadded_size = 3, a = 0;
+  int CO_IRadded_size = 3;
   const char** CO_IRadded = new const char*[3];
   std::string hold = CO_vec[1];
   CO_IRadded[0] = hold.c_str();
@@ -700,7 +700,7 @@ bool check_ffp_contract_fast(const char** Combination_CO,
   for (auto& indx : retrieved_CO) {
     CO_vec.push_back(indx.get<std::string>());
   }
-  int CO_IRadded_size = 3, a = 0;
+  int CO_IRadded_size = 3;
   const char** CO_IRadded = new const char*[3];
   std::string hold = CO_vec[2];
   CO_IRadded[0] = hold.c_str();
@@ -769,7 +769,7 @@ bool check_fast_math_enabled(const char** Combination_CO,
     }
     return 0;
   }
-  int CO_IRadded_size = 3, a = 0;
+  int CO_IRadded_size = 3;
   const char** CO_IRadded = new const char*[3];
   CO_IRadded[0] = retrieved_CO.c_str();
   CO_IRadded[1] = "-mllvm";
@@ -821,7 +821,7 @@ bool check_fast_math_disabled(const char** Combination_CO,
     }
     return 0;
   }
-  int CO_IRadded_size = 3, a = 0;
+  int CO_IRadded_size = 3;
   const char** CO_IRadded = new const char*[3];
   CO_IRadded[0] = retrieved_CO.c_str();
   CO_IRadded[1] = "-mllvm";
@@ -873,13 +873,13 @@ bool check_slp_vectorize_enabled(const char** Combination_CO,
   }
   std::string kernel_name = get_string_parameters("kernel_name", block_name);
   const char* kername = kernel_name.c_str();
-  int CO_IRadded_size = 3, a = 0;
+  int CO_IRadded_size = 3;
   const char** CO_IRadded = new const char*[3];
   CO_IRadded[0] = retrieved_CO.c_str();
   CO_IRadded[1] = "-mllvm";
   CO_IRadded[2] = "-print-after=constmerge";
   __half2 *a_d, *x_d, *y_d;
-  __half2 a_h, x_h, *y_h;
+  __half2 a_h, x_h;
   a_h.data.x = 1.5;
   x_h.data.y = 3.0;
   CaptureStream capture(stderr);
@@ -1035,13 +1035,13 @@ bool check_slp_vectorize_disabled(const char** Combination_CO,
   }
   std::string kernel_name = get_string_parameters("kernel_name", block_name);
   const char* kername = kernel_name.c_str();
-  int CO_IRadded_size = 3, a = 0;
+  int CO_IRadded_size = 3;
   const char** CO_IRadded = new const char*[3];
   CO_IRadded[0] = retrieved_CO.c_str();
   CO_IRadded[1] = "-mllvm";
   CO_IRadded[2] = "-print-after=constmerge";
   __half2 *a_d, *x_d, *y_d;
-  __half2 a_h, x_h, *y_h;
+  __half2 a_h, x_h;
   a_h.data.x = 1.5;
   x_h.data.y = 3.0;
   CaptureStream capture(stderr);
@@ -1451,7 +1451,6 @@ bool check_header_dir(const char** Combination_CO,
     var_hdr_lst[i] = Headers_list[i];
     hder_lst[i] = var_hdr_lst[i].c_str();
   }
-  int pass_count = 0;
   for (int senario = 0; senario< Input_Thrd_Vals_int.size(); senario++) {
     hiprtcProgram prog;
     HIPRTC_CHECK(hiprtcCreateProgram(&prog, header_dir_string,

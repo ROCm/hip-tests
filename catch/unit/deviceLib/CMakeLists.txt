@@ -184,4 +184,4 @@ elseif(HIP_PLATFORM MATCHES "nvidia")
                       COMPILE_OPTIONS --Wno-deprecated-declarations)
 endif()
 
-add_dependencies(build_tests kerDevWriteMultCO.code kerDevFreeMultCO.code)
+add_dependencies(build_tests kerDevAllocMultCO.code kerDevWriteMultCO.code kerDevFreeMultCO.code kerDevAllocSingleKer.code)

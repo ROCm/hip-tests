@@ -32,10 +32,10 @@ bool UNSETENV(std::string var) {
   return (result == 0) ? true: false;
 }
 
-bool SETENV(std::string var, std::string value) {
+bool SETENV(std::string var, std::string value, int overwrite) {
   int result = -1;
   #ifdef __unix__
-    result = setenv(var.c_str(), value.c_str(), 1);
+    result = setenv(var.c_str(), value.c_str(), overwrite);
   #else
     result = _putenv((var + '=' + value).c_str());
   #endif
@@ -44,10 +44,10 @@ bool SETENV(std::string var, std::string value) {
 
 void inline hideDevices(const char* devices) {
 #if HT_NVIDIA
-  SETENV("CUDA_VISIBLE_DEVICES", devices);
+  SETENV("CUDA_VISIBLE_DEVICES", devices, 1);
 #else
-  SETENV("HIP_VISIBLE_DEVICES", devices);
-  SETENV("ROCR_VISIBLE_DEVICES", devices);
+  SETENV("HIP_VISIBLE_DEVICES", devices, 1);
+  SETENV("ROCR_VISIBLE_DEVICES", devices, 1);
 #endif
 }
 

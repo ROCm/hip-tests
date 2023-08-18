@@ -21,7 +21,6 @@ THE SOFTWARE.
 */
 
 #pragma once
-#pragma clang diagnostic ignored "-Wsign-compare"
 #include "hip_test_context.hh"
 
 #include <catch.hpp>
@@ -356,7 +355,7 @@ class BlockingContext {
   hipStream_t stream;
 
  public:
-  BlockingContext(hipStream_t s) : blocked(true), stream(s) {}
+  BlockingContext(hipStream_t s) : stream(s), blocked(true) {}
 
   BlockingContext(const BlockingContext& in) {
     blocked = in.blocked_val();

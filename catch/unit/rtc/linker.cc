@@ -11,7 +11,8 @@
 #include <iterator>
 #include <vector>
 
-#pragma clang diagnostic ignored "-Wuninitialized"
+static constexpr auto NUM_THREADS{128};
+static constexpr auto NUM_BLOCKS{32};
 
 static constexpr auto src{
     R"(

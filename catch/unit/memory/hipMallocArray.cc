@@ -399,22 +399,12 @@ TEMPLATE_TEST_CASE("Unit_hipMallocArray_happy", "", uint, int, int4, ushort, sho
     testArrayAsSurface<TestType>(arrayPtr, width, height);
   }
   SECTION("hipArrayTextureGather") {
-    hipDeviceProp_t prop;
-    int device;
-    HIP_CHECK(hipGetDevice(&device));
-    HIP_CHECK(hipGetDeviceProperties(&prop, device));
-    // tex2Dgather not supported on gfx90a
-    if (std::string(prop.gcnArchName).find("gfx90a") == std::string::npos) {
-      height = 1024;
-      INFO("flag is hipArrayTextureGather");
-      INFO("height: " << height);
+    height = 1024;
+    INFO("flag is hipArrayTextureGather");
+    INFO("height: " << height);
 
-      HIP_CHECK(hipMallocArray(&arrayPtr, &desc, width, height, hipArrayTextureGather));
-      testArrayAsTextureWithGather<TestType>(arrayPtr, width, height);
-    } else {
-      SUCCEED("tex2Dgather is not supported for gfx90a, Hence"
-               "skipping the testcase for this device " << device);
-    }
+    HIP_CHECK(hipMallocArray(&arrayPtr, &desc, width, height, hipArrayTextureGather));
+    testArrayAsTextureWithGather<TestType>(arrayPtr, width, height);
   }
 #endif
 

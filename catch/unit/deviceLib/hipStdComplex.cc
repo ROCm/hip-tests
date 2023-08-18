@@ -22,7 +22,6 @@ THE SOFTWARE.
 #include <hip_test_checkers.hh>
 #include <complex>
 
-#pragma clang diagnostic ignored "-Wunused-variable"
 // Tolerance for error
 const double tolerance = 1e-6;
 

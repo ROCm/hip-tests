@@ -14,16 +14,11 @@ $ export PATH=$PATH:[MYHIP]/bin
 $ export HIP_PATH=[MYHIP]
 ```
 
-- Build executable file
+- Build executible file
 
 ```
 $ cd ~/hip/samples/0_Intro/square
-  mkdir -p build && cd build
-
-  cmake -DCMAKE_PREFIX_PATH=<path/to/rocm> -DHIP_CXX_COMPILER=<path/to/clang> ..
-  make
-
-$ Building without cmake
+$ make
 /opt/rocm/hip/bin/hipify-perl square.cu > square.cpp
 /opt/rocm/hip/bin/hipcc  square.cpp -o square.out
 /opt/rocm/hip/bin/hipcc -use-staticlib  square.cpp -o square.out.static

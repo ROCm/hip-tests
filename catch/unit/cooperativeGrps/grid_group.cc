@@ -143,7 +143,7 @@ TEST_CASE("Unit_Grid_Group_Getters_Positive_Basic") {
   HIP_CHECK(hipDeviceSynchronize());
 
   // Verify grid_group.is_valid() values
-  ArrayAllOf(uint_arr.ptr(), grid.thread_count_, [](uint32_t) { return 1; });
+  ArrayAllOf(uint_arr.ptr(), grid.thread_count_, [](uint32_t i) { return 1; });
 }
 
 /**

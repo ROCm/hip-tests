@@ -22,7 +22,6 @@ THE SOFTWARE.
 #include <hip_test_defgroups.hh>
 #include "stream_capture_common.hh" // NOLINT
 
-#pragma clang diagnostic ignored "-Wunused-variable"
 /**
  * @addtogroup hipStreamBeginCapture hipStreamBeginCapture
  * @{

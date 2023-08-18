@@ -26,7 +26,7 @@ TEST_CASE("Unit_hipFreeAsync_negative") {
   HIP_CHECK(hipSetDevice(0));
   void* p = nullptr;
   hipStream_t stream{nullptr};
-  HIP_CHECK(hipStreamCreate(&stream));
+  hipStreamCreate(&stream);
 
   SECTION("dev_ptr is nullptr") { REQUIRE(hipFreeAsync(nullptr, stream) != hipSuccess); }
 

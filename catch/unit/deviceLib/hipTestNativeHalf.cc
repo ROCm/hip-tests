@@ -144,8 +144,6 @@ void __half2Test(bool* result, __half2 a) {
   // Dot Functions
   result[0] &= amd_mixed_dot(a, a, 1, 1) && result[0];
 
-  half X = a.x;
-  half Y = a.y;
 }
 
 TEST_CASE("Unit_hipTestNativeHalf") {

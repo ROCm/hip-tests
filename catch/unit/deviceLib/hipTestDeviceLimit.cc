@@ -20,5 +20,5 @@ THE SOFTWARE.
 TEST_CASE("Unit_hipTestDeviceLimit_Basic") {
   size_t heap;
   HIP_CHECK(hipDeviceGetLimit(&heap, hipLimitMallocHeapSize));
-  REQUIRE(heap != NULL);
+  REQUIRE(heap != 0);
 }

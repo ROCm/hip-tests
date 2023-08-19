@@ -181,7 +181,6 @@ bool run_llrint() {
     int passed = 0;
     for (int i = 0; i < 512; i++) {
         int x = round(A[i]);
-        int64_t y = x;
         if (B[i] == x) {
             passed = 1;
         }

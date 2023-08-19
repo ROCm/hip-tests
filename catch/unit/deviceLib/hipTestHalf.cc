@@ -19,6 +19,9 @@ THE SOFTWARE.
 #include <hip/hip_fp16.h>
 #include <hip_test_common.hh>
 
+#pragma clang diagnostic ignored "-Wunused-variable"
+#pragma clang diagnostic ignored "-Wunused-parameter"
+
 __device__ void test_convert() {
   __half x;
   float y = static_cast<float>(x);

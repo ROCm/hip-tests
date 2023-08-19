@@ -34,6 +34,8 @@ THE SOFTWARE.
 #include <unistd.h>
 #endif
 
+#pragma clang diagnostic ignored "-Wunused-but-set-variable"
+
 #if defined(_WIN32)
 class CaptureStream {
  private:
@@ -153,7 +155,8 @@ struct CaptureStream {
 
   // Truncate the file up to size if we don't want too long log
   void Truncate(size_t size) {
-    struct stat sb = { 0 };
+    struct stat sb;
+    memset(&sb, 0, sizeof(sb));
     if (::stat(tempname, &sb) == -1) {
       std::cout << "failed lstat " << tempname;
       std::cout << "with error: " << ::strerror(errno) << std::endl;

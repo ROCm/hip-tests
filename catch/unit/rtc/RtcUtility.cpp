@@ -61,6 +61,8 @@ parameters of the respective block name.
 #include <hip_test_common.hh>
 #include "headers/printf_common.h"
 
+#pragma clang diagnostic ignored "-Wunused-but-set-variable"
+
 std::vector<std::string> get_combi_string_vec() {
   picojson::array combi_string = get_array_parameters("Combi_CO",
                                                       "all_compier_options");
@@ -91,7 +93,6 @@ int split_comb_string(std::string option) {
 int calling_combination_function(std::vector<std::string> combi_vec_list) {
   int combi_size = combi_vec_list.size();
   int fast_math_present = -1, undef_present = 0;
-  int a = 0;
   int max_thread_position;
   std::string hold_CO[combi_size];
   const char** Combination_CO = new const char*[combi_size];

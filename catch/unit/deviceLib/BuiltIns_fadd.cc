@@ -28,6 +28,7 @@ This testfile verifies __builtin_amdgcn_global_atomic_fadd_f64 API scenarios
 
 #include<hip_test_checkers.hh>
 #include<hip_test_common.hh>
+#include<hip_test_features.hh>
 #include <hip/hiprtc.h>
 
 #define INC_VAL 10
@@ -57,7 +58,7 @@ TEST_CASE("Unit_BuiltInAtomicAdd_CoherentGlobalMem") {
   HIP_CHECK(hipGetDevice(&device));
   HIP_CHECK(hipGetDeviceProperties(&prop, device));
   std::string gfxName(prop.gcnArchName);
-  if ((gfxName == "gfx90a" || gfxName.find("gfx90a:")) == 0) {
+  if (CheckIfFeatSupported(CTFeatures::CT_FEATURE_FINEGRAIN_HWSUPPORT, gfxName)) {
     if (prop.canMapHostMemory != 1) {
       SUCCEED("Does support HostPinned Memory");
     } else {
@@ -85,7 +86,7 @@ TEST_CASE("Unit_BuiltInAtomicAdd_CoherentGlobalMem") {
       HIP_CHECK(hipFree(result));
     }
   } else {
-    SUCCEED("Memory model feature is only supported for gfx90a Hence"
+    SUCCEED("Memory model feature is only supported for gfx90a, gfx940, gfx941, gfx942 Hence"
             "skipping the testcase for this GPU " << device);
   }
 }
@@ -103,7 +104,7 @@ TEST_CASE("Unit_BuiltInAtomicAdd_NonCoherentGlobalMem") {
   HIP_CHECK(hipGetDevice(&device));
   HIP_CHECK(hipGetDeviceProperties(&prop, device));
   std::string gfxName(prop.gcnArchName);
-  if ((gfxName == "gfx90a" || gfxName.find("gfx90a:")) == 0) {
+  if (CheckIfFeatSupported(CTFeatures::CT_FEATURE_FINEGRAIN_HWSUPPORT, gfxName)) {
     if (prop.canMapHostMemory != 1) {
       SUCCEED("Does not support HostPinned Memory");
     } else {
@@ -129,7 +130,7 @@ TEST_CASE("Unit_BuiltInAtomicAdd_NonCoherentGlobalMem") {
       free(B_h);
     }
   } else {
-    SUCCEED("Memory model feature is only supported for gfx90a"
+    SUCCEED("Memory model feature is only supported for gfx90a, gfx940, gfx941, gfx942"
             "Hence skipping the testcase for GPU-0");
   }
 }
@@ -146,7 +147,7 @@ TEST_CASE("Unit_BuiltInAtomicAdd_CoherentGlobalMemWithRtc") {
   HIP_CHECK(hipGetDevice(&device));
   HIP_CHECK(hipGetDeviceProperties(&prop, device));
   std::string gfxName(prop.gcnArchName);
-  if ((gfxName == "gfx90a" || gfxName.find("gfx90a:")) == 0) {
+  if (CheckIfFeatSupported(CTFeatures::CT_FEATURE_FINEGRAIN_HWSUPPORT, gfxName)) {
     if (prop.canMapHostMemory != 1) {
       SUCCEED("Does not support HostPinned Memory");
     } else {
@@ -197,8 +198,8 @@ TEST_CASE("Unit_BuiltInAtomicAdd_CoherentGlobalMemWithRtc") {
       void* config_d[] = {HIP_LAUNCH_PARAM_BUFFER_POINTER, &args_f,
                           HIP_LAUNCH_PARAM_BUFFER_SIZE,
                           &size, HIP_LAUNCH_PARAM_END};
-      hipModuleLaunchKernel(fmaxkernel, 1, 1, 1, 1, 1, 1, 0,
-                            nullptr, nullptr, config_d);
+      HIP_CHECK(hipModuleLaunchKernel(fmaxkernel, 1, 1, 1, 1, 1, 1, 0,
+                            nullptr, nullptr, config_d));
       HIP_CHECK(hipDeviceSynchronize());
       HIP_CHECK(hipMemcpy(B_h, result, sizeof(double), hipMemcpyDeviceToHost));
       REQUIRE(A_h[0] == INITIAL_VAL);
@@ -208,7 +209,7 @@ TEST_CASE("Unit_BuiltInAtomicAdd_CoherentGlobalMemWithRtc") {
       free(B_h);
     }
   } else {
-    SUCCEED("Memory model feature is only supported for gfx90a, Hence"
+    SUCCEED("Memory model feature is only supported for gfx90a, gfx940, gfx941, gfx942, Hence"
              "skipping the testcase for this GPU " << device);
   }
 }
@@ -226,7 +227,7 @@ TEST_CASE("Unit_BuiltInAtomicAdd_NonCoherentGlobalMemWithRtc") {
   HIP_CHECK(hipGetDevice(&device));
   HIP_CHECK(hipGetDeviceProperties(&prop, device));
   std::string gfxName(prop.gcnArchName);
-  if ((gfxName == "gfx90a" || gfxName.find("gfx90a:")) == 0) {
+  if (CheckIfFeatSupported(CTFeatures::CT_FEATURE_FINEGRAIN_HWSUPPORT, gfxName)) {
     if (prop.canMapHostMemory != 1) {
       SUCCEED("Does support HostPinned Memory");
     } else {
@@ -277,8 +278,8 @@ TEST_CASE("Unit_BuiltInAtomicAdd_NonCoherentGlobalMemWithRtc") {
       void* config_d[] = {HIP_LAUNCH_PARAM_BUFFER_POINTER, &args_f,
                           HIP_LAUNCH_PARAM_BUFFER_SIZE,
                           &size, HIP_LAUNCH_PARAM_END};
-      hipModuleLaunchKernel(fmaxkernel, 1, 1, 1, 1, 1, 1, 0,
-                            nullptr, nullptr, config_d);
+      HIP_CHECK(hipModuleLaunchKernel(fmaxkernel, 1, 1, 1, 1, 1, 1, 0,
+                            nullptr, nullptr, config_d));
       HIP_CHECK(hipDeviceSynchronize());
       HIP_CHECK(hipMemcpy(B_h, result, sizeof(double), hipMemcpyDeviceToHost));
       REQUIRE(A_h[0] == INITIAL_VAL + INC_VAL);
@@ -288,7 +289,7 @@ TEST_CASE("Unit_BuiltInAtomicAdd_NonCoherentGlobalMemWithRtc") {
       free(B_h);
     }
   } else {
-    SUCCEED("Memory model feature is only supported for gfx90a, Hence"
+    SUCCEED("Memory model feature is only supported for gfx90a, gfx940, gfx941, gfx942, Hence"
              "skipping the testcase for this GPU " << device);
   }
 }

@@ -21,6 +21,9 @@ THE SOFTWARE.
 #include <hip_test_checkers.hh>
 #include <hip_test_common.hh>
 #include <hip_test_defgroups.hh>
+
+#pragma clang diagnostic ignored "-Wunused-parameter"
+
 unsigned threadsPerBlock = 256;
 
 template <unsigned batch, typename T>

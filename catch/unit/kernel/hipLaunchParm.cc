@@ -23,6 +23,11 @@ THE SOFTWARE.
 #include <hip_test_defgroups.hh>
 #include <cstdint>
 
+#pragma clang diagnostic ignored "-Wunused-variable"
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#pragma clang diagnostic ignored "-Wunused-result"
+#pragma clang diagnostic ignored "-Wuninitialized"
+
 // Memory alignment is broken
 // Update: with latest changes the aligment is working fine, hence enabled
 #define ENABLE_ALIGNMENT_TEST_SMALL_BAR 1

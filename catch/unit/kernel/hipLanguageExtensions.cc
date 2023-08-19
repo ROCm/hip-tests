@@ -23,6 +23,9 @@ THE SOFTWARE.
 #include <hip_test_defgroups.hh>
 #include <hip/math_functions.h>
 
+#pragma clang diagnostic ignored "-Wunused-variable"
+#pragma clang diagnostic ignored "-Wuninitialized"
+
 // Simple tests for variable type qualifiers:
 __device__ int deviceVar;
 
@@ -62,7 +65,6 @@ __global__ void vectorADD(T __restrict__* A_d, T* B_d, T* C_d, size_t N) {
   int a = __shfl_up(x, 1);
 #endif
   float x = 1.0;
-  float z = sin(x);
 #ifdef NOT_YET
     float fastZ = __sin(x);
 #endif

@@ -48,7 +48,7 @@ class TextureObjectTestWrapper {
     }
 
     channel_desc = hipCreateChannelDesc(32, 0, 0, 0, hipChannelFormatKindFloat);
-    hipMallocArray(&array_member, &channel_desc, width);
+    HIP_CHECK(hipMallocArray(&array_member, &channel_desc, width));
 
     HIP_CHECK(
         hipMemcpy2DToArray(array_member, 0, 0, host_data_, size, size, 1, hipMemcpyHostToDevice));

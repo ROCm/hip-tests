@@ -6,7 +6,7 @@ Since FindHIP cmake module is not yet a part of the default cmake distribution, 
 
 The simplest approach is to use
 ```
-set(CMAKE_MODULE_PATH "/opt/rocm/hip/cmake" ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH "/opt/rocm/lib/cmake/hip/" ${CMAKE_MODULE_PATH})
 find_package(HIP)
 ```
 

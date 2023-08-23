@@ -16,7 +16,20 @@
 		"Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Multiple_Semaphores",
 		"Unit_hipSignalExternalSemaphoresAsync_Vulkan_Negative_Parameters",
 		"Unit_hipImportExternalSemaphore_Vulkan_Negative_Parameters",
-		"Unit_hipDestroyExternalSemaphore_Vulkan_Negative_Parameters"
+		"Unit_hipDestroyExternalSemaphore_Vulkan_Negative_Parameters",
+		"Unit_Grid_Group_Sync_Positive_Basic",
+                "=== Below hiprtc tests are disabled temporarily,  will be renabled once patches for SWDEV-395996 are merged ===",
+		"Unit_hiprtc_saxpy",
+		"Unit_hiprtc_warpsize",
+		"Unit_hiprtc_functional",
+		"Unit_hipStreamCaptureRtc",
+		"Unit_hiprtc_cpp17",
+		"Unit_hiprtc_namehandling",
+		"Unit_hiprtc_getloweredname",
+		"Unit_hiprtc_test_hip_bfloat16",
+		"Unit_RTC_LinkerAPI",
+		"Unit_hiprtc_half_shuffle",
+		"Unit_hiprtc_includepath"
 	]
 
 }

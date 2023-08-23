@@ -35,15 +35,15 @@ enum class LinearAllocs {
 inline std::string to_string(const LinearAllocs allocation_type) {
   switch (allocation_type) {
     case LinearAllocs::malloc:
-      return "host pageable";
+      return "malloc";
     case LinearAllocs::mallocAndRegister:
-      return "registered";
+      return "malloc + hipHostRegister";
     case LinearAllocs::hipHostMalloc:
-      return "host pinned";
+      return "hipHostMalloc";
     case LinearAllocs::hipMalloc:
-      return "device malloc";
+      return "hipMalloc";
     case LinearAllocs::hipMallocManaged:
-      return "managed";
+      return "hipMallocManaged";
     default:
       return "unknown alloc type";
   }
@@ -83,24 +83,35 @@ template <typename T> class LinearAllocGuard {
 
   LinearAllocGuard(const LinearAllocGuard&) = delete;
 
-  LinearAllocGuard(LinearAllocGuard&& o)
-      : allocation_type_{o.allocation_type_}, ptr_{o.ptr_}, host_ptr_{o.host_ptr_} {
-    o.allocation_type_ = LinearAllocs::noAlloc;
-    o.ptr_ = nullptr;
-    o.host_ptr_ = nullptr;
-  }
+  LinearAllocGuard(LinearAllocGuard&& o) { *this = std::move(o); }
 
   LinearAllocGuard& operator=(LinearAllocGuard&& o) {
-    allocation_type_ = o.allocation_type_;
-    ptr_ = o.ptr_;
-    host_ptr_ = o.host_ptr_;
+    if (this != &o) {
+      dealloc();
 
-    o.allocation_type_ = LinearAllocs::noAlloc;
-    o.ptr_ = nullptr;
-    o.host_ptr_ = nullptr;
+      allocation_type_ = o.allocation_type_;
+      ptr_ = o.ptr_;
+      host_ptr_ = o.host_ptr_;
+
+      o.allocation_type_ = LinearAllocs::noAlloc;
+      o.ptr_ = nullptr;
+      o.host_ptr_ = nullptr;
+    }
+
+    return *this;
   }
 
-  ~LinearAllocGuard() {
+  ~LinearAllocGuard() { dealloc(); }
+
+  T* ptr() const { return ptr_; };
+  T* host_ptr() const { return host_ptr_; }
+
+ private:
+  LinearAllocs allocation_type_ = LinearAllocs::noAlloc;
+  T* ptr_ = nullptr;
+  T* host_ptr_ = nullptr;
+
+  void dealloc() {
     // No Catch macros, don't want to possibly throw in the destructor
     switch (allocation_type_) {
       case LinearAllocs::noAlloc:
@@ -121,14 +132,6 @@ template <typename T> class LinearAllocGuard {
         static_cast<void>(hipFree(ptr_));
     }
   }
-
-  T* ptr() const { return ptr_; };
-  T* host_ptr() const { return host_ptr_; }
-
- private:
-  LinearAllocs allocation_type_ = LinearAllocs::noAlloc;
-  T* ptr_ = nullptr;
-  T* host_ptr_ = nullptr;
 };
 
 template <typename T> class LinearAllocGuardMultiDim {
@@ -264,24 +267,24 @@ class StreamGuard {
 
   StreamGuard(const StreamGuard&) = delete;
 
-  StreamGuard(StreamGuard&& o)
-      : stream_type_{o.stream_type_}, flags_{o.flags_}, priority_{o.priority_}, stream_{o.stream_} {
-    o.stream_type_ = Streams::nullstream;
-    o.flags_ = 0u;
-    o.priority_ = 0;
-    o.stream_ = nullptr;
-  }
+  StreamGuard(StreamGuard&& o) { *this = std::move(o); }
 
   StreamGuard& operator=(StreamGuard&& o) {
-    stream_type_ = o.stream_type_;
-    flags_ = o.flags_;
-    priority_ = o.priority_;
-    stream_ = o.stream_;
+    if (this != &o) {
+      if (stream_type_ == Streams::created) {
+        static_cast<void>(hipStreamDestroy(stream_));
+      }
 
-    o.stream_type_ = Streams::nullstream;
-    o.flags_ = 0u;
-    o.priority_ = 0;
-    o.stream_ = nullptr;
+      stream_type_ = o.stream_type_;
+      flags_ = o.flags_;
+      priority_ = o.priority_;
+      stream_ = o.stream_;
+
+      o.stream_type_ = Streams::nullstream;
+      o.flags_ = 0u;
+      o.priority_ = 0;
+      o.stream_ = nullptr;
+    }
 
     return *this;
   }

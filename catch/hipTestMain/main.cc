@@ -39,6 +39,9 @@ int main(int argc, char** argv) {
     | Opt(cmd_options.accuracy_max_memory, "accuracy_max_memory")
         ["-M"]["--accuracy-max-memory"]
         ("Percentage of global device memory allowed for math accuracy tests (default: 80%)")
+    | Opt(cmd_options.extended_run)
+        ["-E"]["--extended-run"]
+        ("TODO: Description goes here")
   ;
   // clang-format on
 

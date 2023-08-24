@@ -26,8 +26,9 @@ ifeq (,$(HIP_PATH))
 	HIP_PATH=../../..
 endif
 HIPCC=$(HIP_PATH)/bin/hipcc -std=c++11
+INCLUDES  := -I../../common
 
-CXXFLAGS = -O3
+CXXFLAGS = -O3 $(INCLUDES)
 
 all: test_kernel.code hipDispatchLatency.out hipDispatchEnqueueRateMT.out
 

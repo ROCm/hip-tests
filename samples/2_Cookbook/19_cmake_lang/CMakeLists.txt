@@ -10,5 +10,8 @@ add_executable(test_fortran TestFortran.F90)
 add_executable(test_cpp MatrixTranspose.cpp)
 
 target_link_libraries(test_cpp PUBLIC hip::device)
+
+target_include_directories(test_cpp PRIVATE ../../common)
+
 # Assuming to build a C/C++-to-Fortran library binding.
 target_link_libraries(test_fortran PUBLIC hip::device)

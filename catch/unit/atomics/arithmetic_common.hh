@@ -472,7 +472,8 @@ void SingleDeviceMultipleKernelTest(const unsigned int kernel_count, const unsig
   }
 }
 
-// Configures and creates the TestCore for a single device, and multiple kernel launches
+// Configures and creates the TestCore for a multiple devices (and host), and multiple kernel
+// launches
 template <typename TestType, AtomicOperation operation>
 void MultipleDeviceMultipleKernelAndHostTest(const unsigned int num_devices,
                                              const unsigned int kernel_count,

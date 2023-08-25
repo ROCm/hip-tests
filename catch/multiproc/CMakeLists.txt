@@ -28,7 +28,8 @@ hip_add_exe_to_target(NAME MultiProc
 elseif(HIP_PLATFORM MATCHES "amd")
 hip_add_exe_to_target(NAME MultiProc
                       TEST_SRC ${TEST_SRC}
-                      TEST_TARGET_NAME build_tests)
+                      TEST_TARGET_NAME build_tests
+                      LINKER_LIBS hiprtc)
 endif()
 add_dependencies(build_tests dummy_kernel.code)
 

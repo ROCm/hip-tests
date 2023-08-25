@@ -149,3 +149,10 @@ THE SOFTWARE.
  * This section describes tests for device math functions of HIP runtime API.
  * @}
  */
+
+/**
+ * @defgroup Float16Test Float16 Device Functions
+ * @{
+ * This section describes tests for device float16 functions of HIP runtime API.
+ * @}
+ */

@@ -83,6 +83,8 @@ set(TEST_SRC
     hipMemcpy_old.cc
     hipMemcpy_derivatives.cc
     hipMemcpyAsync.cc
+    hipMemcpyAsync_old.cc
+    hipMemcpyAsync_derivatives.cc
     hipMemsetFunctional.cc
     hipMalloc.cc
     hipMallocPitch.cc
@@ -106,6 +108,8 @@ set(TEST_SRC
     hipMemAdvise_old.cc
     hipMemAdvise.cc
     hipMemRangeGetAttributes.cc
+    hipFreeAsync.cc
+    hipMallocAsync.cc
     hipStreamAttachMemAsync.cc
     hipMemRangeGetAttributes_old.cc
     hipMemGetAddressRange.cc)

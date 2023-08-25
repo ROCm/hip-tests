@@ -73,8 +73,13 @@ void BinaryFloatingPointBruteForceTest(kernel_sig<T, TArg, TArg> kernel,
       thread_pool.Post([=, &x1s, &x2s] {
         const auto generator = [=] {
           static thread_local std::mt19937 rng(std::random_device{}());
-          std::uniform_real_distribution<RefType_t<TArg>> unif_dist(a, b);
-          return static_cast<TArg>(unif_dist(rng));
+          if constexpr (std::is_same_v<TArg, Float16>) {
+            std::uniform_real_distribution<RefType_t<Float16>> unif_dist(-FLOAT16_MAX, FLOAT16_MAX);
+            return static_cast<Float16>(unif_dist(rng));
+          } else {
+            std::uniform_real_distribution<RefType_t<TArg>> unif_dist(a, b);
+            return static_cast<TArg>(unif_dist(rng));
+          }
         };
         std::generate(x1s.ptr() + base_idx, x1s.ptr() + base_idx + sub_batch_size, generator);
         std::generate(x2s.ptr() + base_idx, x2s.ptr() + base_idx + sub_batch_size, generator);
@@ -94,7 +99,8 @@ void BinaryFloatingPointSpecialValuesTest(kernel_sig<T, TArg, TArg> kernel,
                                           ref_sig<RT, RTArg, RTArg> ref_func,
                                           const ValidatorBuilder& validator_builder) {
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
-  const auto values = std::get<SpecialVals<TArg>>(kSpecialValRegistry);
+  using SpecialValsType = std::conditional_t<std::is_same_v<TArg, Float16>, float, TArg>;
+  const auto values = std::get<SpecialVals<SpecialValsType>>(kSpecialValRegistry);
 
   const auto size = values.size * values.size;
   LinearAllocGuard<TArg> x1s{LinearAllocs::hipHostMalloc, size * sizeof(TArg)};
@@ -121,7 +127,6 @@ void BinaryFloatingPointTest(kernel_sig<T, TArg, TArg> kernel, ref_sig<RT, RTArg
 
   SECTION("Brute force") { BinaryFloatingPointBruteForceTest(kernel, ref_func, validator_builder); }
 }
-
 
 #define MATH_BINARY_WITHIN_ULP_TEST_DEF(kern_name, ref_func, sp_ulp, dp_ulp)                       \
   MATH_BINARY_KERNEL_DEF(kern_name)                                                                \

@@ -44,6 +44,49 @@ namespace cg = cooperative_groups;
   }
 
 template <typename T, typename RT, typename RTArg, typename ValidatorBuilder>
+void UnaryHalfPrecisionBruteForceTest(kernel_sig<T, Float16> kernel, ref_sig<RT, RTArg> ref_func,
+                                      const ValidatorBuilder& validator_builder) {
+  const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
+  uint64_t stop = std::numeric_limits<uint16_t>::max() + 1ul;
+  const auto max_batch_size =
+      std::min(GetMaxAllowedDeviceMemoryUsage() / (sizeof(Float16) + sizeof(T)), stop);
+  LinearAllocGuard<Float16> values{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(Float16)};
+
+  MathTest math_test(kernel, max_batch_size);
+
+  auto batch_size = max_batch_size;
+  const auto num_threads = thread_pool.thread_count();
+
+  for (uint64_t v = 0u; v < stop;) {
+    batch_size = std::min<uint64_t>(max_batch_size, stop - v);
+
+    const auto min_sub_batch_size = batch_size / num_threads;
+    const auto tail = batch_size % num_threads;
+
+    auto base_idx = 0u;
+    for (auto i = 0u; i < num_threads; ++i) {
+      const auto sub_batch_size = min_sub_batch_size + (i < tail);
+
+      thread_pool.Post([=, &values] {
+        auto t = v;
+        uint16_t val;
+        for (auto j = 0u; j < sub_batch_size; ++j) {
+          val = static_cast<uint16_t>(t++);
+          values.ptr()[base_idx + j] = *reinterpret_cast<Float16*>(&val);
+        }
+      });
+
+      v += sub_batch_size;
+      base_idx += sub_batch_size;
+    }
+
+    thread_pool.Wait();
+
+    math_test.Run(validator_builder, grid_size, block_size, ref_func, batch_size, values.ptr());
+  }
+}
+
+template <typename T, typename RT, typename RTArg, typename ValidatorBuilder>
 void UnarySinglePrecisionBruteForceTest(kernel_sig<T, float> kernel, ref_sig<RT, RTArg> ref_func,
                                         const ValidatorBuilder& validator_builder) {
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
@@ -91,14 +134,10 @@ void UnarySinglePrecisionRangeTest(kernel_sig<T, float> kernel, ref_sig<RT, RTAr
                                    const ValidatorBuilder& validator_builder, const float a,
                                    const float b) {
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
-  uint64_t stop = std::numeric_limits<uint32_t>::max() + 1ul;
   const auto max_batch_size = GetMaxAllowedDeviceMemoryUsage() / (sizeof(float) + sizeof(T));
   LinearAllocGuard<float> values{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(float)};
 
   MathTest math_test(kernel, max_batch_size);
-
-  uint32_t val = 0u;
-  const auto num_threads = thread_pool.thread_count();
 
   size_t inserted = 0u;
   for (float v = a; v != b; v = std::nextafter(v, b)) {
@@ -161,6 +200,12 @@ void UnaryDoublePrecisionSpecialValuesTest(kernel_sig<T, double> kernel,
   MathTest math_test(kernel, values.size);
   math_test.template Run<false>(validator_builder, grid_size, block_size, ref_func, values.size,
                                 values.data);
+}
+
+template <typename T, typename RT, typename RTArg, typename ValidatorBuilder>
+void UnaryHalfPrecisionTest(kernel_sig<T, Float16> kernel, ref_sig<RT, RTArg> ref,
+                            const ValidatorBuilder& validator_builder) {
+  SECTION("Brute force") { UnaryHalfPrecisionBruteForceTest(kernel, ref, validator_builder); }
 }
 
 template <typename T, typename RT, typename RTArg, typename ValidatorBuilder>

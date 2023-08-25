@@ -46,10 +46,10 @@ namespace cg = cooperative_groups;
 
 template <typename T, typename TArg, typename RT, typename RTArg, typename ValidatorBuilder>
 void TernaryFloatingPointBruteForceTest(kernel_sig<T, TArg, TArg, TArg> kernel,
-                                       ref_sig<RT, RTArg, RTArg, RTArg> ref_func,
-                                       const ValidatorBuilder& validator_builder,
-                                       const TArg a = std::numeric_limits<TArg>::lowest(),
-                                       const TArg b = std::numeric_limits<TArg>::max()) {
+                                        ref_sig<RT, RTArg, RTArg, RTArg> ref_func,
+                                        const ValidatorBuilder& validator_builder,
+                                        const TArg a = std::numeric_limits<TArg>::lowest(),
+                                        const TArg b = std::numeric_limits<TArg>::max()) {
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
   const uint64_t num_iterations = GetTestIterationCount();
   const auto max_batch_size =
@@ -74,8 +74,13 @@ void TernaryFloatingPointBruteForceTest(kernel_sig<T, TArg, TArg, TArg> kernel,
       thread_pool.Post([=, &x1s, &x2s, &x3s] {
         const auto generator = [=] {
           static thread_local std::mt19937 rng(std::random_device{}());
-          std::uniform_real_distribution<RefType_t<TArg>> unif_dist(a, b);
-          return static_cast<TArg>(unif_dist(rng));
+          if constexpr (std::is_same_v<TArg, Float16>) {
+            std::uniform_real_distribution<RefType_t<Float16>> unif_dist(-FLOAT16_MAX, FLOAT16_MAX);
+            return static_cast<Float16>(unif_dist(rng));
+          } else {
+            std::uniform_real_distribution<RefType_t<TArg>> unif_dist(a, b);
+            return static_cast<TArg>(unif_dist(rng));
+          }
         };
         std::generate(x1s.ptr() + base_idx, x1s.ptr() + base_idx + sub_batch_size, generator);
         std::generate(x2s.ptr() + base_idx, x2s.ptr() + base_idx + sub_batch_size, generator);
@@ -93,10 +98,11 @@ void TernaryFloatingPointBruteForceTest(kernel_sig<T, TArg, TArg, TArg> kernel,
 
 template <typename T, typename TArg, typename RT, typename RTArg, typename ValidatorBuilder>
 void TernaryFloatingPointSpecialValuesTest(kernel_sig<T, TArg, TArg, TArg> kernel,
-                                          ref_sig<RT, RTArg, RTArg, RTArg> ref_func,
-                                          const ValidatorBuilder& validator_builder) {
+                                           ref_sig<RT, RTArg, RTArg, RTArg> ref_func,
+                                           const ValidatorBuilder& validator_builder) {
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
-  const auto values = std::get<SpecialVals<TArg>>(kSpecialValRegistry);
+  using SpecialValsType = std::conditional_t<std::is_same_v<TArg, Float16>, float, TArg>;
+  const auto values = std::get<SpecialVals<SpecialValsType>>(kSpecialValRegistry);
 
   const auto size = values.size * values.size * values.size;
   LinearAllocGuard<TArg> x1s{LinearAllocs::hipHostMalloc, size * sizeof(TArg)};
@@ -119,13 +125,16 @@ void TernaryFloatingPointSpecialValuesTest(kernel_sig<T, TArg, TArg, TArg> kerne
 }
 
 template <typename T, typename TArg, typename RT, typename RTArg, typename ValidatorBuilder>
-void TernaryFloatingPointTest(kernel_sig<T, TArg, TArg, TArg> kernel, ref_sig<RT, RTArg, RTArg, RTArg> ref_func,
-                             const ValidatorBuilder& validator_builder) {
+void TernaryFloatingPointTest(kernel_sig<T, TArg, TArg, TArg> kernel,
+                              ref_sig<RT, RTArg, RTArg, RTArg> ref_func,
+                              const ValidatorBuilder& validator_builder) {
   SECTION("Special values") {
     TernaryFloatingPointSpecialValuesTest(kernel, ref_func, validator_builder);
   }
 
-  SECTION("Brute force") { TernaryFloatingPointBruteForceTest(kernel, ref_func, validator_builder); }
+  SECTION("Brute force") {
+    TernaryFloatingPointBruteForceTest(kernel, ref_func, validator_builder);
+  }
 }
 
 
@@ -138,5 +147,5 @@ void TernaryFloatingPointTest(kernel_sig<T, TArg, TArg, TArg> kernel, ref_sig<RT
     const auto ulp = std::is_same_v<float, TestType> ? sp_ulp : dp_ulp;                            \
                                                                                                    \
     TernaryFloatingPointTest(kern_name##_kernel<TestType>, ref,                                    \
-                            ULPValidatorBuilderFactory<TestType>(ulp));                            \
+                             ULPValidatorBuilderFactory<TestType>(ulp));                           \
   }

@@ -29,6 +29,7 @@ THE SOFTWARE.
 
 namespace cg = cooperative_groups;
 
+// Atomic operations for which the tests in this file apply for
 enum class AtomicOperation {
   kAdd = 0,
   kAddSystem,
@@ -42,10 +43,15 @@ enum class AtomicOperation {
   kCASAddSystem
 };
 
+// Constants that are passed as operands to the atomic operations
 constexpr auto kIntegerTestValue = 7;
 constexpr auto kFloatingPointTestValue = 3.125;
 constexpr auto kIncDecWraparoundValue = 1023;
 
+// Retrieves test value constant based on the atomic operation and test type:
+// - kIncDecWraparoundValue for increment and decrement operations
+// - kFloatingPointTestValue for floating point test type
+// - kIntegerTestValue for integer test type
 template <typename TestType, AtomicOperation operation>
 __host__ __device__ TestType GetTestValue() {
   if constexpr (operation == AtomicOperation::kInc || operation == AtomicOperation::kDec) {
@@ -55,6 +61,7 @@ __host__ __device__ TestType GetTestValue() {
   return std::is_floating_point_v<TestType> ? kFloatingPointTestValue : kIntegerTestValue;
 }
 
+// Implements an atomic addition via atomicCAS
 template <typename TestType> __device__ TestType CASAtomicAdd(TestType* address, TestType val) {
   TestType old = *address, assumed;
 
@@ -66,6 +73,7 @@ template <typename TestType> __device__ TestType CASAtomicAdd(TestType* address,
   return old;
 }
 
+// Implements an atomic addition via atomicCAS_system
 template <typename TestType>
 __device__ TestType CASAtomicAddSystem(TestType* address, TestType val) {
   TestType old = *address, assumed;
@@ -78,6 +86,7 @@ __device__ TestType CASAtomicAddSystem(TestType* address, TestType val) {
   return old;
 }
 
+// Performs an atomic operation on parameter `mem` based on the `operation` enumerator.
 template <typename TestType, AtomicOperation operation>
 __device__ TestType PerformAtomicOperation(TestType* const mem) {
   const auto val = GetTestValue<TestType, operation>();
@@ -105,6 +114,11 @@ __device__ TestType PerformAtomicOperation(TestType* const mem) {
   }
 }
 
+// This kernel executes the atomic operation specified by the enumerator `operation`. Results of
+// the atomic operations are stored in `old_vals`. Each thread executes the atomic operation on the
+// same memory location `global_mem`.
+// If `use_shared_mem` is true, `global_mem` is copied to shared memory first, the atomic
+// operations are executed on shared memory, and the result is copied back to `global_mem`.
 template <typename TestType, AtomicOperation operation, bool use_shared_mem>
 __global__ void TestKernel(TestType* const global_mem, TestType* const old_vals) {
   __shared__ TestType shared_mem;
@@ -126,6 +140,7 @@ __global__ void TestKernel(TestType* const global_mem, TestType* const old_vals)
   }
 }
 
+// Indexes array `ptr`, with the size in bytes of each element specified by `pitch`
 template <typename TestType>
 __host__ __device__ TestType* PitchedOffset(TestType* const ptr, const unsigned int pitch,
                                             const unsigned int idx) {
@@ -133,6 +148,24 @@ __host__ __device__ TestType* PitchedOffset(TestType* const ptr, const unsigned 
   return reinterpret_cast<TestType*>(byte_ptr + idx * pitch);
 }
 
+// This kernel executes the atomic operation specified by the enumerator `operation`. Results of the
+// atomic operations are stored in `old_vals`. `global_mem` is an array with `width` number of
+// elements. Each thread performs the atomic operation on the element that corresponds to its thread
+// id (tid % width).
+// The elements of `global_mem` can be larger than sizeof(TestType) with the actual size in bytes
+// specified by `pitch`. This is done so we can test scenarios where threads target memory locations
+// that are scattered over different cache lines.
+// If `use_shared_mem` is true, `global_mem` is copied to shared memory first, the atomic operations
+// are executed on shared memory, and the result is copied back to `global_mem`.
+//
+// For example, given that sizeof(TestType) is 1, `width` is 3, and `pitch` is 4:
+//
+//                  0     1     2     3     4     5     6     7     8     9     10     11
+// global_mem -> |  x  |     |     |     |  x  |     |     |     |  x  |     |      |      |
+//               |         pitch         |         pitch         |          pitch          |
+//
+// In this scenario, the atomic operations will target the elements denoted with `x` (addresses 0,
+// 4, 8).
 template <typename TestType, AtomicOperation operation, bool use_shared_mem>
 __global__ void TestKernel(TestType* const global_mem, TestType* const old_vals,
                            const unsigned int width, const unsigned pitch) {
@@ -162,6 +195,7 @@ __global__ void TestKernel(TestType* const global_mem, TestType* const old_vals,
   }
 }
 
+// Used to configure test run
 struct TestParams {
   auto ThreadCount() const {
     return blocks.x * blocks.y * blocks.z * threads.x * threads.y * threads.z;
@@ -171,16 +205,17 @@ struct TestParams {
     return std::max(num_devices * kernel_count * ThreadCount() / 20, width);
   }
 
-  dim3 blocks;
-  dim3 threads;
-  unsigned int num_devices = 1u;
-  unsigned int kernel_count = 1u;
-  unsigned int width = 1u;
-  unsigned int pitch = 0u;
-  unsigned int host_thread_count = 0u;
-  LinearAllocs alloc_type;
+  dim3 blocks;                          // number of blocks per kernel launch
+  dim3 threads;                         // number of threads per kernel launch
+  unsigned int num_devices = 1u;        // number of devices used
+  unsigned int kernel_count = 1u;       // number of kernels launched per device
+  unsigned int width = 1u;              // number of memory locations targeted
+  unsigned int pitch = 0u;              // defines spacing between memory locations
+  unsigned int host_thread_count = 0u;  // number of host threads launched
+  LinearAllocs alloc_type;              // type of allocation used
 };
 
+// Reference implementation used to verify results
 template <typename TestType, AtomicOperation operation>
 std::tuple<std::vector<TestType>, std::vector<TestType>> TestKernelHostRef(const TestParams& p) {
   const auto val = GetTestValue<TestType, operation>();
@@ -228,6 +263,8 @@ std::tuple<std::vector<TestType>, std::vector<TestType>> TestKernelHostRef(const
   return {res_vals, old_vals};
 }
 
+// Compares the results of the test kernel stored in `res_vals` with results generated by the
+// reference implementation
 template <typename TestType, AtomicOperation operation>
 void Verify(const TestParams& p, std::vector<TestType>& res_vals, std::vector<TestType>& old_vals) {
   auto [expected_res_vals, expected_old_vals] = TestKernelHostRef<TestType, operation>(p);
@@ -245,6 +282,7 @@ void Verify(const TestParams& p, std::vector<TestType>& res_vals, std::vector<Te
   }
 }
 
+// Launches the test kernel
 template <typename TestType, AtomicOperation operation, bool use_shared_mem>
 void LaunchKernel(const TestParams& p, hipStream_t stream, TestType* const mem_ptr,
                   TestType* const old_vals) {
@@ -257,6 +295,7 @@ void LaunchKernel(const TestParams& p, hipStream_t stream, TestType* const mem_p
         <<<p.blocks, p.threads, shared_mem_size, stream>>>(mem_ptr, old_vals, p.width, p.pitch);
 }
 
+// Performs a host atomic operation on parameter `mem` based on the `operation` enumerator.
 template <typename TestType, AtomicOperation operation>
 void HostAtomicOperation(const unsigned int iterations, TestType* mem, TestType* const old_vals,
                          const unsigned int width, const unsigned pitch, TestType base_val) {
@@ -272,6 +311,8 @@ void HostAtomicOperation(const unsigned int iterations, TestType* mem, TestType*
   }
 }
 
+// Launches host threads based on TestParams::host_thread_count that compete with the test kernel
+// for the same resources
 template <typename TestType, AtomicOperation operation>
 void PerformHostAtomicOperation(const TestParams& p, TestType* mem, TestType* const old_vals) {
   if (p.host_thread_count == 0) {
@@ -293,6 +334,11 @@ void PerformHostAtomicOperation(const TestParams& p, TestType* mem, TestType* co
   }
 }
 
+// This is the main body of the test:
+// 1. Allocate memory based on TestParams::alloc_type
+// 2. Launch kernels based on TestParams::num_devices and TestParams::kernel_count
+// 3. Launch host threads based on TestParams::host_thread_count
+// 4. Verify the results
 template <typename TestType, AtomicOperation operation, bool use_shared_mem>
 void TestCore(const TestParams& p) {
   const unsigned int flags =
@@ -350,6 +396,7 @@ inline dim3 GenerateBlockDimensions() {
   return GENERATE_COPY(dim3(sm_count), dim3(sm_count + sm_count / 2));
 }
 
+// Configures and creates the TestCore for a single device, and a single kernel launch
 template <typename TestType, AtomicOperation operation>
 void SingleDeviceSingleKernelTest(const unsigned int width, const unsigned int pitch) {
   TestParams params;
@@ -378,6 +425,7 @@ void SingleDeviceSingleKernelTest(const unsigned int width, const unsigned int p
   }
 }
 
+// Configures and creates the TestCore for a single device, and multiple kernel launches
 template <typename TestType, AtomicOperation operation>
 void SingleDeviceMultipleKernelTest(const unsigned int kernel_count, const unsigned int width,
                                     const unsigned int pitch) {
@@ -406,6 +454,8 @@ void SingleDeviceMultipleKernelTest(const unsigned int kernel_count, const unsig
   }
 }
 
+// Configures and creates the TestCore for a multiple devices (and host), and multiple kernel
+// launches
 template <typename TestType, AtomicOperation operation>
 void MultipleDeviceMultipleKernelAndHostTest(const unsigned int num_devices,
                                              const unsigned int kernel_count,

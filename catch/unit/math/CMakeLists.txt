@@ -29,9 +29,4 @@ hip_add_exe_to_target(NAME MathsTest
 add_test(NAME Unit_Half_Precision_Comparison_Negative
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
          ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
-         half_precision_comparison_negative_kernels.cc 68)
-
-add_test(NAME Unit_Half2_Precision_Comparison_Negative
-         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
-         half2_precision_comparison_negative_kernels.cc 96)
+         half_precision_comparison_negative_kernels.cc 164)

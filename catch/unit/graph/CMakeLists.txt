@@ -128,6 +128,7 @@ set(TEST_SRC
   hipGraphKernelNodeCopyAttributes.cc
   hipGraphAddNodeBeginCapture.cc
   hipGraphCycle.cc
+  hipGraphPerf.cc
   hipGraphKernelNodeGetAttribute.cc
   hipGraphKernelNodeSetAttribute.cc)
 

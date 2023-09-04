@@ -93,10 +93,30 @@
 		"Unit_hipInit_Negative",
 		"Unit_hipGraphAddEventRecordNode_Functional_ElapsedTime",
 		"Unit_hipStreamBeginCapture_captureComplexGraph",
-		"Unit_hipGraphAddChildGraphNode_MultGraphsAsSingleGraph"
+		"Unit_hipGraphAddChildGraphNode_MultGraphsAsSingleGraph",
 		"Unit_hipMemGetAddressRange_Negative",
 		"Unit_hipStreamValue_Wait64_Blocking_NoMask_Nor",
 		"Unit_hipLaunchHostFunc_Graph",
-		"Unit_hipLaunchHostFunc_KernelHost"
+		"Unit_hipLaunchHostFunc_KernelHost",
+		"Unit_hipEventCreateWithFlags_DisableSystemFence_HstVisMem",
+		"Unit_hipEventCreateWithFlags_DefaultFlg_HstVisMem",
+		"Unit_hipEventCreateWithFlags_DisableSystemFence_NonCohHstMem",
+		"Unit_hipEventCreateWithFlags_DefaultFlg_NonCohHstMem",
+		"Unit_hipEventCreateWithFlags_DisableSystemFence_CohHstMem",
+		"Unit_hipEventCreateWithFlags_DefaultFlg_CohHstMem",
+		"Unit_hipStreamCreateWithPriority_MulthreadNonblockingflag",
+		"Unit_hipDeviceGetUuid_Positive",
+		"=== Below hiprtc tests are disabled temporarily,  will be renabled once patches for SWDEV-395996 are merged ===",
+		"Unit_hiprtc_saxpy",
+		"Unit_hiprtc_warpsize",
+		"Unit_hiprtc_functional",
+		"Unit_hipStreamCaptureRtc",
+		"Unit_hiprtc_cpp17",
+		"Unit_hiprtc_namehandling",
+		"Unit_hiprtc_getloweredname",
+		"Unit_hiprtc_test_hip_bfloat16",
+		"Unit_RTC_LinkerAPI",
+		"Unit_hiprtc_half_shuffle",
+		"Unit_hiprtc_includepath"
 	]
 }

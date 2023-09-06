@@ -88,9 +88,13 @@ TEMPLATE_TEST_CASE("Unit_AtomicAdd_CoherentwithUnsafeflag", "",
                      "global_atomic_add_f64");
         REQUIRE(testResult == true);
       }
-
-      REQUIRE(A_h[0] == INITIAL_VAL);
-      REQUIRE(result[0] == 0);
+      if ((gfxName == "gfx90a" || gfxName.find("gfx90a:")) == 0) {
+        REQUIRE(A_h[0] == INITIAL_VAL);
+        REQUIRE(result[0] == 0);
+      } else {
+        REQUIRE(A_h[0] == INITIAL_VAL + INC_VAL);
+        REQUIRE(result[0] == INITIAL_VAL);
+      }
       HIP_CHECK(hipHostFree(A_h));
       HIP_CHECK(hipHostFree(result));
     }

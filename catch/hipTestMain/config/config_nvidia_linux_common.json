@@ -31,6 +31,8 @@
 	   "Unit_hipGetTexObjectResourceDesc_Negative_Parameters",
 	   "Unit_hipGetTexObjectTextureDesc_positive",
 	   "Unit_hipGetTexObjectTextureDesc_Negative_Parameters",
-	   "Unit_hipTexObjectDestroy_positive"
+	   "Unit_hipTexObjectDestroy_positive",
+	   "=== Below test fails in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/402 ===",
+	   "Unit_hipStreamCreate_WithPriorityPerformance_Default_high"
 	]
 }

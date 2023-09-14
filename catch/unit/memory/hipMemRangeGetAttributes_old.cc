@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #define MEM_SIZE 8192
 
+#ifdef __linux__
 static bool CheckError(hipError_t err, int LineNo) {
   if (err == hipSuccess) {
     WARN("Error expected but received hipSuccess at line no.:"
@@ -59,7 +60,6 @@ static int HmmAttrPrint() {
   return managed;
 }
 
-#ifdef __linux__
 /* Test Scenario: Testing basic working of hipMemRangeGetAttributes()
    api with different flags */
 

@@ -132,7 +132,6 @@ TEST_CASE("Unit_hipGraph_BasicCyclic4") {
 
   HipTest::initArrays<int>(&X_d, &Y_d, nullptr, &X_h, &Y_h, nullptr, N, false);
 
-  constexpr size_t memSetVal = 9;
   hipGraphNode_t kMemCpyH2D_X, memcpyD2D, memcpyD2H_RC, emptyNode1;
 
   HIP_CHECK(hipStreamCreate(&stream));
@@ -192,7 +191,6 @@ TEST_CASE("Unit_hipGraph_BasicCyclic5") {
 
   HipTest::initArrays<int>(&X_d, &Y_d, nullptr, &X_h, &Y_h, nullptr, N, false);
 
-  constexpr size_t memSetVal = 9;
   hipGraphNode_t kMemCpyH2D_X, memcpyD2D, memcpyD2H_RC, emptyNode1, emptyNode2, emptyNode3;
 
   HIP_CHECK(hipStreamCreate(&stream));

@@ -20,6 +20,9 @@ THE SOFTWARE.
 #include <hip_array_common.hh>
 #include <hip_texture_helper.hh>
 
+#pragma clang diagnostic ignored "-Wunused-variable"
+#pragma clang diagnostic ignored "-Wunused-parameter"
+
 template <typename T>
 __global__ void
 surf3DKernelR(hipSurfaceObject_t surfaceObject,

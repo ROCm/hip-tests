@@ -31,7 +31,7 @@ THE SOFTWARE.
 #include <hip/hip_cooperative_groups.h>
 #include <stdio.h>
 #include <vector>
-
+#pragma clang diagnostic ignored "-Wunused-variable"
 using namespace cooperative_groups;
 
 #define ASSERT_EQUAL(lhs, rhs) assert(lhs == rhs)

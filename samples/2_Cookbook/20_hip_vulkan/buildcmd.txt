@@ -1,3 +1,5 @@
+Windows
+--------
 •	Install hip and visual studio
 •	Install vulkan sdk from vulkan.lunarg.com
 •	Download GLFW binaries from glfw.org
@@ -13,4 +15,16 @@ to build without cmake:
 to build with cmake on windows:
 •       mkdir build; cd build
 •       cmake.exe -GNinja -DCMAKE_CXX_COMPILER_ID=ROCMClang -DCMAKE_C_COMPILER_ID=ROCMClang -DCMAKE_PREFIX_PATH=d:\driver2\drivers\drivers\compute\hip_sdk
+
+Linux
+------
+•	Ideally, vulkan should be picked up by cmake from the location where it is installed. eg: /usr/lib
+•	If a specific version of vulkan is needed, install vulkan sdk from vulkan.lunarg.com following the steps
+•       To run this sample, connect to the machine where display is enabled using NoMachine app
+
+Build with CMake:
+•       mkdir build; cd build
+•       cmake -DCMAKE_PREFIX_PATH=path\to\rocm -DHIP_CXX_COMPILER=path\to\clang
+•       make
+•       run hipVulkan executable
 

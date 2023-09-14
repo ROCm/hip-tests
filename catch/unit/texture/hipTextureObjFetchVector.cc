@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -21,6 +21,9 @@ THE SOFTWARE.
 #include <hip_array_common.hh>
 #include <vector>
 #include <iostream>
+
+#pragma clang diagnostic ignored "-Wunused-variable"
+#pragma clang diagnostic ignored "-Wunused-parameter"
 
 template <typename T>
 __global__ void tex1dKernelFetch(T *val, hipTextureObject_t obj, int N) {
@@ -79,7 +82,7 @@ bool runTest() {
   // Allocating the required buffer on gpu device
   T *texBuf, *texBufOut;
   T val[N], output[N];
-  hipGetLastError(); // Clear err due to negative tests
+  auto err = hipGetLastError(); // Clear err due to negative tests
   memset(output, 0, sizeof(output));
   std::srand(std::time(nullptr)); // use current time as seed for random generator
 

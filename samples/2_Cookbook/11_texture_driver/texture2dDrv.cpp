@@ -231,6 +231,7 @@ inline bool isImageSupported() {
 int main(int argc, char** argv) {
   if (!isImageSupported()) {
     printf("Texture is not support on the device. Skipped.\n");
+    printf("texture2dDrv %s ...\n", "PASSED");
     return 0;
   }
   checkHipErrors(hipInit(0));

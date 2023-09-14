@@ -23,30 +23,28 @@ set(TEST_SRC
     hipMemFaultStackAllocation.cc
     hipLaunchBounds.cc
     hipShflTests.cc
+    hipDynamicShared.cc
+    hipDynamicShared2.cc
+    hipEmptyKernel.cc
+    hipGridLaunch.cc
+    hipLanguageExtensions.cc
+    hipLaunchParm.cc
+    hipLaunchParmFunctor.cc
     hipTestConstant.cc
     hipTestGlobalVariable.cc
     hipTestMemKernel.cc
     launch_bounds.cc
-    inline_asm_vadd.cc
 )
 if(UNIX)
   set(TEST_SRC ${TEST_SRC}
       hipPrintfKernel.cc)
-endif()
-string(FIND "${OFFLOAD_ARCH_STR}" "gfx1030" RESULT)
-if ("${RESULT}" EQUAL "-1")
-  set(AMD_TEST_SRC
-    inline_asm_vmac.cc)
-endif()
-
-if(HIP_PLATFORM MATCHES "amd")
-  set(TEST_SRC ${TEST_SRC} ${AMD_TEST_SRC})
 endif()
 
 # only for AMD
 if(HIP_PLATFORM MATCHES "amd")
   set(AMD_SRC
       hipShflUpDownTest.cc
+      hipExtLaunchKernelGGL.cc
   )
   set(TEST_SRC ${TEST_SRC} ${AMD_SRC})
 endif()

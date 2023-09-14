@@ -1,4 +1,4 @@
-# Copyright (c) 2020 - 2021 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2020 - 2023 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,9 +22,6 @@ ifeq ($(OS),Windows_NT)
 endif
 ROCM_PATH?= $(wildcard /opt/rocm/)
 HIP_PATH?= $(ROCM_PATH)
-ifeq (,$(HIP_PATH))
-	HIP_PATH=../../..
-endif
 
 HIPCC=$(HIP_PATH)/bin/hipcc
 CLANG=$(HIP_PATH)/llvm/bin/clang

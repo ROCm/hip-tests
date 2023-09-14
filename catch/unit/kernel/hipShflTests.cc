@@ -150,7 +150,6 @@ static void runTest() {
 
   // verify the results
   REQUIRE(errors == compare(TransposeMatrix, cpuTransposeMatrix));
-  double eps = 1.0E-6;
   // free the resources on device side
   HIP_CHECK(hipFree(gpuMatrix));
   HIP_CHECK(hipFree(gpuTransposeMatrix));

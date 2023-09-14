@@ -43,7 +43,7 @@ static void MemoryAlloc3DDiffSizes(int gpu) {
     size_t height{sizes}, depth{sizes};
     hipPitchedPtr devPitchedPtr[CHUNK_LOOP];
     hipExtent extent = make_hipExtent(width, height, depth);
-    size_t tot, avail, ptot, pavail;
+    size_t ptot, pavail;
     HIPCHECK(hipMemGetInfo(&pavail, &ptot));
     for (int i = 0; i < CHUNK_LOOP; i++) {
       HIPCHECK(hipMalloc3D(&devPitchedPtr[i], extent));

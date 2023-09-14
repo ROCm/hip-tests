@@ -11,7 +11,7 @@ Tests in Catch2 are declared via ```TEST_CASE```.
 [Catch2 Detailed Reference](https://github.com/catchorg/Catch2/blob/v2.13.6/docs/Readme.md#top)
 
 ## Taking care of existing features
-- Don’t build on platform: EXCLUDE_(HIP_PLATFORM/HIP_RUNTIME), can be done via CMAKE. Adding source in if(HIP_PLATFORM == amd/nvidia).
+- Don’t build on platform: EXCLUDE_HIP_PLATFORM, can be done via CMAKE. Adding source in if(HIP_PLATFORM == amd/nvidia).
 - HIPCC_OPTIONS/CLANG Options: Can be done via: set_source_files_properties(src.cc PROPERTIES COMPILE_FLAGS “…”).
 - Additional libraries: Can be done via target_link_libraries()
 - Multiple runs with different args: This can be done by Catch’s Feature: GENERATE(…)

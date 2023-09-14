@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,8 @@ THE SOFTWARE.
 
 #pragma once
 
+#pragma clang diagnostic ignored "-Wunused-parameter"
+
 #include <hip_test_common.hh>
 
 constexpr size_t BlockSize = 16;
@@ -43,12 +45,7 @@ __global__ void readFromTexture(T* output, hipTextureObject_t texObj, size_t wid
   } else {
     const float v = y / (float)height;
     if (textureGather) {
-      // tex2Dgather not supported on __gfx90a__
-      #if !defined(__gfx90a__)
       output[y * width + x] = tex2Dgather<T>(texObj, u, v, ChannelToRead);
-      #else
-      #warning("tex2Dgather not supported on gfx90a");
-      #endif
     } else {
       output[y * width + x] = tex2D<T>(texObj, u, v);
     }

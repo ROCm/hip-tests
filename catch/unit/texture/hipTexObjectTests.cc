@@ -31,7 +31,7 @@ class TexObjectTestWrapper {
   HIP_TEXTURE_DESC tex_desc;
   HIP_RESOURCE_VIEW_DESC res_view_desc;
   HIP_ARRAY_DESCRIPTOR array_desc;
-  hiparray array_member;
+  hipArray_t array_member;
   size_t size; /* size in bytes*/
   int width;   /* width in elements */
 
@@ -54,7 +54,7 @@ class TexObjectTestWrapper {
     array_desc.Height = 0;
 
     HIP_CHECK(hipArrayCreate(&array_member, &array_desc));
-    HIP_CHECK(hipMemcpyHtoA(reinterpret_cast<hipArray*>(array_member), 0, host_data_, size));
+    HIP_CHECK(hipMemcpyHtoA(reinterpret_cast<hipArray_t>(array_member), 0, host_data_, size));
 
     memset(&res_desc, 0, sizeof(res_desc));
     res_desc.resType = HIP_RESOURCE_TYPE_ARRAY;

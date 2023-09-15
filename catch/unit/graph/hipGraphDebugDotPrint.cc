@@ -182,7 +182,7 @@ static void hipGraphDebugDotPrint_Functional(const char* fName,
 
   // Add emcpyNode3D to graph & validate its DebugDotPrint descriptions
   constexpr int width{10}, height{10}, depth{10};
-  hipArray *devArray1;
+  hipArray_t devArray1;
   hipChannelFormatKind formatKind = hipChannelFormatKindSigned;
   hipMemcpy3DParms myparams;
   uint32_t size = width * height * depth * sizeof(int);

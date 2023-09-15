@@ -106,36 +106,31 @@ TEST_CASE("Unit_hipArrayCreate_MultiThread") {
 // Tests /////////////////////////////////////////
 
 #if HT_AMD
-constexpr auto MemoryTypeHost = hipMemoryTypeHost;
-constexpr auto MemoryTypeArray = hipMemoryTypeArray;
 constexpr auto NORMALIZED_COORDINATES = HIP_TRSF_NORMALIZED_COORDINATES;
 constexpr auto READ_AS_INTEGER = HIP_TRSF_READ_AS_INTEGER;
 #else
-constexpr auto MemoryTypeHost = CU_MEMORYTYPE_HOST;
-constexpr auto MemoryTypeArray = CU_MEMORYTYPE_ARRAY;
 // (EXSWCPHIPT-92) HIP equivalents not defined for CUDA backend.
 constexpr auto NORMALIZED_COORDINATES = CU_TRSF_NORMALIZED_COORDINATES;
 constexpr auto READ_AS_INTEGER = CU_TRSF_READ_AS_INTEGER;
 #endif
 
-// Copy data from host to the hiparray, accounting 1D or 2D arrays
+// Copy data from host to the hipArray_t, accounting 1D or 2D arrays
 template <typename T>
-void copyToArray(hiparray dst, const std::vector<T>& src, const size_t height) {
+void copyToArray(hipArray_t dst, const std::vector<T>& src, const size_t height) {
   const auto sizeInBytes = src.size() * sizeof(T);
   if (height == 0) {
     // FIXME(EXSWCPHIPT-64) remove cast when API is fixed (will require major version change)
-    HIP_CHECK(hipMemcpyHtoA(reinterpret_cast<hipArray*>(dst), 0, src.data(), sizeInBytes));
+    HIP_CHECK(hipMemcpyHtoA(reinterpret_cast<hipArray_t>(dst), 0, src.data(), sizeInBytes));
   } else {
     const auto pitch = sizeInBytes / height;
     hip_Memcpy2D copyParams{};
-    copyParams.srcMemoryType = MemoryTypeHost;
+    copyParams.srcMemoryType = hipMemoryTypeHost;
     copyParams.srcXInBytes = 0;  // x offset
     copyParams.srcY = 0;         // y offset
     copyParams.srcHost = src.data();
     copyParams.srcPitch = pitch;
 
-
-    copyParams.dstMemoryType = MemoryTypeArray;
+    copyParams.dstMemoryType = hipMemoryTypeArray;
     copyParams.dstXInBytes = 0;  // x offset
     copyParams.dstY = 0;         // y offset
     copyParams.dstArray = dst;
@@ -150,7 +145,7 @@ void copyToArray(hiparray dst, const std::vector<T>& src, const size_t height) {
 // Test the allocated array by generating a texture from it then reading from that texture.
 // Textures are read-only, so write to the array then copy that into normal device memory.
 template <typename T>
-void testArrayAsTexture(hiparray array, const size_t width, const size_t height) {
+void testArrayAsTexture(hipArray_t array, const size_t width, const size_t height) {
   using vec_info = vector_info<T>;
   using scalar_type = typename vec_info::type;
   const auto h = height ? height : 1;
@@ -216,7 +211,7 @@ TEMPLATE_TEST_CASE("Unit_hipArrayCreate_happy", "", uint, int, int4, ushort, sho
   desc.Height = GENERATE(0, 1024);
 
   // pointer to the array in device memory
-  hiparray array{};
+  hipArray_t array{};
 
   HIP_CHECK(hipArrayCreate(&array, &desc));
 
@@ -241,7 +236,7 @@ TEMPLATE_TEST_CASE("Unit_hipArrayCreate_maxTexture", "", uint, int, int4, ushort
   const Sizes sizes(hipArrayDefault);
   const size_t s = 64;
 
-  hiparray array{};
+  hipArray_t array{};
   SECTION("Happy") {
     SECTION("1D - Max") {
       desc.Width = sizes.max1D;
@@ -299,7 +294,7 @@ TEST_CASE("Unit_hipArrayCreate_ZeroWidth") {
   desc.Height = GENERATE(0, 1024);
 
   // pointer to the array in device memory
-  hiparray array;
+  hipArray_t array;
   HIP_CHECK_ERROR(hipArrayCreate(&array, &desc), hipErrorInvalidValue);
 }
 
@@ -318,7 +313,7 @@ TEST_CASE("Unit_hipArrayCreate_Nullptr") {
     HIP_CHECK_ERROR(hipArrayCreate(nullptr, &desc), hipErrorInvalidValue);
   }
   SECTION("Null Description") {
-    hiparray array;
+    hipArray_t array;
     HIP_CHECK_ERROR(hipArrayCreate(&array, nullptr), hipErrorInvalidValue);
   }
 }
@@ -334,7 +329,7 @@ TEST_CASE("Unit_hipArrayCreate_BadNumberChannelElement") {
   desc.Width = 1024;
   desc.Height = GENERATE(0, 1024);
 
-  hiparray array;
+  hipArray_t array;
 
   INFO("Format: " << formatToString(desc.Format) << " NumChannels: " << desc.NumChannels
                   << " Height: " << desc.Height)
@@ -360,7 +355,7 @@ TEST_CASE("Unit_hipArrayCreate_BadChannelFormat") {
   desc.Width = 1024;
   desc.Height = GENERATE(0, 1024);
 
-  hiparray array;
+  hipArray_t array;
 
   INFO("Format: " << formatToString(desc.Format) << " Height: " << desc.Height)
   HIP_CHECK_ERROR(hipArrayCreate(&array, &desc), hipErrorInvalidValue);

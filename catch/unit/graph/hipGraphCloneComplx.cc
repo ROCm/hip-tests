@@ -377,7 +377,7 @@ static void hipGraphClone_Test_hipGraphMemcpyNodeSetParams() {
   uint32_t size = width * height * depth * sizeof(int);
   hipGraphNode_t memcpyNodeH2D, memcpyNodeD2H, memcpyNodeD2D;
   hipMemcpy3DParms myparms, myparms1, myparms_updated;
-  hipArray *devArray, *devArray_2;
+  hipArray_t devArray, devArray_2;
   hipChannelFormatKind formatKind = hipChannelFormatKindSigned;
 
   int *hData, *hDataTemp, *hOutputData;
@@ -504,7 +504,7 @@ static void hipGraphClone_Test_hipGraphExecMemcpyNodeSetParams() {
   int harray1D[XSIZE]{};
   int harray1Dres[XSIZE]{};
   constexpr int width{XSIZE};
-  hipArray *devArray1, *devArray2;
+  hipArray_t devArray1, devArray2;
   hipChannelFormatKind formatKind = hipChannelFormatKindSigned;
   hipMemcpy3DParms myparams;
   hipGraphNode_t memcpyNode1, memcpyNode2, memcpyNode3;
@@ -574,7 +574,7 @@ static void hipGraphClone_Test_hipGraphExecMemcpyNodeSetParams() {
                                 nullptr, nullptr, 0));
 
   int harray1Dupdate[XSIZE]{};
-  hipArray *devArray3;
+  hipArray_t devArray3;
   HIP_CHECK(hipMalloc3DArray(&devArray3, &channelDesc,
                        make_hipExtent(width, 0, 0), hipArrayDefault));
 

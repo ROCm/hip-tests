@@ -618,7 +618,7 @@ constexpr auto MemTypeUnified() {
 #endif
 }
 
-using DrvPtrVariant = std::variant<hipPitchedPtr, hiparray>;
+using DrvPtrVariant = std::variant<hipPitchedPtr, hipArray_t>;
 
 template <bool async = false>
 hipError_t DrvMemcpy3DWrapper(DrvPtrVariant dst_ptr, hipPos dst_pos, DrvPtrVariant src_ptr,
@@ -626,25 +626,25 @@ hipError_t DrvMemcpy3DWrapper(DrvPtrVariant dst_ptr, hipPos dst_pos, DrvPtrVaria
                               hipStream_t stream = nullptr) {
   HIP_MEMCPY3D parms = {0};
 
-  if (std::holds_alternative<hiparray>(dst_ptr)) {
-    parms.dstMemoryType = MemTypeArray();
-    parms.dstArray = std::get<hiparray>(dst_ptr);
+  if (std::holds_alternative<hipArray_t>(dst_ptr)) {
+    parms.dstMemoryType = hipMemoryTypeArray;
+    parms.dstArray = std::get<hipArray_t>(dst_ptr);  
   } else {
     auto ptr = std::get<hipPitchedPtr>(dst_ptr);
     parms.dstPitch = ptr.pitch;
     switch (kind) {
       case hipMemcpyDeviceToHost:
       case hipMemcpyHostToHost:
-        parms.dstMemoryType = MemTypeHost();
+        parms.dstMemoryType = hipMemoryTypeHost;
         parms.dstHost = ptr.ptr;
         break;
       case hipMemcpyDeviceToDevice:
       case hipMemcpyHostToDevice:
-        parms.dstMemoryType = MemTypeDevice();
+        parms.dstMemoryType = hipMemoryTypeDevice;
         parms.dstDevice = reinterpret_cast<hipDeviceptr_t>(ptr.ptr);
         break;
       case hipMemcpyDefault:
-        parms.dstMemoryType = MemTypeUnified();
+        parms.dstMemoryType = hipMemoryTypeUnified;
         parms.dstDevice = reinterpret_cast<hipDeviceptr_t>(ptr.ptr);
         break;
       default:
@@ -652,25 +652,25 @@ hipError_t DrvMemcpy3DWrapper(DrvPtrVariant dst_ptr, hipPos dst_pos, DrvPtrVaria
     }
   }
 
-  if (std::holds_alternative<hiparray>(src_ptr)) {
-    parms.srcMemoryType = MemTypeArray();
-    parms.srcArray = std::get<hiparray>(src_ptr);
+  if (std::holds_alternative<hipArray_t>(src_ptr)) {
+    parms.srcMemoryType = hipMemoryTypeArray;
+    parms.srcArray = std::get<hipArray_t>(src_ptr);
   } else {
     auto ptr = std::get<hipPitchedPtr>(src_ptr);
     parms.srcPitch = ptr.pitch;
     switch (kind) {
       case hipMemcpyDeviceToHost:
       case hipMemcpyDeviceToDevice:
-        parms.srcMemoryType = MemTypeDevice();
+        parms.srcMemoryType = hipMemoryTypeDevice;
         parms.srcDevice = reinterpret_cast<hipDeviceptr_t>(ptr.ptr);
         break;
       case hipMemcpyHostToDevice:
       case hipMemcpyHostToHost:
-        parms.srcMemoryType = MemTypeHost();
+        parms.srcMemoryType = hipMemoryTypeHost;
         parms.srcHost = ptr.ptr;
         break;
       case hipMemcpyDefault:
-        parms.srcMemoryType = MemTypeUnified();
+        parms.srcMemoryType = hipMemoryTypeUnified;
         parms.srcDevice = reinterpret_cast<hipDeviceptr_t>(ptr.ptr);
         break;
       default:

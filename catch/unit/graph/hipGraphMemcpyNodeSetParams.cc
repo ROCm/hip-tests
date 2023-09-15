@@ -41,7 +41,7 @@ TEST_CASE("Unit_hipGraphMemcpyNodeSetParams_Negative") {
   CHECK_IMAGE_SUPPORT
 
   constexpr int width{SIZE}, height{SIZE}, depth{SIZE};
-  hipArray *devArray;
+  hipArray_t devArray;
   hipChannelFormatKind formatKind = hipChannelFormatKindSigned;
   hipMemcpy3DParms myparms;
   int* hData;
@@ -99,7 +99,7 @@ TEST_CASE("Unit_hipGraphMemcpyNodeSetParams_Functional") {
   CHECK_IMAGE_SUPPORT
 
   constexpr int width{SIZE}, height{SIZE}, depth{SIZE};
-  hipArray *devArray;
+  hipArray_t devArray;
   hipChannelFormatKind formatKind = hipChannelFormatKindSigned;
   hipMemcpy3DParms myparms, myparms1;
   uint32_t size = width * height * depth * sizeof(int);

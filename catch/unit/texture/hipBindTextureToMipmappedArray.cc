@@ -19,6 +19,7 @@ THE SOFTWARE.
 
 #pragma clang diagnostic ignored "-Wunused-parameter"
 #include <hip_test_common.hh>
+#include <hip_test_checkers.hh>
 
 /**
  * @addtogroup hipBindTextureToMipmappedArray hipBindTextureToMipmappedArray
@@ -28,7 +29,7 @@ THE SOFTWARE.
  * hipMipmappedArray_const_t mipmappedArray, const hipChannelFormatDesc* desc)` -
  * Binds a mipmapped array to a texture.
  */
-
+#if CUDA_VERSION < CUDA_12000
 texture<float, 2, hipReadModeElementType> texRef;
 
 // MipMap is currently supported only on windows
@@ -67,7 +68,7 @@ static void runMipMapTest(unsigned int width, unsigned int height, unsigned int 
                                     make_hipExtent(orig_width, orig_height, 0), 2 * mipmap_level,
                                     hipArrayDefault));
 
-  hipArray* hipArray = nullptr;
+  hipArray_t hipArray = nullptr;
   HIP_CHECK(hipGetMipmappedArrayLevel(&hipArray, mip_array_ptr, mipmap_level));
   HIP_CHECK(hipMemcpy2DToArray(hipArray, 0, 0, hData, width * sizeof(float), width * sizeof(float),
                                height, hipMemcpyHostToDevice));
@@ -207,3 +208,5 @@ TEST_CASE("Unit_hipTextureMipmapRef2D_Negative_Parameters") {
   SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
 #endif
 }
+
+#endif

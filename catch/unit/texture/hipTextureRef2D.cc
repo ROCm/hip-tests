@@ -53,7 +53,7 @@ TEST_CASE("Unit_hipTextureRef2D_Check") {
 
   hipChannelFormatDesc channelDesc = hipCreateChannelDesc(32, 0, 0, 0,
                                            hipChannelFormatKindFloat);
-  hipArray* hipArray;
+  hipArray_t hipArray;
   HIP_CHECK(hipMallocArray(&hipArray, &channelDesc, width, height));
   HIP_CHECK(hipMemcpyToArray(hipArray, 0, 0, hData, size,
                              hipMemcpyHostToDevice));

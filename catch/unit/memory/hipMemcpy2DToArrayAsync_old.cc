@@ -47,7 +47,7 @@ TEST_CASE("Unit_hipMemcpy2DToArrayAsync_Basic") {
   CHECK_IMAGE_SUPPORT
 
   HIP_CHECK(hipSetDevice(0));
-  hipArray *A_d{nullptr};
+  hipArray_t A_d{nullptr};
   size_t width{sizeof(float)*NUM_W};
   float *A_h{nullptr}, *hData{nullptr};
   hipStream_t stream;
@@ -91,7 +91,7 @@ TEST_CASE("Unit_hipMemcpy2DToArrayAsync_ExtentValidation") {
   CHECK_IMAGE_SUPPORT
 
   HIP_CHECK(hipSetDevice(0));
-  hipArray *A_d{nullptr};
+  hipArray_t A_d{nullptr};
   size_t width{sizeof(float)*NUM_W};
   float *A_h{nullptr}, *hData{nullptr};
   hipStream_t stream;
@@ -170,7 +170,7 @@ TEST_CASE("Unit_hipMemcpy2DToArrayAsync_PinnedHostMemSameGpu") {
   CHECK_IMAGE_SUPPORT
 
   HIP_CHECK(hipSetDevice(0));
-  hipArray *A_d{nullptr};
+  hipArray_t A_d{nullptr};
   constexpr auto def_val{10};
   size_t width{sizeof(float)*NUM_W};
   float *A_h{nullptr}, *PinnMem{nullptr};
@@ -227,7 +227,7 @@ TEST_CASE("Unit_hipMemcpy2DToArrayAsync_multiDevicePinnedHostMem") {
     HIP_CHECK(hipDeviceCanAccessPeer(&canAccessPeer, 0, 1));
     if (canAccessPeer) {
       HIP_CHECK(hipSetDevice(0));
-      hipArray *A_d{nullptr};
+      hipArray_t A_d{nullptr};
       size_t width{sizeof(float)*NUM_W};
       float *A_h{nullptr}, *E_h{nullptr};
       hipStream_t stream;
@@ -291,7 +291,7 @@ TEST_CASE("Unit_hipMemcpy2DToArrayAsync_multiDeviceDeviceContextChange") {
     HIP_CHECK(hipDeviceCanAccessPeer(&canAccessPeer, 0, 1));
     if (canAccessPeer) {
       HIP_CHECK(hipSetDevice(0));
-      hipArray *A_d{nullptr};
+      hipArray_t A_d{nullptr};
       size_t width{sizeof(float)*NUM_W};
       float *A_h{nullptr}, *hData{nullptr};
       hipStream_t stream;
@@ -334,7 +334,7 @@ TEST_CASE("Unit_hipMemcpy2DToArrayAsync_Negative") {
   CHECK_IMAGE_SUPPORT
 
   HIP_CHECK(hipSetDevice(0));
-  hipArray *A_d{nullptr};
+  hipArray_t A_d{nullptr};
   size_t width{sizeof(float)*NUM_W};
   float *A_h{nullptr}, *hData{nullptr};
   hipStream_t stream;

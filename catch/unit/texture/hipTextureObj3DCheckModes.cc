@@ -68,7 +68,7 @@ static void runTest(const int width, const int height, const int depth, const fl
 
   // Allocate array and copy image data
   hipChannelFormatDesc channelDesc = hipCreateChannelDesc<float>();
-  hipArray* arr;
+  hipArray_t arr;
 
   HIP_CHECK(
       hipMalloc3DArray(&arr, &channelDesc, make_hipExtent(width, height, depth), hipArrayDefault));

@@ -40,7 +40,7 @@ template <typename T>
 class Memcpy3D {
   int width, height, depth;
   unsigned int size;
-  hipArray *arr, *arr1;
+  hipArray_t arr, arr1;
   hipChannelFormatKind formatKind;
   hipMemcpy3DParms myparms;
   T* hData;
@@ -212,7 +212,7 @@ void Memcpy3D<T>::D2D_DeviceMem_OnDiffDevice() {
     myparms.kind = hipMemcpyHostToDevice;
 #endif
     REQUIRE(hipMemcpy3D(&myparms) == hipSuccess);
-    hipArray *arr2;
+    hipArray_t arr2;
     hipChannelFormatDesc channelDesc1 = hipCreateChannelDesc(sizeof(T)*8,
         0, 0, 0, formatKind);
     HIP_CHECK(hipMalloc3DArray(&arr2, &channelDesc1,
@@ -422,7 +422,7 @@ void Memcpy3D<T>::NegativeTests() {
 
   SECTION("Passing src array size  > dst array size") {
     // Passing src array size greater than destination array size
-    hipArray *arr2;
+    hipArray_t arr2;
     hipChannelFormatDesc channelDesc1 = hipCreateChannelDesc(sizeof(T)*8,
                                                     0, 0, 0, formatKind);
     HIP_CHECK(hipMalloc3DArray(&arr2, &channelDesc1,

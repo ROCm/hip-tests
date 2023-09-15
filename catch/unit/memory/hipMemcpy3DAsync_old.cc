@@ -39,7 +39,7 @@ template <typename T>
 class Memcpy3DAsync {
     int width, height, depth;
     unsigned int size;
-    hipArray *arr, *arr1;
+    hipArray_t arr, arr1;
     hipChannelFormatKind formatKind;
     hipMemcpy3DParms myparms;
     T* hData;
@@ -229,7 +229,7 @@ void Memcpy3DAsync<T>::D2D_DeviceMem_OnDiffDevice() {
     // Allocating Mem on GPU device 0 and trigger hipMemcpy3DAsync from GPU 1
     HIP_CHECK(hipSetDevice(1));
     HIP_CHECK(hipStreamCreate(&stream));
-    hipArray *arr2;
+    hipArray_t arr2;
     hipChannelFormatDesc channelDesc1 = hipCreateChannelDesc(sizeof(T)*8,
                                                     0, 0, 0, formatKind);
     HIP_CHECK(hipMalloc3DArray(&arr2, &channelDesc1,
@@ -439,7 +439,7 @@ void Memcpy3DAsync<T>::NegativeTests() {
   }
 
   SECTION("Passing src array size  > dst array size") {
-    hipArray *arr2;
+    hipArray_t arr2;
     hipChannelFormatDesc channelDesc1 = hipCreateChannelDesc(sizeof(T)*8,
         0, 0, 0, formatKind);
     HIP_CHECK(hipMalloc3DArray(&arr2, &channelDesc1,

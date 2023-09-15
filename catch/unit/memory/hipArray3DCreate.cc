@@ -24,14 +24,14 @@ THE SOFTWARE.
 #include "hip_test_common.hh"
 
 namespace {
-void checkArrayIsExpected(const hiparray array, const HIP_ARRAY3D_DESCRIPTOR& expected_desc) {
+void checkArrayIsExpected(const hipArray_t array, const HIP_ARRAY3D_DESCRIPTOR& expected_desc) {
 // hipArray3DGetDescriptor doesn't currently exist (EXSWCPHIPT-87)
 #if HT_AMD
   std::ignore = array;
   std::ignore = expected_desc;
 #else
   CUDA_ARRAY3D_DESCRIPTOR queried_desc;
-  cuArray3DGetDescriptor(&queried_desc, array);
+  cuArray3DGetDescriptor(&queried_desc, (CUarray)array);
 
   REQUIRE(queried_desc.Width == expected_desc.Width);
   REQUIRE(queried_desc.Height == expected_desc.Height);
@@ -43,7 +43,7 @@ void checkArrayIsExpected(const hiparray array, const HIP_ARRAY3D_DESCRIPTOR& ex
 }
 
 void testInvalidDescription(HIP_ARRAY3D_DESCRIPTOR desc) {
-  hiparray array;
+  hipArray_t array;
   HIP_CHECK_ERROR(hipArray3DCreate(&array, &desc), hipErrorInvalidValue);
 }
 }  // namespace
@@ -81,7 +81,7 @@ TEMPLATE_TEST_CASE("Unit_hipArray3DCreate_happy", "", char, uchar2, uint2, int4,
 
     CAPTURE(desc.Width, desc.Height, desc.Depth);
 
-    hiparray array;
+    hipArray_t array;
     HIP_CHECK(hipArray3DCreate(&array, &desc));
     checkArrayIsExpected(array, desc);
     HIP_CHECK(hipArrayDestroy(array));
@@ -95,7 +95,7 @@ TEMPLATE_TEST_CASE("Unit_hipArray3DCreate_MaxTexture", "", int, uint4, short, us
   using vec_info = vector_info<TestType>;
   DriverContext ctx;
 
-  hiparray array;
+  hipArray_t array;
   HIP_ARRAY3D_DESCRIPTOR desc{};
   desc.Format = vec_info::format;
   desc.NumChannels = vec_info::size;
@@ -224,7 +224,7 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_NullDescPtr") {
   CHECK_IMAGE_SUPPORT
 
   DriverContext ctx;
-  hiparray array;
+  hipArray_t array;
   HIP_CHECK_ERROR(hipArray3DCreate(&array, nullptr), hipErrorInvalidValue);
 }
 

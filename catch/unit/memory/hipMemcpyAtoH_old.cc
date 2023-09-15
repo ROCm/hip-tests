@@ -49,7 +49,7 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyAtoH_Basic", "[hipMemcpyAtoH]", char, int, flo
   HIP_CHECK(hipSetDevice(0));
   // 1 refers to pinned host memory scenario
   auto memtype_check =  GENERATE(0, 1);
-  hipArray *A_d;
+  hipArray_t A_d;
   TestType *hData{nullptr}, *B_h{nullptr};
   size_t width{NUM_W * sizeof(TestType)};
 
@@ -107,7 +107,7 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyAtoH_multiDevice-PeerDeviceContext", "[hipMemc
       SUCCEED("Skipped the test as there is no peer access");
     } else {
       HIP_CHECK(hipSetDevice(0));
-      hipArray *A_d;
+      hipArray_t A_d;
       TestType *hData{nullptr}, *B_h{nullptr};
       size_t width{NUM_W * sizeof(TestType)};
 
@@ -148,7 +148,7 @@ TEST_CASE("Unit_hipMemcpyAtoH_Negative") {
   CHECK_IMAGE_SUPPORT
 
   HIP_CHECK(hipSetDevice(0));
-  hipArray *A_d;
+  hipArray_t A_d;
   float *hData{nullptr}, *B_h{nullptr};
   size_t width{NUM_W * sizeof(float)};
 
@@ -191,7 +191,7 @@ TEST_CASE("Unit_hipMemcpyAtoH_SizeCheck") {
   CHECK_IMAGE_SUPPORT
 
   HIP_CHECK(hipSetDevice(0));
-  hipArray *A_d;
+  hipArray_t A_d;
   float *hData{nullptr}, *B_h{nullptr}, *def_data{nullptr};
   size_t width{NUM_W * sizeof(float)};
 

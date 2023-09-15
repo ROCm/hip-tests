@@ -75,19 +75,11 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2D_multiDevice-D2D", "[hipMemcpyParam2D]"
 
       // Device to Device
       hip_Memcpy2D desc = {};
-#ifdef __HIP_PLATFORM_NVCC__
-      desc.srcMemoryType = CU_MEMORYTYPE_DEVICE;
-#else
       desc.srcMemoryType = hipMemoryTypeDevice;
-#endif
       desc.srcHost = A_d;
       desc.srcDevice = hipDeviceptr_t(A_d);
       desc.srcPitch = pitch_A;
-#ifdef __HIP_PLATFORM_NVCC__
-      desc.dstMemoryType = CU_MEMORYTYPE_DEVICE;
-#else
       desc.dstMemoryType = hipMemoryTypeDevice;
-#endif
       desc.dstHost = E_d;
       desc.dstDevice = hipDeviceptr_t(E_d);
       desc.dstPitch = pitch_E;
@@ -164,19 +156,11 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2D_multiDevice-H2D-D2H", "[hipMemcpyParam
     } else {
       // Host to Device
       hip_Memcpy2D desc = {};
-#ifdef __HIP_PLATFORM_NVCC__
-      desc.srcMemoryType = CU_MEMORYTYPE_HOST;
-#else
       desc.srcMemoryType = hipMemoryTypeHost;
-#endif
       desc.srcHost = C_h;
       desc.srcDevice = hipDeviceptr_t(C_h);
       desc.srcPitch = width;
-#ifdef __HIP_PLATFORM_NVCC__
-      desc.dstMemoryType = CU_MEMORYTYPE_DEVICE;
-#else
       desc.dstMemoryType = hipMemoryTypeDevice;
-#endif
       desc.dstHost = A_d;
       desc.dstDevice = hipDeviceptr_t(A_d);
       desc.dstPitch = pitch_A;
@@ -186,19 +170,11 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2D_multiDevice-H2D-D2H", "[hipMemcpyParam
 
       // Device to Host
       memset(&desc, 0x0, sizeof(hip_Memcpy2D));
-#ifdef __HIP_PLATFORM_NVCC__
-      desc.srcMemoryType = CU_MEMORYTYPE_DEVICE;
-#else
       desc.srcMemoryType = hipMemoryTypeDevice;
-#endif
       desc.srcHost = A_d;
       desc.srcDevice = hipDeviceptr_t(A_d);
       desc.srcPitch = pitch_A;
-#ifdef __HIP_PLATFORM_NVCC__
-      desc.dstMemoryType = CU_MEMORYTYPE_HOST;
-#else
       desc.dstMemoryType = hipMemoryTypeHost;
-#endif
       desc.dstHost = A_h;
       desc.dstDevice = hipDeviceptr_t(A_h);
       desc.dstPitch = width;
@@ -250,19 +226,11 @@ TEST_CASE("Unit_hipMemcpyParam2D_ExtentValidation") {
 
   // Device to Host
   hip_Memcpy2D desc = {};
-#ifdef __HIP_PLATFORM_NVCC__
-  desc.srcMemoryType = CU_MEMORYTYPE_DEVICE;
-#else
   desc.srcMemoryType = hipMemoryTypeDevice;
-#endif
   desc.srcHost = A_d;
   desc.srcDevice = hipDeviceptr_t(A_d);
   desc.srcPitch = pitch_A;
-#ifdef __HIP_PLATFORM_NVCC__
-  desc.dstMemoryType = CU_MEMORYTYPE_HOST;
-#else
   desc.dstMemoryType = hipMemoryTypeHost;
-#endif
   desc.dstHost = A_h;
   desc.dstDevice = hipDeviceptr_t(A_h);
   desc.dstPitch = width;
@@ -320,19 +288,11 @@ TEST_CASE("Unit_hipMemcpyParam2D_Negative") {
   HIP_CHECK(hipMemset2D(A_d, pitch_A, memsetval, NUM_W, NUM_H));
 
   hip_Memcpy2D desc = {};
-#ifdef __HIP_PLATFORM_NVCC__
-  desc.srcMemoryType = CU_MEMORYTYPE_DEVICE;
-#else
   desc.srcMemoryType = hipMemoryTypeDevice;
-#endif
   desc.srcHost = A_d;
   desc.srcDevice = hipDeviceptr_t(A_d);
   desc.srcPitch = pitch_A;
-#ifdef __HIP_PLATFORM_NVCC__
-  desc.dstMemoryType = CU_MEMORYTYPE_HOST;
-#else
   desc.dstMemoryType = hipMemoryTypeHost;
-#endif
   desc.dstHost = A_h;
   desc.dstDevice = hipDeviceptr_t(A_h);
   desc.dstPitch = width;
@@ -346,19 +306,11 @@ TEST_CASE("Unit_hipMemcpyParam2D_Negative") {
 
   SECTION("Null Pointer to Destination Device Pointer") {
     memset(&desc, 0x0, sizeof(hip_Memcpy2D));
-#ifdef __HIP_PLATFORM_NVCC__
-    desc.srcMemoryType = CU_MEMORYTYPE_HOST;
-#else
     desc.srcMemoryType = hipMemoryTypeHost;
-#endif
     desc.srcHost = A_h;
     desc.srcDevice = hipDeviceptr_t(A_h);
     desc.srcPitch = width;
-#ifdef __HIP_PLATFORM_NVCC__
-    desc.dstMemoryType = CU_MEMORYTYPE_DEVICE;
-#else
     desc.dstMemoryType = hipMemoryTypeDevice;
-#endif
     desc.dstHost = A_d;
     desc.dstDevice = hipDeviceptr_t(nullptr);
     desc.dstPitch = pitch_A;

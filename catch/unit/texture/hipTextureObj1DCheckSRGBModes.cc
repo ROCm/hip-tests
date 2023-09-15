@@ -55,7 +55,7 @@ static void runTest(const int width, const float offsetX = 0) {
 
   hipChannelFormatDesc channelDesc = hipCreateChannelDesc<uchar4>();
   uchar4 *hipBuff = nullptr;
-  hipArray *hipArray = nullptr;
+  hipArray_t hipArray = nullptr;
   hipResourceDesc resDesc;
   memset(&resDesc, 0, sizeof(resDesc));
 

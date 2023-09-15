@@ -580,7 +580,7 @@ void DefaultPT2_hipMemcpy2D(int Async) {
 
 
 void DefaultPT2_hipMemcpy2DToArray() {
-  hipArray *Dptr = nullptr;
+  hipArray_t Dptr = nullptr;
   float *Hptr = nullptr, *HRes = nullptr;
   DefltStrmPT::numH = 1024;
   DefltStrmPT::numW = 1024;
@@ -611,7 +611,7 @@ void DefaultPT2_hipMemcpy2DToArray() {
 
 
 float DefaultPT2_hipMemcpy2DFromArray() {
-  hipArray *Dptr = nullptr;
+  hipArray_t Dptr = nullptr;
   float *Hptr_A = nullptr, *Hptr_B = nullptr;
   DefltStrmPT::numH = 1024;
   DefltStrmPT::numW = 1024;
@@ -661,7 +661,7 @@ void DefaultPT2_hipMemcpy3D() {
   }
   hipChannelFormatDesc channelDesc = hipCreateChannelDesc(sizeof(float)*8, 0,
                        0, 0, hipChannelFormatKindFloat);
-  hipArray *arr;
+  hipArray_t arr;
 
   HIP_CHECK(hipMalloc3DArray(&arr, &channelDesc,
             make_hipExtent(width, height, depth), hipArrayDefault));

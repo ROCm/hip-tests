@@ -80,7 +80,7 @@ TEST_CASE("Unit_hipPointerGetAttribute_MemoryTypes") {
   }
 #if HT_AMD
   SECTION("Malloc Array Allocation") {
-    hipArray *B_d;
+    hipArray_t B_d;
     hipChannelFormatDesc desc = hipCreateChannelDesc<char>();
     HIP_CHECK(hipMallocArray(&B_d, &desc, NUM_W, NUM_H, hipArrayDefault));
     HIP_CHECK(hipPointerGetAttribute(&datatype,
@@ -96,7 +96,7 @@ TEST_CASE("Unit_hipPointerGetAttribute_MemoryTypes") {
 
   SECTION("Malloc 3D Array Allocation") {
     int width = 10, height = 10, depth = 10;
-    hipArray *arr;
+    hipArray_t arr;
 
     hipChannelFormatDesc channelDesc = hipCreateChannelDesc(sizeof(float)*8,
         0, 0, 0, hipChannelFormatKindFloat);

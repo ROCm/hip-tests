@@ -20,7 +20,7 @@ THE SOFTWARE.
 TEST_CASE("Unit_hipArray_Valid") {
     CHECK_IMAGE_SUPPORT
 
-    hipArray* array = nullptr;
+    hipArray_t array = nullptr;
     HIP_ARRAY_DESCRIPTOR desc;
     desc.Format = HIP_AD_FORMAT_FLOAT;
     desc.NumChannels = 1;
@@ -34,20 +34,20 @@ TEST_CASE("Unit_hipArray_Invalid") {
     CHECK_IMAGE_SUPPORT
 
     void* data = malloc(sizeof(char));
-    hipArray_t arrayPtr = static_cast<hipArray*>(data);
+    hipArray_t arrayPtr = static_cast<hipArray_t>(data);
     REQUIRE(hipFreeArray(arrayPtr) == hipErrorContextIsDestroyed);
     free(data);
 }
 TEST_CASE("Unit_hipArray_Nullptr") {
     CHECK_IMAGE_SUPPORT
 
-    hipArray* array = nullptr;
+    hipArray_t array = nullptr;
     REQUIRE(hipFreeArray(array) == hipErrorInvalidValue);
 }
 TEST_CASE("Unit_hipArray_DoubleFree") {
     CHECK_IMAGE_SUPPORT
 
-    hipArray* array = nullptr;
+    hipArray_t array = nullptr;
     HIP_ARRAY_DESCRIPTOR desc;
     desc.Format = HIP_AD_FORMAT_FLOAT;
     desc.NumChannels = 1;
@@ -60,7 +60,7 @@ TEST_CASE("Unit_hipArray_DoubleFree") {
 TEST_CASE("Unit_hipArray_TrippleDestroy") {
     CHECK_IMAGE_SUPPORT
 
-    hipArray* array = nullptr;
+    hipArray_t array = nullptr;
     HIP_ARRAY_DESCRIPTOR desc;
     desc.Format = HIP_AD_FORMAT_FLOAT;
     desc.NumChannels = 1;
@@ -74,7 +74,7 @@ TEST_CASE("Unit_hipArray_TrippleDestroy") {
 TEST_CASE("Unit_hipArray_DoubleNullptr") {
     CHECK_IMAGE_SUPPORT
 
-    hipArray* array = nullptr;
+    hipArray_t array = nullptr;
     REQUIRE(hipFreeArray(array) == hipErrorInvalidValue);
     REQUIRE(hipFreeArray(array) == hipErrorInvalidValue);
 }
@@ -82,7 +82,7 @@ TEST_CASE("Unit_hipArray_DoubleInvalid") {
     CHECK_IMAGE_SUPPORT
 
     void* data = malloc(sizeof(char));
-    hipArray_t arrayPtr = static_cast<hipArray*>(data);
+    hipArray_t arrayPtr = static_cast<hipArray_t>(data);
     REQUIRE(hipFreeArray(arrayPtr) == hipErrorContextIsDestroyed);
     REQUIRE(hipFreeArray(arrayPtr) == hipErrorContextIsDestroyed);
     free(data);

@@ -74,8 +74,6 @@
         "intermittent issue: failure expected but sucess returned",
         "Unit_hipMemAdvise_NegtveTsts",
         "Note: Following four tests disabled due to defect - EXSWHTEC-203",
-        "Unit_hipGraphAddMemsetNode_Positive_Basic - uint16_t",
-        "Unit_hipGraphAddMemsetNode_Positive_Basic - uint32_t",
         "Unit_hipStreamSetCaptureDependencies_Positive_Functional",
         "Note: Test disabled due to defect - EXSWHTEC-207",
         "Unit_hipIpcGetMemHandle_Positive_Unique_Handles_Separate_Allocations",

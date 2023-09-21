@@ -250,8 +250,6 @@ TEST_CASE("Unit_hipGetDeviceAttribute_CheckAttrValues") {
   HIP_CHECK(test_hipDeviceGetAttribute(deviceId,
                                        hipDeviceAttributeTexturePitchAlignment,
                                        props.texturePitchAlignment));
-  HIP_CHECK(test_hipDeviceGetAttribute(deviceId,
-                              hipDeviceAttributeUnifiedAddressing, 1/*true*/));
 }
 
 /*

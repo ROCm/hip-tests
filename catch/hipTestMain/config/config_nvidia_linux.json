@@ -51,6 +51,7 @@
         "Grid_Group_Getters_Positive_Basic",
         "Grid_Group_Getters_Via_Non_Member_Functions_Positive_Basic",
         "Grid_Group_Sync_Positive_Basic",
-        "dynamic_loading_device_kernels_from_library"
+        "dynamic_loading_device_kernels_from_library",
+        "Unit_tiled_partition"
     ]
 }

@@ -39,8 +39,6 @@ THE SOFTWARE.
 
 using namespace cooperative_groups;
 
-#define ASSERT_EQUAL(lhs, rhs) assert(lhs == rhs)
-
 /* Parallel reduce kernel.
  *
  * Step complexity: O(log n)
@@ -50,7 +48,6 @@ using namespace cooperative_groups;
  */
 __device__ int reduction_kernel(thread_group g, int* x, int val) {
   int lane = g.thread_rank();
-  int sz = g.size();
 
   for (int i = g.size() / 2; i > 0; i /= 2) {
     // use lds to store the temporary result
@@ -133,7 +130,6 @@ __global__ void kernel_cg_group_partition_static(int* result, bool isGlobalMem, 
 __global__ void kernel_cg_group_partition_dynamic(unsigned int tileSz, int* result,
                                                   bool isGlobalMem, int* globalMem) {
   thread_block threadBlockCGTy = this_thread_block();
-  int threadBlockGroupSize = threadBlockCGTy.size();
 
   int* workspace = NULL;
 
@@ -145,12 +141,10 @@ __global__ void kernel_cg_group_partition_dynamic(unsigned int tileSz, int* resu
     workspace = sharedMem;
   }
 
-  int input, outputSum, expectedOutput;
+  int input, outputSum;
 
   // input to reduction, for each thread, is its' rank in the group
   input = threadBlockCGTy.thread_rank();
-
-  expectedOutput = (threadBlockGroupSize - 1) * threadBlockGroupSize / 2;
 
   outputSum = reduction_kernel(threadBlockCGTy, workspace, input);
 
@@ -217,15 +211,15 @@ template <unsigned int tileSz> static void test_group_partition(bool useGlobalMe
   }
 
   int* dResult = NULL;
-  hipMalloc((void**)&dResult, numTiles * sizeof(int));
+  HIPCHECK(hipMalloc((void**)&dResult, numTiles * sizeof(int)));
 
   int* globalMem = NULL;
   if (useGlobalMem) {
-    hipMalloc((void**)&globalMem, threadsPerBlock * sizeof(int));
+    HIPCHECK(hipMalloc((void**)&globalMem, threadsPerBlock * sizeof(int)));
   }
 
   int* hResult = NULL;
-  hipHostMalloc(&hResult, numTiles * sizeof(int), hipHostMallocDefault);
+  HIPCHECK(hipHostMalloc(&hResult, numTiles * sizeof(int), hipHostMallocDefault));
   memset(hResult, 0, numTiles * sizeof(int));
 
   if (useGlobalMem) {
@@ -246,15 +240,15 @@ template <unsigned int tileSz> static void test_group_partition(bool useGlobalMe
     }
   }
 
-  hipMemcpy(hResult, dResult, numTiles * sizeof(int), hipMemcpyDeviceToHost);
+  HIPCHECK(hipMemcpy(hResult, dResult, numTiles * sizeof(int), hipMemcpyDeviceToHost));
 
   verifyResults(expectedSum, hResult, numTiles);
 
   // Free all allocated memory on host and device
-  hipFree(dResult);
-  hipFree(hResult);
+  HIPCHECK(hipFree(dResult));
+  HIPCHECK(hipFree(hResult));
   if (useGlobalMem) {
-    hipFree(globalMem);
+    HIPCHECK(hipFree(globalMem));
   }
   delete[] expectedSum;
 
@@ -278,15 +272,15 @@ static void test_group_partition(unsigned int tileSz, bool useGlobalMem) {
   }
 
   int* dResult = NULL;
-  hipMalloc(&dResult, sizeof(int) * numTiles);
+  HIPCHECK(hipMalloc(&dResult, sizeof(int) * numTiles));
 
   int* globalMem = NULL;
   if (useGlobalMem) {
-    hipMalloc((void**)&globalMem, threadsPerBlock * sizeof(int));
+    HIPCHECK(hipMalloc((void**)&globalMem, threadsPerBlock * sizeof(int)));
   }
 
   int* hResult = NULL;
-  hipHostMalloc(&hResult, numTiles * sizeof(int), hipHostMallocDefault);
+  HIPCHECK(hipHostMalloc(&hResult, numTiles * sizeof(int), hipHostMallocDefault));
   memset(hResult, 0, numTiles * sizeof(int));
 
   // Launch Kernel
@@ -308,15 +302,15 @@ static void test_group_partition(unsigned int tileSz, bool useGlobalMem) {
     }
   }
 
-  hipMemcpy(hResult, dResult, numTiles * sizeof(int), hipMemcpyDeviceToHost);
+  HIPCHECK(hipMemcpy(hResult, dResult, numTiles * sizeof(int), hipMemcpyDeviceToHost));
 
   verifyResults(expectedSum, hResult, numTiles);
 
   // Free all allocated memory on host and device
-  hipFree(dResult);
-  hipFree(hResult);
+  HIPCHECK(hipFree(dResult));
+  HIPCHECK(hipFree(hResult));
   if (useGlobalMem) {
-    hipFree(globalMem);
+    HIPCHECK(hipFree(globalMem));
   }
   delete[] expectedSum;
 
@@ -326,10 +320,9 @@ static void test_group_partition(unsigned int tileSz, bool useGlobalMem) {
 TEST_CASE("Unit_tiled_partition") {
   // Use default device for validating the test
   int deviceId;
-  ASSERT_EQUAL(hipGetDevice(&deviceId), hipSuccess);
+  HIP_CHECK_ERROR(hipGetDevice(&deviceId), hipSuccess);
   hipDeviceProp_t deviceProperties;
-  ASSERT_EQUAL(hipGetDeviceProperties(&deviceProperties, deviceId), hipSuccess);
-  int maxThreadsPerBlock = deviceProperties.maxThreadsPerBlock;
+  HIP_CHECK_ERROR(hipGetDeviceProperties(&deviceProperties, deviceId), hipSuccess);
 
   if (!deviceProperties.cooperativeLaunch) {
     HipTest::HIP_SKIP_TEST("Device doesn't support cooperative launch!");

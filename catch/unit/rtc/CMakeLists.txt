@@ -5,6 +5,7 @@ set(TEST_SRC
     hipRtcFunctional.cc
     hipStreamCaptureRtc.cc
     includepath.cc
+    hipRTCDeviceMalloc.cc
 )
 
 # AMD only tests

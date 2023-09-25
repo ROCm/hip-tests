@@ -24,7 +24,7 @@ add_custom_target(copyRtcHeaders ALL
   ${CMAKE_CURRENT_BINARY_DIR}/headers)
 
 if(UNIX)
-   set(AMD_TEST_SRC ${TEST_SRC}
+   set(AMD_TEST_SRC ${AMD_TEST_SRC}
        RtcFunctions.cpp
        RtcUtility.cpp)
 endif()

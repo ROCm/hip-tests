@@ -181,8 +181,6 @@
         "Unit_hipDeviceGetUuid_Positive",
         "Disabling test tracked SWDEV-394199",
         "Unit_hipStreamCreateWithPriority_MulthreadNonblockingflag",
-        "SWDEV-396618 hipEventElapsedTime returns sucess",
-        "Unit_hipEventElapsedTime_NotReady_Negative",
         "SWDEV-396617 ExecMemcpyNodeSetParamsFromSymbol fails in direction",
         "Unit_hipGraphExecMemcpyNodeSetParamsFromSymbol_Negative_Parameters",
         "SWDEV-396616 hipMemMap returns invalid error",

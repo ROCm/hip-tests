@@ -19,8 +19,20 @@
 # THE SOFTWARE.
 
 set(TEST_SRC
+  casting_half2int_funcs.cc
+  casting_int2half_funcs.cc
 )
 
 hip_add_exe_to_target(NAME MathsTest
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
+
+add_test(NAME Unit_Device_casting_half2int_Negative
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+         casting_half2int_negative_kernels.cc 78)
+
+add_test(NAME Unit_Device_casting_int2half_Negative
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+         casting_int2half_negative_kernels.cc 78)

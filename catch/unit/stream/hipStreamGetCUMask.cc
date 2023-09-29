@@ -33,7 +33,7 @@ Testcase Scenarios :
  * Scenario to verify hipExtStreamGetCUMask api returns custom mask set.
  */
 TEST_CASE("Unit_hipExtStreamGetCUMask_verifyDefaultAndCustomMask") {
-  constexpr int maxNum = 6;
+  constexpr int maxNum = 10;
   std::vector<uint32_t> cuMask(maxNum);
   hipDeviceProp_t props;
   std::stringstream ss;

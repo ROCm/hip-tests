@@ -39,10 +39,10 @@ static constexpr size_t NUM_H{10};
  * it with the initalized data "C_h".
  *
  */
-TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2D_multiDevice-D2D",
-                   "[hipMemcpyParam2D]",
-                   char, float, int,
+TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2D_multiDevice-D2D", "[hipMemcpyParam2D]", char, float, int,
                    double, long double) {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {
@@ -125,9 +125,10 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2D_multiDevice-D2D",
  *
  * Validating the result by comparing "A_h" to "C_h"
  */
-TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2D_multiDevice-H2D-D2H",
-    "[hipMemcpyParam2D]", char, float,
-    int, double, long double) {
+TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2D_multiDevice-H2D-D2H", "[hipMemcpyParam2D]", char, float,
+                   int, double, long double) {
+  CHECK_IMAGE_SUPPORT
+
   // 1 refers to pinned host memory and 0 refers
   // to unpinned memory
   auto memory_type = GENERATE(0, 1);
@@ -226,6 +227,8 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyParam2D_multiDevice-H2D-D2H",
  * This testcase verifies the extent validation scenarios
  */
 TEST_CASE("Unit_hipMemcpyParam2D_ExtentValidation") {
+  CHECK_IMAGE_SUPPORT
+
   // Allocating memory and Initializing the data
   HIP_CHECK(hipSetDevice(0));
   char* A_h{nullptr}, *B_h{nullptr}, *C_h{nullptr},
@@ -298,6 +301,8 @@ TEST_CASE("Unit_hipMemcpyParam2D_ExtentValidation") {
  * This testcase verifies the negative scenarios
  */
 TEST_CASE("Unit_hipMemcpyParam2D_Negative") {
+  CHECK_IMAGE_SUPPORT
+
   HIP_CHECK(hipSetDevice(0));
 
   // Allocating and Initializing the data

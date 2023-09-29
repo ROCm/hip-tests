@@ -21,6 +21,7 @@ THE SOFTWARE.
 */
 
 #pragma once
+#pragma clang diagnostic ignored "-Wsign-compare"
 #include "hip_test_context.hh"
 
 #include <catch.hpp>
@@ -350,93 +351,12 @@ template <> struct MemTraits<MemcpyAsync> {
   }
 };
 
-
-namespace {
-static __global__ void waitKernel(size_t offset) {
-  auto start = clock();
-  while ((clock() - start) < offset) {
-  }
-}
-
-static __global__ void waitKernel_gfx11(size_t offset) {
-#if HT_AMD
-  auto start = wall_clock64();
-  while ((wall_clock64() - start) < offset) {
-  }
-#endif
-}
-
-// helper function used to set the device frequency variable
-// estimates the number of clock ticks in 1 second
-static size_t findTicksPerSecond() {
-  // first read the reported clockRate as a starting point
-  hipDeviceProp_t prop;
-  int device;
-  HIP_CHECK(hipGetDevice(&device));
-  HIP_CHECK(hipGetDeviceProperties(&prop, device));
-  size_t devFreq = static_cast<size_t>(prop.clockRate);  // in kHz
-  size_t clockTicksPerSecond = devFreq * 1000;
-
-  // init
-  hipEvent_t start, stop;
-  HIP_CHECK(hipEventCreate(&start));
-  HIP_CHECK(hipEventCreate(&stop));
-  auto waitKernel_used = IsGfx11() ? waitKernel_gfx11 : waitKernel;
-  // Warmup
-  hipLaunchKernelGGL(waitKernel_used, dim3(1), dim3(1), 0, 0, clockTicksPerSecond);
-  HIP_CHECK(hipGetLastError());
-  HIP_CHECK(hipDeviceSynchronize());
-
-  // try 10 times to find device frequency
-  // after 10 attempts the result is likely good enough so just accept it
-  for (int attempts = 10; attempts > 0; --attempts) {
-    HIP_CHECK(hipEventRecord(start));
-    hipLaunchKernelGGL(waitKernel_used, dim3(1), dim3(1), 0, 0, clockTicksPerSecond);
-    HIP_CHECK(hipEventRecord(stop));
-    HIP_CHECK(hipGetLastError());
-    HIP_CHECK(hipEventSynchronize(stop));
-
-    float executionTimeMs = 0;
-    HIP_CHECK(hipEventElapsedTime(&executionTimeMs, start, stop));
-
-    constexpr float tolerance = 20;
-    if (fabs(executionTimeMs - 1000) <= tolerance) {
-      // Timing is within accepted tolerance, break here
-      break;
-    } else {
-      clockTicksPerSecond = (clockTicksPerSecond * 1000) / executionTimeMs;
-      --attempts;
-    }
-  }
-
-  // deinit
-  HIP_CHECK(hipEventDestroy(start));
-  HIP_CHECK(hipEventDestroy(stop));
-  return clockTicksPerSecond;
-}
-}  // namespace
-
-// Launches a kernel which runs for specified amount of time
-// Note: The current implementation uses HIP_CHECK which is not thread safe!
-// Note: the function assumes execution on a single device and caches the number of clock ticks per
-// second
-static inline void runKernelForDuration(std::chrono::milliseconds duration,
-                                        hipStream_t stream = nullptr) {
-  // number of clocks the device is running at (device frequency)
-  // each translation unit will have a copy of ticksPerSecond but this function isn't designed for
-  // precision so that's acceptable.
-  static size_t ticksPerSecond = findTicksPerSecond();
-  const auto millis = duration.count();
-  auto waitKernel_used = IsGfx11() ? waitKernel_gfx11 : waitKernel;
-  hipLaunchKernelGGL(waitKernel_used, dim3(1), dim3(1), 0, stream, ticksPerSecond * millis / 1000);
-}
-
 class BlockingContext {
   std::atomic_bool blocked{true};
   hipStream_t stream;
 
  public:
-  BlockingContext(hipStream_t s) : stream(s), blocked(true) {}
+  BlockingContext(hipStream_t s) : blocked(true), stream(s) {}
 
   BlockingContext(const BlockingContext& in) {
     blocked = in.blocked_val();

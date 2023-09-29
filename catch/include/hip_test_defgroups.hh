@@ -101,18 +101,7 @@ THE SOFTWARE.
  */
 
 /**
-<<<<<<< HEAD
- * @defgroup DeviceLanguageTest Device Language
- * @{
- * This section describes tests for the Device Language API.
- * @}
- */
-
-/**
- * @defgroup ShflTest warp shuffle function Management
-=======
  * @defgroup MemoryTest memory Management APIs
->>>>>>> upstream/develop
  * @{
  * This section describes the memory management types & functions of HIP runtime API.
  * @}
@@ -151,5 +140,12 @@ THE SOFTWARE.
  * @defgroup VectorTypeTest Vector types
  * @{
  * This section describes tests for the Vector type functions and operators.
+ * @}
+ */
+
+/**
+ * @defgroup DeviceLanguageTest Device Language
+ * @{
+ * This section describes tests for the Device Language API.
  * @}
  */

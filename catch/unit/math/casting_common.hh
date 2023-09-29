@@ -32,7 +32,7 @@ namespace cg = cooperative_groups;
     const auto stride = cg::this_grid().size();                                                    \
                                                                                                    \
     for (auto i = tid; i < num_xs; i += stride) {                                                  \
-      ys[i] = __##func_name(xs[i]);                                                                \
+      ys[i] = func_name(xs[i]);                                                                    \
     }                                                                                              \
   }
 

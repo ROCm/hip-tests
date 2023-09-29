@@ -67,7 +67,7 @@ THE SOFTWARE.
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2HALF_TEST_DEF(float2half_rd, FE_DOWNWARD)
+CAST_FLOAT2HALF_TEST_DEF(__float2half_rd, FE_DOWNWARD)
 
 /**
  * Test Description
@@ -82,7 +82,7 @@ CAST_FLOAT2HALF_TEST_DEF(float2half_rd, FE_DOWNWARD)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2HALF_RN_TEST_DEF(float2half_rn)
+CAST_FLOAT2HALF_RN_TEST_DEF(__float2half_rn)
 
 /**
  * Test Description
@@ -97,7 +97,7 @@ CAST_FLOAT2HALF_RN_TEST_DEF(float2half_rn)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2HALF_RN_TEST_DEF(float2half)
+CAST_FLOAT2HALF_RN_TEST_DEF(__float2half)
 
 /**
  * Test Description
@@ -114,7 +114,7 @@ CAST_FLOAT2HALF_RN_TEST_DEF(float2half)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2HALF_TEST_DEF(float2half_ru, FE_UPWARD)
+CAST_FLOAT2HALF_TEST_DEF(__float2half_ru, FE_UPWARD)
 
 /**
  * Test Description
@@ -131,7 +131,7 @@ CAST_FLOAT2HALF_TEST_DEF(float2half_ru, FE_UPWARD)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2HALF_TEST_DEF(float2half_rz, FE_TOWARDZERO)
+CAST_FLOAT2HALF_TEST_DEF(__float2half_rz, FE_TOWARDZERO)
 
 /**
  * Test Description
@@ -145,7 +145,7 @@ CAST_FLOAT2HALF_TEST_DEF(float2half_rz, FE_TOWARDZERO)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_float2half_rd_SmallVals_Sanity_Positive") {
+TEST_CASE("Unit_Device___float2half_rd_SmallVals_Sanity_Positive") {
   const float input[] = {0.8859e-06f, 1.5454e-07f, 6.5955e-08f, 2.7955e-08f,
                          3.7956e-09f, 4.8995e-10f, 5.7997e-15f, 6.2117e-20f,
                          7.4999e-25f, 8.9999e-30f, 9.0001e-35f};
@@ -157,7 +157,7 @@ TEST_CASE("Unit_Device_float2half_rd_SmallVals_Sanity_Positive") {
   for (int i = 0; i < 11; ++i) {
     HIP_CHECK(hipMemcpy(input_dev.ptr(), input + i, sizeof(float), hipMemcpyHostToDevice));
 
-    float2half_rd_kernel<<<1, 1>>>(out.ptr(), 1, input_dev.ptr());
+    __float2half_rd_kernel<<<1, 1>>>(out.ptr(), 1, input_dev.ptr());
     HIP_CHECK(hipDeviceSynchronize());
     REQUIRE(out.ptr()[0] == reference[i]);
   }
@@ -175,7 +175,7 @@ TEST_CASE("Unit_Device_float2half_rd_SmallVals_Sanity_Positive") {
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_float2half_ru_SmallVals_Sanity_Positive") {
+TEST_CASE("Unit_Device___float2half_ru_SmallVals_Sanity_Positive") {
   const float input[] = {0.8859e-06f, 1.5454e-07f, 6.5955e-08f, 2.7955e-08f,
                          3.7956e-09f, 4.8995e-10f, 5.7997e-15f, 6.2117e-20f,
                          7.4999e-25f, 8.9999e-30f, 9.0001e-35f};
@@ -189,7 +189,7 @@ TEST_CASE("Unit_Device_float2half_ru_SmallVals_Sanity_Positive") {
   for (int i = 0; i < 11; ++i) {
     HIP_CHECK(hipMemcpy(input_dev.ptr(), input + i, sizeof(float), hipMemcpyHostToDevice));
 
-    float2half_ru_kernel<<<1, 1>>>(out.ptr(), 1, input_dev.ptr());
+    __float2half_ru_kernel<<<1, 1>>>(out.ptr(), 1, input_dev.ptr());
     HIP_CHECK(hipDeviceSynchronize());
     REQUIRE(out.ptr()[0] == reference[i]);
   }
@@ -207,7 +207,7 @@ TEST_CASE("Unit_Device_float2half_ru_SmallVals_Sanity_Positive") {
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_float2half_rz_SmallVals_Sanity_Positive") {
+TEST_CASE("Unit_Device___float2half_rz_SmallVals_Sanity_Positive") {
   const float input[] = {0.8859e-06f, 1.5454e-07f, 6.5955e-08f, 2.7955e-08f,
                          3.7956e-09f, 4.8995e-10f, 5.7997e-15f, 6.2117e-20f,
                          7.4999e-25f, 8.9999e-30f, 9.0001e-35f};
@@ -219,14 +219,14 @@ TEST_CASE("Unit_Device_float2half_rz_SmallVals_Sanity_Positive") {
   for (int i = 0; i < 11; ++i) {
     HIP_CHECK(hipMemcpy(input_dev.ptr(), input + i, sizeof(float), hipMemcpyHostToDevice));
 
-    float2half_rz_kernel<<<1, 1>>>(out.ptr(), 1, input_dev.ptr());
+    __float2half_rz_kernel<<<1, 1>>>(out.ptr(), 1, input_dev.ptr());
     HIP_CHECK(hipDeviceSynchronize());
     REQUIRE(out.ptr()[0] == reference[i]);
   }
 }
 
-CAST_KERNEL_DEF(half2float, float, Float16)
-CAST_REF_DEF(half2float, float, Float16)
+CAST_KERNEL_DEF(__half2float, float, Float16)
+CAST_REF_DEF(__half2float, float, Float16)
 
 /**
  * Test Description
@@ -241,7 +241,7 @@ CAST_REF_DEF(half2float, float, Float16)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_half2float_Accuracy_Positive") {
-  float (*ref)(Float16) = half2float_ref;
-  UnaryHalfPrecisionTest(half2float_kernel, ref, EqValidatorBuilderFactory<float>());
+TEST_CASE("Unit_Device___half2float_Accuracy_Positive") {
+  float (*ref)(Float16) = __half2float_ref;
+  UnaryHalfPrecisionTest(__half2float_kernel, ref, EqValidatorBuilderFactory<float>());
 }

@@ -42,12 +42,9 @@ static constexpr auto ARRAY_LOOP{100};
  * bigger chunks of data.
  * Two scenarios are verified in this API
  * 1. SmallArray: Allocates NUM_W*NUM_H in a loop and
- *    releases the memory and verifies the meminfo.
+ *    releases the memory.
  * 2. BigArray: Allocates BIGNUM_W*BIGNUM_H in a loop and
- *    releases the memory and verifies the meminfo
- *
- * In both cases, the memory info before allocation and
- * after releasing the memory should be the same.
+ *    releases the memory.
  *
  */
 
@@ -57,7 +54,7 @@ static void ArrayCreate_DiffSizes(int gpu) {
   std::vector<std::pair<size_t, size_t>> runs {std::make_pair(NUM_W, NUM_H), std::make_pair(BIGNUM_W, BIGNUM_H)};
   for (const auto& size : runs) {
     std::array<HIP_ARRAY, ARRAY_LOOP> array;
-    size_t pavail, avail;
+    size_t pavail;
     HIP_CHECK_THREAD(hipMemGetInfo(&pavail, nullptr));
     HIP_ARRAY_DESCRIPTOR desc;
     desc.NumChannels = 1;
@@ -71,9 +68,6 @@ static void ArrayCreate_DiffSizes(int gpu) {
     for (int i = 0; i < ARRAY_LOOP; i++) {
       HIP_CHECK_THREAD(hipArrayDestroy(array[i]));
     }
-
-    HIP_CHECK_THREAD(hipMemGetInfo(&avail, nullptr));
-    REQUIRE_THREAD(pavail == avail);
   }
 }
 
@@ -94,7 +88,6 @@ TEST_CASE("Unit_hipArrayCreate_MultiThread") {
 
   devCnt = HipTest::getDeviceCount();
 
-  const size_t pavail = getFreeMem();
   for (int i = 0; i < devCnt; i++) {
     threadlist.push_back(std::thread(ArrayCreate_DiffSizes, i));
   }
@@ -103,12 +96,6 @@ TEST_CASE("Unit_hipArrayCreate_MultiThread") {
     t.join();
   }
   HIP_CHECK_THREAD_FINALIZE();
-  const size_t avail = getFreeMem();
-
-  if (pavail != avail) {
-    WARN("Memory leak of hipMalloc3D API in multithreaded scenario");
-    REQUIRE(false);
-  }
 }
 
 

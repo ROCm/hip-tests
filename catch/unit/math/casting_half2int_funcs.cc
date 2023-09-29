@@ -24,7 +24,7 @@ THE SOFTWARE.
 #include "casting_common.hh"
 
 /**
- * @addtogroup HalfPrecisionComparison HalfPrecisionComparison
+ * @addtogroup HalfPrecisionCastingIntTypes HalfPrecisionCastingIntTypes
  * @{
  * @ingroup MathTest
  */
@@ -38,46 +38,402 @@ THE SOFTWARE.
     CastUnaryHalfPrecisionTest(kern_name##_kernel, ref, EqValidatorBuilderFactory<T>());           \
   }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2int_rn` for all possible inputs. The results are compared against
+ * reference function which performs __half cast to int.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(int, half2int_rn)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2int_rz` for all possible inputs. The results are compared against
+ * reference function which performs __half cast to int.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(int, half2int_rz)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2int_rd` for all possible inputs. The results are compared against
+ * reference function which performs __half cast to int.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(int, half2int_rd)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2int_ru` for all possible inputs. The results are compared against
+ * reference function which performs __half cast to int.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(int, half2int_ru)
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2uint_rn` for all possible inputs. The results are compared against
+ * reference function which performs __half cast to unsigned int.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(unsigned int, half2uint_rn)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2uint_rz` for all possible inputs. The results are compared against
+ * reference function which performs __half cast to unsigned int.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(unsigned int, half2uint_rz)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2uint_rd` for all possible inputs. The results are compared against
+ * reference function which performs __half cast to unsigned int.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(unsigned int, half2uint_rd)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2uint_ru` for all possible inputs. The results are compared against
+ * reference function which performs __half cast to unsigned int.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(unsigned int, half2uint_ru)
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2short_rn` for all possible inputs. The results are compared
+ * against reference function which performs __half cast to short.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(short, half2short_rn)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2short_rz` for all possible inputs. The results are compared
+ * against reference function which performs __half cast to short.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(short, half2short_rz)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2short_rd` for all possible inputs. The results are compared
+ * against reference function which performs __half cast to short.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(short, half2short_rd)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2short_ru` for all possible inputs. The results are compared
+ * against reference function which performs __half cast to short.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(short, half2short_ru)
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2ushort_rn` for all possible inputs. The results are compared
+ * against reference function which performs __half cast to unsigned short.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(unsigned short, half2ushort_rn)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2ushort_rz` for all possible inputs. The results are compared
+ * against reference function which performs __half cast to unsigned short.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(unsigned short, half2ushort_rz)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2ushort_rd` for all possible inputs. The results are compared
+ * against reference function which performs __half cast to unsigned short.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(unsigned short, half2ushort_rd)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2ushort_ru` for all possible inputs. The results are compared
+ * against reference function which performs __half cast to unsigned short.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(unsigned short, half2ushort_ru)
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2ll_rn` for all possible inputs. The results are compared against
+ * reference function which performs __half cast to long long.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(long long, half2ll_rn)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2ll_rz` for all possible inputs. The results are compared against
+ * reference function which performs __half cast to long long.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(long long, half2ll_rz)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2ll_rd` for all possible inputs. The results are compared against
+ * reference function which performs __half cast to long long.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(long long, half2ll_rd)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2ll_ru` for all possible inputs. The results are compared against
+ * reference function which performs __half cast to long long.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(long long, half2ll_ru)
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2ull_rn` for all possible inputs. The results are compared against
+ * reference function which performs __half cast to unsigned long long.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(unsigned long long, half2ull_rn)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2ull_rz` for all possible inputs. The results are compared against
+ * reference function which performs __half cast to unsigned long long.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(unsigned long long, half2ull_rz)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2ull_rd` for all possible inputs. The results are compared against
+ * reference function which performs __half cast to unsigned long long.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(unsigned long long, half2ull_rd)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2ull_ru` for all possible inputs. The results are compared against
+ * reference function which performs __half cast to unsigned long long.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_HALF2INT_RN_TEST_DEF(unsigned long long, half2ull_ru)
 
 CAST_KERNEL_DEF(half_as_short, short, Float16)
 
-TEST_CASE("Unit_Device_half_as_short_Accuracy__Positive") {
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half_as_short` for all possible inputs. The results are compared
+ * against reference function which performs copy of __half value to short variable.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_Device_half_as_short_Accuracy_Positive") {
   short (*ref)(Float16) = type2_as_type1_ref<short, Float16>;
   CastUnaryHalfPrecisionTest(half_as_short_kernel, ref, EqValidatorBuilderFactory<short>());
 }
 
 CAST_KERNEL_DEF(half_as_ushort, unsigned short, Float16)
 
-TEST_CASE("Unit_Device_half_as_ushort_Accuracy__Positive") {
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half_as_ushort` for all possible inputs. The results are compared
+ * against reference function which performs copy of __half value to unsigned short variable.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half2int_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_Device_half_as_ushort_Accuracy_Positive") {
   unsigned short (*ref)(Float16) = type2_as_type1_ref<unsigned short, Float16>;
   CastUnaryHalfPrecisionTest(half_as_ushort_kernel, ref,
                              EqValidatorBuilderFactory<unsigned short>());

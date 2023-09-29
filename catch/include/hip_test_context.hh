@@ -100,6 +100,7 @@ class TestContext {
   void parseOptions(int, char**);
   bool parseJsonFiles();
   std::string getMatchingConfigFile(std::string config_dir);
+  std::string getCurrentArch();
   const Config& getConfig() const { return config_; }
 
 

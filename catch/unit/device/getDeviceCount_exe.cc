@@ -34,10 +34,10 @@ bool UNSETENV(std::string var) {
   return (result == 0) ? true: false;
 }
 
-bool SETENV(std::string var, std::string value, int overwrite) {
+bool SETENV(std::string var, std::string value) {
   int result = -1;
   #ifdef __unix__
-    result = setenv(var.c_str(), value.c_str(), overwrite);
+    result = setenv(var.c_str(), value.c_str(), 1);
   #else
     result = _putenv((var + '=' + value).c_str());
   #endif
@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
   // disable visible_devices env from shell
 #ifdef __HIP_PLATFORM_NVCC__
   UNSETENV("CUDA_VISIBLE_DEVICES");
-  SETENV("CUDA_VISIBLE_DEVICES", argv[1], 1);
+  SETENV("CUDA_VISIBLE_DEVICES", argv[1]);
   auto init_res = hipInit(0);
   if (hipSuccess != init_res) {
     std::cerr << "CUDA INIT API returned : " << hipGetErrorString(init_res) << std::endl;
@@ -68,8 +68,8 @@ int main(int argc, char** argv) {
 #else
   UNSETENV("ROCR_VISIBLE_DEVICES");
   UNSETENV("HIP_VISIBLE_DEVICES");
-  SETENV("ROCR_VISIBLE_DEVICES", argv[1], 1);
-  SETENV("HIP_VISIBLE_DEVICES", argv[1], 1);
+  SETENV("ROCR_VISIBLE_DEVICES", argv[1]);
+  SETENV("HIP_VISIBLE_DEVICES", argv[1]);
 #endif
 
   int count = 0;

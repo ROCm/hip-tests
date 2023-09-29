@@ -82,6 +82,16 @@ template <typename Derived, typename T> class WarpShflTest {
           return static_cast<T>(
               GenerateRandomReal(std::numeric_limits<T>().min(), std::numeric_limits<T>().max()));
         });
+      } else if constexpr (std::is_same_v<__half, T>) {
+        std::generate_n(input, grid_.thread_count_, [] {
+          return __float2half(GenerateRandomReal(std::numeric_limits<float>().min(),
+                                                 std::numeric_limits<float>().max()));
+        });
+      } else if constexpr (std::is_same_v<__half2, T>) {
+        std::generate_n(input, grid_.thread_count_, [] {
+          return __float2half2_rn(GenerateRandomReal(std::numeric_limits<float>().min(),
+                                                     std::numeric_limits<float>().max()));
+        });
       } else {
         std::generate_n(input, grid_.thread_count_, [] {
           return static_cast<T>(GenerateRandomInteger(std::numeric_limits<T>().min(),

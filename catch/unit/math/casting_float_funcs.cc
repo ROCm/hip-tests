@@ -22,6 +22,12 @@ THE SOFTWARE.
 #include "casting_common.hh"
 #include "casting_float_negative_kernels_rtc.hh"
 
+/**
+ * @addtogroup CastingFloatTypes CastingFloatTypes
+ * @{
+ * @ingroup MathTest
+ */
+
 #define CAST_FLOAT2INT_TEST_DEF(T, kern_name, ref_func)                                            \
   CAST_KERNEL_DEF(kern_name, T, float)                                                             \
   CAST_F2I_REF_DEF(kern_name, T, float, ref_func)                                                  \

@@ -29,7 +29,7 @@ THE SOFTWARE.
  * @ingroup MathTest
  */
 
-#define CAST_INT2HALF_RN_TEST_DEF(T, kern_name)                                                    \
+#define CAST_INT2HALF_RN_TEST_DEF(kern_name, T)                                                    \
   CAST_KERNEL_DEF(kern_name, Float16, T)                                                           \
   CAST_REF_DEF(kern_name, Float16, T)                                                              \
                                                                                                    \
@@ -51,7 +51,7 @@ THE SOFTWARE.
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_INT2HALF_RN_TEST_DEF(int, int2half_rn)
+CAST_INT2HALF_RN_TEST_DEF(__int2half_rn, int)
 
 /**
  * Test Description
@@ -66,7 +66,7 @@ CAST_INT2HALF_RN_TEST_DEF(int, int2half_rn)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_INT2HALF_RN_TEST_DEF(int, int2half_rz)
+CAST_INT2HALF_RN_TEST_DEF(__int2half_rz, int)
 
 /**
  * Test Description
@@ -81,7 +81,7 @@ CAST_INT2HALF_RN_TEST_DEF(int, int2half_rz)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_INT2HALF_RN_TEST_DEF(int, int2half_rd)
+CAST_INT2HALF_RN_TEST_DEF(__int2half_rd, int)
 
 /**
  * Test Description
@@ -96,7 +96,7 @@ CAST_INT2HALF_RN_TEST_DEF(int, int2half_rd)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_INT2HALF_RN_TEST_DEF(int, int2half_ru)
+CAST_INT2HALF_RN_TEST_DEF(__int2half_ru, int)
 
 /**
  * Test Description
@@ -111,7 +111,7 @@ CAST_INT2HALF_RN_TEST_DEF(int, int2half_ru)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_INT2HALF_RN_TEST_DEF(unsigned int, uint2half_rn)
+CAST_INT2HALF_RN_TEST_DEF(__uint2half_rn, unsigned int)
 
 /**
  * Test Description
@@ -126,7 +126,7 @@ CAST_INT2HALF_RN_TEST_DEF(unsigned int, uint2half_rn)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_INT2HALF_RN_TEST_DEF(unsigned int, uint2half_rz)
+CAST_INT2HALF_RN_TEST_DEF(__uint2half_rz, unsigned int)
 
 /**
  * Test Description
@@ -141,7 +141,7 @@ CAST_INT2HALF_RN_TEST_DEF(unsigned int, uint2half_rz)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_INT2HALF_RN_TEST_DEF(unsigned int, uint2half_rd)
+CAST_INT2HALF_RN_TEST_DEF(__uint2half_rd, unsigned int)
 
 /**
  * Test Description
@@ -156,7 +156,7 @@ CAST_INT2HALF_RN_TEST_DEF(unsigned int, uint2half_rd)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_INT2HALF_RN_TEST_DEF(unsigned int, uint2half_ru)
+CAST_INT2HALF_RN_TEST_DEF(__uint2half_ru, unsigned int)
 
 /**
  * Test Description
@@ -171,7 +171,7 @@ CAST_INT2HALF_RN_TEST_DEF(unsigned int, uint2half_ru)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_INT2HALF_RN_TEST_DEF(short, short2half_rn)
+CAST_INT2HALF_RN_TEST_DEF(__short2half_rn, short)
 
 /**
  * Test Description
@@ -186,7 +186,7 @@ CAST_INT2HALF_RN_TEST_DEF(short, short2half_rn)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_INT2HALF_RN_TEST_DEF(short, short2half_rz)
+CAST_INT2HALF_RN_TEST_DEF(__short2half_rz, short)
 
 /**
  * Test Description
@@ -201,7 +201,7 @@ CAST_INT2HALF_RN_TEST_DEF(short, short2half_rz)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_INT2HALF_RN_TEST_DEF(short, short2half_rd)
+CAST_INT2HALF_RN_TEST_DEF(__short2half_rd, short)
 
 /**
  * Test Description
@@ -216,7 +216,7 @@ CAST_INT2HALF_RN_TEST_DEF(short, short2half_rd)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_INT2HALF_RN_TEST_DEF(short, short2half_ru)
+CAST_INT2HALF_RN_TEST_DEF(__short2half_ru, short)
 
 /**
  * Test Description
@@ -231,7 +231,7 @@ CAST_INT2HALF_RN_TEST_DEF(short, short2half_ru)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_INT2HALF_RN_TEST_DEF(unsigned short, ushort2half_rn)
+CAST_INT2HALF_RN_TEST_DEF(__ushort2half_rn, unsigned short)
 
 /**
  * Test Description
@@ -246,7 +246,7 @@ CAST_INT2HALF_RN_TEST_DEF(unsigned short, ushort2half_rn)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_INT2HALF_RN_TEST_DEF(unsigned short, ushort2half_rz)
+CAST_INT2HALF_RN_TEST_DEF(__ushort2half_rz, unsigned short)
 
 /**
  * Test Description
@@ -261,7 +261,7 @@ CAST_INT2HALF_RN_TEST_DEF(unsigned short, ushort2half_rz)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_INT2HALF_RN_TEST_DEF(unsigned short, ushort2half_rd)
+CAST_INT2HALF_RN_TEST_DEF(__ushort2half_rd, unsigned short)
 
 /**
  * Test Description
@@ -276,9 +276,9 @@ CAST_INT2HALF_RN_TEST_DEF(unsigned short, ushort2half_rd)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_INT2HALF_RN_TEST_DEF(unsigned short, ushort2half_ru)
+CAST_INT2HALF_RN_TEST_DEF(__ushort2half_ru, unsigned short)
 
-#define CAST_LL2HALF_TEST_DEF(T, kern_name)                                                        \
+#define CAST_LL2HALF_TEST_DEF(kern_name, T)                                                        \
   CAST_KERNEL_DEF(kern_name, Float16, T)                                                           \
   CAST_REF_DEF(kern_name, Float16, T)                                                              \
                                                                                                    \
@@ -300,7 +300,7 @@ CAST_INT2HALF_RN_TEST_DEF(unsigned short, ushort2half_ru)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_LL2HALF_TEST_DEF(long long, ll2half_rn)
+CAST_LL2HALF_TEST_DEF(__ll2half_rn, long long)
 
 /**
  * Test Description
@@ -315,7 +315,7 @@ CAST_LL2HALF_TEST_DEF(long long, ll2half_rn)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_LL2HALF_TEST_DEF(long long, ll2half_rz)
+CAST_LL2HALF_TEST_DEF(__ll2half_rz, long long)
 
 /**
  * Test Description
@@ -330,7 +330,7 @@ CAST_LL2HALF_TEST_DEF(long long, ll2half_rz)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_LL2HALF_TEST_DEF(long long, ll2half_rd)
+CAST_LL2HALF_TEST_DEF(__ll2half_rd, long long)
 
 /**
  * Test Description
@@ -345,7 +345,7 @@ CAST_LL2HALF_TEST_DEF(long long, ll2half_rd)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_LL2HALF_TEST_DEF(long long, ll2half_ru)
+CAST_LL2HALF_TEST_DEF(__ll2half_ru, long long)
 
 /**
  * Test Description
@@ -360,7 +360,7 @@ CAST_LL2HALF_TEST_DEF(long long, ll2half_ru)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_LL2HALF_TEST_DEF(unsigned long long, ull2half_rn)
+CAST_LL2HALF_TEST_DEF(__ull2half_rn, unsigned long long)
 
 /**
  * Test Description
@@ -375,7 +375,7 @@ CAST_LL2HALF_TEST_DEF(unsigned long long, ull2half_rn)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_LL2HALF_TEST_DEF(unsigned long long, ull2half_rz)
+CAST_LL2HALF_TEST_DEF(__ull2half_rz, unsigned long long)
 
 /**
  * Test Description
@@ -390,7 +390,7 @@ CAST_LL2HALF_TEST_DEF(unsigned long long, ull2half_rz)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_LL2HALF_TEST_DEF(unsigned long long, ull2half_rd)
+CAST_LL2HALF_TEST_DEF(__ull2half_rd, unsigned long long)
 
 /**
  * Test Description
@@ -405,9 +405,9 @@ CAST_LL2HALF_TEST_DEF(unsigned long long, ull2half_rd)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_LL2HALF_TEST_DEF(unsigned long long, ull2half_ru)
+CAST_LL2HALF_TEST_DEF(__ull2half_ru, unsigned long long)
 
-CAST_KERNEL_DEF(short_as_half, Float16, short)
+CAST_KERNEL_DEF(__short_as_half, Float16, short)
 
 /**
  * Test Description
@@ -422,12 +422,12 @@ CAST_KERNEL_DEF(short_as_half, Float16, short)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_short_as_half_Accuracy_Positive") {
+TEST_CASE("Unit_Device___short_as_half_Accuracy_Positive") {
   Float16 (*ref)(short) = type2_as_type1_ref<Float16, short>;
-  CastIntBruteForceTest(short_as_half_kernel, ref, EqValidatorBuilderFactory<Float16>());
+  CastIntBruteForceTest(__short_as_half_kernel, ref, EqValidatorBuilderFactory<Float16>());
 }
 
-CAST_KERNEL_DEF(ushort_as_half, Float16, unsigned short)
+CAST_KERNEL_DEF(__ushort_as_half, Float16, unsigned short)
 
 /**
  * Test Description
@@ -442,7 +442,7 @@ CAST_KERNEL_DEF(ushort_as_half, Float16, unsigned short)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_ushort_as_half_Accuracy_Positive") {
+TEST_CASE("Unit_Device___ushort_as_half_Accuracy_Positive") {
   Float16 (*ref)(unsigned short) = type2_as_type1_ref<Float16, unsigned short>;
-  CastIntBruteForceTest(ushort_as_half_kernel, ref, EqValidatorBuilderFactory<Float16>());
+  CastIntBruteForceTest(__ushort_as_half_kernel, ref, EqValidatorBuilderFactory<Float16>());
 }

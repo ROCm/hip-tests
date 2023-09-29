@@ -26,34 +26,34 @@ class Dummy {
   __device__ ~Dummy() {}
 };
 
-#define NEGATIVE_KERNELS_SHELL(T, func_name)                                                       \
-  __global__ void func_name##_kernel_v1(T* result, __half* x) { *result = __##func_name(x); }      \
-  __global__ void func_name##_kernel_v2(T* result, Dummy x) { *result = __##func_name(x); }        \
-  __global__ void func_name##_kernel_v3(Dummy* result, __half x) { *result = __##func_name(x); }
+#define NEGATIVE_KERNELS_SHELL(func_name, T)                                                       \
+  __global__ void func_name##_kernel_v1(T* result, __half* x) { *result = func_name(x); }          \
+  __global__ void func_name##_kernel_v2(T* result, Dummy x) { *result = func_name(x); }            \
+  __global__ void func_name##_kernel_v3(Dummy* result, __half x) { *result = unc_name(x); }
 
-NEGATIVE_KERNELS_SHELL(int, half2int_rn)
-NEGATIVE_KERNELS_SHELL(int, half2int_rz)
-NEGATIVE_KERNELS_SHELL(int, half2int_rd)
-NEGATIVE_KERNELS_SHELL(int, half2int_ru)
-NEGATIVE_KERNELS_SHELL(unsigned int, half2uint_rn)
-NEGATIVE_KERNELS_SHELL(unsigned int, half2uint_rz)
-NEGATIVE_KERNELS_SHELL(unsigned int, half2uint_rd)
-NEGATIVE_KERNELS_SHELL(unsigned int, half2uint_ru)
-NEGATIVE_KERNELS_SHELL(short, half2short_rn)
-NEGATIVE_KERNELS_SHELL(short, half2short_rz)
-NEGATIVE_KERNELS_SHELL(short, half2short_rd)
-NEGATIVE_KERNELS_SHELL(short, half2short_ru)
-NEGATIVE_KERNELS_SHELL(short, half_as_short)
-NEGATIVE_KERNELS_SHELL(unsigned short, half2ushort_rn)
-NEGATIVE_KERNELS_SHELL(unsigned short, half2ushort_rz)
-NEGATIVE_KERNELS_SHELL(unsigned short, half2ushort_rd)
-NEGATIVE_KERNELS_SHELL(unsigned short, half2ushort_ru)
-NEGATIVE_KERNELS_SHELL(unsigned short, half_as_ushort)
-NEGATIVE_KERNELS_SHELL(long long, half2ll_rn)
-NEGATIVE_KERNELS_SHELL(long long, half2ll_rz)
-NEGATIVE_KERNELS_SHELL(long long, half2ll_rd)
-NEGATIVE_KERNELS_SHELL(long long, half2ll_ru)
-NEGATIVE_KERNELS_SHELL(unsigned long long, half2ull_rn)
-NEGATIVE_KERNELS_SHELL(unsigned long long, half2ull_rz)
-NEGATIVE_KERNELS_SHELL(unsigned long long, half2ull_rd)
-NEGATIVE_KERNELS_SHELL(unsigned long long, half2ull_ru)
+NEGATIVE_KERNELS_SHELL(__half2int_rn, int)
+NEGATIVE_KERNELS_SHELL(__half2int_rz, int)
+NEGATIVE_KERNELS_SHELL(__half2int_rd, int)
+NEGATIVE_KERNELS_SHELL(__half2int_ru, int)
+NEGATIVE_KERNELS_SHELL(__half2uint_rn, unsigned int)
+NEGATIVE_KERNELS_SHELL(__half2uint_rz, unsigned int)
+NEGATIVE_KERNELS_SHELL(__half2uint_rd, unsigned int)
+NEGATIVE_KERNELS_SHELL(__half2uint_ru, unsigned int)
+NEGATIVE_KERNELS_SHELL(__half2short_rn, short)
+NEGATIVE_KERNELS_SHELL(__half2short_rz, short)
+NEGATIVE_KERNELS_SHELL(__half2short_rd, short)
+NEGATIVE_KERNELS_SHELL(__half2short_ru, short)
+NEGATIVE_KERNELS_SHELL(__half_as_short, short)
+NEGATIVE_KERNELS_SHELL(__half2ushort_rn, unsigned short)
+NEGATIVE_KERNELS_SHELL(__half2ushort_rz, unsigned short)
+NEGATIVE_KERNELS_SHELL(__half2ushort_rd, unsigned short)
+NEGATIVE_KERNELS_SHELL(__half2ushort_ru, unsigned short)
+NEGATIVE_KERNELS_SHELL(__half_as_ushort, unsigned short)
+NEGATIVE_KERNELS_SHELL(__half2ll_rn, long long)
+NEGATIVE_KERNELS_SHELL(__half2ll_rz, long long)
+NEGATIVE_KERNELS_SHELL(__half2ll_rd, long long)
+NEGATIVE_KERNELS_SHELL(__half2ll_ru, long long)
+NEGATIVE_KERNELS_SHELL(__half2ull_rn, unsigned long long)
+NEGATIVE_KERNELS_SHELL(__half2ull_rz, unsigned long long)
+NEGATIVE_KERNELS_SHELL(__half2ull_rd, unsigned long long)
+NEGATIVE_KERNELS_SHELL(__half2ull_ru, unsigned long long)

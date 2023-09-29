@@ -52,12 +52,99 @@ THE SOFTWARE.
                                   std::numeric_limits<float>::max());                              \
   }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__float2half_rd` for all possible inputs apart from very small positive
+ * values. Rounding behaviour is not correct for host functions for this range. The results are
+ * compared against reference function which performs float cast to __half with FE_DOWNWARD rounding
+ * mode.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half_float_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_FLOAT2HALF_TEST_DEF(float2half_rd, FE_DOWNWARD)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__float2half_rn` for all possible inputs. The results are compared against
+ * reference function which performs float cast to __half.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half_float_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_FLOAT2HALF_RN_TEST_DEF(float2half_rn)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__float2half` for all possible inputs. The results are compared against
+ * reference function which performs float cast to __half.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half_float_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_FLOAT2HALF_RN_TEST_DEF(float2half)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__float2half_ru` for all possible inputs apart from very small positive
+ * values. Rounding behaviour is not correct for host functions for this range. The results are
+ * compared against reference function which performs float cast to __half with FE_UPWARD rounding
+ * mode.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half_float_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_FLOAT2HALF_TEST_DEF(float2half_ru, FE_UPWARD)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__float2half_rz` for all possible inputs apart from very small positive
+ * values. Rounding behaviour is not correct for host functions for this range. The results are
+ * compared against reference function which performs float cast to __half with FE_TOWARDZERO rounding
+ * mode.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half_float_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 CAST_FLOAT2HALF_TEST_DEF(float2half_rz, FE_TOWARDZERO)
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Sanity test that checks `__float2half_rd` for very small positive values.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half_float_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device_float2half_rd_SmallVals_Sanity_Positive") {
   const float input[] = {0.8859e-06f, 1.5454e-07f, 6.5955e-08f, 2.7955e-08f,
                          3.7956e-09f, 4.8995e-10f, 5.7997e-15f, 6.2117e-20f,
@@ -76,6 +163,18 @@ TEST_CASE("Unit_Device_float2half_rd_SmallVals_Sanity_Positive") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Sanity test that checks `__float2half_ru` for very small positive values.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half_float_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device_float2half_ru_SmallVals_Sanity_Positive") {
   const float input[] = {0.8859e-06f, 1.5454e-07f, 6.5955e-08f, 2.7955e-08f,
                          3.7956e-09f, 4.8995e-10f, 5.7997e-15f, 6.2117e-20f,
@@ -96,6 +195,18 @@ TEST_CASE("Unit_Device_float2half_ru_SmallVals_Sanity_Positive") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Sanity test that checks `__float2half_rz` for very small positive values.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half_float_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device_float2half_rz_SmallVals_Sanity_Positive") {
   const float input[] = {0.8859e-06f, 1.5454e-07f, 6.5955e-08f, 2.7955e-08f,
                          3.7956e-09f, 4.8995e-10f, 5.7997e-15f, 6.2117e-20f,
@@ -117,6 +228,19 @@ TEST_CASE("Unit_Device_float2half_rz_SmallVals_Sanity_Positive") {
 CAST_KERNEL_DEF(half2float, float, Float16)
 CAST_REF_DEF(half2float, float, Float16)
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests that checks `__half2float` for all possible inputs. The results are compared against
+ * reference function which performs __half cast to float.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/casting_half_float_funcs.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_Device_half2float_Accuracy_Positive") {
   float (*ref)(Float16) = half2float_ref;
   UnaryHalfPrecisionTest(half2float_kernel, ref, EqValidatorBuilderFactory<float>());

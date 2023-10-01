@@ -159,7 +159,7 @@ if (WIN32)
 endif()
 
 if(HIP_PLATFORM STREQUAL "amd")
-    add_compile_options(-Wall -Wextra -Werror -Wno-deprecated)
+    add_compile_options(-Wall -Wextra -Werror -Wno-deprecated -Wno-option-ignored)
 endif()
 
 cmake_policy(PUSH)

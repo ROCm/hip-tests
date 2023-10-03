@@ -125,9 +125,9 @@ int main() {
         hipFunction_t Function;
         checkHipErrors(hipModuleGetFunction(&Function, Module, "test_globals"));
         int val =-1;
-        checkHipErrors(hipFuncGetAttribute(&val, hipFuncAttributeSharedSizeBytes, Function));
+        checkHipErrors(hipFuncGetAttribute(&val, HIP_FUNC_ATTRIBUTE_SHARED_SIZE_BYTES,Function));
         printf("Shared Size Bytes = %d\n",val);
-        checkHipErrors(hipFuncGetAttribute(&val, hipFuncAttributeNumRegs, Function));
+        checkHipErrors(hipFuncGetAttribute(&val, HIP_FUNC_ATTRIBUTE_NUM_REGS, Function));
         printf("Num Regs = %d\n",val);
         checkHipErrors(hipModuleLaunchKernel(Function, 1, 1, 1, LEN, 1, 1, 0, 0, NULL, (void**)&config));
 

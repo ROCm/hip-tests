@@ -163,9 +163,6 @@ TEST_CASE("Unit_hipGetDeviceAttribute_CheckAttrValues") {
                                       hipDeviceAttributePciDeviceId,
                                       props.pciDeviceID));
   HIP_CHECK(test_hipDeviceGetAttribute(deviceId,
-                      hipDeviceAttributeMaxSharedMemoryPerMultiprocessor,
-                      props.maxSharedMemoryPerMultiProcessor));
-  HIP_CHECK(test_hipDeviceGetAttribute(deviceId,
                                       hipDeviceAttributeIntegrated,
                                       props.integrated));
   HIP_CHECK(test_hipDeviceGetAttribute(deviceId,
@@ -194,6 +191,9 @@ TEST_CASE("Unit_hipGetDeviceAttribute_CheckAttrValues") {
                           props.cooperativeMultiDeviceLaunch));
 
 #if HT_AMD
+  HIP_CHECK(test_hipDeviceGetAttribute(deviceId,
+                      hipDeviceAttributeMaxSharedMemoryPerMultiprocessor,
+                      props.maxSharedMemoryPerMultiProcessor));
   HIP_CHECK(test_hipDeviceGetHdpAddress(deviceId,
                                      hipDeviceAttributeHdpMemFlushCntl,
                                      props.hdpMemFlushCntl));

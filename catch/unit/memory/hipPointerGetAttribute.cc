@@ -72,11 +72,9 @@ TEST_CASE("Unit_hipPointerGetAttribute_MemoryTypes") {
     HIP_CHECK(hipPointerGetAttribute(&datatype,
               HIP_POINTER_ATTRIBUTE_MEMORY_TYPE,
               reinterpret_cast<hipDeviceptr_t>(A_d)));
-#if HT_NVIDIA
-    REQUIRE(datatype == CU_MEMORYTYPE_DEVICE);
-#else
+
     REQUIRE(datatype == hipMemoryTypeDevice);
-#endif
+
   }
 #if HT_AMD
   SECTION("Malloc Array Allocation") {
@@ -86,11 +84,8 @@ TEST_CASE("Unit_hipPointerGetAttribute_MemoryTypes") {
     HIP_CHECK(hipPointerGetAttribute(&datatype,
                                      HIP_POINTER_ATTRIBUTE_MEMORY_TYPE,
                                      reinterpret_cast<hipDeviceptr_t>(B_d)));
-#if HT_NVIDIA
-    REQUIRE(datatype == CU_MEMORYTYPE_ARRAY);
-#else
+
     REQUIRE(datatype == hipMemoryTypeArray);
-#endif
     HIP_CHECK(hipFreeArray(B_d));
   }
 
@@ -105,11 +100,8 @@ TEST_CASE("Unit_hipPointerGetAttribute_MemoryTypes") {
     HIP_CHECK(hipPointerGetAttribute(&datatype,
                                      HIP_POINTER_ATTRIBUTE_MEMORY_TYPE,
                                      reinterpret_cast<hipDeviceptr_t>(arr)));
-#if HT_NVIDIA
-    REQUIRE(datatype == CU_MEMORYTYPE_ARRAY);
-#else
+
     REQUIRE(datatype == hipMemoryTypeArray);
-#endif
     HIP_CHECK(hipFreeArray(arr));
   }
 #endif
@@ -171,11 +163,9 @@ TEST_CASE("Unit_hipPointerGetAttribute_PeerGPU") {
       HIP_CHECK(hipPointerGetAttribute(&data,
                 HIP_POINTER_ATTRIBUTE_MEMORY_TYPE,
                 reinterpret_cast<hipDeviceptr_t>(A_d)));
-#if HT_NVIDIA
-      REQUIRE(data == CU_MEMORYTYPE_DEVICE);
-#else
+
       REQUIRE(data == hipMemoryTypeDevice);
-#endif
+
       HIP_CHECK(hipPointerGetAttribute(&data,
                 HIP_POINTER_ATTRIBUTE_DEVICE_ORDINAL,
                 reinterpret_cast<hipDeviceptr_t>(A_d)));

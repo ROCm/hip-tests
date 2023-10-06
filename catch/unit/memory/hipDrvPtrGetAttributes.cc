@@ -135,11 +135,9 @@ TEST_CASE("Unit_hipDrvPtrGetAttributes_Functional") {
               reinterpret_cast<hipDeviceptr_t>(A_d + 100)));
 
     REQUIRE(dev_ptr == dev_ptr1);
-#if HT_NVIDIA
-    REQUIRE(memory_type == CU_MEMORYTYPE_DEVICE);
-#else
+
     REQUIRE(memory_type == hipMemoryTypeDevice);
-#endif
+
     REQUIRE(device_ordinal == deviceId);
     REQUIRE(range_size == Nbytes);
     REQUIRE(start_addr == dev);

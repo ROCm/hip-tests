@@ -44,10 +44,10 @@ THE SOFTWARE.
 #endif
 
 // Platform check
-#if defined(__HIP_PLATFORM_AMD__)
+#if defined(__HIP_PLATFORM_HCC__) || defined(__HIP_PLATFORM_AMD__)
 #define HT_AMD 1
 #define HT_NVIDIA 0
-#elif defined(__HIP_PLATFORM_NVIDIA__)
+#elif defined(__HIP_PLATFORM_NVCC__) || defined(__HIP_PLATFORM_NVIDIA__)
 #define HT_AMD 0
 #define HT_NVIDIA 1
 #else

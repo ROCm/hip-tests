@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
   }
 
   // disable visible_devices env from shell
-#ifdef __HIP_PLATFORM_NVIDIA__
+#ifdef __HIP_PLATFORM_NVCC__
   UNSETENV("CUDA_VISIBLE_DEVICES");
   SETENV("CUDA_VISIBLE_DEVICES", argv[1]);
   auto init_res = hipInit(0);
@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-#ifdef __HIP_PLATFORM_NVIDIA__
+#ifdef __HIP_PLATFORM_NVCC__
   UNSETENV("CUDA_VISIBLE_DEVICES");
 #else
   UNSETENV("ROCR_VISIBLE_DEVICES");

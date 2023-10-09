@@ -148,7 +148,7 @@ void Memcpy3DAsync<T>::D2H_H2D_DeviceMem_OnDiffDevice() {
     myparms.srcPtr = make_hipPitchedPtr(hData, width * sizeof(T),
         width, height);
     myparms.dstArray = arr;
-#ifdef __HIP_PLATFORM_NVIDIA__
+#ifdef __HIP_PLATFORM_NVCC__
     myparms.kind = cudaMemcpyHostToDevice;
 #else
     myparms.kind = hipMemcpyHostToDevice;
@@ -166,7 +166,7 @@ void Memcpy3DAsync<T>::D2H_H2D_DeviceMem_OnDiffDevice() {
         width * sizeof(T),
         width, height);
     myparms.srcArray = arr;
-#ifdef __HIP_PLATFORM_NVIDIA__
+#ifdef __HIP_PLATFORM_NVCC__
     myparms.kind = cudaMemcpyDeviceToHost;
 #else
     myparms.kind = hipMemcpyDeviceToHost;
@@ -218,7 +218,7 @@ void Memcpy3DAsync<T>::D2D_DeviceMem_OnDiffDevice() {
                                         width * sizeof(T),
                                         width, height);
     myparms.dstArray = arr;
-#ifdef __HIP_PLATFORM_NVIDIA__
+#ifdef __HIP_PLATFORM_NVCC__
     myparms.kind = cudaMemcpyHostToDevice;
 #else
     myparms.kind = hipMemcpyHostToDevice;
@@ -241,7 +241,7 @@ void Memcpy3DAsync<T>::D2D_DeviceMem_OnDiffDevice() {
     // Device to Device
     myparms.srcArray = arr;
     myparms.dstArray = arr2;
-#ifdef __HIP_PLATFORM_NVIDIA__
+#ifdef __HIP_PLATFORM_NVCC__
     myparms.kind = cudaMemcpyDeviceToDevice;
 #else
     myparms.kind = hipMemcpyDeviceToDevice;
@@ -261,7 +261,7 @@ void Memcpy3DAsync<T>::D2D_DeviceMem_OnDiffDevice() {
                                         width * sizeof(T),
                                         width, height);
     myparms.srcArray = arr2;
-#ifdef __HIP_PLATFORM_NVIDIA__
+#ifdef __HIP_PLATFORM_NVCC__
     myparms.kind = cudaMemcpyDeviceToHost;
 #else
     myparms.kind = hipMemcpyDeviceToHost;
@@ -294,7 +294,7 @@ void Memcpy3DAsync<T>::NegativeTests() {
   myparms.srcPos = make_hipPos(0, 0, 0);
   myparms.dstPos = make_hipPos(0, 0, 0);
   myparms.extent = make_hipExtent(width , height, depth);
-#ifdef __HIP_PLATFORM_NVIDIA__
+#ifdef __HIP_PLATFORM_NVCC__
   myparms.kind = cudaMemcpyHostToDevice;
 #else
   myparms.kind = hipMemcpyHostToDevice;
@@ -406,7 +406,7 @@ void Memcpy3DAsync<T>::NegativeTests() {
     myparms.srcPos = make_hipPos(width+1, 0, 0);
     myparms.srcArray = arr;
     myparms.dstArray = arr1;
-#ifdef __HIP_PLATFORM_NVIDIA__
+#ifdef __HIP_PLATFORM_NVCC__
     myparms.kind = cudaMemcpyDeviceToDevice;
 #else
     myparms.kind = hipMemcpyDeviceToDevice;
@@ -418,7 +418,7 @@ void Memcpy3DAsync<T>::NegativeTests() {
     myparms.srcPos = make_hipPos(0, height+1, 0);
     myparms.srcArray = arr;
     myparms.dstArray = arr1;
-#ifdef __HIP_PLATFORM_NVIDIA__
+#ifdef __HIP_PLATFORM_NVCC__
     myparms.kind = cudaMemcpyDeviceToDevice;
 #else
     myparms.kind = hipMemcpyDeviceToDevice;
@@ -430,7 +430,7 @@ void Memcpy3DAsync<T>::NegativeTests() {
     myparms.srcPos = make_hipPos(0, 0, depth+1);
     myparms.srcArray = arr;
     myparms.dstArray = arr1;
-#ifdef __HIP_PLATFORM_NVIDIA__
+#ifdef __HIP_PLATFORM_NVCC__
     myparms.kind = cudaMemcpyDeviceToDevice;
 #else
     myparms.kind = hipMemcpyDeviceToDevice;
@@ -447,7 +447,7 @@ void Memcpy3DAsync<T>::NegativeTests() {
                               , 3), hipArrayDefault));
     myparms.srcArray = arr;
     myparms.dstArray = arr2;
-#ifdef __HIP_PLATFORM_NVIDIA__
+#ifdef __HIP_PLATFORM_NVCC__
     myparms.kind = cudaMemcpyDeviceToDevice;
 #else
     myparms.kind = hipMemcpyDeviceToDevice;
@@ -493,7 +493,7 @@ void Memcpy3DAsync<T>::D2D_SameDeviceMem_StreamDiffDevice() {
     // Host to Device
     myparms.srcPtr = make_hipPitchedPtr(hData, width * sizeof(T), width, height);
     myparms.dstArray = arr;
-#ifdef __HIP_PLATFORM_NVIDIA__
+#ifdef __HIP_PLATFORM_NVCC__
     myparms.kind = cudaMemcpyHostToDevice;
 #else
     myparms.kind = hipMemcpyHostToDevice;
@@ -506,7 +506,7 @@ void Memcpy3DAsync<T>::D2D_SameDeviceMem_StreamDiffDevice() {
     SetDefaultData();
     myparms.srcArray = arr;
     myparms.dstArray = arr1;
-#ifdef __HIP_PLATFORM_NVIDIA__
+#ifdef __HIP_PLATFORM_NVCC__
     myparms.kind = cudaMemcpyDeviceToDevice;
 #else
     myparms.kind = hipMemcpyDeviceToDevice;
@@ -522,7 +522,7 @@ void Memcpy3DAsync<T>::D2D_SameDeviceMem_StreamDiffDevice() {
     myparms.dstPtr = make_hipPitchedPtr(hOutputData,
         width * sizeof(T), width, height);
     myparms.srcArray = arr1;
-#ifdef __HIP_PLATFORM_NVIDIA__
+#ifdef __HIP_PLATFORM_NVCC__
     myparms.kind = cudaMemcpyDeviceToHost;
 #else
     myparms.kind = hipMemcpyDeviceToHost;
@@ -555,7 +555,7 @@ void Memcpy3DAsync<T>::Extent_Validation() {
   myparms.dstPos = make_hipPos(0, 0, 0);
   myparms.srcPtr = make_hipPitchedPtr(hData, width * sizeof(T), width, height);
   myparms.dstArray = arr;
-#ifdef __HIP_PLATFORM_NVIDIA__
+#ifdef __HIP_PLATFORM_NVCC__
   myparms.kind = cudaMemcpyHostToDevice;
 #else
   myparms.kind = hipMemcpyHostToDevice;
@@ -603,7 +603,7 @@ void Memcpy3DAsync<T>::simple_Memcpy3DAsync() {
   // Host to Device
   myparms.srcPtr = make_hipPitchedPtr(hData, width * sizeof(T), width, height);
   myparms.dstArray = arr;
-#ifdef __HIP_PLATFORM_NVIDIA__
+#ifdef __HIP_PLATFORM_NVCC__
   myparms.kind = cudaMemcpyHostToDevice;
 #else
   myparms.kind = hipMemcpyHostToDevice;
@@ -622,7 +622,7 @@ void Memcpy3DAsync<T>::simple_Memcpy3DAsync() {
   SetDefaultData();
   myparms.srcArray = arr;
   myparms.dstArray = arr1;
-#ifdef __HIP_PLATFORM_NVIDIA__
+#ifdef __HIP_PLATFORM_NVCC__
   myparms.kind = cudaMemcpyDeviceToDevice;
 #else
   myparms.kind = hipMemcpyDeviceToDevice;
@@ -638,7 +638,7 @@ void Memcpy3DAsync<T>::simple_Memcpy3DAsync() {
   myparms.dstPtr = make_hipPitchedPtr(hOutputData,
       width * sizeof(T), width, height);
   myparms.srcArray = arr1;
-#ifdef __HIP_PLATFORM_NVIDIA__
+#ifdef __HIP_PLATFORM_NVCC__
   myparms.kind = cudaMemcpyDeviceToHost;
 #else
   myparms.kind = hipMemcpyDeviceToHost;

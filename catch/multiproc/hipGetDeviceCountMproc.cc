@@ -38,7 +38,7 @@ TEST_CASE("Unit_hipGetDeviceCount_MaskedDevices") {
   char visibleDeviceString[MAX_SIZE] = {};
   snprintf(visibleDeviceString, MAX_SIZE, "%d", VISIBLE_DEVICE);
 
-#ifdef __HIP_PLATFORM_NVIDIA__
+#ifdef __HIP_PLATFORM_NVCC__
   unsetenv("CUDA_VISIBLE_DEVICES");
   setenv("CUDA_VISIBLE_DEVICES", visibleDeviceString, 1);
 #else

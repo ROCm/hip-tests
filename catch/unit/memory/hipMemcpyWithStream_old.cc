@@ -575,7 +575,7 @@ TEST_CASE("Unit_hipMemcpyWithStream_TestOnMultiGPUwithOneStream") {
 TEST_CASE("Unit_hipMemcpyWithStream_TestkindDefault") {
   TestkindDefault();
 }
-#ifndef __HIP_PLATFORM_NVIDIA__
+#ifndef __HIP_PLATFORM_NVCC__
 TEST_CASE("Unit_hipMemcpyWithStream_TestkindDefaultForDtoD") {
   TestkindDefaultForDtoD();
 }

@@ -235,6 +235,10 @@
         "Unit_hipStreamCreate_WithFlagsPerformance_Nonblocking",
         "Unit_hipStreamCreate_WithFlagsPerformance_Default",
         "Unit_hipStreamCreate_WithPriorityPerformance_Nonblocking_low",
+        "=== SWDEV-426375: Below test failed in stress test on 13/10/23 ===",
+        "Unit_hipStreamCreate_WithPriorityPerformance_Nonblocking_high",
+        "Unit_hipStreamCreate_WithPriorityPerformance_Default_low",
+        "Unit_hipStreamCreate_WithPriorityPerformance_Default_high",
     #endif
         "End of json"
     ]

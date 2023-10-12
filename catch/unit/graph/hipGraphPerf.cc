@@ -253,7 +253,7 @@ static void checkGraphMemcpyMemsetKernelMixCall(const unsigned int kNumIter) {
   hipGraphNode_t kNode[kNumIter];
   hipGraph_t graph;
   hipGraphExec_t graphExec;
-  int pitch_M;
+  int pitch_M = 0;
 
   int *A_d, *B_d, *C_d, *A_h, *B_h, *C_h;
   HipTest::initArrays(&A_d, &B_d, &C_d, &A_h, &B_h, &C_h, N, false);

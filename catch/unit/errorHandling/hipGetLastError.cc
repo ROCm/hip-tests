@@ -285,7 +285,7 @@ TEST_CASE("Unit_hipGetLastError_with_hipDrvMemcpy3DAsync") {
 TEST_CASE("Unit_hipGetLastError_with_hipMemcpy3DAsync") {
   constexpr int width{10}, height{10}, depth{10};
   auto size = width * height * depth * sizeof(int);
-  hipArray *devArray;
+  hipArray_t devArray;
 
   hipStream_t stream;
   HIP_CHECK(hipStreamCreate(&stream));

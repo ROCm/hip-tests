@@ -14,6 +14,7 @@ set(AMD_TEST_SRC
     hipRtcBfloat16.cc
     linker.cc
     shfl.cc
+    stdheaders.cc
 )
 
 add_custom_target(copyRtcHeaders ALL

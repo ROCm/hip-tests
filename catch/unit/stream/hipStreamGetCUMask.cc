@@ -25,6 +25,8 @@ Testcase Scenarios :
 */
 
 #include <hip_test_common.hh>
+
+#include <cmath>
 #include <vector>
 
 
@@ -33,8 +35,7 @@ Testcase Scenarios :
  * Scenario to verify hipExtStreamGetCUMask api returns custom mask set.
  */
 TEST_CASE("Unit_hipExtStreamGetCUMask_verifyDefaultAndCustomMask") {
-  constexpr int maxNum = 10;
-  std::vector<uint32_t> cuMask(maxNum);
+  constexpr unsigned maxCUPerValue = 32;
   hipDeviceProp_t props;
   std::stringstream ss;
   std::string gCUMask;
@@ -52,6 +53,10 @@ TEST_CASE("Unit_hipExtStreamGetCUMask_verifyDefaultAndCustomMask") {
   HIP_CHECK(hipGetDeviceProperties(&props, 0));
   INFO("info: running on bus " << "0x" << props.pciBusID << " " <<
          props.name << " with " << props.multiProcessorCount << " CUs");
+
+  const unsigned int maxNum =
+      static_cast<unsigned int>(std::ceil((props.multiProcessorCount * 1.0f) / maxCUPerValue));
+  std::vector<uint32_t> cuMask(maxNum);
 
   // Get global CU Mask if exists
   gCUMask = TestContext::getEnvVar("ROC_GLOBAL_CU_MASK");

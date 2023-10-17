@@ -8,7 +8,7 @@
     #define MI100
 #endif
 
-#if defined gfx90a || defined  gfx940
+#if defined gfx90a || defined  gfx940 || defined gfx941 || defined gfx942
     #define MI2XX
 #endif
 

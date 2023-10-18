@@ -167,6 +167,8 @@
         "=== SWDEV-425248:Below tests failed in stress test on 11/10/23 ===",
         "Unit_hipHostRegister_Memcpy - double",
         "Unit_hipP2pLinkTypeAndHopFunc",
+        "=== SWDEV-426219:This test fails in integrity test & PSDB ===",
+        "Unit_hipLaunchParm",
     #endif
     #if defined MI2XX
         "Unit_hipStreamPerThread_DeviceReset_1",

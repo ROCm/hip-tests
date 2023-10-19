@@ -206,7 +206,7 @@ TEST_CASE("Unit_hipMalloc_CoherentTst") {
    hipExtMallocWithFlags()*/
 #if HT_AMD
 TEST_CASE("Unit_hipExtMallocWithFlags_CoherentTst") {
-  int *Ptr = nullptr, SIZE = sizeof(int), InitVal = 9, Pageable = 0, managed = 0;
+  int *Ptr = nullptr, SIZE = sizeof(int), InitVal = 9, Pageable = 0, managed = 0, finegrain = 0;
   bool FineGrain = true;
   YES_COHERENT = false;
 
@@ -214,14 +214,16 @@ TEST_CASE("Unit_hipExtMallocWithFlags_CoherentTst") {
                                  hipDeviceAttributePageableMemoryAccess, 0));
   INFO("hipDeviceAttributePageableMemoryAccess: " << Pageable);
 
-  HIP_CHECK(hipDeviceGetAttribute(&managed, hipDeviceAttributeManagedMemory,
-                                  0));
+  HIP_CHECK(hipDeviceGetAttribute(&managed, hipDeviceAttributeManagedMemory, 0));
   INFO("hipDeviceAttributeManagedMemory: " << managed);
   if (managed == 1 && Pageable == 1) {
     // Allocating hipExtMallocWithFlags() memory with flags
-    SECTION("hipExtMallocWithFlags with hipDeviceMallocFinegrained flag") {
-      HIP_CHECK(hipExtMallocWithFlags(reinterpret_cast<void**>(&Ptr), SIZE*2,
-                                      hipDeviceMallocFinegrained));
+    HIP_CHECK(hipDeviceGetAttribute(&finegrain, hipDeviceAttributeFineGrainSupport, 0));
+    if (finegrain == 1) {
+      SECTION("hipExtMallocWithFlags with hipDeviceMallocFinegrained flag") {
+        HIP_CHECK(hipExtMallocWithFlags(reinterpret_cast<void**>(&Ptr), SIZE*2,
+                                        hipDeviceMallocFinegrained));
+      }
     }
     SECTION("hipExtMallocWithFlags with hipDeviceMallocSignalMemory flag") {
       // for hipMallocSignalMemory flag the size of memory must be 8

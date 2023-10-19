@@ -25,6 +25,8 @@ THE SOFTWARE.
 #include <chrono>  // NOLINT
 #include "hip/hip_runtime_api.h"
 
+#pragma clang diagnostic ignored "-Wunused-parameter"
+
 #define ITERATION 1000
 #define SIZE (64*1024*1024)
 #define ARRAY_SIZE 20

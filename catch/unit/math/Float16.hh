@@ -33,7 +33,9 @@ class Float16 {
   __host__ __device__ Float16(__half2 x) : x_{__low2half(x)} {}
   __host__ __device__ Float16(float x) : x_{__float2half(x)} {}
 
-  __host__ __device__ bool operator==(Float16 other) const { return __heq(x_, other.x_); }
+  __host__ __device__ bool operator==(Float16 other) const {
+    return static_cast<__half_raw>(x_).data == static_cast<__half_raw>(other.x_).data;
+  }
   __host__ __device__ bool operator!=(Float16 other) const { return !(*this == other); }
 
   __host__ __device__ operator __half() const { return x_; }

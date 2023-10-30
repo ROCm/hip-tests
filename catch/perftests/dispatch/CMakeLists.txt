@@ -18,10 +18,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-add_custom_target(perf_test COMMAND "${CMAKE_CTEST_COMMAND}" -R "Perf_"
-                            COMMENT "Build complete, now executing the performnce test ...")
+# Common Tests - Test independent of all platforms
+set(TEST_SRC
+    hipPerfDispatchSpeed.cc
+)
 
-add_subdirectory(memory)
-add_subdirectory(stream)
-add_subdirectory(dispatch)
-add_subdirectory(compute)
+hip_add_exe_to_target(NAME dispatchTest
+                      TEST_SRC ${TEST_SRC}
+                      TEST_TARGET_NAME perf_test)

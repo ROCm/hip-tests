@@ -24,6 +24,15 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 #include <utils.hh>
 
+/**
+ * @addtogroup hipGraphAddMemAllocNode hipGraphAddMemAllocNode
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphAddMemAllocNode (hipGraphNode_t *pGraphNode, hipGraph_t graph, const hipGraphNode_t
+ * *pDependencies, size_t numDependencies, hipMemAllocNodeParams *pNodeParams)` -
+ * Creates a memory allocation node and adds it to a graph.
+ */
+
 static constexpr auto element_count{512 * 1024 * 1024};
 
 __global__ void validateGPU(int* const vec, const int value, size_t N, unsigned int* mismatch) {
@@ -36,10 +45,27 @@ __global__ void validateGPU(int* const vec, const int value, size_t N, unsigned 
   }
 }
 
-/*
-This test case verifies the negative scenarios of
-hipGraphAddMemAllocNode API
-*/
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipGraphAddMemAllocNode behavior with invalid arguments:
+ *    -# Null graph node
+ *    -# Null graph node
+ *    -# Invalid numDependencies for null list of dependencies
+ *    -# Invalid numDependencies and valid list for dependencies
+ *    -# Null alloc params
+ *    -# Invalid poolProps alloc type
+ *    -# Invalid poolProps location type
+ *    -# Invalid poolProps location id
+ *    -# Bytesize is max size_t
+ *    -# Invalid accessDescCount
+ * Test source
+ * ------------------------
+ *  - /unit/graph/hipGraphAddMemAllocNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipGraphAddMemAllocNode_Negative_Params") {
   constexpr size_t N = 1024;
   hipGraph_t graph;
@@ -134,6 +160,21 @@ TEST_CASE("Unit_hipGraphAddMemAllocNode_Negative_Params") {
   HIP_CHECK(hipGraphDestroy(graph));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipGraphAddMemAllocNode unsupported behavior:
+ *    -# More than one instantiation of the graph exist at the same time
+ *    -# Clone graph with mem alloc node
+ *    -# Use graph with mem alloc node in a child node
+ *    -# Delete edge of the graph with mem alloc node
+ * Test source
+ * ------------------------
+ *  - /unit/graph/hipGraphAddMemAllocNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipGraphAddMemAllocNode_Negative_NotSupported") {
   constexpr size_t N = 1024;
   hipGraph_t graph;
@@ -184,6 +225,7 @@ TEST_CASE("Unit_hipGraphAddMemAllocNode_Negative_NotSupported") {
   HIP_CHECK(hipGraphDestroy(graph));
 }
 
+/* Create graph with memory nodes that copies memset data to host array */
 static void createGraph(hipGraphExec_t* graph_exec, int* A_h, int fill_value,
                         int** device_alloc = nullptr) {
   constexpr size_t num_bytes = element_count * sizeof(int);
@@ -244,6 +286,17 @@ static void createFreeGraph(hipGraphExec_t* graph_exec, int* device_alloc) {
   HIP_CHECK(hipGraphDestroy(graph));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipGraphAddMemAllocNode allocates memory correctly and graph behaves as
+ * expected when free node is added to the same graph. Test source
+ * ------------------------
+ *  - /unit/graph/hipGraphAddMemAllocNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipGraphAddMemAllocNode_Positive_FreeInGraph") {
   hipGraphExec_t graph_exec;
 
@@ -263,6 +316,19 @@ TEST_CASE("Unit_hipGraphAddMemAllocNode_Positive_FreeInGraph") {
   HIP_CHECK(hipGraphExecDestroy(graph_exec));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipGraphAddMemAllocNode allocates memory correctly, graph behaves as expected
+ * and allocated memory can can be accessed by outside the graph before memory is freed outside the
+ * stream.
+ * Test source
+ * ------------------------
+ *  - /unit/graph/hipGraphAddMemAllocNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipGraphAddMemAllocNode_Positive_FreeOutsideStream") {
   hipGraphExec_t graph_exec;
 
@@ -285,6 +351,7 @@ TEST_CASE("Unit_hipGraphAddMemAllocNode_Positive_FreeOutsideStream") {
   HIP_CHECK(hipGraphLaunch(graph_exec, stream));
   validateGPU<<<block_count, thread_count, 0, stream>>>(dev_p, fill_value, element_count,
                                                         mismatch_count_d.ptr());
+  // Since hipFree is synchronous, the stream must synchronize before freeing dev_p
   HIP_CHECK(hipStreamSynchronize(stream));
   HIP_CHECK(hipFree(dev_p));
 
@@ -296,6 +363,18 @@ TEST_CASE("Unit_hipGraphAddMemAllocNode_Positive_FreeOutsideStream") {
   HIP_CHECK(hipGraphExecDestroy(graph_exec));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipGraphAddMemAllocNode allocates memory correctly, graph behaves as expected
+ * and allocated memory can can be accessed by outside the graph before memory is freed.
+ * Test source
+ * ------------------------
+ *  - /unit/graph/hipGraphAddMemAllocNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipGraphAddMemAllocNode_Positive_FreeOutsideGraph") {
   hipGraphExec_t graph_exec;
 
@@ -329,6 +408,19 @@ TEST_CASE("Unit_hipGraphAddMemAllocNode_Positive_FreeOutsideGraph") {
   HIP_CHECK(hipGraphExecDestroy(graph_exec));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipGraphAddMemAllocNode allocates memory correctly, graph behaves as expected
+ * and allocated memory can can be accessed by outside the graph before memory is freed in a
+ * different graph.
+ * Test source
+ * ------------------------
+ *  - /unit/graph/hipGraphAddMemAllocNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipGraphAddMemAllocNode_Positive_FreeSeparateGraph") {
   hipGraphExec_t graph_exec1, graph_exec2;
 

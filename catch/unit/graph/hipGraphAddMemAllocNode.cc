@@ -290,7 +290,8 @@ static void createFreeGraph(hipGraphExec_t* graph_exec, int* device_alloc) {
  * Test Description
  * ------------------------
  *  - Test to verify hipGraphAddMemAllocNode allocates memory correctly and graph behaves as
- * expected when free node is added to the same graph. Test source
+ * expected when free node is added to the same graph.
+ * Test source
  * ------------------------
  *  - /unit/graph/hipGraphAddMemAllocNode.cc
  * Test requirements

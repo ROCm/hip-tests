@@ -355,7 +355,6 @@ TEST_CASE("Unit_hipGraphMem_Alloc_Free_NodeGetParams_Functional_3") {
  * ------------------------
  *  - HIP_VERSION >= 6.0
  */
-
 TEST_CASE("Unit_hipGraphMem_Alloc_Free_NodeGetParams_Negative") {
   hipError_t ret;
   constexpr size_t N = 1024 * 1024;

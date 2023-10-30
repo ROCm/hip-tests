@@ -35,7 +35,8 @@ THE SOFTWARE.
 /**
  * Test Description
  * ------------------------
- *  - Sets pointer attribute `HIP_POINTER_ATTRIBUTE_SYNC_MEMOPS` and verifies behavior.
+ *  - Sets pointer attribute `HIP_POINTER_ATTRIBUTE_SYNC_MEMOPS` and verifies behavior. Disabled on
+ * AMD due to different synchronization semantics.
  * Test source
  * ------------------------
  *  - unit/memory/hipPointerSetAttribute.cc
@@ -47,14 +48,19 @@ TEST_CASE("Unit_hipPointerSetAttribute_Positive_SyncMemops") {
   LinearAllocGuard<int> src(LinearAllocs::hipMalloc, 1024);
   LinearAllocGuard<int> dst(LinearAllocs::hipMalloc, 1024);
 
-  bool value = false;
-  HIP_CHECK(hipPointerSetAttribute(&value, HIP_POINTER_ATTRIBUTE_SYNC_MEMOPS, src.ptr()));
-
   StreamGuard stream(Streams::created);
   LaunchDelayKernel(std::chrono::milliseconds{100}, stream.stream());
   HIP_CHECK(hipMemcpy(dst.ptr(), src.ptr(), 1024, hipMemcpyDeviceToDevice));
+  HIP_CHECK_ERROR(hipStreamQuery(stream.stream()), hipErrorNotReady);
 
-  HIP_CHECK(hipStreamSynchronize(stream.stream()));
+  bool value = true;
+  HIP_CHECK(hipPointerSetAttribute(&value, HIP_POINTER_ATTRIBUTE_SYNC_MEMOPS,
+                                   reinterpret_cast<hipDeviceptr_t>(src.ptr())));
+  HIP_CHECK(hipPointerSetAttribute(&value, HIP_POINTER_ATTRIBUTE_SYNC_MEMOPS,
+                                   reinterpret_cast<hipDeviceptr_t>(dst.ptr())));
+
+  LaunchDelayKernel(std::chrono::milliseconds{100}, stream.stream());
+  HIP_CHECK(hipMemcpy(dst.ptr(), src.ptr(), 1024, hipMemcpyDeviceToDevice));
   HIP_CHECK(hipStreamQuery(stream.stream()));
 }
 

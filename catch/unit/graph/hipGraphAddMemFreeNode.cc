@@ -21,10 +21,35 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
 
-/*
-This test case verifies the negative scenarios of
-hipGraphAddMemFreeNode API
-*/
+/**
+ * @addtogroup hipGraphAddMemFreeNode hipGraphAddMemFreeNode
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphAddMemFreeNode (hipGraphNode_t *pGraphNode, hipGraph_t graph, const hipGraphNode_t
+ * *pDependencies, size_t numDependencies, void *dev_ptr)` -
+ * Creates a memory free node and adds it to a graph.
+ */
+
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipGraphAddMemFreeNode behavior with invalid arguments:
+ *    -# Null graph node
+ *    -# Null graph
+ *    -# Invalid numDependencies for null list of dependencies
+ *    -# Invalid numDependencies and valid list for dependencies
+ *    -# Null dev_ptr
+ *    -# Invalid dev_ptr address
+ *    -# dev_ptr not allocated with alloc node
+ *    -# Allocation is freed twice in the same graph
+ * Test source
+ * ------------------------
+ *  - /unit/graph/hipGraphAddMemFreeNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipGraphAddMemFreeNode_Negative_Params") {
   constexpr size_t N = 1024;
   hipGraph_t graph;
@@ -42,25 +67,27 @@ TEST_CASE("Unit_hipGraphAddMemFreeNode_Negative_Params") {
 
   HIP_CHECK(hipGraphAddMemAllocNode(&alloc_node, graph, nullptr, 0, &alloc_param));
   REQUIRE(alloc_param.dptr != nullptr);
-  int *A_d = reinterpret_cast<int *>(alloc_param.dptr);
+  int* A_d = reinterpret_cast<int*>(alloc_param.dptr);
 
   SECTION("Passing nullptr to graph node") {
-    HIP_CHECK_ERROR(hipGraphAddMemFreeNode(nullptr, graph, &alloc_node, 1, (void *)A_d), hipErrorInvalidValue);
+    HIP_CHECK_ERROR(hipGraphAddMemFreeNode(nullptr, graph, &alloc_node, 1, (void*)A_d),
+                    hipErrorInvalidValue);
   }
 
   SECTION("Passing nullptr to graph") {
-    HIP_CHECK_ERROR(hipGraphAddMemFreeNode(&free_node, nullptr, &alloc_node, 1, (void *)A_d),
+    HIP_CHECK_ERROR(hipGraphAddMemFreeNode(&free_node, nullptr, &alloc_node, 1, (void*)A_d),
                     hipErrorInvalidValue);
   }
 
   SECTION("Pass invalid numDependencies") {
-    HIP_CHECK_ERROR(hipGraphAddMemFreeNode(&free_node, graph, nullptr, 5, (void *)A_d),
+    HIP_CHECK_ERROR(hipGraphAddMemFreeNode(&free_node, graph, nullptr, 5, (void*)A_d),
                     hipErrorInvalidValue);
   }
 
   SECTION("Pass invalid numDependencies and valid list for dependencies") {
     dependencies.push_back(alloc_node);
-    HIP_CHECK_ERROR(hipGraphAddMemFreeNode(&free_node, graph, dependencies.data(), dependencies.size() + 1, (void *)A_d),
+    HIP_CHECK_ERROR(hipGraphAddMemFreeNode(&free_node, graph, dependencies.data(),
+                                           dependencies.size() + 1, (void*)A_d),
                     hipErrorInvalidValue);
   }
 
@@ -77,15 +104,15 @@ TEST_CASE("Unit_hipGraphAddMemFreeNode_Negative_Params") {
 
 #if HT_NVIDIA
   SECTION("Passing address not allocated with alloc node to dev_ptr") {
-    LinearAllocGuard<int> dev_alloc = LinearAllocGuard<int>(LinearAllocs::hipMalloc,
-                            N * sizeof(int));    
+    LinearAllocGuard<int> dev_alloc =
+        LinearAllocGuard<int>(LinearAllocs::hipMalloc, N * sizeof(int));
     HIP_CHECK_ERROR(hipGraphAddMemFreeNode(&alloc_node, graph, &alloc_node, 1, dev_alloc.ptr()),
                     hipErrorInvalidValue);
   }
 
   SECTION("Free allocation twice in the same graph") {
-    HIP_CHECK(hipGraphAddMemFreeNode(&alloc_node, graph, &alloc_node, 1, (void *)A_d));
-    HIP_CHECK_ERROR(hipGraphAddMemFreeNode(&alloc_node, graph, &alloc_node, 1, (void *)A_d),
+    HIP_CHECK(hipGraphAddMemFreeNode(&alloc_node, graph, &alloc_node, 1, (void*)A_d));
+    HIP_CHECK_ERROR(hipGraphAddMemFreeNode(&alloc_node, graph, &alloc_node, 1, (void*)A_d),
                     hipErrorInvalidValue);
   }
 #endif
@@ -93,6 +120,21 @@ TEST_CASE("Unit_hipGraphAddMemFreeNode_Negative_Params") {
   HIP_CHECK(hipGraphDestroy(graph));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipGraphAddMemFreeNode unsupported behavior:
+ *    -# More than one instantiation of the graph exist at the same time
+ *    -# Clone graph with mem free node
+ *    -# Use graph with mem free node in a child node
+ *    -# Delete edge of the graph with mem free node
+ * Test source
+ * ------------------------
+ *  - /unit/graph/hipGraphAddMemFreeNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipGraphAddMemFreeNode_Negative_NotSupported") {
   constexpr size_t N = 1024;
   hipGraph_t graph1, graph2;
@@ -110,14 +152,15 @@ TEST_CASE("Unit_hipGraphAddMemFreeNode_Negative_NotSupported") {
 
   HIP_CHECK(hipGraphAddMemAllocNode(&alloc_node, graph1, nullptr, 0, &alloc_param));
   REQUIRE(alloc_param.dptr != nullptr);
-  int *A_d = reinterpret_cast<int *>(alloc_param.dptr);
+  int* A_d = reinterpret_cast<int*>(alloc_param.dptr);
 
-  HIP_CHECK(hipGraphAddMemFreeNode(&free_node, graph2, nullptr, 0, (void *)A_d));
+  HIP_CHECK(hipGraphAddMemFreeNode(&free_node, graph2, nullptr, 0, (void*)A_d));
 
   SECTION("More than one instantation of the graph exists") {
     hipGraphExec_t graph_exec1, graph_exec2;
     HIP_CHECK(hipGraphInstantiate(&graph_exec1, graph2, nullptr, nullptr, 0));
-    HIP_CHECK_ERROR(hipGraphInstantiate(&graph_exec2, graph2, nullptr, nullptr, 0), hipErrorNotSupported);
+    HIP_CHECK_ERROR(hipGraphInstantiate(&graph_exec2, graph2, nullptr, nullptr, 0),
+                    hipErrorNotSupported);
     HIP_CHECK(hipGraphExecDestroy(graph_exec1));
   }
 
@@ -131,15 +174,16 @@ TEST_CASE("Unit_hipGraphAddMemFreeNode_Negative_NotSupported") {
     hipGraph_t parent_graph;
     HIP_CHECK(hipGraphCreate(&parent_graph, 0));
     hipGraphNode_t child_graph_node;
-    HIP_CHECK_ERROR(hipGraphAddChildGraphNode(&child_graph_node, parent_graph, nullptr, 0, graph2), hipErrorNotSupported);
+    HIP_CHECK_ERROR(hipGraphAddChildGraphNode(&child_graph_node, parent_graph, nullptr, 0, graph2),
+                    hipErrorNotSupported);
     HIP_CHECK(hipGraphDestroy(parent_graph));
   }
 
   SECTION("Delete edge of the graph") {
     hipGraphNode_t empty_node;
     HIP_CHECK(hipGraphAddEmptyNode(&empty_node, graph2, &free_node, 1));
-    HIP_CHECK_ERROR(hipGraphRemoveDependencies(graph2, &free_node,
-                                        &empty_node, 1), hipErrorNotSupported);
+    HIP_CHECK_ERROR(hipGraphRemoveDependencies(graph2, &free_node, &empty_node, 1),
+                    hipErrorNotSupported);
   }
 #endif
 

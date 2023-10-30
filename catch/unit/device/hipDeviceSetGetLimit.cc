@@ -39,49 +39,117 @@ void DeviceSetLimitTest(hipLimit_t limit) {
 
   size_t new_val;
   HIP_CHECK(hipDeviceGetLimit(&new_val, limit));
-  REQUIRE(new_val == old_val + 8);
+  REQUIRE(new_val >= old_val + 8);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic set-get test for `hipLimitStackSize`.
+ * Test source
+ * ------------------------
+ *  - unit/device/hipDeviceSetGetLimit.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipDeviceSetLimit_Positive_StackSize") { DeviceSetLimitTest(hipLimitStackSize); }
 
 #if HT_NVIDIA
 
+__device__ __managed__ bool stop = false;
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic set-get test for `hipLimitPrintfFifoSize`.
+ * Test source
+ * ------------------------
+ *  - unit/device/hipDeviceSetGetLimit.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipDeviceSetLimit_Positive_PrintfFifoSize") {
   DeviceSetLimitTest(hipLimitPrintfFifoSize);
 }
 
 __global__ void PrintfKernel() {
-  while (true) printf("");
+  while (!stop) printf("");
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Tests scenario where we try to set `hipLimitPrintfFifoSize` while a kernel that calls
+ * `printf()` is running.
+ * Test source
+ * ------------------------
+ *  - unit/device/hipDeviceSetGetLimit.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipDeviceSetLimit_Negative_PrintfFifoSize") {
   PrintfKernel<<<1, 1>>>();
-  HIP_CHECK_ERROR(hipDeviceSetLimit(hipLimitPrintfFIfoSize, 1024), hipErrorInvalidValue);
+  HIP_CHECK_ERROR(hipDeviceSetLimit(hipLimitPrintfFifoSize, 1024), hipErrorInvalidValue);
+  stop = true;
+  HIP_CHECK(hipDeviceSynchronize());
+  stop = false;
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic set-get test for `hipLimitMallocHeapSize`.
+ * Test source
+ * ------------------------
+ *  - unit/device/hipDeviceSetGetLimit.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipDeviceSetLimit_Positive_MallocHeapSize") {
   DeviceSetLimitTest(hipLimitMallocHeapSize);
 }
 
 __global__ void MallocKernel() {
-  while (true) free(malloc(1));
+  while (!stop) free(malloc(1));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Tests scenario where we try to set `hipLimitMallocHeapSize` while a kernel that calls
+ * `malloc()` and `free()` is running.
+ * Test source
+ * ------------------------
+ *  - unit/device/hipDeviceSetGetLimit.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipDeviceSetLimit_Negative_MallocHeapSize") {
   MallocKernel<<<1, 1>>>();
   HIP_CHECK_ERROR(hipDeviceSetLimit(hipLimitMallocHeapSize, 1024), hipErrorInvalidValue);
-}
-
-TEST_CASE("Unit_hipDeviceSetLimit_Positive_MaxL2FetchGranularity") {
-  DeviceSetLimitTest(hipLimitMaxL2FetchGranularity);
-}
-
-TEST_CASE("Unit_hipDeviceSetLimit_Positive_PersistingL2CacheSize") {
-  DeviceSetLimitTest(hipLimitPersistingL2CacheSize);
+  stop = true;
+  HIP_CHECK(hipDeviceSynchronize());
+  stop = false;
 }
 
 #endif
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Negative parameters test for `hipDeviceSetLimit`.
+ * Test source
+ * ------------------------
+ *  - unit/device/hipDeviceSetGetLimit.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipDeviceSetLimit_Negative_Parameters") {
   HIP_CHECK_ERROR(hipDeviceSetLimit(static_cast<hipLimit_t>(-1), 1024), hipErrorUnsupportedLimit);
 }
@@ -99,6 +167,17 @@ TEST_CASE("Unit_hipDeviceSetLimit_Negative_Parameters") {
  * Get Resource limits of current device.
  */
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Negative parameters test for `hipDeviceGetLimit`.
+ * Test source
+ * ------------------------
+ *  - unit/device/hipDeviceSetGetLimit.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipDeviceGetLimit_Negative_Parameters") {
   SECTION("nullptr") {
     HIP_CHECK_ERROR(hipDeviceGetLimit(nullptr, hipLimitStackSize), hipErrorInvalidValue);

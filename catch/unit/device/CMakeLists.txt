@@ -9,9 +9,9 @@ set(TEST_SRC
     hipDeviceSetGetCacheConfig.cc
     hipDeviceSynchronize.cc
     hipDeviceTotalMem.cc
-    #hipGetDeviceAttribute.cc
+    hipGetDeviceAttribute.cc
     hipGetDeviceCount.cc
-    #hipGetDeviceProperties.cc
+    hipGetDeviceProperties.cc
     hipRuntimeGetVersion.cc
     hipGetSetDeviceFlags.cc
     hipSetGetDevice.cc

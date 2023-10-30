@@ -142,7 +142,10 @@ set(TEST_SRC
     hipMallocAsync.cc
     hipStreamAttachMemAsync.cc
     hipMemRangeGetAttributes_old.cc
-    hipMemGetAddressRange.cc)
+    hipMemGetAddressRange.cc
+    hipArrayGetInfo.cc
+    hipArrayGetDescriptor.cc
+    hipArray3DGetDescriptor.cc)
 
 hip_add_exe_to_target(NAME MemoryTest2
   TEST_SRC ${TEST_SRC}

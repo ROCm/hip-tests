@@ -69,7 +69,9 @@ set(TEST_SRC
   hipStreamBeginCapture.cc
   hipStreamBeginCapture_old.cc
   hipStreamIsCapturing.cc
-  hipStreamIsCapturing_old.cc)
+  hipStreamIsCapturing_old.cc
+  hipGraphAddMemAllocNode.cc
+  hipGraphMemAllocNodeGetParams.cc)
 
 if(HIP_PLATFORM MATCHES "amd")
   set(AMD_SRC

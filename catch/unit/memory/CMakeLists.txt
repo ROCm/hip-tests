@@ -68,7 +68,8 @@ set(TEST_SRC
     hipMemAdviseMmap.cc
     hipMallocManaged.cc
     hipMemRangeGetAttribute.cc
-    hipMemRangeGetAttribute_old.cc)
+    hipMemRangeGetAttribute_old.cc
+    hipPointerSetAttribute.cc)
 
 if(HIP_PLATFORM MATCHES "amd")
   set(TEST_SRC

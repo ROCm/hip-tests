@@ -271,6 +271,7 @@ TEST_CASE("Unit_hipGraphAddMemAllocNode_Positive_FreeOutsideStream") {
       LinearAllocGuard<unsigned int>(LinearAllocs::malloc, sizeof(unsigned int));
   LinearAllocGuard<unsigned int> mismatch_count_d =
       LinearAllocGuard<unsigned int>(LinearAllocs::hipMalloc, sizeof(unsigned int));
+  HIP_CHECK(hipMemset(mismatch_count_d.ptr(), 0, sizeof(unsigned int)));
   int* dev_p;
 
   StreamGuard stream_guard(Streams::created);
@@ -303,6 +304,7 @@ TEST_CASE("Unit_hipGraphAddMemAllocNode_Positive_FreeOutsideGraph") {
       LinearAllocGuard<unsigned int>(LinearAllocs::malloc, sizeof(unsigned int));
   LinearAllocGuard<unsigned int> mismatch_count_d =
       LinearAllocGuard<unsigned int>(LinearAllocs::hipMalloc, sizeof(unsigned int));
+  HIP_CHECK(hipMemset(mismatch_count_d.ptr(), 0, sizeof(unsigned int)));
   int* dev_p;
 
   StreamGuard stream_guard(Streams::created);
@@ -335,6 +337,7 @@ TEST_CASE("Unit_hipGraphAddMemAllocNode_Positive_FreeSeparateGraph") {
       LinearAllocGuard<unsigned int>(LinearAllocs::malloc, sizeof(unsigned int));
   LinearAllocGuard<unsigned int> mismatch_count_d =
       LinearAllocGuard<unsigned int>(LinearAllocs::hipMalloc, sizeof(unsigned int));
+  HIP_CHECK(hipMemset(mismatch_count_d.ptr(), 0, sizeof(unsigned int)));
   int* dev_p;
 
   StreamGuard stream_guard(Streams::created);

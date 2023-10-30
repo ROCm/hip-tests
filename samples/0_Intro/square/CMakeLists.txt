@@ -25,7 +25,7 @@ project(square)
 cmake_minimum_required(VERSION 3.10)
 
 # create square.cpp
-execute_process(COMMAND sh -c "${CMAKE_PREFIX_PATH}/hip/bin/hipify-perl ../square.cu > ../square.cpp")
+execute_process(COMMAND sh -c "${CMAKE_PREFIX_PATH}/bin/hipify-perl ../square.cu > ../square.cpp")
 
 # Find hip
 find_package(hip)

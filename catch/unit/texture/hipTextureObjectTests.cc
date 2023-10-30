@@ -31,7 +31,7 @@ class TextureObjectTestWrapper {
   hipTextureDesc tex_desc;
   hipChannelFormatDesc channel_desc;
   hipResourceViewDesc res_vew_desc;
-  hipArray* array_member;
+  hipArray_t array_member;
   size_t size; /* size in bytes*/
   int width;   /* width in elements */
 

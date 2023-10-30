@@ -34,3 +34,5 @@ add_executable(test saxpy.cpp)
 target_link_libraries(test hiprtc::hiprtc)
 # Link with HIP
 target_link_libraries(test hip::device)
+
+target_include_directories(test PRIVATE ../../common)

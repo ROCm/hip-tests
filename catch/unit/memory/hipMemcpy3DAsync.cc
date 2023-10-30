@@ -28,7 +28,11 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 #include <utils.hh>
 
+#pragma clang diagnostic ignored "-Wunused-variable"
+
 TEST_CASE("Unit_hipMemcpy3DAsync_Positive_Basic") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr bool async = true;
 
   const auto stream_type = GENERATE(Streams::nullstream, Streams::perThread, Streams::created);
@@ -48,10 +52,12 @@ TEST_CASE("Unit_hipMemcpy3DAsync_Positive_Basic") {
 
   SECTION("Host to Device") { Memcpy3DHostToDeviceShell<async>(Memcpy3DWrapper<async>, stream); }
 
-  //SWDEV-409754 SECTION("Host to Host") { Memcpy3DHostToHostShell<async>(Memcpy3DWrapper<async>, stream); }
+  SECTION("Host to Host") { Memcpy3DHostToHostShell<async>(Memcpy3DWrapper<async>, stream); }
 }
 
 TEST_CASE("Unit_hipMemcpy3DAsync_Positive_Synchronization_Behavior") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr bool async = true;
 
   HIP_CHECK(hipDeviceSynchronize());
@@ -76,19 +82,23 @@ TEST_CASE("Unit_hipMemcpy3DAsync_Positive_Synchronization_Behavior") {
 }
 
 TEST_CASE("Unit_hipMemcpy3DAsync_Positive_Parameters") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr bool async = true;
   Memcpy3DZeroWidthHeightDepth<async>(Memcpy3DWrapper<async>);
 }
 
 TEST_CASE("Unit_hipMemcpy3DAsync_Positive_Array") {
   constexpr bool async = true;
-  //SWDEV-409754 SECTION("Array from/to Host") { Memcpy3DArrayHostShell<async>(Memcpy3DWrapper<async>); }
+  SECTION("Array from/to Host") { Memcpy3DArrayHostShell<async>(Memcpy3DWrapper<async>); }
 #if HT_NVIDIA // Disabled on AMD due to defect - EXSWHTEC-238
   SECTION("Array from/to Device") { Memcpy3DArrayDeviceShell<async>(Memcpy3DWrapper<async>); }
 #endif
 }
 
 TEST_CASE("Unit_hipMemcpy3DAsync_Negative_Parameters") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr bool async = true;
   constexpr hipExtent extent{128 * sizeof(int), 128, 8};
 

@@ -253,14 +253,15 @@ TEST_CASE("Unit_hipGraphMem_Alloc_Free_NodeGetParams_Functional_2") {
 /**
  * Test Description
  * ------------------------
- *  - Functional Test for API - hipGraphMemAllocNodeGetParams. Create a graph and add a node with
- *hipGraphAddMemAllocNode and hipGraphAddMemFreeNode and launch it. Check both pool props and access
- *descriptor. Test source
+ *  - Functional Test for API - hipGraphMemAllocNodeGetParams. Create a graph and add a node with
+ * hipGraphAddMemAllocNode and hipGraphAddMemFreeNode and launch it. Check both pool props and
+ * access descriptor.
+ * Test source
  * ------------------------
- *  - /unit/graph/hipGraphMemAllocNodeGetParams.cc
+ *  - /unit/graph/hipGraphMemAllocNodeGetParams.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 6.0
+ *  - HIP_VERSION >= 6.0
  */
 TEST_CASE("Unit_hipGraphMem_Alloc_Free_NodeGetParams_Functional_3") {
   constexpr auto element_count{512 * 1024 * 1024};

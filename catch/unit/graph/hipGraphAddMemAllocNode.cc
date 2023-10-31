@@ -141,7 +141,7 @@ TEST_CASE("Unit_hipGraphAddMemAllocNode_Negative_Params") {
     alloc_param.poolProps.location.id = 0;
   }
 
-#if HT_NVIDIA
+#if HT_NVIDIA //EXSWHTEC-353
   SECTION("Passing max size_t bytesize") {
     alloc_param.bytesize = std::numeric_limits<size_t>::max();
     HIP_CHECK_ERROR(hipGraphAddMemAllocNode(&alloc_node, graph, nullptr, 0, &alloc_param),
@@ -199,7 +199,7 @@ TEST_CASE("Unit_hipGraphAddMemAllocNode_Negative_NotSupported") {
     HIP_CHECK(hipGraphExecDestroy(graph_exec1));
   }
 
-#if HT_NVIDIA
+#if HT_NVIDIA //EXSWHTEC-353
   SECTION("Clone graph with mem alloc node") {
     hipGraph_t cloned_graph;
     HIP_CHECK_ERROR(hipGraphClone(&cloned_graph, graph), hipErrorNotSupported);

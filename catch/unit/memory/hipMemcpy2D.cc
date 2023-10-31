@@ -55,8 +55,9 @@ Input : "A_h" initialized based on data type
 Output: Validating A_h with B_h both should be equal for
         the number of COLUMNS and ROWS copied
 */
-TEMPLATE_TEST_CASE("Unit_hipMemcpy2D_H2D-D2D-D2H", ""
-                   , int, float, double) {
+TEMPLATE_TEST_CASE("Unit_hipMemcpy2D_H2D-D2D-D2H", "", int, float, double) {
+  CHECK_IMAGE_SUPPORT
+
   // 1 refers to pinned host memory
   auto mem_type = GENERATE(0, 1);
   HIP_CHECK(hipSetDevice(0));
@@ -124,8 +125,9 @@ Input : "A_h" initialized based on data type
 Output: Validating A_h with B_h both should be equal for
         the number of COLUMNS and ROWS copied
 */
-TEMPLATE_TEST_CASE("Unit_hipMemcpy2D_H2D-D2D-D2H_WithOffset", ""
-                   , int, float, double) {
+TEMPLATE_TEST_CASE("Unit_hipMemcpy2D_H2D-D2D-D2H_WithOffset", "", int, float, double) {
+  CHECK_IMAGE_SUPPORT
+
   // 1 refers to pinned host memory
   auto mem_type = GENERATE(0, 1);
   HIP_CHECK(hipSetDevice(0));
@@ -195,8 +197,9 @@ Input : "A_h" initialized based on data type
 Output: Validating A_h with B_h both should be equal for
         the number of COLUMNS and ROWS copied
 */
-TEMPLATE_TEST_CASE("Unit_hipMemcpy2D_multiDevice-D2D", ""
-                   , int, float, double) {
+TEMPLATE_TEST_CASE("Unit_hipMemcpy2D_multiDevice-D2D", "", int, float, double) {
+  CHECK_IMAGE_SUPPORT
+
   auto mem_type = GENERATE(0, 1);
   int numDevices = 0;
   int canAccessPeer = 0;
@@ -269,6 +272,8 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpy2D_multiDevice-D2D", ""
 This Testcase verifies the null size checks of hipMemcpy2D API
 */
 TEST_CASE("Unit_hipMemcpy2D_SizeCheck") {
+  CHECK_IMAGE_SUPPORT
+
   HIP_CHECK(hipSetDevice(0));
   int* A_h{nullptr}, *A_d{nullptr};
   size_t pitch_A;
@@ -316,6 +321,8 @@ TEST_CASE("Unit_hipMemcpy2D_SizeCheck") {
 This Testcase verifies all the negative scenarios of hipMemcpy2D API
 */
 TEST_CASE("Unit_hipMemcpy2D_Negative") {
+  CHECK_IMAGE_SUPPORT
+
   HIP_CHECK(hipSetDevice(0));
   int* A_h{nullptr}, *A_d{nullptr};
   size_t pitch_A;

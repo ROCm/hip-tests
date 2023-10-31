@@ -60,7 +60,7 @@ TEST_CASE("Unit_hipSimpleTexture2DLayered_Check") {
   // Allocate array and copy image data
   channelDesc = hipCreateChannelDesc(sizeof(T)*8, 0, 0, 0,
                                      hipChannelFormatKindFloat);
-  hipArray *arr;
+  hipArray_t arr;
 
   HIP_CHECK(hipMalloc3DArray(&arr, &channelDesc,
                make_hipExtent(width, height, num_layers), hipArrayLayered));

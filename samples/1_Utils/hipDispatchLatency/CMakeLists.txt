@@ -49,5 +49,8 @@ add_dependencies(hipDispatchEnqueueRateMT codeobj)
 # Link with HIP
 target_link_libraries(hipDispatchLatency hip::host)
 target_link_libraries(hipDispatchEnqueueRateMT hip::host)
+if(UNIX)
+  target_link_libraries(hipDispatchEnqueueRateMT pthread)
+endif()
 set_property(TARGET hipDispatchLatency PROPERTY CXX_STANDARD 11)
 set_property(TARGET hipDispatchEnqueueRateMT PROPERTY CXX_STANDARD 11)

@@ -51,7 +51,7 @@ void DeviceSetLimitTest(hipLimit_t limit) {
  *  - unit/device/hipDeviceSetGetLimit.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.3
  */
 TEST_CASE("Unit_hipDeviceSetLimit_Positive_StackSize") { DeviceSetLimitTest(hipLimitStackSize); }
 
@@ -68,7 +68,7 @@ __device__ __managed__ bool stop = false;
  *  - unit/device/hipDeviceSetGetLimit.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.3
  */
 TEST_CASE("Unit_hipDeviceSetLimit_Positive_PrintfFifoSize") {
   DeviceSetLimitTest(hipLimitPrintfFifoSize);
@@ -88,7 +88,7 @@ __global__ void PrintfKernel() {
  *  - unit/device/hipDeviceSetGetLimit.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.3
  */
 TEST_CASE("Unit_hipDeviceSetLimit_Negative_PrintfFifoSize") {
   PrintfKernel<<<1, 1>>>();
@@ -107,7 +107,7 @@ TEST_CASE("Unit_hipDeviceSetLimit_Negative_PrintfFifoSize") {
  *  - unit/device/hipDeviceSetGetLimit.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.3
  */
 TEST_CASE("Unit_hipDeviceSetLimit_Positive_MallocHeapSize") {
   DeviceSetLimitTest(hipLimitMallocHeapSize);
@@ -127,7 +127,7 @@ __global__ void MallocKernel() {
  *  - unit/device/hipDeviceSetGetLimit.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.3
  */
 TEST_CASE("Unit_hipDeviceSetLimit_Negative_MallocHeapSize") {
   MallocKernel<<<1, 1>>>();
@@ -148,7 +148,7 @@ TEST_CASE("Unit_hipDeviceSetLimit_Negative_MallocHeapSize") {
  *  - unit/device/hipDeviceSetGetLimit.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.3
  */
 TEST_CASE("Unit_hipDeviceSetLimit_Negative_Parameters") {
   HIP_CHECK_ERROR(hipDeviceSetLimit(static_cast<hipLimit_t>(-1), 1024), hipErrorUnsupportedLimit);

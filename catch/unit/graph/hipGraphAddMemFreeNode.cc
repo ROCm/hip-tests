@@ -102,7 +102,7 @@ TEST_CASE("Unit_hipGraphAddMemFreeNode_Negative_Params") {
                     hipErrorInvalidValue);
   }
 
-#if HT_NVIDIA
+#if HT_NVIDIA // EXSWHTEC-352
   SECTION("Passing address not allocated with alloc node to dev_ptr") {
     LinearAllocGuard<int> dev_alloc =
         LinearAllocGuard<int>(LinearAllocs::hipMalloc, N * sizeof(int));
@@ -164,7 +164,7 @@ TEST_CASE("Unit_hipGraphAddMemFreeNode_Negative_NotSupported") {
     HIP_CHECK(hipGraphExecDestroy(graph_exec1));
   }
 
-#if HT_NVIDIA
+#if HT_NVIDIA // EXSWHTEC-352
   SECTION("Clone graph with mem free node") {
     hipGraph_t cloned_graph;
     HIP_CHECK_ERROR(hipGraphClone(&cloned_graph, graph2), hipErrorNotSupported);

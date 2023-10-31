@@ -1,6 +1,8 @@
 set(TEST_SRC
     hip_module_common.cc
-    hipModuleLaunchKernel.cc 
+    hipModuleLaunchKernel.cc
+    hipModuleLaunchCooperativeKernel.cc
+    hipModuleLaunchCooperativeKernelMultiDevice.cc
 )
 
 if(HIP_PLATFORM MATCHES "amd")

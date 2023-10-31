@@ -35,8 +35,7 @@ THE SOFTWARE.
 /**
  * Test Description
  * ------------------------
- *  - Sets pointer attribute `HIP_POINTER_ATTRIBUTE_SYNC_MEMOPS` and verifies behavior. Disabled on
- * AMD due to different synchronization semantics.
+ *  - Sets pointer attribute `HIP_POINTER_ATTRIBUTE_SYNC_MEMOPS` and verifies behavior.
  * Test source
  * ------------------------
  *  - unit/memory/hipPointerSetAttribute.cc
@@ -67,17 +66,7 @@ TEST_CASE("Unit_hipPointerSetAttribute_Positive_SyncMemops") {
 /**
  * Test Description
  * ------------------------
- *  - Validate handling of invalid arguments:
- *    -# When value is nullptr
- *      - Expected output: return "hipErrorInvalidValue"
- *    -# When attribute is invalid
- *      - Expected output: return "hipErrorInvalidValue"
- *    -# When device pointer is nullptr
- *      - Expected output: return "hipErrorInvalidValue"
- *    -# When device pointer is allocated on host
- *      - Expected output: return "hipErrorInvalidDevicePointer"
- *    -# When device pointer is freed
- *      - Expected output: return "hipErrorInvalidDevicePointer"
+ *  - Negative parameters test for `hipPointerSetAttribute`.
  * Test source
  * ------------------------
  *  - unit/memory/hipPointerSetAttribute.cc

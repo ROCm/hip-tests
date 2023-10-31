@@ -193,6 +193,7 @@ TEST_CASE("Unit_hipModuleLaunchCooperativeKernel_Negative_Parameters") {
         hipErrorInvalidValue);
   }
 
+#if HT_AMD  // Disabled due to defect EXSWHTEC-351
   SECTION("sharedMemBytes > maxSharedMemoryPerBlock") {
     const unsigned int max = GetDeviceAttribute(0, hipDeviceAttributeMaxSharedMemoryPerBlock) + 1u;
     HIP_CHECK_ERROR(hipModuleLaunchCooperativeKernel(f, 1, 1, 1, 1, 1, 1, max, nullptr, nullptr),
@@ -206,4 +207,5 @@ TEST_CASE("Unit_hipModuleLaunchCooperativeKernel_Negative_Parameters") {
     HIP_CHECK_ERROR(hipModuleLaunchCooperativeKernel(f, 1, 1, 1, 1, 1, 1, 0, stream, nullptr),
                     hipErrorInvalidValue);
   }
+#endif
 }

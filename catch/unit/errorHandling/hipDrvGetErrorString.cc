@@ -39,7 +39,7 @@ THE SOFTWARE.
  *  - unit/errorHandling/hipDrvGetErrorString.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.4
  */
 TEST_CASE("Unit_hipDrvGetErrorString_Positive_Basic") {
   const char* error_string = nullptr;
@@ -66,7 +66,7 @@ TEST_CASE("Unit_hipDrvGetErrorString_Positive_Basic") {
  *  - unit/errorHandling/hipDrvGetErrorString.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.4
  */
 TEST_CASE("Unit_hipDrvGetErrorString_Negative_Parameters") {
   const char* error_string = nullptr;

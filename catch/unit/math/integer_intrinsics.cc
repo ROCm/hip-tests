@@ -476,7 +476,7 @@ TEST_CASE("Unit_Device___hadd_Sanity_Positive") {
 }
 
 __global__ void __uhadd_kernel(unsigned int* y, unsigned int x1, unsigned int x2) {
-  y[0] = __hadd(x1, x2);
+  y[0] = __uhadd(x1, x2);
 }
 
 /**

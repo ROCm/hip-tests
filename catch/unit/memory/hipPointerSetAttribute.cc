@@ -23,7 +23,7 @@ THE SOFTWARE.
 /**
  * @addtogroup hipPointerSetAttribute hipPointerSetAttribute
  * @{
- * @ingroup DeviceTest
+ * @ingroup MemoryTest
  * `hipPointerSetAttribute(const void* value, hipPointer_attribute attribute, hipDeviceptr_t ptr)` -
  * Set attributes on a previously allocated memory region.
  */

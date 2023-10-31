@@ -48,7 +48,7 @@ THE SOFTWARE.
  * Test Description
  * ------------------------
  *    - Tests the numerical accuracy of `__hisinf(x)` for all possible inputs. The results are
- * compared against reference function `float std::isinf(float)`.
+ * compared against reference function `bool std::isinf(float)`.
  *
  * Test source
  * ------------------------
@@ -59,11 +59,30 @@ THE SOFTWARE.
  */
 MATH_BOOL_UNARY_HP_TEST_DEF(__hisinf, static_cast<bool (*)(float)>(std::isinf))
 
+static float __hisinf2_ref(float x) { return -static_cast<float>(std::isinf(x)); }
+
+MATH_UNARY_HP_KERNEL_DEF(__hisinf2)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__hisinf2(x)` for all possible inputs. The results are
+ * compared against reference function `bool std::isinf(float)`.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/half_precision_comparison.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+MATH_UNARY_HP_TEST_DEF_IMPL(__hisinf2, __hisinf2_ref, EqValidatorBuilderFactory<float>());
+
 /**
  * Test Description
  * ------------------------
  *    - Tests the numerical accuracy of `__hisnan(x)` for all possible inputs. The results are
- * compared against reference function `float std::isnan(float)`.
+ * compared against reference function `bool std::isnan(float)`.
  *
  * Test source
  * ------------------------
@@ -73,6 +92,25 @@ MATH_BOOL_UNARY_HP_TEST_DEF(__hisinf, static_cast<bool (*)(float)>(std::isinf))
  *    - HIP_VERSION >= 5.2
  */
 MATH_BOOL_UNARY_HP_TEST_DEF(__hisnan, static_cast<bool (*)(float)>(std::isnan))
+
+static float __hisnan2_ref(float x) { return -static_cast<float>(std::isnan(x)); }
+
+MATH_UNARY_HP_KERNEL_DEF(__hisnan2)
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Tests the numerical accuracy of `__hisnan2(x)` for all possible inputs. The results are
+ * compared against reference function `float std::isnan(float)`.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/math/half_precision_comparison.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+MATH_UNARY_HP_TEST_DEF_IMPL(__hisnan2, __hisnan2_ref, EqValidatorBuilderFactory<float>());
 
 /********** Binary Functions **********/
 

@@ -69,6 +69,11 @@ BINARY_HALF_NEGATIVE_KERNELS(__hmax_nan)
 BINARY_HALF_NEGATIVE_KERNELS(__hmin)
 BINARY_HALF_NEGATIVE_KERNELS(__hmin_nan)
 
+
+#define UNARY_HALF2_NEGATIVE_KERNELS(func_name)                                                    \
+  __global__ void func_name##_kernel_v1(__half2* x) { __half2 result = func_name(x); }             \
+  __global__ void func_name##_kernel_v2(Dummy x) { __half2 result = func_name(x); }
+
 #define BINARY_HALF2_NEGATIVE_KERNELS(func_name)                                                   \
   __global__ void func_name##_kernel_v1(__half2* x, __half2 y) {                                   \
     __half2 result = func_name(x, y);                                                              \
@@ -80,14 +85,13 @@ BINARY_HALF_NEGATIVE_KERNELS(__hmin_nan)
   __global__ void func_name##_kernel_v4(__half2 x, Dummy y) { __half2 result = func_name(x, y); }
 
 #define BINARY_BOOL_HALF2_NEGATIVE_KERNELS(func_name)                                              \
-  __global__ void func_name##_kernel_v1(__half2* x, __half2 y) {                                   \
-    bool result = func_name(x, y);                                                                 \
-  }                                                                                                \
-  __global__ void func_name##_kernel_v2(__half2 x, __half2* y) {                                   \
-    bool result = func_name(x, y);                                                                 \
-  }                                                                                                \
+  __global__ void func_name##_kernel_v1(__half2* x, __half2 y) { bool result = func_name(x, y); }  \
+  __global__ void func_name##_kernel_v2(__half2 x, __half2* y) { bool result = func_name(x, y); }  \
   __global__ void func_name##_kernel_v3(Dummy x, __half2 y) { bool result = func_name(x, y); }     \
   __global__ void func_name##_kernel_v4(__half2 x, Dummy y) { bool result = func_name(x, y); }
+
+UNARY_HALF2_NEGATIVE_KERNELS(__hisinf2)
+UNARY_HALF2_NEGATIVE_KERNELS(__hisnan2)
 
 BINARY_HALF2_NEGATIVE_KERNELS(__heq2)
 BINARY_HALF2_NEGATIVE_KERNELS(__hequ2)

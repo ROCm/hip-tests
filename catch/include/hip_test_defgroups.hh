@@ -49,3 +49,10 @@ THE SOFTWARE.
  * This section describes the stream management types & functions of HIP runtime API.
  * @}
  */
+
+/**
+ * @defgroup ModuleTest Module Management
+ * @{
+ * This section describes the module management types & functions of HIP runtime API.
+ * @}
+ */

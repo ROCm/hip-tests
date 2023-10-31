@@ -20,13 +20,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+/**
+ * @addtogroup hipModuleLaunchCooperativeKernel hipModuleLaunchCooperativeKernel
+ * @{
+ * @ingroup ModuleTest
+ * `hipModuleLaunchCooperativeKernel(hipFunction_t f, unsigned int gridDimX, unsigned int gridDimY,
+ * unsigned int gridDimZ, unsigned int blockDimX, unsigned int blockDimY, unsigned int blockDimZ,
+ * unsigned int sharedMemBytes, hipStream_t stream, void ** kernelParams)` -
+ * Launches kernel f with launch parameters and shared memory on stream with arguments passed to
+ * kernelParams, where thread blocks can cooperate and synchronize as they execute.
+ */
+
 #include <hip_test_common.hh>
-#include <hip/hip_runtime_api.h>
 #include <resource_guards.hh>
 #include <utils.hh>
 
 #include "hip_module_launch_kernel_common.hh"
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Tests `hipModuleLaunchCooperativeKernel` for a cooperative kernel with no parameters, and for
+ * a normal kernel with parameters.
+ * Test source
+ * ------------------------
+ *  - unit/module/hipModuleLaunchCooperativeKernel.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.5
+ */
 TEST_CASE("Unit_hipModuleLaunchCooperativeKernel_Positive_Basic") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeCooperativeLaunch)) {
     HipTest::HIP_SKIP_TEST("CooperativeLaunch not supported");
@@ -55,6 +77,17 @@ TEST_CASE("Unit_hipModuleLaunchCooperativeKernel_Positive_Basic") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Positive parameters test for `hipModuleLaunchCooperativeKernel`.
+ * Test source
+ * ------------------------
+ *  - unit/module/hipModuleLaunchCooperativeKernel.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.5
+ */
 TEST_CASE("Unit_hipModuleLaunchCooperativeKernel_Positive_Parameters") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeCooperativeLaunch)) {
     HipTest::HIP_SKIP_TEST("CooperativeLaunch not supported");
@@ -79,6 +112,17 @@ TEST_CASE("Unit_hipModuleLaunchCooperativeKernel_Positive_Parameters") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Negative parameters test for `hipModuleLaunchCooperativeKernel`.
+ * Test source
+ * ------------------------
+ *  - unit/module/hipModuleLaunchCooperativeKernel.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.5
+ */
 TEST_CASE("Unit_hipModuleLaunchCooperativeKernel_Negative_Parameters") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeCooperativeLaunch)) {
     HipTest::HIP_SKIP_TEST("CooperativeLaunch not supported");

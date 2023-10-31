@@ -20,13 +20,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+/**
+ * @addtogroup hipModuleLaunchCooperativeKernelMultiDevice
+ * hipModuleLaunchCooperativeKernelMultiDevice
+ * @{
+ * @ingroup ModuleTest
+ * `hipModuleLaunchCooperativeKernelMultiDevice(hipFunctionLaunchParams* launchParamsList, unsigned
+ * int numDevices, unsigned int flags)` -
+ * Launches kernels on multiple devices where thread blocks can cooperate and synchronize as they
+ * execute.
+ */
+
 #include <hip_test_common.hh>
-#include <hip/hip_runtime_api.h>
 #include <resource_guards.hh>
 #include <utils.hh>
 
 #include "hip_module_launch_kernel_common.hh"
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Tests `hipModuleLaunchCooperativeKernel` for a cooperative kernel with no parameters.
+ * Test source
+ * ------------------------
+ *  - unit/module/hipModuleLaunchCooperativeKernelMultiDevice.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.5
+ */
 TEST_CASE("Unit_hipModuleLaunchCooperativeKernelMultiDevice_Positive_Basic") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeCooperativeLaunch)) {
     HipTest::HIP_SKIP_TEST("CooperativeLaunch not supported");
@@ -65,6 +86,17 @@ TEST_CASE("Unit_hipModuleLaunchCooperativeKernelMultiDevice_Positive_Basic") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Negative parameters test for `hipModuleLaunchCooperativeKernelMultiDevice`.
+ * Test source
+ * ------------------------
+ *  - unit/module/hipModuleLaunchCooperativeKernelMultiDevice.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.5
+ */
 TEST_CASE("Unit_hipModuleLaunchCooperativeKernelMultiDevice_Negative_Parameters") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeCooperativeLaunch)) {
     HipTest::HIP_SKIP_TEST("CooperativeLaunch not supported");
@@ -149,6 +181,18 @@ TEST_CASE("Unit_hipModuleLaunchCooperativeKernelMultiDevice_Negative_Parameters"
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Tries running `hipModuleLaunchCooperativeKernelMultiDevice` with multiple kernels on the same
+ * device.
+ * Test source
+ * ------------------------
+ *  - unit/module/hipModuleLaunchCooperativeKernelMultiDevice.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.5
+ */
 TEST_CASE("Unit_hipModuleLaunchCooperativeKernelMultiDevice_Negative_MultiKernelSameDevice") {
   if (!DeviceAttributesSupport(0, hipDeviceAttributeCooperativeLaunch)) {
     HipTest::HIP_SKIP_TEST("CooperativeLaunch not supported");

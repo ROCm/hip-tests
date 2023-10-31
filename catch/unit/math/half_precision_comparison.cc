@@ -59,7 +59,7 @@ THE SOFTWARE.
  */
 MATH_BOOL_UNARY_HP_TEST_DEF(__hisinf, static_cast<bool (*)(float)>(std::isinf))
 
-static float __hisinf2_ref(float x) { return -static_cast<float>(std::isinf(x)); }
+static float __hisinf2_ref(float x) { return static_cast<float>(std::isinf(x)); }
 
 MATH_UNARY_HP_KERNEL_DEF(__hisinf2)
 
@@ -67,7 +67,7 @@ MATH_UNARY_HP_KERNEL_DEF(__hisinf2)
  * Test Description
  * ------------------------
  *    - Tests the numerical accuracy of `__hisinf2(x)` for all possible inputs. The results are
- * compared against reference function `bool std::isinf(float)`.
+ * compared against reference function `float std::isinf(float)`.
  *
  * Test source
  * ------------------------
@@ -93,7 +93,7 @@ MATH_UNARY_HP_TEST_DEF_IMPL(__hisinf2, __hisinf2_ref, EqValidatorBuilderFactory<
  */
 MATH_BOOL_UNARY_HP_TEST_DEF(__hisnan, static_cast<bool (*)(float)>(std::isnan))
 
-static float __hisnan2_ref(float x) { return -static_cast<float>(std::isnan(x)); }
+static float __hisnan2_ref(float x) { return static_cast<float>(std::isnan(x)); }
 
 MATH_UNARY_HP_KERNEL_DEF(__hisnan2)
 

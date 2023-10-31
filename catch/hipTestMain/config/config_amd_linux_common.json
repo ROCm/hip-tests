@@ -131,5 +131,8 @@
 	   "Unit_RTC_LinkerAPI",
 	   "Unit_hiprtc_half_shuffle",
 	   "Unit_hiprtc_includepath"
+	   "=== Below 2 tests are disable due to defect EXSWHTEC-356 ===",
+	   "Unit_Device___hisinf2_Accuracy_Positive",
+	   "Unit_Device___hisnan2_Accuracy_Positive"
 	]
 }

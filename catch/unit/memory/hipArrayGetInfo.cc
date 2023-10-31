@@ -24,8 +24,8 @@ THE SOFTWARE.
  * @addtogroup hipArrayGetInfo hipArrayGetInfo
  * @{
  * @ingroup MemoryTest
- * `hipArrayGetInfo(hipChannelFormatDesc* desc, hipExtent* extent, unsigned int* flags, hipArray* array)` -
- * Gets info about the specified array.
+ * `hipArrayGetInfo(hipChannelFormatDesc* desc, hipExtent* extent, unsigned int* flags, hipArray*
+ * array)` - Gets info about the specified array.
  */
 
 #include <hip_test_common.hh>
@@ -68,11 +68,7 @@ TEST_CASE("Unit_hipArrayGetInfo_Positive_Basic") {
 /**
  * Test Description
  * ------------------------
- *  - Validate handling of invalid arguments:
- *    -# When array is nullptr
- *      - Expected output: return "hipErrorInvalidHandle"
- *    -# When array is freed
- *      - Expected output: return "hipErrorInvalidHandle"
+ *  - Negative parameters test for `hipArrayGetInfo`.
  * Test source
  * ------------------------
  *  - unit/memory/hipArrayGetInfo.cc

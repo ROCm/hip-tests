@@ -60,13 +60,7 @@ TEST_CASE("Unit_hipArray3DGetDescriptor_Positive_Basic") {
 /**
  * Test Description
  * ------------------------
- *  - Validate handling of invalid arguments:
- *    -# When descriptor is nullptr
- *      - Expected output: return "hipErrorInvalidValue"
- *    -# When array is nullptr
- *      - Expected output: return "hipErrorInvalidHandle"
- *    -# When array is freed
- *      - Expected output: return "hipErrorInvalidHandle"
+ *  - Negative parameters test for `hipArray3DGetDescriptor`.
  * Test source
  * ------------------------
  *  - unit/memory/hipArray3DGetDescriptor.cc

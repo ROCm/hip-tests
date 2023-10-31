@@ -142,10 +142,16 @@ set(TEST_SRC
     hipMallocAsync.cc
     hipStreamAttachMemAsync.cc
     hipMemRangeGetAttributes_old.cc
-    hipMemGetAddressRange.cc
-    hipArrayGetInfo.cc
-    hipArrayGetDescriptor.cc
-    hipArray3DGetDescriptor.cc)
+    hipMemGetAddressRange.cc)
+
+if(HIP_PLATFORM MATCHES "amd")
+  set(TEST_SRC
+      ${TEST_SRC}
+      # Below 3 tests should be compiled for NVIDIA as well after EXSWHTEC-349 is addressed
+      hipArrayGetInfo.cc
+      hipArrayGetDescriptor.cc
+      hipArray3DGetDescriptor.cc)
+endif()
 
 hip_add_exe_to_target(NAME MemoryTest2
   TEST_SRC ${TEST_SRC}

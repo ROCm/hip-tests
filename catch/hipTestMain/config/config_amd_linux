@@ -154,6 +154,8 @@
         "Unit_hipStreamCreate_WithPriorityPerformance_Nonblocking_high",
         "Unit_hipStreamCreate_WithPriorityPerformance_Default_low",
         "Unit_hipStreamCreate_WithPriorityPerformance_Default_high",
+        "=== Below test is disabled due to defect EXSWHTEC-347 ===",
+        "Unit_hipPointerSetAttribute_Positive_SyncMemops",
     #endif
     #if defined VEGA20
         "=== SWDEV-419112 Below tests fail in stress test on 29/08/23 ===",

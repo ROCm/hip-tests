@@ -78,7 +78,8 @@ set(AMD_TEST_SRC
     hipMathFunctions.cc
     hmax_hmin.cc
     hipBfloat16.cc
-    hipVectorTypes.cc
+    hipVectorTypesHost.cc
+    hipVectorTypesDevice.cc
     hipTestHalf.cc
     hipComplex.cc
     hipTestFMA.cc

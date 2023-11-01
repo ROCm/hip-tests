@@ -192,7 +192,7 @@ bool CheckVectorTypes() {
          float1, float2, float3, float4,
          double1, double2, double3, double4>();
 }
-TEST_CASE("Unit_TestVectorTypes") {
+TEST_CASE("Unit_hipVectorTypes_test_on_host") {
   REQUIRE(sizeof(float1) == 4);
   REQUIRE(sizeof(float2) >= 8);
   REQUIRE(sizeof(float3) == 12);

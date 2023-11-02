@@ -154,8 +154,9 @@ if (WIN32)
   # When args to linker exceeds max chars.
   # msbuild writes args to a rsp file.
   # This is used to reference the obj file correctly
-  SET(CMAKE_C_RESPONSE_FILE_LINK_FLAG "")
-  SET(CMAKE_CXX_RESPONSE_FILE_LINK_FLAG "")
+  SET(CMAKE_C_RESPONSE_FILE_LINK_FLAG "@")
+  SET(CMAKE_CXX_RESPONSE_FILE_LINK_FLAG "@")
+  SET(CMAKE_NINJA_FORCE_RESPONSE_FILE TRUE CACHE INTERNAL "")
 endif()
 
 if(HIP_PLATFORM STREQUAL "amd")

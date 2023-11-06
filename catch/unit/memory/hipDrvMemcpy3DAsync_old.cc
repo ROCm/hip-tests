@@ -41,7 +41,7 @@ class DrvMemcpy3DAsync {
   int width, height, depth;
   unsigned int size;
   hipArray_Format formatKind;
-  hiparray arr, arr1;
+  hipArray_t arr, arr1;
   hipStream_t stream;
   size_t pitch_D, pitch_E;
   HIP_MEMCPY3D myparms;
@@ -136,13 +136,8 @@ void DrvMemcpy3DAsync<T>::NegativeTests() {
   myparms.dstArray = arr;
   myparms.srcPitch = width * sizeof(T);
   myparms.srcHeight = height;
-#if HT_NVIDIA
-  myparms.srcMemoryType = CU_MEMORYTYPE_HOST;
-  myparms.dstMemoryType = CU_MEMORYTYPE_ARRAY;
-#else
   myparms.srcMemoryType = hipMemoryTypeHost;
   myparms.dstMemoryType = hipMemoryTypeArray;
-#endif
 
   SECTION("Passing nullptr to Source Host") {
     myparms.srcHost = nullptr;
@@ -154,11 +149,7 @@ void DrvMemcpy3DAsync<T>::NegativeTests() {
     myparms.dstArray = nullptr;
     myparms.dstDevice = D_m;
     myparms.WidthInBytes = pitch_D;
-#if HT_NVIDIA
-    myparms.dstMemoryType = CU_MEMORYTYPE_DEVICE;
-#else
     myparms.dstMemoryType = hipMemoryTypeDevice;
-#endif
     REQUIRE(hipDrvMemcpy3DAsync(&myparms, stream) != hipSuccess);
   }
 
@@ -190,11 +181,7 @@ void DrvMemcpy3DAsync<T>::NegativeTests() {
     myparms.dstDevice = hipDeviceptr_t(D_m);
     myparms.dstPitch = pitch_D;
     myparms.dstHeight = height;
-#if HT_NVIDIA
-    myparms.dstMemoryType = CU_MEMORYTYPE_DEVICE;
-#else
     myparms.dstMemoryType = hipMemoryTypeDevice;
-#endif
     REQUIRE(hipDrvMemcpy3DAsync(&myparms, stream) != hipSuccess);
   }
 
@@ -204,11 +191,7 @@ void DrvMemcpy3DAsync<T>::NegativeTests() {
     myparms.dstDevice = hipDeviceptr_t(D_m);
     myparms.dstPitch = pitch_D;
     myparms.dstHeight = height;
-#if HT_NVIDIA
-    myparms.dstMemoryType = CU_MEMORYTYPE_DEVICE;
-#else
     myparms.dstMemoryType = hipMemoryTypeDevice;
-#endif
     REQUIRE(hipDrvMemcpy3DAsync(&myparms, stream) != hipSuccess);
   }
 
@@ -218,11 +201,7 @@ void DrvMemcpy3DAsync<T>::NegativeTests() {
     myparms.dstDevice = hipDeviceptr_t(D_m);
     myparms.dstPitch = pitch_D;
     myparms.dstHeight = height;
-#if HT_NVIDIA
-    myparms.dstMemoryType = CU_MEMORYTYPE_DEVICE;
-#else
     myparms.dstMemoryType = hipMemoryTypeDevice;
-#endif
     REQUIRE(hipDrvMemcpy3DAsync(&myparms, stream) != hipSuccess);
   }
 
@@ -232,22 +211,13 @@ void DrvMemcpy3DAsync<T>::NegativeTests() {
     myparms.dstDevice = hipDeviceptr_t(D_m);
     myparms.dstPitch = pitch_D;
     myparms.dstHeight = height;
-#if HT_NVIDIA
-    myparms.dstMemoryType = CU_MEMORYTYPE_DEVICE;
-#else
     myparms.dstMemoryType = hipMemoryTypeDevice;
-#endif
     REQUIRE(hipDrvMemcpy3DAsync(&myparms, stream) != hipSuccess);
   }
 
   SECTION("src pitch greater than Max allowed pitch") {
-#if HT_NVIDIA
-    myparms.srcMemoryType = CU_MEMORYTYPE_DEVICE;
-    myparms.dstMemoryType = CU_MEMORYTYPE_HOST;
-#else
     myparms.srcMemoryType = hipMemoryTypeDevice;
     myparms.dstMemoryType = hipMemoryTypeHost;
-#endif
     myparms.srcDevice = D_m;
     myparms.srcHost = nullptr;
     myparms.srcPitch = MaxPitch;
@@ -264,11 +234,7 @@ void DrvMemcpy3DAsync<T>::NegativeTests() {
     myparms.dstArray = nullptr;
     myparms.dstPitch = MaxPitch+1;
     myparms.dstHeight = height;
-#if HT_NVIDIA
-    myparms.dstMemoryType = CU_MEMORYTYPE_DEVICE;
-#else
     myparms.dstMemoryType = hipMemoryTypeDevice;
-#endif
     REQUIRE(hipDrvMemcpy3DAsync(&myparms, stream) != hipSuccess);
   }
 
@@ -277,11 +243,7 @@ void DrvMemcpy3DAsync<T>::NegativeTests() {
     myparms.dstArray = nullptr;
     myparms.dstPitch = pitch_D;
     myparms.dstHeight = height;
-#if HT_NVIDIA
-    myparms.dstMemoryType = CU_MEMORYTYPE_DEVICE;
-#else
     myparms.dstMemoryType = hipMemoryTypeDevice;
-#endif
     REQUIRE(hipDrvMemcpy3DAsync(&myparms, stream) != hipSuccess);
   }
 
@@ -308,13 +270,8 @@ void DrvMemcpy3DAsync<T>::Extent_Validation() {
 
   // Setting default data
   SetDefaultData();
-#if HT_NVIDIA
-  myparms.srcMemoryType = CU_MEMORYTYPE_HOST;
-  myparms.dstMemoryType = CU_MEMORYTYPE_DEVICE;
-#else
   myparms.srcMemoryType = hipMemoryTypeHost;
   myparms.dstMemoryType = hipMemoryTypeDevice;
-#endif
   myparms.srcHost = hData;
   myparms.srcPitch = width * sizeof(T);
   myparms.srcHeight = height;
@@ -372,13 +329,8 @@ void DrvMemcpy3DAsync<T>::HostDevice_DrvMemcpy3DAsync
   }
   if (!skip_test) {
     SetDefaultData();
-#if HT_NVIDIA
-    myparms.srcMemoryType = CU_MEMORYTYPE_HOST;
-    myparms.dstMemoryType = CU_MEMORYTYPE_DEVICE;
-#else
     myparms.srcMemoryType = hipMemoryTypeHost;
     myparms.dstMemoryType = hipMemoryTypeDevice;
-#endif
     myparms.srcHost = hData;
     myparms.srcPitch = width * sizeof(T);
     myparms.srcHeight = height;
@@ -390,13 +342,8 @@ void DrvMemcpy3DAsync<T>::HostDevice_DrvMemcpy3DAsync
 
     // Device to Device
     SetDefaultData();
-#if HT_NVIDIA
-    myparms.srcMemoryType = CU_MEMORYTYPE_DEVICE;
-    myparms.dstMemoryType = CU_MEMORYTYPE_DEVICE;
-#else
     myparms.srcMemoryType = hipMemoryTypeDevice;
     myparms.dstMemoryType = hipMemoryTypeDevice;
-#endif
     myparms.srcDevice = hipDeviceptr_t(D_m);
     myparms.srcPitch = pitch_D;
     myparms.srcHeight = height;
@@ -410,13 +357,8 @@ void DrvMemcpy3DAsync<T>::HostDevice_DrvMemcpy3DAsync
 
     // Device to host
     SetDefaultData();
-#if HT_NVIDIA
-    myparms.srcMemoryType = CU_MEMORYTYPE_DEVICE;
-    myparms.dstMemoryType = CU_MEMORYTYPE_HOST;
-#else
     myparms.srcMemoryType = hipMemoryTypeDevice;
     myparms.dstMemoryType = hipMemoryTypeHost;
-#endif
     myparms.srcDevice = hipDeviceptr_t(E_m);
     myparms.srcPitch = pitch_E;
     myparms.srcHeight = height;
@@ -462,13 +404,8 @@ void DrvMemcpy3DAsync<T>::HostArray_DrvMemcpy3DAsync
   }
   if (!skip_test) {
     SetDefaultData();
-#if HT_NVIDIA
-    myparms.srcMemoryType = CU_MEMORYTYPE_HOST;
-    myparms.dstMemoryType = CU_MEMORYTYPE_ARRAY;
-#else
     myparms.srcMemoryType = hipMemoryTypeHost;
     myparms.dstMemoryType = hipMemoryTypeArray;
-#endif
     myparms.srcHost = hData;
     myparms.srcPitch = width * sizeof(T);
     myparms.srcHeight = height;
@@ -477,13 +414,8 @@ void DrvMemcpy3DAsync<T>::HostArray_DrvMemcpy3DAsync
     HIP_CHECK(hipStreamSynchronize(stream));
     // Array to Array
     SetDefaultData();
-#if HT_NVIDIA
-    myparms.srcMemoryType = CU_MEMORYTYPE_ARRAY;
-    myparms.dstMemoryType = CU_MEMORYTYPE_ARRAY;
-#else
     myparms.srcMemoryType = hipMemoryTypeArray;
     myparms.dstMemoryType = hipMemoryTypeArray;
-#endif
     myparms.srcArray = arr;
     myparms.dstArray = arr1;
     HIP_CHECK(hipDrvMemcpy3DAsync(&myparms, stream));
@@ -492,13 +424,8 @@ void DrvMemcpy3DAsync<T>::HostArray_DrvMemcpy3DAsync
     memset(hOutputData, 0,  size);
     SetDefaultData();
     // Device to host
-#if HT_NVIDIA
-    myparms.srcMemoryType = CU_MEMORYTYPE_ARRAY;
-    myparms.dstMemoryType = CU_MEMORYTYPE_HOST;
-#else
     myparms.srcMemoryType = hipMemoryTypeArray;
     myparms.dstMemoryType = hipMemoryTypeHost;
-#endif
     myparms.srcArray = arr1;
     myparms.dstHost = hOutputData;
     myparms.dstPitch = width * sizeof(T);
@@ -522,8 +449,9 @@ void DrvMemcpy3DAsync<T>::DeAllocateMemory() {
 }
 
 /* Verifying hipDrvMemcpy3DAsync API Host to Array for different datatypes */
-TEMPLATE_TEST_CASE("Unit_hipDrvMemcpy3DAsync_MultipleDataTypes", "",
-                   uint8_t, int, float) {
+TEMPLATE_TEST_CASE("Unit_hipDrvMemcpy3DAsync_MultipleDataTypes", "", uint8_t, int, float) {
+  CHECK_IMAGE_SUPPORT
+
   for (int i = 1; i < 25; i++) {
     if (std::is_same<TestType, float>::value) {
       DrvMemcpy3DAsync<TestType> memcpy3d_float(i, i, i,
@@ -543,6 +471,8 @@ TEMPLATE_TEST_CASE("Unit_hipDrvMemcpy3DAsync_MultipleDataTypes", "",
 
 /* This testcase verifies H2D copy of hipDrvMemcpy3DAsync API */
 TEST_CASE("Unit_hipDrvMemcpy3DAsync_HosttoDevice") {
+  CHECK_IMAGE_SUPPORT
+
   DrvMemcpy3DAsync<float> memcpy3d_D2H_float(10, 10, 1, HIP_AD_FORMAT_FLOAT);
   memcpy3d_D2H_float.HostDevice_DrvMemcpy3DAsync();
 }
@@ -558,6 +488,8 @@ TEST_CASE("Unit_hipDrvMemcpy3DAsync_Negative") {
 /* This testcase verifies extent validation scenarios of
    hipDrvMemcpy3DAsync API */
 TEST_CASE("Unit_hipDrvMemcpy3DAsync_ExtentValidation") {
+  CHECK_IMAGE_SUPPORT
+
   DrvMemcpy3DAsync<float> memcpy3d(10, 10, 1, HIP_AD_FORMAT_FLOAT);
   memcpy3d.Extent_Validation();
 }
@@ -566,6 +498,8 @@ TEST_CASE("Unit_hipDrvMemcpy3DAsync_ExtentValidation") {
 change scenario for hipDrvMemcpy3DAsync API */
 #if HT_AMD
 TEST_CASE("Unit_hipDrvMemcpy3DAsync_H2DDeviceContextChange") {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {
@@ -580,6 +514,8 @@ TEST_CASE("Unit_hipDrvMemcpy3DAsync_H2DDeviceContextChange") {
 /* This testcase verifies Host to Array copy in device context
 change scenario for hipDrvMemcpy3DAsync API */
 TEST_CASE("Unit_hipDrvMemcpy3DAsync_Host2ArrayDeviceContextChange") {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {

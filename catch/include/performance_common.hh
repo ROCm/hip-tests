@@ -33,6 +33,10 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
 
+#pragma clang diagnostic ignored "-Wunused-but-set-variable"
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#pragma clang diagnostic ignored "-Wunused-function"
+
 #if defined(_WIN32)
 #if defined(_WIN64)
 typedef __int64 ssize_t;

@@ -30,9 +30,9 @@ all: ${SRC}
 	${CC} ${CPPFLAGS} $^ -o ${OBJ}
 
 clean:
-	rm ${OBJ}
-	rm *.xml
-	rm -r ./coverageReportHTML/testModules
-	rm -r ./coverageReportHTML/testAPIs
-	rm ./coverageReportHTML/*.html
+	rm -f ${OBJ}
+	rm -f *.xml
+	rm -fr ./coverageReportHTML/testModules
+	rm -fr ./coverageReportHTML/testAPIs
+	rm -f ./coverageReportHTML/*.html
 .PHONY : clean

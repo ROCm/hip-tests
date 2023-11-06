@@ -28,8 +28,13 @@ THE SOFTWARE.
 
 static int IsStreamWaitValueSupported(int device_id) {
   int wait_value_supported = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&wait_value_supported,
-                                  hipDeviceAttributeCanUseStreamWaitValue, 0));
+#if HT_AMD
+  HIP_CHECK(hipDeviceGetAttribute(&wait_value_supported, hipDeviceAttributeCanUseStreamWaitValue,
+                                  device_id));
+#else
+  cuDeviceGetAttribute(&wait_value_supported, CU_DEVICE_ATTRIBUTE_CAN_USE_64_BIT_STREAM_MEM_OPS,
+                       device_id);
+#endif
   return wait_value_supported;
 }
 
@@ -117,14 +122,17 @@ static void RunBenchmark(const size_t array_size, unsigned int flag) {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Performance_hipStreamWaitValue32") {
+#if HT_AMD
   if (!IsStreamWaitValueSupported(0)) {
-    HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeCanUseStreamWaitValue "
-                           "attribute. Hence skipping the testing with Pass result.\n");
+    HipTest::HIP_SKIP_TEST(
+        "GPU 0 doesn't support hipStreamWaitValue32() function. "
+        "Hence skipping the testing with Pass result.\n");
     return;
   }
+#endif
   size_t array_size = GENERATE(4_KB, 4_MB, 16_MB);
-  unsigned int flag = GENERATE(hipStreamWaitValueGte, hipStreamWaitValueEq,
-                               hipStreamWaitValueAnd, hipStreamWaitValueNor);
+  unsigned int flag = GENERATE(hipStreamWaitValueGte, hipStreamWaitValueEq, hipStreamWaitValueAnd,
+                               hipStreamWaitValueNor);
   RunBenchmark<StreamWaitValue32Benchmark>(array_size, flag);
 }
 
@@ -151,12 +159,13 @@ TEST_CASE("Performance_hipStreamWaitValue32") {
  */
 TEST_CASE("Performance_hipStreamWaitValue64") {
   if (!IsStreamWaitValueSupported(0)) {
-    HipTest::HIP_SKIP_TEST("GPU 0 doesn't support hipDeviceAttributeCanUseStreamWaitValue "
-                           "attribute. Hence skipping the testing with Pass result.\n");
+    HipTest::HIP_SKIP_TEST(
+        "GPU 0 doesn't support hipStreamWaitValue64() function. "
+        "Hence skipping the testing with Pass result.\n");
     return;
   }
   size_t array_size = GENERATE(4_KB, 4_MB, 16_MB);
-  unsigned int flag = GENERATE(hipStreamWaitValueGte, hipStreamWaitValueEq,
-                               hipStreamWaitValueAnd, hipStreamWaitValueNor);
+  unsigned int flag = GENERATE(hipStreamWaitValueGte, hipStreamWaitValueEq, hipStreamWaitValueAnd,
+                               hipStreamWaitValueNor);
   RunBenchmark<StreamWaitValue64Benchmark>(array_size, flag);
 }

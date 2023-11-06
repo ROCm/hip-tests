@@ -18,6 +18,46 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-add_subdirectory(stream)
-add_subdirectory(event)
-add_subdirectory(example)
+if(HIP_PLATFORM MATCHES "amd")
+set(TEST_SRC
+    hipStreamWaitEvent.cc
+    hipStreamGetFlags.cc
+    hipStreamGetPriority.cc
+    hipExtStreamCreateWithCUMask.cc
+    hipExtStreamGetCUMask.cc
+    hipStreamAddCallback.cc
+    hipStreamWaitValue.cc
+    hipStreamWriteValue.cc
+    hipMallocAsync.cc
+    hipFreeAsync.cc
+    hipMemPoolCreate.cc
+    hipMemPoolDestroy.cc
+    hipMemPoolTrimTo.cc
+    hipMemPoolSetAttribute.cc
+    hipMemPoolGetAttribute.cc
+    hipMemPoolSetAccess.cc
+    hipMallocFromPoolAsync.cc
+    hipMemPoolExportToShareableHandle.cc
+    hipMemPoolImportFromShareableHandle.cc
+    hipMemPoolExportPointer.cc
+    hipMemPoolImportPointer.cc
+    hipStreamBasic.cc
+)
+else()
+set(TEST_SRC
+    hipStreamWaitEvent.cc
+    hipStreamGetFlags.cc
+    hipStreamGetPriority.cc
+    hipStreamAddCallback.cc
+    hipStreamWaitValue.cc
+    hipStreamWriteValue.cc
+    hipMallocAsync.cc
+    hipFreeAsync.cc
+    hipStreamBasic.cc
+)
+endif()
+
+hip_add_exe_to_target(NAME StreamPerformance
+                      TEST_SRC ${TEST_SRC}
+                      TEST_TARGET_NAME build_tests
+                      COMPILE_OPTIONS -std=c++17)

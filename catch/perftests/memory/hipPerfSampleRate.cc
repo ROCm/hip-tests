@@ -95,20 +95,20 @@ class hipPerfSampleRate {
   // array of funtion pointers
   typedef void (hipPerfSampleRate::*funPtr)(void * outBuffer, unsigned int
                 inBufSize, unsigned int writeIt, void **inBuffer, int numBufs,
-                int grids, int blocks, int threads_per_block);
+                int grids, int blocks);
 
   // Wrappers
   void float_kernel(void * outBuffer, unsigned int inBufSize,
                     unsigned int writeIt, void **inBuffer, int numBufs,
-                    int grids, int blocks, int threads_per_block);
+                    int grids, int blocks);
 
   void float2_kernel(void * outBuffer, unsigned int inBufSize,
                      unsigned int writeIt, void **inBuffer, int numBufs,
-                     int grids, int blocks, int threads_per_block);
+                     int grids, int blocks);
 
   void float4_kernel(void * outBuffer, unsigned int inBufSize,
                      unsigned int writeIt, void **inBuffer, int numBufs,
-                     int grids, int blocks, int threads_per_block);
+                     int grids, int blocks);
 
  private:
   void setData(void *ptr, unsigned int value);
@@ -136,8 +136,7 @@ bool hipPerfSampleRate::open(void) {
   }
 
   int deviceId = 0;
-  hipDeviceProp_t props = {0};
-  props = {0};
+  hipDeviceProp_t props;
   HIP_CHECK(hipSetDevice(deviceId));
   HIP_CHECK(hipGetDeviceProperties(&props, deviceId));
   INFO("info: running on bus " << "0x" << props.pciBusID << " " <<
@@ -150,7 +149,7 @@ bool hipPerfSampleRate::open(void) {
 // Wrappers for the kernel launches
 void hipPerfSampleRate::float_kernel(void * outBuffer, unsigned int inBufSize,
                         unsigned int writeIt, void **inBuffer, int numBufs,
-                        int grids, int blocks, int threads_per_block) {
+                        int grids, int blocks) {
   hipLaunchKernelGGL(sampleRateFloat<float>, dim3(grids, grids, grids),
             dim3(blocks), 0, 0, reinterpret_cast<float*>(outBuffer),
             inBufSize, writeIt, reinterpret_cast<float**>(inBuffer), numBufs);
@@ -158,7 +157,7 @@ void hipPerfSampleRate::float_kernel(void * outBuffer, unsigned int inBufSize,
 
 void hipPerfSampleRate::float2_kernel(void * outBuffer, unsigned int inBufSize,
                         unsigned int writeIt, void **inBuffer, int grids,
-                        int blocks, int threads_per_block, int numBufs) {
+                        int blocks, int numBufs) {
   hipLaunchKernelGGL(sampleRate<float2>, dim3(grids, grids, grids),
             dim3(blocks), 0, 0, reinterpret_cast<float2 *>(outBuffer),
             inBufSize, writeIt, reinterpret_cast<float2 **>(inBuffer), numBufs);
@@ -166,7 +165,7 @@ void hipPerfSampleRate::float2_kernel(void * outBuffer, unsigned int inBufSize,
 
 void hipPerfSampleRate::float4_kernel(void * outBuffer, unsigned int inBufSize,
                         unsigned int writeIt, void **inBuffer, int grids,
-                        int blocks, int threads_per_block, int numBufs) {
+                        int blocks, int numBufs) {
   hipLaunchKernelGGL(sampleRate<float4>, dim3(grids, grids, grids),
             dim3(blocks), 0, 0, reinterpret_cast<float4 *>(outBuffer),
             inBufSize, writeIt, reinterpret_cast<float4 **>(inBuffer), numBufs);
@@ -224,7 +223,6 @@ void hipPerfSampleRate::run(unsigned int test) {
   // outBufSize_/sizeof(uint) - Grid size in 3D
   int grids = 64;
   int blocks = 64;
-  int threads_per_block  = 1;
 
   unsigned int maxIter = MAX_ITERATIONS * (MAX_BUFS / numBufs_);
   unsigned int sizeDW = width_ * width_;
@@ -244,7 +242,7 @@ void hipPerfSampleRate::run(unsigned int test) {
   auto all_start = std::chrono::steady_clock::now();
   for (uint i = 0; i < maxIter; i++) {
         (this->*p[idx]) (reinterpret_cast<void *>(dOutPtr), sizeDW, writeIt,
-                         dPtr, numBufs_, grids, blocks, threads_per_block);
+                         dPtr, numBufs_, grids, blocks);
   }
 
   HIP_CHECK(hipDeviceSynchronize());

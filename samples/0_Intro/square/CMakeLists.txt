@@ -24,6 +24,14 @@ project(square)
 
 cmake_minimum_required(VERSION 3.10)
 
+if(UNIX)
+  if(NOT DEFINED ROCM_PATH)
+    set(ROCM_PATH "/opt/rocm" CACHE STRING "Default ROCM installation directory.")
+  endif()
+  # Search for rocm in common locations
+  list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
+endif()
+
 # create square.cpp
 execute_process(COMMAND sh -c "${CMAKE_PREFIX_PATH}/bin/hipify-perl ../square.cu > ../square.cpp")
 

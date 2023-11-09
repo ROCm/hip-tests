@@ -30,6 +30,14 @@ if(${__HIP_ENABLE_PCH})
   add_definitions(-D__HIP_ENABLE_PCH)
 endif()
 
+if(UNIX)
+  if(NOT DEFINED ROCM_PATH)
+    set(ROCM_PATH "/opt/rocm" CACHE STRING "Default ROCM installation directory.")
+  endif()
+  # Search for rocm in common locations
+  list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
+endif()
+
 # Find hip
 find_package(hip)
 

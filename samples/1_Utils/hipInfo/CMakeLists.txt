@@ -26,6 +26,13 @@ set(CMAKE_CXX_COMPILER_WORKS 1)
 project(hipInfo)
 
 cmake_minimum_required(VERSION 3.10)
+if(UNIX)
+  if(NOT DEFINED ROCM_PATH)
+    set(ROCM_PATH "/opt/rocm" CACHE STRING "Default ROCM installation directory.")
+  endif()
+  # Search for rocm in common locations
+  list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
+endif()
 
 # flag is set to ON in compute build for windows
 option(HIPINFO_INTERNAL_BUILD "Enable building hipInfo from compute" OFF)

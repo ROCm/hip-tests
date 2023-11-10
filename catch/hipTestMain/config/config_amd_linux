@@ -68,8 +68,6 @@
         "Unit_hipMemRangeGetAttribute_Positive_AccessedBy_Partial_Range",
         "Unit_hipMemGetAddressRange_Positive",
         "Unit_hipGraphAddMemcpyNode1D_Negative_Basic",
-        "intermittent issue: corrupted double-linked list",
-        "Unit_hipGraphRetainUserObject_Functional_2",
         "Unit_ChannelDescriptor_Positive_16BitFloatingPoint",
         "intermittent issue: failure expected but sucess returned",
         "Unit_hipMemAdvise_NegtveTsts",

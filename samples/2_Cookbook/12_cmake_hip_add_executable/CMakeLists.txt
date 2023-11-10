@@ -30,7 +30,7 @@ if(NOT DEFINED HIP_PATH)
         set(HIP_PATH $ENV{HIP_PATH} CACHE PATH "Path to which HIP has been installed")
     endif()
 endif()
-set(CMAKE_MODULE_PATH "${HIP_PATH}/hip/cmake" ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH "${HIP_PATH}/lib/cmake/hip/" ${CMAKE_MODULE_PATH})
 set(CMAKE_HIP_ARCHITECTURES OFF)
 project(12_cmake)
 

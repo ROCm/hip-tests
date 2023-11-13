@@ -75,6 +75,17 @@ endif()
 
 #TODO add instructions to build samples at once
 
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+add_custom_target(build_samples
+            COMMAND make build_intro build_utils build_cookbook
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
+add_subdirectory(0_Intro )
+add_subdirectory(1_Utils )
+add_subdirectory(2_Cookbook)
+
+
 # make package_samples to generate packages for samples
 set(SAMPLES_SRC ${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory(packaging)

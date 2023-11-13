@@ -39,9 +39,18 @@ set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 set(CMAKE_BUILD_TYPE Release)
 
 # Create the excutable
-add_executable(MatrixTranspose MatrixTranspose.cpp)
+if(TARGET build_cookbook)
+set(EXCLUDE_OPTION EXCLUDE_FROM_ALL)
+else()
+set(EXCLUDE_OPTION )
+endif()
+add_executable(MatrixTranspose ${EXCLUDE_OPTION} MatrixTranspose.cpp)
 
 target_include_directories(MatrixTranspose PRIVATE ../../common)
 
 # Link with HIP
 target_link_libraries(MatrixTranspose hip::host)
+
+if(TARGET build_cookbook)
+add_dependencies(build_cookbook MatrixTranspose)
+endif()

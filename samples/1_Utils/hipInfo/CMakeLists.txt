@@ -52,7 +52,12 @@ set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 set(CMAKE_BUILD_TYPE Release)
 
 # Create the excutable
-add_executable(hipInfo hipInfo.cpp)
+if(TARGET build_utils)
+set(EXCLUDE_OPTION EXCLUDE_FROM_ALL)
+else()
+set(EXCLUDE_OPTION )
+endif()
+add_executable(hipInfo ${EXCLUDE_OPTION} hipInfo.cpp)
 
 # Link with HIP
 target_link_libraries(hipInfo hip::host)
@@ -64,4 +69,8 @@ target_include_directories(hipInfo PRIVATE ../../common)
 # hipInfo.exe will be installed to install/hip/bin path
 if (WIN32 AND HIPINFO_INTERNAL_BUILD)
      install(FILES ${PROJECT_BINARY_DIR}/hipInfo.exe DESTINATION .)
+endif()
+
+if(TARGET build_utils)
+add_dependencies(build_utils hipInfo)
 endif()

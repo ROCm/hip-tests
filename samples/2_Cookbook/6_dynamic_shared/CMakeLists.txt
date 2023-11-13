@@ -40,9 +40,18 @@ set(CMAKE_CXX_COMPILER ${HIP_HIPCC_EXECUTABLE})
 set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 
 # Create the excutable
-add_executable(dynamic_shared dynamic_shared.cpp)
+if(TARGET build_cookbook)
+set(EXCLUDE_OPTION EXCLUDE_FROM_ALL)
+else()
+set(EXCLUDE_OPTION )
+endif()
+add_executable(dynamic_shared ${EXCLUDE_OPTION} dynamic_shared.cpp)
 
 target_include_directories(dynamic_shared PRIVATE ../../common)
 
 # Link with HIP
 target_link_libraries(dynamic_shared hip::host)
+
+if(TARGET build_cookbook)
+add_dependencies(build_cookbook dynamic_shared)
+endif()

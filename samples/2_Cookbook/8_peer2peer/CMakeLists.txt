@@ -37,7 +37,16 @@ set(CMAKE_CXX_COMPILER ${HIP_HIPCC_EXECUTABLE})
 set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 
 # Create the excutable
-add_executable(peer2peer peer2peer.cpp)
+if(TARGET build_cookbook)
+set(EXCLUDE_OPTION EXCLUDE_FROM_ALL)
+else()
+set(EXCLUDE_OPTION )
+endif()
+add_executable(peer2peer ${EXCLUDE_OPTION} peer2peer.cpp)
 
 # Link with HIP
 target_link_libraries(peer2peer hip::host)
+
+if(TARGET build_cookbook)
+add_dependencies(build_cookbook peer2peer)
+endif()

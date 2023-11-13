@@ -1,4 +1,4 @@
-# Copyright (c) 2020 - 2023 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2016 - 2023 Advanced Micro Devices, Inc. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -17,40 +17,28 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-
-project(occupancy)
-
-cmake_minimum_required(VERSION 3.10)
-
-if(UNIX)
-  if(NOT DEFINED ROCM_PATH)
-    set(ROCM_PATH "/opt/rocm" CACHE STRING "Default ROCM installation directory.")
-  endif()
-  # Search for rocm in common locations
-  list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
-endif()
-
-# Find hip
-find_package(hip)
-
-# Set compiler and linker
-set(CMAKE_CXX_COMPILER ${HIP_HIPCC_EXECUTABLE})
-set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
-set(CMAKE_BUILD_TYPE Release)
-
-# Create the excutable
-if(TARGET build_cookbook)
-set(EXCLUDE_OPTION EXCLUDE_FROM_ALL)
-else()
-set(EXCLUDE_OPTION )
-endif()
-add_executable(occupancy ${EXCLUDE_OPTION} occupancy.cpp)
-
-target_include_directories(occupancy PRIVATE ../../common)
-
-# Link with HIP
-target_link_libraries(occupancy hip::host)
-
-if(TARGET build_cookbook)
-add_dependencies(build_cookbook occupancy)
-endif()
+add_custom_target(build_cookbook)
+add_subdirectory(0_MatrixTranspose)
+add_subdirectory(1_hipEvent)
+add_subdirectory(3_shared_memory)
+add_subdirectory(4_shfl)
+add_subdirectory(5_2dshfl)
+add_subdirectory(6_dynamic_shared)
+add_subdirectory(7_streams)
+add_subdirectory(8_peer2peer)
+add_subdirectory(9_unroll)
+add_subdirectory(10_inline_asm)
+add_subdirectory(11_texture_driver)
+add_subdirectory(12_cmake_hip_add_executable)
+add_subdirectory(13_occupancy)
+add_subdirectory(14_gpu_arch)
+add_subdirectory(15_static_library/device_functions)
+add_subdirectory(15_static_library/host_functions)
+#add_subdirectory(16_assembly_to_executable)
+#add_subdirectory(17_llvm_ir_to_executable)
+add_subdirectory(18_cmake_hip_device)
+add_subdirectory(19_cmake_lang)
+#add_subdirectory(20_hip_vulkan)
+add_subdirectory(21_cmake_hip_cxx_clang)
+#add_subdirectory(22_cmake_hip_lang)
+add_subdirectory(23_cmake_hiprtc)

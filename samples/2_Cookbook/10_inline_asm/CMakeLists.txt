@@ -39,9 +39,18 @@ set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 set(CMAKE_BUILD_TYPE Release)
 
 # Create the excutable
-add_executable(inline_asm inline_asm.cpp)
+if(TARGET build_cookbook)
+set(EXCLUDE_OPTION EXCLUDE_FROM_ALL)
+else()
+set(EXCLUDE_OPTION )
+endif()
+add_executable(inline_asm ${EXCLUDE_OPTION} inline_asm.cpp)
 
 target_include_directories(inline_asm PRIVATE ../../common)
 
 # Link with HIP
 target_link_libraries(inline_asm hip::host)
+
+if(TARGET build_cookbook)
+add_dependencies(build_cookbook inline_asm)
+endif()

@@ -38,9 +38,18 @@ set(CMAKE_CXX_COMPILER ${HIP_HIPCC_EXECUTABLE})
 set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 
 # Create the excutable
-add_executable(unroll unroll.cpp)
+if(TARGET build_cookbook)
+set(EXCLUDE_OPTION EXCLUDE_FROM_ALL)
+else()
+set(EXCLUDE_OPTION )
+endif()
+add_executable(unroll ${EXCLUDE_OPTION} unroll.cpp)
 
 target_include_directories(unroll PRIVATE ../../common)
 
 # Link with HIP
 target_link_libraries(unroll hip::host)
+
+if(TARGET build_cookbook)
+add_dependencies(build_cookbook unroll)
+endif()

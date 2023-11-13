@@ -39,9 +39,18 @@ set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 set(CMAKE_BUILD_TYPE Release)
 
 # Create the excutable
-add_executable(hipEvent hipEvent.cpp)
+if(TARGET build_cookbook)
+set(EXCLUDE_OPTION EXCLUDE_FROM_ALL)
+else()
+set(EXCLUDE_OPTION )
+endif()
+add_executable(hipEvent ${EXCLUDE_OPTION} hipEvent.cpp)
 
 target_include_directories(hipEvent PRIVATE ../../common)
 
 # Link with HIP
 target_link_libraries(hipEvent hip::host)
+
+if(TARGET build_cookbook)
+add_dependencies(build_cookbook hipEvent)
+endif()

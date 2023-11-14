@@ -106,7 +106,7 @@ void printDeviceProp(int deviceId) {
     cout << setw(w1) << "maxTexture3D.width: " << props.maxTexture3D[0] << endl;
     cout << setw(w1) << "maxTexture3D.height: " << props.maxTexture3D[1] << endl;
     cout << setw(w1) << "maxTexture3D.depth: " << props.maxTexture3D[2] << endl;
-
+    cout << setw(w1) << "hostNativeAtomicSupported: " << props.hostNativeAtomicSupported << endl;
 #ifdef __HIP_PLATFORM_AMD__
     cout << setw(w1) << "isLargeBar: " << props.isLargeBar << endl;
     cout << setw(w1) << "asicRevision: " << props.asicRevision << endl;

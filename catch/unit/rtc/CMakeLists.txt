@@ -15,6 +15,7 @@ set(AMD_TEST_SRC
     linker.cc
     shfl.cc
     stdheaders.cc
+    hiprtc_MathConstants_HeaderTst.cc
 )
 
 add_custom_target(copyRtcHeaders ALL

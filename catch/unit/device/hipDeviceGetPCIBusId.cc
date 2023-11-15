@@ -84,7 +84,7 @@ TEST_CASE("Unit_hipDeviceGetPCIBusId_Check_PciBusID_WithAttr") {
   }
   // Deallocate
   for (int i = 0; i < deviceCount; i++) {
-    delete hipDeviceList[i];
+    delete[] hipDeviceList[i];
   }
   delete[] hipDeviceList;
   printf("pciBusID output of both hipDeviceGetPCIBusId and"

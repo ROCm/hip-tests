@@ -328,14 +328,14 @@ TEST_CASE("Unit_hipGetDeviceAttribute_CheckFineGrainSupport") {
   char command_op[BUFFER_LEN];
   int count = -1;
   // Extract each segment flags
-  while (fgets(command_op, BUFFER_LEN, fpipe)) {
+  while (fgets(command_op, BUFFER_LEN, fpipe) && (count + 1) < deviceCount) {
     std::string rocminfo_line(command_op);
     if ((std::string::npos != rocminfo_line.find("GPU-")) &&
         (std::string::npos != rocminfo_line.find("Uuid:"))) {
       count++;
       gpuFound[count] = true;
-    } else if (gpuFound[count] &&
-    (std::string::npos != rocminfo_line.find("FLAGS: FINE GRAINED"))) {
+    } else if (count >= 0 && gpuFound[count] &&
+               (std::string::npos != rocminfo_line.find("FLAGS: FINE GRAINED"))) {
       fine_grained_val[count] = 1;
     }
   }

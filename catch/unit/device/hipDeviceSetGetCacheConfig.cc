@@ -167,8 +167,8 @@ TEST_CASE("Unit_hipDeviceGetCacheConfig_Positive_Threaded") {
 
     void TestPart3() {
       hipFuncCache_t returned_cache_config;
-      HIP_CHECK(hipDeviceGetCacheConfig(&returned_cache_config));
-      REQUIRE(returned_cache_config == cache_config_);
+      HIP_CHECK_THREAD(hipDeviceGetCacheConfig(&returned_cache_config));
+      REQUIRE_THREAD(returned_cache_config == cache_config_);
     }
 
    private:

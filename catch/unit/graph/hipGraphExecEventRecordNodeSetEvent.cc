@@ -33,11 +33,11 @@ Testcase Scenarios :
     the graph to create an executable graph. Change the event in the
     executable graph to event2. Verify that the event record node still
     contains event1.
-  3) Scenario to verify that hipGraphExecEventRecordNodeSetEvent returns an error when event is
+  3) Scenario to verify that hipGraphExecEventRecordNodeSetEvent can set event
      created on different device. Create an event record node with event1 and add it to graph.
      Instantiate the graph to create an executable graph. Call the API to change the event in the
-     executable graph to event2 which has been created on different device. Verify that error is
-     reported.
+     executable graph to event2 which has been created on different device. Verify that graph can be
+     launched and no error is reported.
   4) Negative Scenarios
     - Input executable graph is a nullptr.
     - Input node is a nullptr.
@@ -184,17 +184,19 @@ TEST_CASE("Unit_hipGraphExecEventRecordNodeSetEvent_VerifyEventNotChanged") {
 }
 
 /**
- * Scenario 3: Negative Test - event is created on different device
+ * Scenario 3: This test verifies event in node of the executable graph can be changed to event on
+ * different device
  */
-TEST_CASE("Unit_hipGraphExecEventRecordNodeSetEvent_Negative_DifferentDevices") {
+TEST_CASE("Unit_hipGraphExecEventRecordNodeSetEvent_Positive_DifferentDevices") {
   const auto device_count = HipTest::getDeviceCount();
   if (device_count < 2) {
     HipTest::HIP_SKIP_TEST("Skipping because devices < 2");
     return;
   }
   hipGraphExec_t graphExec;
+  hipStream_t streamForGraph;
   hipGraph_t graph;
-  hipEvent_t event1, event2, event_out;
+  hipEvent_t event1, event2;
 
   HIP_CHECK(hipSetDevice(0));
   HIP_CHECK(hipEventCreate(&event1));
@@ -206,12 +208,17 @@ TEST_CASE("Unit_hipGraphExecEventRecordNodeSetEvent_Negative_DifferentDevices") 
   HIP_CHECK(hipGraphCreate(&graph, 0));
   HIP_CHECK(hipGraphAddEventRecordNode(&eventrec, graph, nullptr, 0, event1));
 
-  // Create node, error should be reported as event is on different device
-  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
-  HIP_CHECK_ERROR(hipGraphExecEventRecordNodeSetEvent(graphExec, eventrec, event2),
-                  hipErrorInvalidValue);
+  // Verify event on different device can be set in graphExec
   // Instantiate and launch the graph
+  HIP_CHECK(hipStreamCreate(&streamForGraph));
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+  HIP_CHECK(hipGraphExecEventRecordNodeSetEvent(graphExec, eventrec, event2));
+  HIP_CHECK(hipGraphLaunch(graphExec, streamForGraph));
+  // Wait for graph to complete
+  HIP_CHECK(hipStreamSynchronize(streamForGraph));
+  // Free resources
   HIP_CHECK(hipGraphExecDestroy(graphExec));
+  HIP_CHECK(hipStreamDestroy(streamForGraph));
   HIP_CHECK(hipGraphDestroy(graph));
   HIP_CHECK(hipEventDestroy(event2));
   HIP_CHECK(hipEventDestroy(event1))

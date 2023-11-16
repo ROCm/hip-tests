@@ -20,26 +20,51 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 
 /**
-Negative Testcase Scenarios :
-1) Pass hipGraphExecDestroy with nullptr.
-2) Pass hipGraphExecDestroy with un-initilze structure.
-3) Destroy graph before exec-graph destroyed and verify no crash occurs.
-*/
+ * @addtogroup hipGraphExecDestroy hipGraphExecDestroy
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphExecDestroy(hipGraphExec_t graphExec)` -
+ * Destroys an executable graph
+ */
 
-TEST_CASE("Unit_hipGraphExecDestroy_Negative") {
-  hipError_t ret;
+/**
+ * Test Description
+ * ------------------------
+ *    - Test to verify API behavior with invalid arguments:
+ *        -# GraphExec is nullptr
+ *        -# GraphExec is uninitialized
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphExecDestroy.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipGraphExecDestroy_Negative_Parameters") {
+
   SECTION("Pass hipGraphExecDestroy with nullptr") {
-    ret = hipGraphExecDestroy(nullptr);
-    REQUIRE(hipErrorInvalidValue == ret);
+    HIP_CHECK_ERROR(hipGraphExecDestroy(nullptr), hipErrorInvalidValue);
   }
+
   SECTION("Pass hipGraphExecDestroy with un-initilze structure") {
-    hipGraphExec_t graphExec{};
-    ret = hipGraphExecDestroy(graphExec);
-    REQUIRE(hipErrorInvalidValue == ret);
+    hipGraphExec_t graph_exec{};
+    HIP_CHECK_ERROR(hipGraphExecDestroy(graph_exec), hipErrorInvalidValue);
   }
 }
 
-TEST_CASE("Unit_hipGraphExecDestroy_Sequence") {
+/**
+ * Test Description
+ * ------------------------
+ *    - Basic positive test for hipGraphExecDestroy
+ *    - create an executable graph and then destroy it
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphExecDestroy.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipGraphExecDestroy_Positive_Basic") {
   hipGraph_t graph;
   hipGraphExec_t graphExec;
   hipStream_t streamForGraph;
@@ -70,4 +95,3 @@ TEST_CASE("Unit_hipGraphExecDestroy_Sequence") {
   HIP_CHECK(hipGraphExecDestroy(graphExec));
   HIP_CHECK(hipStreamDestroy(streamForGraph));
 }
-

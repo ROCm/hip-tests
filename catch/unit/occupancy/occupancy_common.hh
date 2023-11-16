@@ -66,7 +66,5 @@ template <typename F> void MaxActiveBlocksPerMultiprocessorNegative(F func, int 
   SECTION("numBlocks is nullptr") {
     HIP_CHECK_ERROR(func(nullptr, blockSize, 0), hipErrorInvalidValue);
   }
-  SECTION("Block size is 0") { 
-    HIP_CHECK_ERROR(func(&numBlocks, 0, 0), hipErrorInvalidValue);
-  }
+  SECTION("Block size is 0") { HIP_CHECK_ERROR(func(&numBlocks, 0, 0), hipErrorInvalidValue); }
 }

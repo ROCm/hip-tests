@@ -22,6 +22,7 @@ THE SOFTWARE.
 
 #include <iostream>
 #include <hip/hip_runtime.h>
+#include "hip_helper.h"
 
 #define WIDTH 32
 
@@ -66,11 +67,11 @@ void MultipleStream(float** data, float* randArray, float** gpuTransposeMatrix,
     const int num_streams = 2;
     hipStream_t streams[num_streams];
 
-    for (int i = 0; i < num_streams; i++) hipStreamCreate(&streams[i]);
+    for (int i = 0; i < num_streams; i++) checkHipErrors(hipStreamCreate(&streams[i]));
 
     for (int i = 0; i < num_streams; i++) {
-        hipMalloc((void**)&data[i], NUM * sizeof(float));
-        hipMemcpyAsync(data[i], randArray, NUM * sizeof(float), hipMemcpyHostToDevice, streams[i]);
+        checkHipErrors(hipMalloc((void**)&data[i], NUM * sizeof(float)));
+        checkHipErrors(hipMemcpyAsync(data[i], randArray, NUM * sizeof(float), hipMemcpyHostToDevice, streams[i]));
     }
 
     hipLaunchKernelGGL(matrixTranspose_static_shared,
@@ -84,12 +85,12 @@ void MultipleStream(float** data, float* randArray, float** gpuTransposeMatrix,
                     streams[1], gpuTransposeMatrix[1], data[1], width);
 
     for (int i = 0; i < num_streams; i++)
-        hipMemcpyAsync(TransposeMatrix[i], gpuTransposeMatrix[i], NUM * sizeof(float),
-                       hipMemcpyDeviceToHost, streams[i]);
+        checkHipErrors(hipMemcpyAsync(TransposeMatrix[i], gpuTransposeMatrix[i], NUM * sizeof(float),
+                       hipMemcpyDeviceToHost, streams[i]));
 }
 
 int main() {
-    hipSetDevice(0);
+    checkHipErrors(hipSetDevice(0));
 
     float *data[2], *TransposeMatrix[2], *gpuTransposeMatrix[2], *randArray;
 
@@ -100,8 +101,8 @@ int main() {
     TransposeMatrix[0] = (float*)malloc(NUM * sizeof(float));
     TransposeMatrix[1] = (float*)malloc(NUM * sizeof(float));
 
-    hipMalloc((void**)&gpuTransposeMatrix[0], NUM * sizeof(float));
-    hipMalloc((void**)&gpuTransposeMatrix[1], NUM * sizeof(float));
+    checkHipErrors(hipMalloc((void**)&gpuTransposeMatrix[0], NUM * sizeof(float)));
+    checkHipErrors(hipMalloc((void**)&gpuTransposeMatrix[1], NUM * sizeof(float)));
 
     for (int i = 0; i < NUM; i++) {
         randArray[i] = (float)i * 1.0f;
@@ -109,7 +110,7 @@ int main() {
 
     MultipleStream(data, randArray, gpuTransposeMatrix, TransposeMatrix, width);
 
-    hipDeviceSynchronize();
+    checkHipErrors(hipDeviceSynchronize());
 
     // verify the results
     int errors = 0;
@@ -128,11 +129,11 @@ int main() {
 
     free(randArray);
     for (int i = 0; i < 2; i++) {
-        hipFree(data[i]);
-        hipFree(gpuTransposeMatrix[i]);
+        checkHipErrors(hipFree(data[i]));
+        checkHipErrors(hipFree(gpuTransposeMatrix[i]));
         free(TransposeMatrix[i]);
     }
 
-    hipDeviceReset();
+    checkHipErrors(hipDeviceReset());
     return 0;
 }

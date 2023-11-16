@@ -177,12 +177,12 @@ TEST_CASE("Unit_hipGraphGetRootNodes_Positive_CapturedStream") {
   hipGraphNode_t* nodes = reinterpret_cast<hipGraphNode_t*>(malloc(numBytes));
   REQUIRE(nodes != nullptr);
 
-  hipGraphNodeType nodeType;
   HIP_CHECK(hipGraphGetRootNodes(graph, nodes, &numRootNodes));
   REQUIRE(numRootNodes == expectedRootNodes);
 
 #if HT_NVIDIA // EXSWHTEC-225
   // Verify root nodes have correct type.
+  hipGraphNodeType nodeType;
   HIP_CHECK(hipGraphNodeGetType(nodes[0], &nodeType));
   REQUIRE(nodeType == hipGraphNodeTypeMemset);
   HIP_CHECK(hipGraphNodeGetType(nodes[1], &nodeType));

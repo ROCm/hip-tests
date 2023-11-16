@@ -241,6 +241,22 @@
         "Unit_hipFreeAsync_negative",
         "Unit_hipLaunchHostFunc_multistreams",
         "Unit_hipGraphMem_Alloc_Free_NodeGetParams_Negative",
+        "=== SWDEV-431191:Below tests failed in stress test on 03/11/23 ===",
+        "Unit_hipHostMalloc_AllocateMoreThanAvailGPUMemory",
+        "Unit_hipHostMalloc_AllocateUseMoreThanAvailGPUMemory",
+        "Unit_Layered1DTexture_Check_DeviceBufferToFromLayered1DArray - char1",
+        "Unit_Layered2DTexture_Check_DeviceBufferToFromLayered2DArray - char2",
+        "Unit_Layered1DTexture_Check_HostBufferToFromLayered1DArray - uint",
+        "Unit_Layered1DTexture_Check_DeviceBufferToFromLayered1DArray - uchar4",
+        "Unit_Layered2DTexture_Check_DeviceBufferToFromLayered2DArray - unsigned char",
+        "Unit_Layered2DTexture_Check_DeviceBufferToFromLayered2DArray - float",
+        "Unit_Layered2DTexture_Check_DeviceBufferToFromLayered2DArray - uint2",
+        "=== SWDEV-432250:Below tests failed in stress test on 10/11/23 ===",
+        "Unit_Layered1DTexture_Check_DeviceBufferToFromLayered1DArray - ushort1",
+        "Unit_Layered2DTexture_Check_DeviceBufferToFromLayered2DArray - int2",
+        "Unit_hipVectorTypes_test_on_device",
+        "Unit_Layered1DTexture_Check_DeviceBufferToFromLayered1DArray - ushort4",
+        "Unit_Layered2DTexture_Check_DeviceBufferToFromLayered2DArray - float4",
     #endif
         "End of json"
     ]

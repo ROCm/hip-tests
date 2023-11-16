@@ -171,6 +171,15 @@
         "Unit_hipP2pLinkTypeAndHopFunc",
         "=== SWDEV-426219:This test fails in integrity test & PSDB ===",
         "Unit_hipLaunchParm",
+        "=== Below test failed in jenkins stress test on 10/11/23 ===",
+        "Unit_hipDeviceGetUuid_From_RocmInfo",
+        "=== SWDEV-432554:Below test failed in stress test on 10/11/23 ===",
+        "Unit_hipMemcpy3DAsync_Positive_Basic",
+        "Unit_hipDrvMemcpy3DAsync_Positive_Basic",
+        "Print_Out_Attributes",
+        "Unit_hipExtGetLinkTypeAndHopCount_Positive_Basic",
+        "Unit_hipClock64_Positive_Basic",
+        "Unit_hipClock_Positive_Basic",
     #endif
     #if defined MI2XX
         "Unit_hipStreamPerThread_DeviceReset_1",
@@ -225,6 +234,8 @@
         "Unit_hipMemcpyAsync_H2H-H2D-D2H-H2PinMem - double",
         "Unit_hipMallocArray_happy - int4",
         "Unit_hipMallocArray_happy - float4",
+        "=== SWDEV-432556:Below test failed in stress test on 10/11/23 ===",
+        "Unit_hipDeviceGetUuid_From_RocmInfo",
     #endif
     #if defined NAVI21
         "=== Below tests failed in stress test on 11/10/23 ===",

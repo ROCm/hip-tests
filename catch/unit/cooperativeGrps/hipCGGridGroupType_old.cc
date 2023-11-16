@@ -319,7 +319,7 @@ TEST_CASE("Unit_hipCGGridGroupType_Basic") {
   }
 #if HT_AMD
   SECTION("Base type grid group API test") {
-    kernel_func = reinterpret_cast<void*(*)()>(kernel_cg_grid_group_type_via_base_type);
+    kernel_func = reinterpret_cast<void* (*)()>(kernel_cg_grid_group_type_via_base_type);
   }
 #endif
 
@@ -393,8 +393,8 @@ TEST_CASE("Unit_hipCGGridGroupType_DataSharing") {
   HIP_CHECK(hipMemsetAsync(dev_mem_2, 0, width * sizeof(unsigned int), stream));
 
   // Launch the kernels
-  INFO("Launching a cooperative kernel with" << num_blocks << "blocks, each with" << warp_size
-                                             << "threads");
+  INFO("Launching a cooperative kernel with " << num_blocks << " blocks, each with " << warp_size
+                                              << " threads");
 
   void* coop_params[4];
   coop_params[0] = reinterpret_cast<void*>(&dev_mem_1);
@@ -474,8 +474,8 @@ TEST_CASE("Unit_hipCGGridGroupType_Barrier") {
   HIP_CHECK(hipMemset(kernel_atomic, 0, sizeof(unsigned int)));
 
   // Launch the kernel
-  INFO("Launching a cooperative kernel with" << warps << "warps in" << requested_blocks
-                                             << "thread blocks");
+  INFO("Launching a cooperative kernel with " << warps << " warps in " << requested_blocks
+                                              << " thread blocks");
 
   void* params[3];
   params[0] = reinterpret_cast<void*>(&kernel_atomic);

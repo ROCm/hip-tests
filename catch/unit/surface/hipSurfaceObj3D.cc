@@ -20,6 +20,9 @@ THE SOFTWARE.
 #include <hip_array_common.hh>
 #include <hip_texture_helper.hh>
 
+#pragma clang diagnostic ignored "-Wunused-variable"
+#pragma clang diagnostic ignored "-Wunused-parameter"
+
 template <typename T>
 __global__ void
 surf3DKernelR(hipSurfaceObject_t surfaceObject,
@@ -85,7 +88,7 @@ static void runTestR(const int width, const int height, const int depth)
 
   // Allocate array and copy image data
   hipChannelFormatDesc channelDesc = hipCreateChannelDesc<T>();
-  hipArray *hipArray = nullptr;
+  hipArray_t hipArray = nullptr;
   HIP_CHECK(hipMalloc3DArray(&hipArray, &channelDesc, make_hipExtent(width, height, depth),
                              hipArraySurfaceLoadStore));
 
@@ -152,7 +155,7 @@ static void runTestW(const int width, const int height, const int depth)
 
   // Allocate array and copy image data
   hipChannelFormatDesc channelDesc = hipCreateChannelDesc<T>();
-  hipArray *hipArray = nullptr;
+  hipArray_t hipArray = nullptr;
   HIP_CHECK(hipMalloc3DArray(&hipArray, &channelDesc, make_hipExtent(width, height, depth),
                              hipArraySurfaceLoadStore));
 
@@ -242,7 +245,7 @@ static void runTestRW(const int width, const int height, const int depth)
 
   // Allocate array and copy image data
   hipChannelFormatDesc channelDesc = hipCreateChannelDesc<T>();
-  hipArray *hipArray = nullptr, *hipOutArray = nullptr;
+  hipArray_t hipArray = nullptr, hipOutArray = nullptr;
   HIP_CHECK(hipMalloc3DArray(&hipArray, &channelDesc, make_hipExtent(width, height, depth),
                              hipArraySurfaceLoadStore));
 

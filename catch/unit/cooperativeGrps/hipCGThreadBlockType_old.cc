@@ -29,7 +29,8 @@ namespace cg = cooperative_groups;
 enum class ThreadBlockTypeTests { basicApi, baseType, publicApi };
 
 static __global__ void kernel_cg_thread_block_type(int* size_dev, int* thd_rank_dev, int* sync_dev,
-                                                   dim3* group_index_dev, dim3* thd_index_dev) {
+                                                   dim3* group_index_dev, dim3* thd_index_dev,
+                                                   dim3* group_dim_dev) {
   cg::thread_block tb = cg::this_thread_block();
   int gIdx = (blockIdx.x * blockDim.x) + threadIdx.x;
   // Test size
@@ -52,6 +53,9 @@ static __global__ void kernel_cg_thread_block_type(int* size_dev, int* thd_rank_
 
   // Test thread_index
   thd_index_dev[gIdx] = tb.thread_index();
+
+  // Test group_dim aka number of threads in a block
+  group_dim_dev[gIdx] = tb.group_dim();
 }
 
 static __global__ void kernel_cg_thread_block_type_via_base_type(int* size_dev, int* thd_rank_dev,
@@ -104,6 +108,7 @@ static void test_cg_thread_block_type(ThreadBlockTypeTests test_type, int block_
   int *sync_dev, *sync_host;
   dim3 *group_index_dev, *group_index_host;
   dim3 *thd_index_dev, *thd_index_host;
+  dim3 *group_dim_dev, *group_dim_host;
 
   // Allocate device memory
   HIP_CHECK(hipMalloc(&size_dev, num_bytes));
@@ -119,11 +124,13 @@ static void test_cg_thread_block_type(ThreadBlockTypeTests test_type, int block_
     case (ThreadBlockTypeTests::basicApi):
       HIP_CHECK(hipMalloc(&group_index_dev, num_dim3_bytes));
       HIP_CHECK(hipMalloc(&thd_index_dev, num_dim3_bytes));
+      HIP_CHECK(hipMalloc(&group_dim_dev, num_dim3_bytes));
       HIP_CHECK(hipHostMalloc(&group_index_host, num_dim3_bytes));
       HIP_CHECK(hipHostMalloc(&thd_index_host, num_dim3_bytes));
+      HIP_CHECK(hipHostMalloc(&group_dim_host, num_dim3_bytes));
 
       hipLaunchKernelGGL(kernel_cg_thread_block_type, 2, block_size, 0, 0, size_dev, thd_rank_dev,
-                         sync_dev, group_index_dev, thd_index_dev);
+                         sync_dev, group_index_dev, thd_index_dev, group_dim_dev);
       break;
     case (ThreadBlockTypeTests::baseType):
       hipLaunchKernelGGL(kernel_cg_thread_block_type_via_base_type, 2, block_size, 0, 0, size_dev,
@@ -141,6 +148,7 @@ static void test_cg_thread_block_type(ThreadBlockTypeTests test_type, int block_
   if (test_type == ThreadBlockTypeTests::basicApi) {
     HIP_CHECK(hipMemcpy(group_index_host, group_index_dev, num_dim3_bytes, hipMemcpyDeviceToHost));
     HIP_CHECK(hipMemcpy(thd_index_host, thd_index_dev, num_dim3_bytes, hipMemcpyDeviceToHost));
+    HIP_CHECK(hipMemcpy(group_dim_host, group_dim_dev, num_dim3_bytes, hipMemcpyDeviceToHost));
   }
 
   // Validate results for both blocks together
@@ -155,6 +163,9 @@ static void test_cg_thread_block_type(ThreadBlockTypeTests test_type, int block_
       ASSERT_EQUAL(thd_index_host[i].x, (uint)i % block_size);
       ASSERT_EQUAL(thd_index_host[i].y, 0);
       ASSERT_EQUAL(thd_index_host[i].z, 0);
+      ASSERT_EQUAL(group_dim_host[i].x, block_size);
+      ASSERT_EQUAL(group_dim_host[i].y, 1);
+      ASSERT_EQUAL(group_dim_host[i].z, 1);
     }
   }
 
@@ -171,8 +182,10 @@ static void test_cg_thread_block_type(ThreadBlockTypeTests test_type, int block_
   if (test_type == ThreadBlockTypeTests::basicApi) {
     HIP_CHECK(hipFree(group_index_dev));
     HIP_CHECK(hipFree(thd_index_dev));
+    HIP_CHECK(hipFree(group_dim_dev));
     HIP_CHECK(hipHostFree(group_index_host));
     HIP_CHECK(hipHostFree(thd_index_host));
+    HIP_CHECK(hipHostFree(group_dim_host));
   }
 }
 

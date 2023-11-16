@@ -24,6 +24,8 @@ THE SOFTWARE.
 #include <iostream>
 #include <algorithm>
 
+
+
 VkFence VulkanTest::CreateFence() {
   VkFence fence;
   VkFenceCreateInfo fence_create_info = {};
@@ -37,11 +39,12 @@ VkFence VulkanTest::CreateFence() {
 
 VkSemaphore VulkanTest::CreateExternalSemaphore(VkSemaphoreType sem_type, uint64_t initial_value) {
   VkExportSemaphoreCreateInfoKHR export_sem_create_info = {};
+  VkSemaphoreTypeCreateInfo timeline_create_info = {};
+
   export_sem_create_info.sType = VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO_KHR;
   export_sem_create_info.handleTypes = _sem_handle_type;
 
   if (sem_type == VK_SEMAPHORE_TYPE_TIMELINE) {
-    VkSemaphoreTypeCreateInfo timeline_create_info = {};
     timeline_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
     timeline_create_info.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
     timeline_create_info.initialValue = initial_value;
@@ -80,7 +83,7 @@ hipExternalMemoryHandleDesc VulkanTest::BuildMemoryDescriptor(VkDeviceMemory vk_
   hipExternalMemoryHandleDesc mem_handle_desc = {};
   mem_handle_desc.type = VulkanMemHandleTypeToHIPHandleType();
 #ifdef _WIN64
-  mem_handle_desc.handle.win32.handle = GetMemoryHandle(ck_mem);
+  mem_handle_desc.handle.win32.handle = GetMemoryHandle(vk_mem);
 #else
   mem_handle_desc.handle.fd = GetMemoryHandle(vk_mem);
 #endif
@@ -170,7 +173,7 @@ bool VulkanTest::CheckExtensionSupport(std::vector<const char*> expected_extensi
                  std::back_inserter(supported_extensions),
                  [](const auto& p) { return p.extensionName; });
 
-  constexpr auto p = [](const char* l, const char* r) { return strcmp(l, r) < 0; };
+  auto p = [](const char* l, const char* r) { return strcmp(l, r) < 0; };
   std::sort(expected_extensions.begin(), expected_extensions.end(), p);
   std::sort(supported_extensions.begin(), supported_extensions.end(), p);
 
@@ -328,7 +331,7 @@ int VulkanTest::GetSemaphoreHandle(VkSemaphore semaphore) {
 #ifdef _WIN64
 HANDLE
 VulkanTest::GetMemoryHandle(VkDeviceMemory memory) {
-  Handle handle = 0;
+  HANDLE handle = 0;
 
   VkMemoryGetWin32HandleInfoKHR vkMemoryGetWin32HandleInfoKHR = {};
   vkMemoryGetWin32HandleInfoKHR.sType = VK_STRUCTURE_TYPE_MEMORY_GET_WIN32_HANDLE_INFO_KHR;
@@ -336,7 +339,7 @@ VulkanTest::GetMemoryHandle(VkDeviceMemory memory) {
   vkMemoryGetWin32HandleInfoKHR.handleType = _mem_handle_type;
 
   PFN_vkGetMemoryWin32HandleKHR fpGetMemoryWin32HandleKHR =
-      (PFN_vkGetMemoryWin32HandleKHR)vkGetDeviceProcAddr(m_device, "vkGetMemoryWin32HandleKHR");
+      (PFN_vkGetMemoryWin32HandleKHR)vkGetDeviceProcAddr(_device, "vkGetMemoryWin32HandleKHR");
 
   if (!fpGetMemoryWin32HandleKHR) {
     throw std::runtime_error("Failed to retrieve vkGetMemoryWin32HandleKHR");
@@ -408,3 +411,4 @@ hipExternalSemaphore_t ImportBinarySemaphore(VulkanTest& vkt) {
 
   return hip_ext_semaphore;
 }
+

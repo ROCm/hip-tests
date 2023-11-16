@@ -1223,7 +1223,7 @@ static bool NoGpuTst_hipMallocArray() {
   hipError_t err;
   hipChannelFormatDesc channelDesc =
   hipCreateChannelDesc(32, 0, 0, 0, hipChannelFormatKindFloat);
-  hipArray* hipArray;
+  hipArray_t hipArray;
   err = hipMallocArray(&hipArray, &channelDesc, 256, 256);
   if (err == hipErrorNoDevice) {
     passed = true;

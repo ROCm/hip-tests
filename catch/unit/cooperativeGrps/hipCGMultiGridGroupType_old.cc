@@ -591,8 +591,8 @@ TEST_CASE("Unit_hipCGMultiGridGroupType_Barrier") {
   HIP_CHECK(hipMemset(global_array, 0, num_devices * sizeof(unsigned int)));
 
   // Launch the kernels
-  INFO("Launching a cooperative kernel with" << warps << "warps in" << requested_blocks
-                                             << "thread blocks");
+  INFO("Launching a cooperative kernel with " << warps << " warps in " << requested_blocks
+                                              << " thread blocks");
 
   void* dev_params[num_devices][4];
   hipLaunchParams md_params[num_devices];

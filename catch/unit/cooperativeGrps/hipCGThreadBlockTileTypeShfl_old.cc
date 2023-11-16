@@ -83,7 +83,6 @@ template <unsigned int tile_size>
 static __global__ void kernel_cg_group_partition_static(int* result,
                                                         TiledGroupShflTests shfl_test) {
   cg::thread_block thread_block_CG_ty = cg::this_thread_block();
-  int threadBlockGroupSize = thread_block_CG_ty.size();
   int input, output_sum;
 
   // Choose a leader thread to print the results
@@ -95,7 +94,6 @@ static __global__ void kernel_cg_group_partition_static(int* result,
   thread_block_CG_ty.sync();
 
   cg::thread_block_tile<tile_size> tiled_part = cg::tiled_partition<tile_size>(thread_block_CG_ty);
-  int threadRank = tiled_part.thread_rank();
 
   input = tiled_part.thread_rank();
 

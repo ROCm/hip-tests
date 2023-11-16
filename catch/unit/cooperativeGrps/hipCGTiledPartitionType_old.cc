@@ -19,6 +19,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+// Test Description:
+/* This test implements sum reduction kernel, first with each threads own rank
+   as input and comparing the sum with expected sum output derieved from n(n-1)/2
+   formula. The second part, partitions this parent group into child subgroups
+   a.k.a tiles using using tiled_partition() collective operation. This can be called
+   with a static tile size, passed in templated non-type variable-tiled_partition<tileSz>,
+   or in runtime as tiled_partition(thread_group parent, tileSz). This test covers both these
+   cases.
+   This test tests functionality of cg group partitioning, (static and dynamic) and its respective
+   API's size(), thread_rank(), and sync().
+*/
+
 #include <hip_test_common.hh>
 #include <hip/hip_cooperative_groups.h>
 #include <cstdlib>
@@ -36,7 +48,6 @@ namespace cg = cooperative_groups;
  */
 __device__ int reduction_kernel(cg::thread_group g, int* x, int val) {
   int lane = g.thread_rank();
-  int sz = g.size();
 
   for (int i = g.size() / 2; i > 0; i /= 2) {
     // use lds to store the temporary result

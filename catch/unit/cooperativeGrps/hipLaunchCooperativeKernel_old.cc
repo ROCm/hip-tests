@@ -239,11 +239,9 @@ static void test_cooperative_streams(int dev, int p_tests) {
   }
 
   // We need exclude the the initial launching as it will need time to load code obj.
-  auto single_start0 = std::chrono::system_clock::now();
   HIP_CHECK(hipLaunchCooperativeKernel(reinterpret_cast<void*>(test_kernel_used), max_active_blocks,
                                        warp_size, coop_params[0], 0, streams[0]));
   HIP_CHECK(hipDeviceSynchronize());
-  auto single_end0 = std::chrono::system_clock::now();
 
   // Launching a single cooperative kernel
   auto single_start = std::chrono::system_clock::now();

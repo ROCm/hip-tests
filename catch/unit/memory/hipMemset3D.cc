@@ -32,6 +32,8 @@ THE SOFTWARE.
  * Basic Functional test of hipMemset3D
  */
 TEST_CASE("Unit_hipMemset3D_BasicFunctional") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr int memsetval = 0x22;
   constexpr size_t numH = 256;
   constexpr size_t numW = 256;
@@ -80,6 +82,8 @@ TEST_CASE("Unit_hipMemset3D_BasicFunctional") {
  * Basic Functional test of hipMemset3DAsync
  */
 TEST_CASE("Unit_hipMemset3DAsync_BasicFunctional") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr int memsetval = 0x22;
   constexpr size_t numH = 256;
   constexpr size_t numW = 256;

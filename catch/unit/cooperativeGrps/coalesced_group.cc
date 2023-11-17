@@ -636,9 +636,7 @@ __global__ void coalesced_group_sync_check(T* global_data, unsigned int* wait_mo
 
   const auto data_idx = [&block](unsigned int i) { return use_global ? i : (i % block.size()); };
 
-  const auto partitions_in_block = (block.size() + partition.size() - 1) / partition.size();
   const auto partition_rank = block.thread_rank() / partition.size();
-  const auto tail = partitions_in_block * partition.size() - block.size();
 
   const auto block_base_idx = tid / block.size() * block.size();
   const auto tile_base_idx = block_base_idx + partition_rank * partition.size();
@@ -682,8 +680,6 @@ template <bool global_memory, typename T> void CoalescedGroupSyncTest() {
   INFO("Block dimensions: x " << threads.x << ", y " << threads.y << ", z " << threads.z);
   INFO("Coalesced group mask: " << active_mask);
   CPUGrid grid(blocks, threads);
-
-  unsigned int active_thread_count = get_active_thread_count(active_mask, kWarpSize);
 
   const auto alloc_size = grid.thread_count_ * sizeof(T);
   const auto alloc_size_per_block = alloc_size / grid.block_count_;

@@ -182,7 +182,7 @@ static void hipGraphDebugDotPrint_Functional(const char* fName,
 
   // Add emcpyNode3D to graph & validate its DebugDotPrint descriptions
   constexpr int width{10}, height{10}, depth{10};
-  hipArray *devArray1;
+  hipArray_t devArray1;
   hipChannelFormatKind formatKind = hipChannelFormatKindSigned;
   hipMemcpy3DParms myparams;
   uint32_t size = width * height * depth * sizeof(int);
@@ -295,6 +295,8 @@ static void hipGraphDebugDotPrint_Functional(const char* fName,
    Verify that DOT file get created or not for each flag passed. */
 
 TEST_CASE("Unit_hipGraphDebugDotPrint_Functional") {
+  CHECK_IMAGE_SUPPORT
+
   SECTION("Call with hipGraphDebugDotFlagsVerbose flag") {
     hipGraphDebugDotPrint_Functional("./graphDotFileFuncVerbose.dot",
                                      hipGraphDebugDotFlagsVerbose);

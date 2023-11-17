@@ -18,7 +18,9 @@ THE SOFTWARE.
 */
 #include <hip_test_common.hh>
 TEST_CASE("Unit_hipArray_Valid") {
-    hipArray* array = nullptr;
+    CHECK_IMAGE_SUPPORT
+
+    hipArray_t array = nullptr;
     HIP_ARRAY_DESCRIPTOR desc;
     desc.Format = HIP_AD_FORMAT_FLOAT;
     desc.NumChannels = 1;
@@ -27,18 +29,25 @@ TEST_CASE("Unit_hipArray_Valid") {
     HIP_CHECK(hipArrayCreate(&array, &desc));
     HIP_CHECK(hipFreeArray(array));
 }
+
 TEST_CASE("Unit_hipArray_Invalid") {
+    CHECK_IMAGE_SUPPORT
+
     void* data = malloc(sizeof(char));
-    hipArray_t arrayPtr = static_cast<hipArray*>(data);
+    hipArray_t arrayPtr = static_cast<hipArray_t>(data);
     REQUIRE(hipFreeArray(arrayPtr) == hipErrorContextIsDestroyed);
     free(data);
 }
 TEST_CASE("Unit_hipArray_Nullptr") {
-    hipArray* array = nullptr;
+    CHECK_IMAGE_SUPPORT
+
+    hipArray_t array = nullptr;
     REQUIRE(hipFreeArray(array) == hipErrorInvalidValue);
 }
 TEST_CASE("Unit_hipArray_DoubleFree") {
-    hipArray* array = nullptr;
+    CHECK_IMAGE_SUPPORT
+
+    hipArray_t array = nullptr;
     HIP_ARRAY_DESCRIPTOR desc;
     desc.Format = HIP_AD_FORMAT_FLOAT;
     desc.NumChannels = 1;
@@ -49,7 +58,9 @@ TEST_CASE("Unit_hipArray_DoubleFree") {
     REQUIRE(hipFreeArray(array) == hipErrorContextIsDestroyed);
 }
 TEST_CASE("Unit_hipArray_TrippleDestroy") {
-    hipArray* array = nullptr;
+    CHECK_IMAGE_SUPPORT
+
+    hipArray_t array = nullptr;
     HIP_ARRAY_DESCRIPTOR desc;
     desc.Format = HIP_AD_FORMAT_FLOAT;
     desc.NumChannels = 1;
@@ -61,13 +72,17 @@ TEST_CASE("Unit_hipArray_TrippleDestroy") {
     REQUIRE(hipArrayDestroy(array) == hipErrorContextIsDestroyed);
 }
 TEST_CASE("Unit_hipArray_DoubleNullptr") {
-    hipArray* array = nullptr;
+    CHECK_IMAGE_SUPPORT
+
+    hipArray_t array = nullptr;
     REQUIRE(hipFreeArray(array) == hipErrorInvalidValue);
     REQUIRE(hipFreeArray(array) == hipErrorInvalidValue);
 }
 TEST_CASE("Unit_hipArray_DoubleInvalid") {
+    CHECK_IMAGE_SUPPORT
+
     void* data = malloc(sizeof(char));
-    hipArray_t arrayPtr = static_cast<hipArray*>(data);
+    hipArray_t arrayPtr = static_cast<hipArray_t>(data);
     REQUIRE(hipFreeArray(arrayPtr) == hipErrorContextIsDestroyed);
     REQUIRE(hipFreeArray(arrayPtr) == hipErrorContextIsDestroyed);
     free(data);

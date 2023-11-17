@@ -117,8 +117,10 @@ __global__ void kernel_cg_group_partition_static(int* result, bool is_global_mem
   if (tiled_part.thread_rank() == 0) {
     printf(
         "   Sum of all ranks 0..%d in this tiledPartition group is %d. Corresponding parent thread "
-        "rank: %d\n",
-        tiled_part.size() - 1, output_sum, input);
+        "rank: via meta_group_rank : %d and the total number of groups created when partitioned : "
+        "%d\n",
+        tiled_part.size() - 1, output_sum, tiled_part.meta_group_rank(),
+        tiled_part.meta_group_size());
     result[input / (tile_size)] = output_sum;
   }
   return;

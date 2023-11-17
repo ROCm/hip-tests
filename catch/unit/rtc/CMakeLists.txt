@@ -5,6 +5,7 @@ set(TEST_SRC
     hipRtcFunctional.cc
     hipStreamCaptureRtc.cc
     includepath.cc
+    hipRTCDeviceMalloc.cc
 )
 
 # AMD only tests
@@ -13,6 +14,7 @@ set(AMD_TEST_SRC
     hipRtcBfloat16.cc
     linker.cc
     shfl.cc
+    stdheaders.cc
 )
 
 add_custom_target(copyRtcHeaders ALL
@@ -24,7 +26,7 @@ add_custom_target(copyRtcHeaders ALL
   ${CMAKE_CURRENT_BINARY_DIR}/headers)
 
 if(UNIX)
-   set(AMD_TEST_SRC ${TEST_SRC}
+   set(AMD_TEST_SRC ${AMD_TEST_SRC}
        RtcFunctions.cpp
        RtcUtility.cpp)
 endif()

@@ -118,10 +118,8 @@ set(TEST_SRC
     hipMemsetFunctional.cc
     hipMalloc.cc
     hipMallocPitch.cc
-    hipMallocArray.cc
     hipMalloc3D.cc
     hipMalloc3DArray.cc
-    hipArrayCreate.cc
     hipArray3DCreate.cc
     hipDrvMemcpy3D.cc
     hipDrvMemcpy3D_old.cc
@@ -144,6 +142,41 @@ set(TEST_SRC
     hipMemRangeGetAttributes_old.cc
     hipMemGetAddressRange.cc)
 
+set(NOT_FOR_MI200_AND_ABOVE_TEST hipMallocArray.cc hipArrayCreate.cc) # tests not for MI200+
+set(MI200_AND_ABOVE_TARGETS gfx90a gfx940 gfx941 gfx942)
+function(CheckRejectedArchs OFFLOAD_ARCH_STR_LOCAL)
+  set(ARCH_CHECK -1 PARENT_SCOPE)
+  string(REGEX MATCHALL "--offload-arch=gfx[0-9a-z]+" OFFLOAD_ARCH_LIST ${OFFLOAD_ARCH_STR_LOCAL})
+  foreach(OFFLOAD_ARCH IN LISTS OFFLOAD_ARCH_LIST)
+    string(REGEX MATCHALL "--offload-arch=(gfx[0-9a-z]+)" matches ${OFFLOAD_ARCH})
+    if (CMAKE_MATCH_COUNT EQUAL 1)
+      if (CMAKE_MATCH_1 IN_LIST MI200_AND_ABOVE_TARGETS)
+        set(ARCH_CHECK 1 PARENT_SCOPE)
+      endif()         # CMAKE_MATCH_1
+    endif()        # CMAKE_MATCH_COUNT
+  endforeach()   # OFFLOAD_ARCH_LIST
+endfunction()  # CheckAcceptedArchs
+
+if(HIP_PLATFORM MATCHES "amd")
+  if (DEFINED OFFLOAD_ARCH_STR)
+    CheckRejectedArchs(${OFFLOAD_ARCH_STR})
+  elseif(DEFINED $ENV{HCC_AMDGPU_TARGET})
+    CheckRejectedArchs($ENV{HCC_AMDGPU_TARGET})
+  else()
+    set(ARCH_CHECK -1)
+  endif()
+  if(${ARCH_CHECK} EQUAL -1)
+    message(STATUS "Adding test: ${NOT_FOR_MI200_AND_ABOVE_TEST}")
+    set(TEST_SRC ${TEST_SRC} ${NOT_FOR_MI200_AND_ABOVE_TEST})
+  endif()
+else()
+  set(TEST_SRC ${TEST_SRC} ${NOT_FOR_MI200_AND_ABOVE_TEST})
+endif()
+
 hip_add_exe_to_target(NAME MemoryTest2
   TEST_SRC ${TEST_SRC}
   TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
+
+if(HIP_PLATFORM MATCHES "amd")
+  add_dependencies(build_tests hipHostRegisterPerf)
+endif()

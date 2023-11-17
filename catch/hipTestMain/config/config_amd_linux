@@ -8,8 +8,12 @@
     #define MI100
 #endif
 
-#if defined gfx90a || defined  gfx940
+#if defined gfx90a || defined  gfx940 || defined gfx941 || defined gfx942
     #define MI2XX
+#endif
+
+#if defined gfx1030
+    #define NAVI21
 #endif
 
 #if defined gfx1100 || defined gfx1102
@@ -26,7 +30,6 @@
     "DisabledTests": [
     #if defined COMMON
         "Unit_hipStreamPerThread_DeviceReset_1",
-        "Unit_hipMallocManaged_OverSubscription",
         "Unit_hipDeviceGetSharedMemConfig_Positive_Basic",
         "Unit_hipDeviceGetSharedMemConfig_Positive_Threaded",
         "Unit_hipDeviceGetCacheConfig_Positive_Basic",
@@ -143,34 +146,34 @@
         "=== Below tests fail in stress test on 24/07/23 ===",
         "Unit_hipStreamCreateWithPriority_ValidateWithEvents",
         "Unit_hipEventIpc",
-        "=== Below hiprtc tests are disabled temporarily,  will be renabled once patches for SWDEV-395996 are merged ===",
-        "Unit_hiprtc_saxpy",
-        "Unit_hiprtc_warpsize",
-        "Unit_hiprtc_functional",
-        "Unit_hipStreamCaptureRtc",
-        "Unit_hiprtc_cpp17",
-        "Unit_hiprtc_namehandling",
-        "Unit_hiprtc_getloweredname",
-        "Unit_hiprtc_test_hip_bfloat16",
-        "Unit_RTC_LinkerAPI",
-        "Unit_hiprtc_half_shuffle",
-        "Unit_hiprtc_includepath",
+        "=== SWDEV-427101:Below test fails randomly in PSDB ===",
+        "Unit_deviceAllocation_InOneThread_AccessInAllThreads",
+        "=== Below test failed in stress test on 11/10/23 ===",
+        "Unit_hipApiLinkUnusedLibs",
+        "=== StreamCreate Performance tests may potentially fail on all configs ===",
+        "Unit_hipStreamCreate_Performance",
+        "Unit_hipStreamCreate_WithFlagsPerformance_Nonblocking",
+        "Unit_hipStreamCreate_WithFlagsPerformance_Default",
+        "Unit_hipStreamCreate_WithPriorityPerformance_Nonblocking_low",
+        "Unit_hipStreamCreate_WithPriorityPerformance_Nonblocking_high",
+        "Unit_hipStreamCreate_WithPriorityPerformance_Default_low",
+        "Unit_hipStreamCreate_WithPriorityPerformance_Default_high",
     #endif
     #if defined VEGA20
         "=== SWDEV-419112 Below tests fail in stress test on 29/08/23 ===",
         "Unit_deviceAllocation_Malloc_ComplexDataType",
-        "Unit_hipStreamCreate_WithPriorityPerformance_Default_low",
-        "=== Below tests tests fail in stress test on 13/09/23 ===",
-        "Unit_hipStreamCreate_Performance",
-        "Unit_hipStreamCreate_WithPriorityPerformance_Default_high",
     #endif
     #if defined MI100
         "=== Below test soft hang in stress test on 29/08/23 ===",
         "Unit_hipMultiThreadStreams2",
+        "=== SWDEV-425248:Below tests failed in stress test on 11/10/23 ===",
+        "Unit_hipHostRegister_Memcpy - double",
+        "Unit_hipP2pLinkTypeAndHopFunc",
+        "=== SWDEV-426219:This test fails in integrity test & PSDB ===",
+        "Unit_hipLaunchParm",
     #endif
     #if defined MI2XX
         "Unit_hipStreamPerThread_DeviceReset_1",
-        "Unit_hipMallocManaged_OverSubscription",
         "Unit_hipDeviceGetPCIBusId_Negative_PartialFill",
         "Unit_hipInit_Negative",
         "Unit_hipMemGetAddressRange_Negative",
@@ -187,18 +190,6 @@
         "Unit_hipDestroyExternalSemaphore_Vulkan_Negative_Parameters",
         "SWDEV-415692 Soft hang in stress test on 29/08/23",
         "Unit_Grid_Group_Sync_Positive_Basic",
-        "=== Below hiprtc tests are disabled temporarily,  will be renabled once patches for SWDEV-395996 are merged ===",
-        "Unit_hiprtc_saxpy",
-        "Unit_hiprtc_warpsize",
-        "Unit_hiprtc_functional",
-        "Unit_hipStreamCaptureRtc",
-        "Unit_hiprtc_cpp17",
-        "Unit_hiprtc_namehandling",
-        "Unit_hiprtc_getloweredname",
-        "Unit_hiprtc_test_hip_bfloat16",
-        "Unit_RTC_LinkerAPI",
-        "Unit_hiprtc_half_shuffle",
-        "Unit_hiprtc_includepath",
         "=== Below tests fail in stress test on 29/08/23 ===",
         "Unit_hipMemcpy2DToArray_multiDevicePinnedMemPeerGpu",
         "Unit_hipMemcpy2DToArray_multiDeviceDeviceContextChange",
@@ -225,13 +216,26 @@
         "Unit_hipMemcpyParam2D_multiDevice-D2D - double",
         "Unit_hipMemcpyParam2D_multiDevice-D2D - long double",
         "Unit_hipMemcpyParam2DAsync_multiDevice-StreamOnDiffDevice - char",
+        "=== SWDEV-425251:Below test failed in stress test on 11/10/23 ===",
+        "Unit_hipP2pLinkTypeAndHopFunc",
+        "=== SWDEV-430387:Below tests failed in stress test on 27/10/23 ===",
+        "Unit_hipStreamAddCaptureDependencies_Positive_Functional",
+        "Unit_hipMallocManaged_HostDeviceConcurrent",
+        "Unit_hipMallocManaged_MultiThread",
+        "Unit_hipMemcpyAsync_H2H-H2D-D2H-H2PinMem - double",
+        "Unit_hipMallocArray_happy - int4",
+        "Unit_hipMallocArray_happy - float4",
+    #endif
+    #if defined NAVI21
+        "=== Below tests failed in stress test on 11/10/23 ===",
+        "Unit_hipStreamCreate_Performance",
+        "Unit_hipStreamCreate_WithFlagsPerformance_Nonblocking",
+        "Unit_hipStreamCreate_WithFlagsPerformance_Default",
     #endif
     #if defined NAVI3X
         "=== Below tests soft hang in stress test on 13/09/23 ===",
         "Unit_hipMemsetFunctional_ZeroValue_hipMemsetD16",
         "Unit_hipIpcMemAccess_Semaphores",
-        "Unit_hipStreamCreate_WithFlagsPerformance_Nonblocking",
-        "Unit_hipStreamCreate_WithFlagsPerformance_Default",
         "Unit_hipStreamAttachMemAsync_Negative_Parameters",
         "hipStreamPerThread_CoopLaunch",
         "hipCGMultiGridGroupType",
@@ -239,6 +243,8 @@
         "Grid_Group_Getters_Via_Non_Member_Functions_Positive_Basic",
         "Grid_Group_Sync_Positive_Basic",
         "dynamic_loading_device_kernels_from_library",
+        "=== Below tests failed in stress test on 11/10/23 ===",
+        "Unit_hipStreamCreate_WithPriorityPerformance_Nonblocking_low",
     #endif
         "End of json"
     ]

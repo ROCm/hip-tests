@@ -26,7 +26,6 @@ THE SOFTWARE.
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <dlfcn.h>
-#endif
 
 #define SIZE 2097152
 // GPU threads
@@ -317,3 +316,5 @@ TEST_CASE("Unit_deviceAllocation_NewDelete_MultProcess") {
   auto res = testDeviceMemMulProc(false);
   REQUIRE(res == true);
 }
+
+#endif

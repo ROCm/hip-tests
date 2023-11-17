@@ -35,6 +35,21 @@ THE SOFTWARE.
  * Query for a specific device attribute.
  */
 
+#ifdef __linux__
+#if HT_AMD
+#include "hsa/hsa_ext_amd.h"
+#define HSA_CHECK(exp) {                                              \
+  hsa_status_t status = (exp);                                        \
+  if (status != HSA_STATUS_SUCCESS) {                                 \
+      INFO("HSA Error Code: " << status                               \
+             << "\n    Str: " << #exp << "\n In File: " << __FILE__   \
+             << "\n    At line: " << __LINE__);                       \
+      REQUIRE(false);                                                 \
+    }                                                                 \
+}
+#endif // HT_AMD
+#endif // __linux__
+
 static hipError_t test_hipDeviceGetAttribute(int deviceId,
                                       hipDeviceAttribute_t attr,
                                       int expectedValue = -1) {
@@ -257,28 +272,55 @@ TEST_CASE("Unit_hipGetDeviceAttribute_CheckAttrValues") {
  */
 #ifdef __linux__
 #if HT_AMD
-#define COMMAND_LEN 256
-#define BUFFER_LEN 512
 
-static bool isRocmPathSet() {
-  FILE *fpipe;
-  char const *command = "echo $ROCM_PATH";
-  fpipe = popen(command, "r");
+typedef struct {
+    int device_index;
+    int *fine_grained_val;
+} MemoryPoolInfo;
 
-  if (fpipe == nullptr) {
-    printf("Unable to create command\n");
-    return false;
-  }
-  char command_op[BUFFER_LEN];
-  if (fgets(command_op, BUFFER_LEN, fpipe)) {
-    size_t len = strlen(command_op);
-    if (len > 1) {  // This is because fgets always adds newline character
-      pclose(fpipe);
-      return true;
+
+hsa_status_t IterateMemoryPoolCallback(hsa_amd_memory_pool_t pool, void* data) {
+  MemoryPoolInfo* memory_pool_info = reinterpret_cast<MemoryPoolInfo*>(data);
+  hsa_region_segment_t segment_type = (hsa_region_segment_t)0;
+
+  // Get segment information for this memory pool
+  HSA_CHECK(hsa_amd_memory_pool_get_info(pool, HSA_AMD_MEMORY_POOL_INFO_SEGMENT, &segment_type));
+
+  // Check for global segment
+  if (segment_type == HSA_REGION_SEGMENT_GLOBAL) {
+    uint32_t global_flag = 0;
+    // Get global flags for this memory pool
+    HSA_CHECK(hsa_amd_memory_pool_get_info(pool, HSA_AMD_MEMORY_POOL_INFO_GLOBAL_FLAGS,
+                                          &global_flag));
+
+    // If it is fine grained, then store the information
+    if ((global_flag & HSA_REGION_GLOBAL_FLAG_FINE_GRAINED) != 0) {
+      memory_pool_info->fine_grained_val[memory_pool_info->device_index] = 1;
     }
   }
-  pclose(fpipe);
-  return false;
+  return HSA_STATUS_SUCCESS;
+}
+
+hsa_status_t IterateAgentCallback(hsa_agent_t agent, void* data) {
+  hsa_device_type_t dev_type = HSA_DEVICE_TYPE_CPU;
+  MemoryPoolInfo* memory_pool_info = reinterpret_cast<MemoryPoolInfo*>(data);
+
+  // Get device type for this agent
+  HSA_CHECK(hsa_agent_get_info(agent, HSA_AGENT_INFO_DEVICE, &dev_type));
+  // If it is GPU device, then collect memory pool information
+  if (dev_type == HSA_DEVICE_TYPE_GPU) {
+    memory_pool_info->device_index++;
+    HSA_CHECK(hsa_amd_agent_iterate_memory_pools(agent, IterateMemoryPoolCallback,
+                                                 memory_pool_info));
+  }
+  return HSA_STATUS_SUCCESS;
+}
+
+// Get Fine-grained memory information from HSA
+void HsaGetFineGrainInfo(MemoryPoolInfo* memory_pool_info)
+{
+  HSA_CHECK(hsa_init());
+  HSA_CHECK(hsa_iterate_agents(IterateAgentCallback, memory_pool_info));
 }
 
 /**
@@ -297,48 +339,22 @@ static bool isRocmPathSet() {
 TEST_CASE("Unit_hipGetDeviceAttribute_CheckFineGrainSupport") {
   int deviceId;
   int deviceCount = 0;
-  FILE *fpipe;
-  char command[COMMAND_LEN] = "";
-  const char *rocmpath = nullptr;
-  if (isRocmPathSet()) {
-    // For STG2 testing where /opt/rocm path is not present
-    rocmpath = "$ROCM_PATH/bin/rocminfo";
-  } else {
-    // Check if the rocminfo tool exists
-    rocmpath = "/opt/rocm/bin/rocminfo";
-  }
-  snprintf(command, COMMAND_LEN, "%s", rocmpath);
-  strncat(command, " | grep -i \"Segment:\\|Uuid:\"", COMMAND_LEN);
-  // Execute the rocminfo command and extract the segment info
-  fpipe = popen(command, "r");
-  if (fpipe == nullptr) {
-    printf("Unable to create command file\n");
-    return;
-  }
+
   HIP_CHECK(hipGetDeviceCount(&deviceCount));
   assert(deviceCount > 0);
-  int *fine_grained_val = new int[deviceCount];
-  assert(fine_grained_val != nullptr);
-  bool *gpuFound = new bool[deviceCount];
-  assert(gpuFound != nullptr);
+
+  MemoryPoolInfo memory_pool_info = {-1, nullptr};
+
+  memory_pool_info.fine_grained_val = new int[deviceCount];
+  assert(memory_pool_info.fine_grained_val != nullptr);
   for (int i = 0; i < deviceCount; i++) {
-    gpuFound[i] = false;
-    fine_grained_val[i] = 0;  // Initialize to 0
+    memory_pool_info.fine_grained_val[i] = 0;  // Initialize to 0
   }
-  char command_op[BUFFER_LEN];
-  int count = -1;
-  // Extract each segment flags
-  while (fgets(command_op, BUFFER_LEN, fpipe)) {
-    std::string rocminfo_line(command_op);
-    if ((std::string::npos != rocminfo_line.find("GPU-")) &&
-        (std::string::npos != rocminfo_line.find("Uuid:"))) {
-      count++;
-      gpuFound[count] = true;
-    } else if (gpuFound[count] &&
-    (std::string::npos != rocminfo_line.find("FLAGS: FINE GRAINED"))) {
-      fine_grained_val[count] = 1;
-    }
-  }
+
+  // Get Fine-grained memory information from HSA
+  HsaGetFineGrainInfo(&memory_pool_info);
+
+  // Validate hipDeviceAttributeFineGrainSupport
   for (int dev = 0; dev < deviceCount; dev++) {
     HIP_CHECK(hipSetDevice(dev));
     HIP_CHECK(hipGetDevice(&deviceId));
@@ -347,14 +363,13 @@ TEST_CASE("Unit_hipGetDeviceAttribute_CheckFineGrainSupport") {
     int value = 0;
     HIP_CHECK(hipDeviceGetAttribute(&value,
               hipDeviceAttributeFineGrainSupport, deviceId));
-    REQUIRE(value == fine_grained_val[dev]);
+    REQUIRE(value == memory_pool_info.fine_grained_val[dev]);
   }
-  // Validate hipDeviceAttributeFineGrainSupport
-  delete[] fine_grained_val;
-  delete[] gpuFound;
+  delete[] memory_pool_info.fine_grained_val;
 }
-#endif
-#endif
+
+#endif // HT_AMD
+#endif // __linux__
 
 /**
  * Test Description

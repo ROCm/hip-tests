@@ -46,7 +46,7 @@ add_executable(hipDeviceGetP2PAttribute_exe EXCLUDE_FROM_ALL hipDeviceGetP2PAttr
 hip_add_exe_to_target(NAME DeviceTest
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests
-                      COMPILE_OPTIONS -std=c++14)
+                      COMPILE_OPTIONS -std=c++17)
 
 add_dependencies(build_tests getDeviceCount)
 add_dependencies(build_tests hipDeviceGetP2PAttribute_exe)

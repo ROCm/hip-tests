@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2023 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,42 +20,9 @@
 
 # Common Tests - Test independent of all platforms
 set(TEST_SRC
-    hipCreateTextureObject_ArgValidation.cc
-    hipCreateTextureObject_Linear.cc
-    hipCreateTextureObject_Pitch2D.cc
-    hipCreateTextureObject_Array.cc
-    hipTextureObjFetchVector.cc
-    hipNormalizedFloatValueTex.cc
-    hipTextureObj2D.cc
-    hipSimpleTexture3D.cc
-    hipTextureRef2D.cc
-    hipSimpleTexture1DLayered.cc
-    hipSimpleTexture2DLayered.cc
-    hipBindTex2DPitch.cc
-    hipBindTexRef1DFetch.cc
-    hipTex1DFetchCheckModes.cc
-    hipGetChanDesc.cc
-    hipTexObjPitch.cc
-    hipTextureObj1DFetch.cc
-    hipTextureObj1DCheckModes.cc
-    hipTextureObj2DCheckModes.cc
-    hipTextureObj3DCheckModes.cc
-    hipTextureObj1DCheckSRGBModes.cc
-    hipTextureObj2DCheckSRGBModes.cc
-    hipTexObjectTests.cc
-    hipTextureObjectTests.cc
-    hipBindTextureToMipmappedArray.cc
+    hipPerfDispatchSpeed.cc
 )
 
-if(WIN32)
-set(TEST_SRC
-    ${TEST_SRC}
-    hipTextureMipmapObj1D.cc
-    hipTextureMipmapObj2D.cc
-    hipTextureMipmapObj3D.cc
-)
-endif()
-
-hip_add_exe_to_target(NAME TextureTest
+hip_add_exe_to_target(NAME dispatchTest
                       TEST_SRC ${TEST_SRC}
-                      TEST_TARGET_NAME build_tests)
+                      TEST_TARGET_NAME perf_test)

@@ -28,9 +28,8 @@ constexpr size_t kWarpSize = 32;
 #else
 constexpr size_t kWarpSize = 64;
 #endif
+constexpr int kMaxGPUs = 8;
 }  // namespace
-
-constexpr int MaxGPUs = 8;
 
 __device__ inline unsigned int thread_rank_in_grid() {
   const auto block_size = blockDim.x * blockDim.y * blockDim.z;

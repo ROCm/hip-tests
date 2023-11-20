@@ -261,8 +261,8 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Basic") {
   for (int i = 0; i < num_devices; i++) {
     HIP_CHECK(hipSetDevice(i));
     // Verify multi_grid_group.grid_rank() values
-    ArrayAllOf(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_,
-               [rank = i](uint32_t) { return rank; });
+    ArrayFindIfNot(uint_arr[i].ptr(), static_cast<unsigned int>(i),
+                   multi_grid.grids_[i].thread_count_);
 
     HIP_CHECK(hipMemcpy(uint_arr[i].ptr(), uint_arr_dev[i].ptr(),
                         multi_grid.grids_[i].thread_count_ * sizeof(*uint_arr[i].ptr()),
@@ -277,8 +277,8 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Basic") {
   for (int i = 0; i < num_devices; i++) {
     HIP_CHECK(hipSetDevice(i));
     // Verify multi_grid_group.num_grids() values
-    ArrayAllOf(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_,
-               [num = num_devices](uint32_t) { return num; });
+    ArrayFindIfNot(uint_arr[i].ptr(), static_cast<unsigned int>(num_devices),
+                   multi_grid.grids_[i].thread_count_);
 
     HIP_CHECK(hipMemcpy(uint_arr[i].ptr(), uint_arr_dev[i].ptr(),
                         multi_grid.grids_[i].thread_count_ * sizeof(*uint_arr[i].ptr()),
@@ -286,7 +286,7 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Basic") {
     HIP_CHECK(hipDeviceSynchronize());
 
     // Verify multi_grid_group.is_valid() values
-    ArrayAllOf(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_, [](uint32_t j) { return 1; });
+    ArrayFindIfNot(uint_arr[i].ptr(), 1U, multi_grid.grids_[i].thread_count_);
   }
 }
 
@@ -381,8 +381,7 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Base_Type") {
   for (int i = 0; i < num_devices; i++) {
     HIP_CHECK(hipSetDevice(i));
     // Verify multi_grid_group.size() values
-    ArrayAllOf(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_,
-               [size = multi_grid.thread_count_](uint32_t) { return size; });
+    ArrayFindIfNot(uint_arr[i].ptr(), multi_grid.thread_count_, multi_grid.grids_[i].thread_count_);
     HIP_CHECK(hipMemcpy(uint_arr[i].ptr(), uint_arr_dev[i].ptr(),
                         multi_grid.grids_[i].thread_count_ * sizeof(*uint_arr[i].ptr()),
                         hipMemcpyDeviceToHost));
@@ -409,7 +408,7 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Base_Type") {
     HIP_CHECK(hipDeviceSynchronize());
 
     // Verify multi_grid_group.is_valid() values
-    ArrayAllOf(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_, [](uint32_t j) { return 1; });
+    ArrayFindIfNot(uint_arr[i].ptr(), 1U, multi_grid.grids_[i].thread_count_);
   }
 }
 
@@ -501,8 +500,7 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Non_Member_Functions") {
   for (int i = 0; i < num_devices; i++) {
     HIP_CHECK(hipSetDevice(i));
     // Verify multi_grid_group.size() values
-    ArrayAllOf(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_,
-               [size = multi_grid.thread_count_](uint32_t) { return size; });
+    ArrayFindIfNot(uint_arr[i].ptr(), multi_grid.thread_count_, multi_grid.grids_[i].thread_count_);
     HIP_CHECK(hipMemcpy(uint_arr[i].ptr(), uint_arr_dev[i].ptr(),
                         multi_grid.grids_[i].thread_count_ * sizeof(*uint_arr[i].ptr()),
                         hipMemcpyDeviceToHost));
@@ -558,9 +556,7 @@ TEST_CASE("Unit_Multi_Grid_Group_Positive_Sync") {
   dim3 block_dims[num_devices];
   for (int i = 0; i < num_devices; i++) {
     get_multi_grid_dims(grid_dims[i], block_dims[i], i, test_case);
-    if (!CheckDimensions(i, sync_kernel, grid_dims[i],
-                         block_dims[i]))
-      return;
+    if (!CheckDimensions(i, sync_kernel, grid_dims[i], block_dims[i])) return;
     INFO("Grid dimensions dev " << i << " : x " << grid_dims[i].x << ", y " << grid_dims[i].y
                                 << ", z " << grid_dims[i].z);
     INFO("Block dimensions dev " << i << " : x " << block_dims[i].x << ", y " << block_dims[i].y

@@ -21,12 +21,14 @@ THE SOFTWARE.
 */
 
 #pragma once
+#pragma clang diagnostic ignored "-Wsign-compare"
 #include "hip_test_context.hh"
 
 #include <catch.hpp>
 #include <atomic>
 #include <chrono>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdlib>
 #include <iostream>
 #include <iomanip>
 #include <mutex>
@@ -127,7 +129,7 @@ THE SOFTWARE.
 #define CTX_DESTROY() HIPCHECK(hipCtxDestroy(context));
 #define ARRAY_DESTROY(array) HIPCHECK(hipArrayDestroy(array));
 #define HIP_TEX_REFERENCE hipTexRef
-#define HIP_ARRAY hiparray
+#define HIP_ARRAY hipArray_t
 static void initHipCtx(hipCtx_t* pcontext) {
   HIPCHECK(hipInit(0));
   hipDevice_t device;
@@ -139,7 +141,7 @@ static void initHipCtx(hipCtx_t* pcontext) {
 #define CTX_DESTROY()
 #define ARRAY_DESTROY(array) HIPCHECK(hipFreeArray(array));
 #define HIP_TEX_REFERENCE textureReference*
-#define HIP_ARRAY hipArray*
+#define HIP_ARRAY hipArray_t
 #endif
 
 static inline bool IsGfx11() {
@@ -355,7 +357,7 @@ class BlockingContext {
   hipStream_t stream;
 
  public:
-  BlockingContext(hipStream_t s) : stream(s), blocked(true) {}
+  BlockingContext(hipStream_t s) : blocked(true), stream(s) {}
 
   BlockingContext(const BlockingContext& in) {
     blocked = in.blocked_val();

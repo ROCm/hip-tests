@@ -122,6 +122,8 @@
         "Unit_hipFuncSetAttribute_Positive_MaxDynamicSharedMemorySize_Not_Supported",
         "Unit_hipFuncSetAttribute_Positive_PreferredSharedMemoryCarveout_Not_Supported",
         "Unit_hipOccupancyMaxActiveBlocksPerMultiprocessor_Negative_Parameters",
+        "Unit_hipModuleOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_Negative_Parameters",
+        "Unit_hipModuleOccupancyMaxPotentialBlockSizeWithFlags_Negative_Parameters",
         "Unit_hipGraphMemcpyNodeSetParamsToSymbol_Positive_Basic",
         "Unit_hipGraphExecMemcpyNodeSetParamsToSymbol_Positive_Basic",
         "Unit_hipGraphMemcpyNodeSetParamsFromSymbol_Positive_Basic",

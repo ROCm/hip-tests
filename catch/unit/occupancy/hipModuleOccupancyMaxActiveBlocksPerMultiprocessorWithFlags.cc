@@ -69,14 +69,12 @@ TEST_CASE("Unit_hipModuleOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_Nega
       },
       blockSize);
 
-#if HT_NVIDIA // EXSWHTEC-219
   SECTION("Flag is invalid") {
     // Only default flag is supported
     HIP_CHECK_ERROR(hipModuleOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(
                         &numBlocks, function, blockSize, 0, 2),
                     hipErrorInvalidValue);
   }
-#endif
 
   HIP_CHECK(hipModuleUnload(module));
 }

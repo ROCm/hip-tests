@@ -102,24 +102,25 @@ template <typename T> class LinearAllocGuard {
 
   ~LinearAllocGuard() {
     // No Catch macros, don't want to possibly throw in the destructor
-    switch (allocation_type_) {
-      case LinearAllocs::noAlloc:
-        break;
-      case LinearAllocs::malloc:
-        free(ptr_);
-        break;
-      case LinearAllocs::mallocAndRegister:
-        // Cast to void to suppress nodiscard warnings
-        static_cast<void>(hipHostUnregister(host_ptr_));
-        free(host_ptr_);
-        break;
-      case LinearAllocs::hipHostMalloc:
-        static_cast<void>(hipHostFree(ptr_));
-        break;
-      case LinearAllocs::hipMalloc:
-      case LinearAllocs::hipMallocManaged:
-        static_cast<void>(hipFree(ptr_));
-    }
+    if (ptr_ != nullptr) {
+      switch (allocation_type_) {
+        case LinearAllocs::noAlloc:
+          break;
+        case LinearAllocs::malloc:
+          free(ptr_);
+          break;
+        case LinearAllocs::mallocAndRegister:
+          // Cast to void to suppress nodiscard warnings
+          static_cast<void>(hipHostUnregister(host_ptr_));
+          free(host_ptr_);
+          break;
+        case LinearAllocs::hipHostMalloc:
+          static_cast<void>(hipHostFree(ptr_));
+          break;
+        case LinearAllocs::hipMalloc:
+        case LinearAllocs::hipMallocManaged:
+          static_cast<void>(hipFree(ptr_));
+      }
   }
 
   T* ptr() const { return ptr_; };
@@ -287,7 +288,7 @@ class StreamGuard {
   }
 
   ~StreamGuard() {
-    if (stream_type_ == Streams::created) {
+    if (stream_type_ == Streams::created && stream_ != nullptr) {
       static_cast<void>(hipStreamDestroy(stream_));
     }
   }

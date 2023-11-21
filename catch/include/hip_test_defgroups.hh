@@ -149,10 +149,3 @@ THE SOFTWARE.
  * This section describes the various Printf use case Scenarios.
  * @}
  */
-
-/**
- * @defgroup CooperativeGroupsTest Cooperative Groups 
- * @{
- * This section describes tests for cooperative groups API's of the HIP runtime.
- * @}
- */

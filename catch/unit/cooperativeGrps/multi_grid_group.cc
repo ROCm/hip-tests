@@ -25,7 +25,7 @@ THE SOFTWARE.
 /**
  * @addtogroup multi_grid_group multi_grid_group
  * @{
- * @ingroup CooperativeGroupsTest
+ * @ingroup DeviceLanguageTest
  * Contains unit tests for all multi_grid_group APIs
  */
 
@@ -485,6 +485,7 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Non_Member_Functions") {
     launchParamsList[i].args = &args[i];
   }
   HIP_CHECK(hipLaunchCooperativeKernelMultiDevice(launchParamsList, num_devices, 0));
+
   for (int i = 0; i < num_devices; i++) {
     HIP_CHECK(hipSetDevice(i));
     HIP_CHECK(hipMemcpy(uint_arr[i].ptr(), uint_arr_dev[i].ptr(),
@@ -636,7 +637,7 @@ TEST_CASE("Unit_Multi_Grid_Group_Positive_Sync") {
   }
 
   // Verify multi_grid sync array values
-  const auto f = [loops](unsigned int i) -> unsigned int {
+  const auto f = [loops](unsigned int) -> unsigned int {
     unsigned int desired_val = 0;
     for (int j = 0; j < loops; j++) {
       if (j % 2 == 0) {

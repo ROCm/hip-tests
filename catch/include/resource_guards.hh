@@ -67,21 +67,23 @@ template <typename T> class LinearAllocGuard {
 
   ~LinearAllocGuard() {
     // No Catch macros, don't want to possibly throw in the destructor
-    switch (allocation_type_) {
-      case LinearAllocs::malloc:
-        free(ptr_);
-        break;
-      case LinearAllocs::mallocAndRegister:
-        // Cast to void to suppress nodiscard warnings
-        static_cast<void>(hipHostUnregister(host_ptr_));
-        free(host_ptr_);
-        break;
-      case LinearAllocs::hipHostMalloc:
-        static_cast<void>(hipHostFree(ptr_));
-        break;
-      case LinearAllocs::hipMalloc:
-      case LinearAllocs::hipMallocManaged:
-        static_cast<void>(hipFree(ptr_));
+    if (ptr_ != nullptr) {
+      switch (allocation_type_) {
+        case LinearAllocs::malloc:
+          free(ptr_);
+          break;
+        case LinearAllocs::mallocAndRegister:
+          // Cast to void to suppress nodiscard warnings
+          static_cast<void>(hipHostUnregister(host_ptr_));
+          free(host_ptr_);
+          break;
+        case LinearAllocs::hipHostMalloc:
+          static_cast<void>(hipHostFree(ptr_));
+          break;
+        case LinearAllocs::hipMalloc:
+        case LinearAllocs::hipMallocManaged:
+          static_cast<void>(hipFree(ptr_));
+      }
     }
   }
 
@@ -223,7 +225,7 @@ class StreamGuard {
   }
 
   StreamGuard(const StreamGuard&) = delete;
-  StreamGuard(StreamGuard&& o) : stream_(o.stream_), stream_type_(o.stream_type_) {
+  StreamGuard(StreamGuard&& o) : stream_type_(o.stream_type_), flags_(o.flags_), priority_(o.priority_), stream_(o.stream_) {
     o.stream_ = nullptr;
   }
 

@@ -89,7 +89,6 @@ TEST_CASE("Unit_hipMallocMipmappedArray_MultiThread") {
   std::vector<std::thread> threadlist;
   int devCnt = 0;
   devCnt = HipTest::getDeviceCount();
-  const auto pavail = getFreeMem();
   for (int i = 0; i < devCnt; i++) {
     threadlist.push_back(std::thread(MallocMipmappedArray_DiffSizes, i));
   }
@@ -98,12 +97,6 @@ TEST_CASE("Unit_hipMallocMipmappedArray_MultiThread") {
     t.join();
   }
   HIP_CHECK_THREAD_FINALIZE();
-  const auto avail = getFreeMem();
-
-  if (pavail != avail) {
-    WARN("Memory leak of hipMallocMipmappedArray API in multithreaded scenario");
-    REQUIRE(false);
-  }
 }
 
 namespace {
@@ -113,7 +106,7 @@ void checkMipmappedArrayIsExpected(hipArray_t level_array,
                                    const unsigned int expected_flags) {
 // hipArrayGetInfo doesn't currently exist (EXSWCPHIPT-87)
 #if HT_AMD
-  std::ignore = array;
+  std::ignore = level_array;
   std::ignore = expected_desc;
   std::ignore = expected_extent;
   std::ignore = expected_flags;

@@ -8,7 +8,7 @@
     #define MI100
 #endif
 
-#if defined gfx90a || defined  gfx940
+#if defined gfx90a || defined  gfx940 || defined gfx941 || defined gfx942
     #define MI2XX
 #endif
 
@@ -188,6 +188,8 @@
         "Unit_hipDestroyExternalSemaphore_Vulkan_Negative_Parameters",
         "SWDEV-415692 Soft hang in stress test on 29/08/23",
         "Unit_Grid_Group_Sync_Positive_Basic",
+        "=== SWDEV-427356,SWDEV-433499:Below test fail with soft hang ===",
+        "Unit_dynamic_loading_device_kernels_from_library",
         "=== Below hiprtc tests are disabled temporarily,  will be renabled once patches for SWDEV-395996 are merged ===",
         "Unit_hiprtc_saxpy",
         "Unit_hiprtc_warpsize",

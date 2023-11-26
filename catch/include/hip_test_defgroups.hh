@@ -20,6 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#include <hip_test_common.hh>
+
 // Test groups are named based on the group names from hip_api_runtime.h, with adding "Test" suffix
 
 /**
@@ -95,8 +97,46 @@ THE SOFTWARE.
 
 /**
 * @defgroup KernelTest Kernel Functions Management
+* @{
+* This section describes the various kernel functions invocation.
+* @}
+*/
+
+/**
+ * @defgroup AtomicsTest Device Atomics
  * @{
- * This section describes the various kernel functions invocation.
+ * This section describes tests for the Device Atomic APIs.
+ * @}
+ */
+
+ /**
+ * @addtogroup atomicExch atomicExch
+ * @{
+ * @ingroup AtomicsTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Compiles atomicExch with invalid parameters.
+ *  - Compiles the source with specialized Python tool.
+ *    -# Utilizes sub-process to invoke compilation of faulty source.
+ *    -# Performs post-processing of compiler output and counts errors.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_atomicExch_Negative_Parameters") {}
+/**
+ * End doxygen group atomicExch.
+ * @}
+ */
+
+/**
+ * End doxygen group AtomicsTest.
  * @}
  */
 

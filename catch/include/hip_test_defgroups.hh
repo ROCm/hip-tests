@@ -159,6 +159,12 @@ TEST_CASE("Unit_atomicExch_Negative_Parameters") {}
  * @defgroup ShflTest warp shuffle function Management
  * @{
  * This section describes the warp shuffle types & functions of HIP runtime API.
+ */
+
+/**
+ * @defgroup p2pTest P2P Management
+ * @{
+ * This section describes the P2P management types & functions of HIP runtime API.
  * @}
  */
 

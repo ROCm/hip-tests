@@ -78,14 +78,18 @@ set(AMD_TEST_SRC
     hipMathFunctions.cc
     hmax_hmin.cc
     hipBfloat16.cc
-    hipVectorTypes.cc
+    hipVectorTypesHost.cc
+    hipVectorTypesDevice.cc
     hipTestHalf.cc
     hipComplex.cc
     hipTestFMA.cc
     hipTestNativeHalf.cc
     hip_test_make_type.cc
     bfloat16.cc
+    AtomicsWithRandomActiveLanesInWavefront.cc
+    fp16_ops.cc
 )
+
 set(AMD_ARCH_SPEC_TEST_SRC
     AtomicAdd_Coherent_withunsafeflag.cc
     AtomicAdd_Coherent_withoutflag.cc

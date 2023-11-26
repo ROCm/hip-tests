@@ -43,6 +43,7 @@ add_subdirectory(channelDescriptor)
 add_subdirectory(executionControl)
 add_subdirectory(vector_types)
 add_subdirectory(atomics)
+add_subdirectory(p2p)
 
 if(HIP_PLATFORM STREQUAL "amd")
 add_subdirectory(callback)

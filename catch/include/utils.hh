@@ -20,6 +20,7 @@ THE SOFTWARE.
 #pragma once
 
 #include <chrono>
+#include <optional>
 
 #include <hip_test_common.hh>
 #include <hip/hip_runtime_api.h>
@@ -40,7 +41,7 @@ void ArrayMismatch(T* const expected, T* const actual, const size_t num_elements
 
 template <typename It, typename T> void ArrayFindIfNot(It begin, It end, const T expected_value) {
   const auto it = std::find_if_not(
-      begin, end, [expected_value](const int elem) { return expected_value == elem; });
+      begin, end, [expected_value](const T elem) { return expected_value == elem; });
 
   if (it != end) {
     const auto idx = std::distance(begin, it);
@@ -52,6 +53,20 @@ template <typename It, typename T> void ArrayFindIfNot(It begin, It end, const T
 template <typename T>
 void ArrayFindIfNot(T* const array, const T expected_value, const size_t num_elements) {
   ArrayFindIfNot(array, array + num_elements, expected_value);
+}
+
+template <typename T, typename F>
+static inline void ArrayAllOf(const T* arr, uint32_t count, F value_gen) {
+  for (auto i = 0u; i < count; ++i) {
+    const std::optional<T> expected_val = value_gen(i);
+    if (!expected_val.has_value()) continue;
+    // Using require on every iteration leads to a noticeable performance loss on large arrays,
+    // even when the require passes.
+    if (arr[i] != expected_val.value()) {
+      INFO("Mismatch at index: " << i);
+      REQUIRE(arr[i] == expected_val.value());
+    }
+  }
 }
 
 template <typename T, typename F>
@@ -107,9 +122,17 @@ template <typename T> __global__ void VectorSet(T* const vec, const T value, siz
 // Will execute for atleast interval milliseconds
 static __global__ void Delay(uint32_t interval, const uint32_t ticks_per_ms) {
   while (interval--) {
-    uint64_t start = clock();
-    while (clock() - start < ticks_per_ms) {
+    #if HT_AMD
+    uint64_t start = wall_clock64();
+    while (wall_clock64() - start < ticks_per_ms) {
+      __builtin_amdgcn_s_sleep(10);
     }
+    #endif
+    #if HT_NVIDIA
+    uint64_t start = clock64();
+    while (clock64() - start < ticks_per_ms) {
+    }
+    #endif
   }
 }
 
@@ -125,12 +148,15 @@ __global__ void Iota(T* const out, size_t pitch, size_t w, size_t h, size_t d) {
   }
 }
 
-inline void LaunchDelayKernel(const std::chrono::milliseconds interval, const hipStream_t stream) {
+inline void LaunchDelayKernel(const std::chrono::milliseconds interval, const hipStream_t stream = nullptr) {
   int ticks_per_ms = 0;
-  // Clock rate is in kHz => number of clock ticks in a millisecond
-  HIP_CHECK(hipDeviceGetAttribute(&ticks_per_ms, hipDeviceAttributeClockRate, 0));
+  #if HT_AMD
+  HIPCHECK(hipDeviceGetAttribute(&ticks_per_ms, hipDeviceAttributeWallClockRate, 0));
+  #endif
+  #if HT_NVIDIA
+  HIPCHECK(hipDeviceGetAttribute(&ticks_per_ms, hipDeviceAttributeClockRate, 0));
+  #endif
   Delay<<<1, 1, 0, stream>>>(interval.count(), ticks_per_ms);
-  HIP_CHECK(hipGetLastError());
 }
 
 template <typename... Attributes>

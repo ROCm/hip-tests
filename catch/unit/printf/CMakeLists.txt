@@ -2,8 +2,27 @@
 set(TEST_SRC
     printfFlags.cc
     printfSpecifiers.cc
+    printfFlagsNonHost.cc
+    printfSpecifiersNonHost.cc
+    printfHost.cc
 )
 
+if(UNIX)
+  set(AMD_TEST_SRC
+      printfNonHost.cc)
+endif()
+
+if(HIP_PLATFORM MATCHES "amd")
+  set(TEST_SRC ${TEST_SRC} ${AMD_TEST_SRC})
+endif()
+
+if(UNIX)
+  if(HIP_PLATFORM MATCHES "amd")
+    set_source_files_properties(printfFlagsNonHost.cc PROPERTIES COMPILE_OPTIONS "-mprintf-kind=buffered")
+    set_source_files_properties(printfSpecifiersNonHost.cc PROPERTIES COMPILE_OPTIONS "-mprintf-kind=buffered")
+    set_source_files_properties(printfNonHost.cc PROPERTIES COMPILE_OPTIONS "-mprintf-kind=buffered")
+  endif()
+endif()
 
 if(HIP_PLATFORM MATCHES "amd")
   hip_add_exe_to_target(NAME printfTests
@@ -18,8 +37,13 @@ elseif (HIP_PLATFORM MATCHES "nvidia")
 endif()
 
 # Standalone exes
-add_executable(printfFlags EXCLUDE_FROM_ALL printfFlags_exe.cc)
-add_executable(printfSpecifiers EXCLUDE_FROM_ALL printfSpecifiers_exe.cc)
+add_executable(printfFlags_exe EXCLUDE_FROM_ALL printfFlags_exe.cc)
+add_executable(printfSpecifiers_exe EXCLUDE_FROM_ALL printfSpecifiers_exe.cc)
+add_executable(printfFlagsNonHost_exe EXCLUDE_FROM_ALL printfFlagsNonHost_exe.cc)
+add_executable(printfSpecifiersNonHost_exe EXCLUDE_FROM_ALL printfSpecifiersNonHost_exe.cc)
 
-add_dependencies(printfTests printfFlags)
-add_dependencies(printfTests printfSpecifiers)
+add_dependencies(build_tests printfFlags_exe)
+add_dependencies(build_tests printfSpecifiers_exe)
+add_dependencies(build_tests printfFlagsNonHost_exe)
+add_dependencies(build_tests printfSpecifiersNonHost_exe)
+

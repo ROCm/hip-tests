@@ -25,3 +25,5 @@ project(cmake_hip_lang_support VERSION 1.0
         LANGUAGES HIP)
 # Create the executable
 add_executable(square square.hip)
+
+target_include_directories(square PRIVATE ../../common)

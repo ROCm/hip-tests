@@ -50,7 +50,7 @@ TEST_CASE("Unit_hipPtrGetAttribute_Simple") {
   size_t free, total;
   HIP_CHECK(hipMemGetInfo(&free, &total));
   printf("hipMemGetInfo: free=%zu (%4.2f) Nbytes=%lu total=%zu (%4.2f)\n", free,
-         (free / 1024.0 / 1024.0), Nbytes, total,
+         (free / 1024.0 / 1024.0), static_cast<unsigned long>(Nbytes), total,
          (total / 1024.0 / 1024.0));
   REQUIRE(free + Nbytes <= total);
 
@@ -96,19 +96,11 @@ TEST_CASE("Unit_hipPtrGetAttribute_Simple") {
   unsigned int datatype;
   HIP_CHECK(hipPointerGetAttribute(&datatype, HIP_POINTER_ATTRIBUTE_MEMORY_TYPE,
             reinterpret_cast<hipDeviceptr_t>(A_d)));
-#ifdef __HIP_PLATFORM_NVCC__
-  REQUIRE(datatype == CU_MEMORYTYPE_DEVICE);
-#else
   REQUIRE(datatype == hipMemoryTypeDevice);
-#endif
 
   HIP_CHECK(hipPointerGetAttribute(&datatype, HIP_POINTER_ATTRIBUTE_MEMORY_TYPE,
             reinterpret_cast<hipDeviceptr_t>(A_Pinned_h)));
-#ifdef __HIP_PLATFORM_NVCC__
-  REQUIRE(datatype == CU_MEMORYTYPE_HOST);
-#else
   REQUIRE(datatype == hipMemoryTypeHost);
-#endif
 
   // HIP_POINTER_ATTRIBUTE_IS_MANAGED
   bool isHmm;

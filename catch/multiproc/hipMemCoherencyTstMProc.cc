@@ -32,7 +32,9 @@
    exhibits fine grain behavior when HIP_HOST_COHERENT is set to 1
    */
 
+#ifdef __linux__
 #include <hip_test_common.hh>
+#include <hip_test_features.hh>
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
@@ -47,6 +49,19 @@ __global__  void CoherentTst(int *ptr, int PeakClk) {
   while ((clock64() - StrtTck) <= (3 * GpuFrq)) {
     if (atomicCAS(ptr, 3, 4) == 3) break;
   }
+}
+
+__global__  void CoherentTst_gfx11(int *ptr, int PeakClk) {
+#if HT_AMD
+  // Incrementing the value by 1
+  int64_t GpuFrq = int64_t(PeakClk) * 1000;
+  int64_t StrtTck = wall_clock64();
+  atomicAdd(ptr, 1);
+  // The following while loop checks the value in ptr for around 3-4 seconds
+  while ((wall_clock64() - StrtTck) <= (3 * GpuFrq)) {
+    if (atomicCAS(ptr, 3, 4) == 3) break;
+  }
+#endif
 }
 
 __global__  void SquareKrnl(int *ptr) {
@@ -64,14 +79,30 @@ static void TstCoherency(int *Ptr, bool HmmMem) {
   HIP_CHECK(hipStreamCreate(&strm));
   // storing value 1 in the memory created above
   *Ptr = 1;
+
   // Getting gpu frequency
-  HIP_CHECK(hipDeviceGetAttribute(&peak_clk, hipDeviceAttributeClockRate, 0));
-  if (!HmmMem) {
-    HIP_CHECK(hipHostGetDevicePointer(reinterpret_cast<void **>(&Dptr), Ptr,
-                                      0));
-    CoherentTst<<<1, 1, 0, strm>>>(Dptr, peak_clk);
+  if (IsGfx11()) {
+    HIPCHECK(hipDeviceGetAttribute(&peak_clk,
+                                   hipDeviceAttributeWallClockRate, 0));
   } else {
-    CoherentTst<<<1, 1, 0, strm>>>(Ptr, peak_clk);
+    HIPCHECK(hipDeviceGetAttribute(&peak_clk,
+                                   hipDeviceAttributeClockRate, 0));
+  }
+
+  if (!HmmMem) {
+    HIP_CHECK(hipHostGetDevicePointer(reinterpret_cast<void **>(&Dptr),
+                                      Ptr, 0));
+    if (IsGfx11()) {
+      CoherentTst_gfx11<<<1, 1, 0, strm>>>(Dptr, peak_clk);
+    } else {
+      CoherentTst<<<1, 1, 0, strm>>>(Dptr, peak_clk);
+    }
+  } else {
+    if (IsGfx11()) {
+      CoherentTst_gfx11<<<1, 1, 0, strm>>>(Ptr, peak_clk);
+    } else {
+      CoherentTst<<<1, 1, 0, strm>>>(Ptr, peak_clk);
+    }
   }
   // looping until the value is 2 for 3 seconds
   std::chrono::steady_clock::time_point start =
@@ -95,57 +126,12 @@ static void TstCoherency(int *Ptr, bool HmmMem) {
 // The following test is failing on Nvidia platform hence disabled it for now
 #if HT_AMD
 TEST_CASE("Unit_malloc_CoherentTst") {
-  if ((setenv("HSA_XNACK", "1", 1)) != 0) {
-    WARN("Unable to turn on HSA_XNACK, hence terminating the Test case!");
-    REQUIRE(false);
-  }
-  // The following code block is used to check for gfx906/8 so as to skip if
-  // any of the gpus available
-  int fd1[2];  // Used to store two ends of first pipe
-  pid_t p;
-  if (pipe(fd1) == -1) {
-    fprintf(stderr, "Pipe Failed");
-    REQUIRE(false);
-  }
-
-  /* GpuId[0] for gfx90a exists--> 1 for yes and 0 for no*/
-  int GpuId[1] = {0};
-  p = fork();
-
-  if (p < 0) {
-    fprintf(stderr, "fork Failed");
-    REQUIRE(false);
-  } else if (p > 0) {  // parent process
-    close(fd1[1]);  // Close writing end of first pipe
-    // Wait for child to send a string
-    wait(NULL);
-    //  Read string from child and close reading end.
-    read(fd1[0], GpuId, 2 * sizeof(int));
-    close(fd1[0]);
-    if (GpuId[0] == 0) {
-      WARN("This test is applicable for MI200."
-              "Skipping the test!!");
-      exit(0);
-    }
-  } else {    // child process
-    close(fd1[0]);  // Close read end of first pipe
-    hipDeviceProp_t prop;
-    HIPCHECK(hipGetDeviceProperties(&prop, 0));
-    char *p = NULL;
-    p = strstr(prop.gcnArchName, "gfx90a");
-    if (p) {
-      WARN("gfx90a gpu found on this system!!");
-      GpuId[0] = 1;
-    }
-    // Write concatenated string and close writing end
-    write(fd1[1], GpuId, 2 * sizeof(int));
-    close(fd1[1]);
-    exit(0);
-  }
-
-  // Test Case execution begins from here
-  int stat = 0;
-  if (fork() == 0) {
+  hipDeviceProp_t prop;
+  HIPCHECK(hipGetDeviceProperties(&prop, 0));
+  char *p = NULL;
+  p = strstr(prop.gcnArchName, "xnack+");
+  if (p) {
+    // Test Case execution begins from here
     int managed = 0;
     HIPCHECK(hipDeviceGetAttribute(&managed, hipDeviceAttributeManagedMemory,
                                     0));
@@ -157,23 +143,10 @@ TEST_CASE("Unit_malloc_CoherentTst") {
       Ptr = reinterpret_cast<int*>(malloc(SIZE));
       TstCoherency(Ptr, HmmMem);
       free(Ptr);
-      if (YES_COHERENT) {
-        // exit() with code 10 which indicates pass
-        exit(10);
-      } else {
-        // exit() with code 9 which indicates fail
-        exit(9);
-      }
-    } else {
-      SUCCEED("GPU 0 doesn't support hipDeviceAttributeManagedMemory "
-             "attribute. Hence skipping the testing with Pass result.\n");
-    }
+      REQUIRE(YES_COHERENT);
+    } 
   } else {
-    wait(&stat);
-    int Result = WEXITSTATUS(stat);
-    if (Result != 10) {
-      REQUIRE(false);
-    }
+    HipTest::HIP_SKIP_TEST("GPU is not xnack enabled hence skipping the test...\n");
   }
 }
 #endif
@@ -184,55 +157,11 @@ TEST_CASE("Unit_malloc_CoherentTst") {
 // The following test is failing on Nvidia platform hence disabling it for now
 #if HT_AMD
 TEST_CASE("Unit_malloc_CoherentTstWthAdvise") {
-  if ((setenv("HSA_XNACK", "1", 1)) != 0) {
-      WARN("Unable to turn on HSA_XNACK, hence terminating the Test case!");
-      REQUIRE(false);
-  }
-  // The following code block is used to check for gfx906/8 so as to skip if
-  // any of the gpus available
-  int fd1[2];  // Used to store two ends of first pipe
-  pid_t p;
-  if (pipe(fd1) == -1) {
-    fprintf(stderr, "Pipe Failed");
-    REQUIRE(false);
-  }
-
-  /* GpuId[0] for gfx90a exists--> 1 for yes and 0 for no */
-  int GpuId[1] = {0};
-  p = fork();
-
-  if (p < 0) {
-    fprintf(stderr, "fork Failed");
-    REQUIRE(false);
-  } else if (p > 0) {  // parent process
-    close(fd1[1]);  // Close writing end of first pipe
-    // Wait for child to send a string
-    wait(NULL);
-    //  Read string from child and close reading end.
-    read(fd1[0], GpuId, 2 * sizeof(int));
-    close(fd1[0]);
-    if (GpuId[0] == 0) {
-      WARN("This test is applicable for MI200."
-              "Skipping the test!!");
-      exit(0);
-    }
-  } else {    // child process
-    close(fd1[0]);  // Close read end of first pipe
-    hipDeviceProp_t prop;
-    HIPCHECK(hipGetDeviceProperties(&prop, 0));
-    char *p = NULL;
-    p = strstr(prop.gcnArchName, "gfx90a");
-    if (p) {
-      WARN("gfx90a gpu found on this system!!");
-      GpuId[0] = 1;
-    }
-    // Write concatenated string and close writing end
-    write(fd1[1], GpuId, 2 * sizeof(int));
-    close(fd1[1]);
-    exit(0);
-  }
-  int stat = 0;
-  if (fork() == 0) {
+  hipDeviceProp_t prop;
+  HIPCHECK(hipGetDeviceProperties(&prop, 0));
+  char *p = NULL;
+  p = strstr(prop.gcnArchName, "xnack+");
+  if (p) {
     int managed = 0;
     HIP_CHECK(hipDeviceGetAttribute(&managed, hipDeviceAttributeManagedMemory,
                                     0));
@@ -247,25 +176,10 @@ TEST_CASE("Unit_malloc_CoherentTstWthAdvise") {
       SquareKrnl<<<1, 1, 0, strm>>>(Ptr);
       HIP_CHECK(hipStreamSynchronize(strm));
       HIP_CHECK(hipStreamDestroy(strm));
-      if (*Ptr == 16) {
-        // exit() with code 10 which indicates pass
-        free(Ptr);
-        exit(10);
-      } else {
-        // exit() with code 9 which indicates fail
-        free(Ptr);
-        exit(9);
-      }
-    } else {
-      SUCCEED("GPU 0 doesn't support hipDeviceAttributeManagedMemory "
-              "attribute. Hence skipping the testing with Pass result.\n");
+      REQUIRE (*Ptr == 16);
     }
   } else {
-    wait(&stat);
-    int Result = WEXITSTATUS(stat);
-    if (Result != 10) {
-      REQUIRE(false);
-    }
+    HipTest::HIP_SKIP_TEST("GPU is not xnack enabled hence skipping the test...\n");
   }
 }
 #endif
@@ -275,55 +189,11 @@ TEST_CASE("Unit_malloc_CoherentTstWthAdvise") {
 // The following test is failing on Nvidia platform hence disabling it for now
 #if HT_AMD
 TEST_CASE("Unit_mmap_CoherentTst") {
-  if ((setenv("HSA_XNACK", "1", 1)) != 0) {
-    WARN("Unable to turn on HSA_XNACK, hence terminating the Test case!");
-    REQUIRE(false);
-  }
-  // The following code block is used to check for gfx906/8 so as to skip if
-  // any of the gpus available
-  int fd1[2];  // Used to store two ends of first pipe
-  pid_t p;
-  if (pipe(fd1) == -1) {
-    fprintf(stderr, "Pipe Failed");
-    REQUIRE(false);
-  }
-
-  /* GpuId[0] for gfx90a exists--> 1 for yes and 0 for no */
-  int GpuId[1] = {0};
-  p = fork();
-
-  if (p < 0) {
-    fprintf(stderr, "fork Failed");
-    REQUIRE(false);
-  } else if (p > 0) {  // parent process
-    close(fd1[1]);  // Close writing end of first pipe
-    // Wait for child to send a string
-    wait(NULL);
-    //  Read string from child and close reading end.
-    read(fd1[0], GpuId, 2 * sizeof(int));
-    close(fd1[0]);
-    if (GpuId[0] == 0) {
-      WARN("This test is not applicable for MI200."
-              "Skipping the test!!");
-      exit(0);
-    }
-  } else {    // child process
-    close(fd1[0]);  // Close read end of first pipe
-    hipDeviceProp_t prop;
-    HIPCHECK(hipGetDeviceProperties(&prop, 0));
-    char *p = NULL;
-    p = strstr(prop.gcnArchName, "gfx90a");
-    if (p) {
-      WARN("gfx90a gpu found on this system!!");
-      GpuId[0] = 1;
-    }
-    // Write concatenated string and close writing end
-    write(fd1[1], GpuId, 2 * sizeof(int));
-    close(fd1[1]);
-    exit(0);
-  }
-  int stat = 0;
-  if (fork() == 0) {
+  hipDeviceProp_t prop;
+  HIPCHECK(hipGetDeviceProperties(&prop, 0));
+  char *p = NULL;
+  p = strstr(prop.gcnArchName, "xnack+");
+  if (p) {
     int managed = 0;
     HIP_CHECK(hipDeviceGetAttribute(&managed, hipDeviceAttributeManagedMemory,
                                     0));
@@ -343,21 +213,10 @@ TEST_CASE("Unit_mmap_CoherentTst") {
       if (err != 0) {
         WARN("munmap failed\n");
       }
-      if (YES_COHERENT) {
-        exit(10);
-      } else {
-        exit(9);
-      }
-    } else {
-      SUCCEED("GPU 0 doesn't support hipDeviceAttributeManagedMemory "
-             "attribute. Hence skipping the testing with Pass result.\n");
-    }
+      REQUIRE(YES_COHERENT);
+    } 
   } else {
-    wait(&stat);
-    int Result = WEXITSTATUS(stat);
-    if (Result != 10) {
-      REQUIRE(false);
-    }
+    HipTest::HIP_SKIP_TEST("GPU is not xnack enabled hence skipping the test...\n");
   }
 }
 #endif
@@ -367,55 +226,11 @@ TEST_CASE("Unit_mmap_CoherentTst") {
 // The following test is failing on Nvidia platform hence disabling it for now
 #if HT_AMD
 TEST_CASE("Unit_mmap_CoherentTstWthAdvise") {
-  if ((setenv("HSA_XNACK", "1", 1)) != 0) {
-    WARN("Unable to turn on HSA_XNACK, hence terminating the Test case!");
-    REQUIRE(false);
-  }
-  // The following code block is used to check for gfx906/8 so as to skip if
-  // any of the gpus available
-  int fd1[2];  // Used to store two ends of first pipe
-  pid_t p;
-  if (pipe(fd1) == -1) {
-    fprintf(stderr, "Pipe Failed");
-    REQUIRE(false);
-  }
-
-  /* GpuId[0] for gfx90a exists--> 1 for yes and 0 for no */
-  int GpuId[1] = {0};
-  p = fork();
-
-  if (p < 0) {
-    fprintf(stderr, "fork Failed");
-    REQUIRE(false);
-  } else if (p > 0) {  // parent process
-    close(fd1[1]);  // Close writing end of first pipe
-    // Wait for child to send a string
-    wait(NULL);
-    //  Read string from child and close reading end.
-    read(fd1[0], GpuId, 2 * sizeof(int));
-    close(fd1[0]);
-    if (GpuId[0] == 0) {
-      WARN("This test is applicable for MI200."
-              "Skipping the test!!");
-      exit(0);
-    }
-  } else {    // child process
-    close(fd1[0]);  // Close read end of first pipe
-    hipDeviceProp_t prop;
-    HIPCHECK(hipGetDeviceProperties(&prop, 0));
-    char *p = NULL;
-    p = strstr(prop.gcnArchName, "gfx90a");
-    if (p) {
-      WARN("gfx90a gpu found on this system!!");
-      GpuId[0] = 1;
-    }
-    // Write concatenated string and close writing end
-    write(fd1[1], GpuId, 2 * sizeof(int));
-    close(fd1[1]);
-    exit(0);
-  }
-  int stat = 0;
-  if (fork() == 0) {
+  hipDeviceProp_t prop;
+  HIPCHECK(hipGetDeviceProperties(&prop, 0));
+  char *p = NULL;
+  p = strstr(prop.gcnArchName, "xnack+");
+  if (p) {
     int managed = 0;
     HIP_CHECK(hipDeviceGetAttribute(&managed, hipDeviceAttributeManagedMemory,
                                     0));
@@ -438,26 +253,15 @@ TEST_CASE("Unit_mmap_CoherentTstWthAdvise") {
       bool IfTstPassed = false;
       if (*Ptr == 81) {
         IfTstPassed = true;
-      }
+      } 
       int err = munmap(Ptr, SIZE);
       if (err != 0) {
         WARN("munmap failed\n");
       }
-      if (IfTstPassed) {
-        exit(10);
-      } else {
-        exit(9);
-      }
-    } else {
-      SUCCEED("GPU 0 doesn't support hipDeviceAttributeManagedMemory "
-             "attribute. Hence skipping the testing with Pass result.\n");
-    }
+      REQUIRE(IfTstPassed);
+    } 
   } else {
-    wait(&stat);
-    int Result = WEXITSTATUS(stat);
-    if (Result != 10) {
-      REQUIRE(false);
-    }
+    HipTest::HIP_SKIP_TEST("GPU is not xnack enabled hence skipping the test...\n");
   }
 }
 #endif
@@ -778,4 +582,5 @@ TEST_CASE("Unit_hipHostMalloc_WthEnv1Flg3") {
     }
   }
 }
+#endif
 #endif

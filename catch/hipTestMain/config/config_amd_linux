@@ -93,8 +93,6 @@
         "Disabling test tracked SWDEV-391555",
         "Unit_hipMemcpyPeer_Positive_ZeroSize",
         "Unit_hipMemcpyPeerAsync_Positive_ZeroSize",
-        "Disabling test tracked SWDEV-391718",
-        "Unit_hipMemRangeGetAttribute_TstCountParam",
         "Fails in Stress test SWDEV-398971",
         "SWDEV-398975 Seg faults in stress test",
         "Unit_hipMemcpyWithStream_MultiThread",

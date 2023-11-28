@@ -25,6 +25,7 @@ multiple Threads.
 
 #include <hip_test_common.hh>
 #include <atomic>
+#include <utils.hh>
 
 static constexpr size_t N = 4096;
 static constexpr int numThreads = 1000;
@@ -43,16 +44,7 @@ static __global__ void device_function(float* C_d, float* A_d, size_t Num) {
   for (size_t i = gputhread; i < Num; i += stride) {
     C_d[i] = A_d[i] * A_d[i];
   }
-
-  // Delay thread 1 only in the GPU
-  if (gputhread == 1) {
-    uint64_t wait_t = 3200000000, start = clock64(), cur;
-    do {
-      cur = clock64() - start;
-    } while (cur < wait_t);
-  }
 }
-
 
 static void HIPRT_CB Thread1_Callback(hipStream_t stream, hipError_t status,
                                       void* userData) {
@@ -131,6 +123,7 @@ TEST_CASE("Unit_hipStreamAddCallback_MultipleThreads") {
   hipLaunchKernelGGL((device_function), dim3(blocks),
                      dim3(threadsPerBlock), 0,
                      mystream, C_d, A_d, N);
+  LaunchDelayKernel(std::chrono::milliseconds(2000), mystream);
   HIP_CHECK(hipGetLastError());
   HIP_CHECK(
   hipMemcpyAsync(C1_h, C_d, Nbytes,

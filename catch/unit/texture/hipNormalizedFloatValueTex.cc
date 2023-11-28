@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -17,7 +17,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#pragma clang diagnostic ignored "-Wunused-parameter"
 #include <hip_test_common.hh>
+
+
+#if CUDA_VERSION < CUDA_12000
 
 #define SIZE          10
 #define EPSILON       0.00001
@@ -149,7 +153,6 @@ TEST_CASE("Unit_hipNormalizedFloatValueTex_CheckModes") {
   hipDeviceProp_t props;
   HIP_CHECK(hipGetDeviceProperties(&props, 0));
   INFO("Device :: " << props.name);
-  INFO("Arch - AMD GPU :: " << props.gcnArch);
 #endif
 
   SECTION("hipNormalizedFloatValueTexture for hipFilterModePoint") {
@@ -159,3 +162,5 @@ TEST_CASE("Unit_hipNormalizedFloatValueTex_CheckModes") {
     runTest_hipTextureFilterMode<hipFilterModeLinear>();
   }
 }
+
+#endif  // CUDA_VERSION < CUDA_12000

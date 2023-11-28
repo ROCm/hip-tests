@@ -179,8 +179,6 @@
         "Unit_hipMemSetAccess_MultiProc",
         "Unit_hipMemSetAccess_negative",
         "Unit_hipMemUnmap_negative",
-        "=== SWDEV-432556,SWDEV-434211:Below test randomly failing in stress test ===",
-        "Unit_hipDeviceGetUuid_From_RocmInfo",
         "=== SWDEV-434171: Below tests took long time to complete in stress test on 17/11/23 ===",
         "Unit_Warp_Shfl_Positive_Basic - int",
         "Unit_Warp_Shfl_Positive_Basic - unsigned int",

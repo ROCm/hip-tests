@@ -37,6 +37,7 @@ if(UNIX)
 endif()
 
 set_source_files_properties(hipGetDeviceCount.cc PROPERTIES COMPILE_FLAGS -std=c++17)
+set_source_files_properties(hipDeviceGetUuid.cc PROPERTIES COMPILE_FLAGS -std=c++17)
 
 add_executable(getDeviceCount EXCLUDE_FROM_ALL getDeviceCount_exe.cc)
 

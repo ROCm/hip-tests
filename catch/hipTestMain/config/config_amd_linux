@@ -132,8 +132,6 @@
         "Unit_hipEventIpc",
         "=== SWDEV-427101:Below test fails randomly in PSDB ===",
         "Unit_deviceAllocation_InOneThread_AccessInAllThreads",
-        "=== Below test failed in stress test on 11/10/23 ===",
-        "Unit_hipApiLinkUnusedLibs",
         "=== StreamCreate Performance tests may potentially fail on all configs ===",
         "Unit_hipStreamCreate_Performance",
         "Unit_hipStreamCreate_WithFlagsPerformance_Nonblocking",

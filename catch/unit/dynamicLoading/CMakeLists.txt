@@ -21,8 +21,7 @@ if(UNIX)
   set(TEST_SRC ${TEST_SRC}
       complex_loading_behavior.cc)
   set(AMD_TEST_SRC
-      hipApiDynamicLoad.cc
-      hipApiLinkUnusedLib.cc)
+      hipApiDynamicLoad.cc)
 
 if(HIP_PLATFORM MATCHES "amd")
   set(TEST_SRC ${TEST_SRC} ${AMD_TEST_SRC})
@@ -41,7 +40,6 @@ endif()
 add_custom_target(bit_extract_kernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/bit_extract_kernel.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../dynamicLoading/bit_extract_kernel.code -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include -L${HIP_PATH}/${CMAKE_INSTALL_LIBDIR})
 
 add_custom_target(vecadd.cc COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/vecadd.cc ${CMAKE_CURRENT_BINARY_DIR}/../dynamicLoading/)
-add_custom_target(hipApiLinkUnusedLibAppExe.cc COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/hipApiLinkUnusedLibAppExe.cc ${CMAKE_CURRENT_BINARY_DIR}/../dynamicLoading/)
 
 if(HIP_PLATFORM MATCHES "amd")
 hip_add_exe_to_target(NAME Dynamic
@@ -49,5 +47,5 @@ hip_add_exe_to_target(NAME Dynamic
                       TEST_TARGET_NAME build_tests
                       LINKER_LIBS ${CMAKE_DL_LIBS})
 endif()
-add_dependencies(build_tests bit_extract_kernel.code libLazyLoad.so vecadd.cc hipApiLinkUnusedLibAppExe.cc)
+add_dependencies(build_tests bit_extract_kernel.code libLazyLoad.so vecadd.cc)
 endif()

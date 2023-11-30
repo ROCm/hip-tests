@@ -19,9 +19,11 @@
 # THE SOFTWARE.
 
 cmake_minimum_required(VERSION 3.10)
-if (NOT DEFINED ROCM_PATH )
-     set ( ROCM_PATH "/opt/rocm"  CACHE STRING "Default ROCM installation directory." )
-endif ()
+if(UNIX)
+  if(NOT DEFINED ROCM_PATH)
+    set(ROCM_PATH "/opt/rocm"  CACHE STRING "Default ROCM installation directory.")
+  endif()
+endif()
 
 if(NOT DEFINED HIP_PATH)
     if(NOT DEFINED ENV{HIP_PATH})
@@ -30,7 +32,10 @@ if(NOT DEFINED HIP_PATH)
         set(HIP_PATH $ENV{HIP_PATH} CACHE PATH "Path to which HIP has been installed")
     endif()
 endif()
-set(CMAKE_MODULE_PATH "${HIP_PATH}/hip/cmake" ${CMAKE_MODULE_PATH})
+# Search for rocm in common locations
+list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
+
+set(CMAKE_MODULE_PATH "${HIP_PATH}/lib/cmake/hip/" ${CMAKE_MODULE_PATH})
 set(CMAKE_HIP_ARCHITECTURES OFF)
 project(12_cmake)
 
@@ -50,6 +55,8 @@ set(MY_NVCC_OPTIONS)
 
 set_source_files_properties(${MY_SOURCE_FILES} PROPERTIES HIP_SOURCE_PROPERTY_FORMAT 1)
 hip_add_executable(${MY_TARGET_NAME} ${MY_SOURCE_FILES} HIPCC_OPTIONS ${MY_HIPCC_OPTIONS} CLANG_OPTIONS ${MY_CLANG_OPTIONS} NVCC_OPTIONS ${MY_NVCC_OPTIONS})
+
+target_include_directories(${MY_TARGET_NAME} PRIVATE ../../common)
 
 # Search for rocm in common locations
 list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/hip ${ROCM_PATH})

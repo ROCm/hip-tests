@@ -9,51 +9,51 @@ project(hiptests)
 # flag to generate standalone exe per src file.
 message(STATUS "STANDALONE_TESTS : ${STANDALONE_TESTS}")
 
-# Check if platform and compiler are set
-if(HIP_PLATFORM STREQUAL "amd")
-    if(HIP_COMPILER STREQUAL "nvcc")
-        message(FATAL_ERROR "Unexpected HIP_COMPILER:${HIP_COMPILER} is set for HIP_PLATFOR:amd")
-    endif()
-elseif(HIP_PLATFORM STREQUAL "nvidia")
-    if(DEFINED HIP_COMPILER AND NOT HIP_COMPILER STREQUAL "nvcc")
-        message(FATAL_ERROR "Unexpected HIP_COMPILER: ${HIP_COMPILER} is set for HIP_PLATFORM:nvidia")
-    endif()
-else()
+# Check if platform is set
+if(NOT HIP_PLATFORM STREQUAL "amd" AND NOT HIP_PLATFORM STREQUAL "nvidia")
     message(FATAL_ERROR "Unexpected HIP_PLATFORM: " ${HIP_PLATFORM})
 endif()
 
-if (WIN32)
+if(WIN32)
     set(EXT ".bat")
 endif()
 
-# Read -DROCM_Path and env{ROCM_PATH}
-if(NOT DEFINED ROCM_PATH)
-    if(DEFINED ENV{ROCM_PATH})
-        set(ROCM_PATH $ENV{ROCM_PATH} CACHE STRING "ROCM Path")
+if(HIP_PLATFORM STREQUAL "amd")
+   if(UNIX AND DEFINED ROCM_PATH)
+      # Read -DROCM_PATH and set CXX_FLAGS for amd platform only
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --rocm-path=${ROCM_PATH}")
+   endif()
+
+   if(DEFINED HIP_PATH)
+      # Read -DHIP_PATH and set CXX_FLAGS for amd platform only
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --hip-path=${HIP_PATH}")
+   endif()
+endif()
+
+# Read -DHIP_PATH
+# If not set read env{HIP_PATH} only on Windows
+if(WIN32)
+    if(NOT DEFINED HIP_PATH)
+        if(DEFINED ENV{HIP_PATH})
+            set(HIP_PATH $ENV{HIP_PATH} CACHE STRING "HIP Path")
+        endif()
     endif()
 endif()
 
-# Read -DHIP_Path and env{HIP_PATH}
 if(NOT DEFINED HIP_PATH)
-    if(DEFINED ENV{HIP_PATH})
-        set(HIP_PATH $ENV{HIP_PATH} CACHE STRING "HIP Path")
+    if(DEFINED ROCM_PATH)
+        set(HIP_PATH ${ROCM_PATH})
+    else()
+        set(HIP_PATH "/opt/rocm")
     endif()
 endif()
 
-# both are not set
-if(NOT DEFINED HIP_PATH AND NOT DEFINED ROCM_PATH)
-    set(HIP_PATH "/opt/rocm")
+if(NOT DEFINED ROCM_PATH)
     set(ROCM_PATH "/opt/rocm")
-elseif(DEFINED HIP_PATH AND NOT DEFINED ROCM_PATH)
-    execute_process(COMMAND ${HIP_PATH}/bin/hipconfig${EXT} --rocmpath
-                OUTPUT_VARIABLE ROCM_PATH
-                OUTPUT_STRIP_TRAILING_WHITESPACE)
-elseif(DEFINED ROCM_PATH AND NOT DEFINED HIP_PATH)
-    set(HIP_PATH ${ROCM_PATH})
 endif()
+
 message(STATUS "HIP_PATH: ${HIP_PATH}")
 message(STATUS "ROCM_PATH: ${ROCM_PATH}")
-
 
 set(CMAKE_CXX_COMPILER "${HIP_PATH}/bin/hipcc${EXT}")
 set(CMAKE_C_COMPILER "${HIP_PATH}/bin/hipcc${EXT}")
@@ -62,10 +62,6 @@ execute_process(COMMAND ${HIPCONFIG_EXECUTABLE} --version
                 OUTPUT_VARIABLE HIP_VERSION
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-if(HIP_PLATFORM STREQUAL "amd")
-    # prioritize -DROCM_PATH over env{ROCM_PATH} for amd platform only
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --rocm-path=${ROCM_PATH}")
-endif()
 # enforce c++17
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++17")
 
@@ -75,6 +71,7 @@ list(GET VERSION_LIST 1 HIP_VERSION_MINOR)
 list(GET VERSION_LIST 2 HIP_VERSION_PATCH_GITHASH)
 string(REPLACE "-" ";" VERSION_LIST ${HIP_VERSION_PATCH_GITHASH})
 list(GET VERSION_LIST 0 HIP_VERSION_PATCH)
+list(GET VERSION_LIST 1 HIP_VERSION_GITHASH)
 
 if(DEFINED ENV{ROCM_LIBPATCH_VERSION})
    set(HIP_PACKAGING_VERSION_PATCH ${HIP_VERSION_PATCH}.$ENV{ROCM_LIBPATCH_VERSION})
@@ -128,7 +125,13 @@ endif()
 add_definitions(-DKERNELS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/kernels/")
 
 set(CATCH_BUILD_DIR catch_tests)
-file(COPY ./hipTestMain/config DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/hipTestMain)
+execute_process(COMMAND ${CMAKE_COMMAND} -E
+                make_directory ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/hipTestMain/config)
+file(GLOB JSON_FILES "./hipTestMain/config/*.json")
+foreach(json IN LISTS JSON_FILES)
+    file(COPY ${json}
+         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/hipTestMain/config/)
+endforeach()
 file(COPY ./external/Catch2/cmake/Catch2/CatchAddTests.cmake
      DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/script)
 file(COPY ./external/Catch2/cmake/Catch2/catch_include.cmake
@@ -155,8 +158,8 @@ if (WIN32)
   SET(CMAKE_CXX_RESPONSE_FILE_LINK_FLAG "")
 endif()
 
-if(HIP_PLATFORM MATCHES "amd" AND HIP_COMPILER MATCHES "clang")
-    add_compile_options(-Wall -Wextra -pedantic -Werror -Wno-deprecated)
+if(HIP_PLATFORM STREQUAL "amd")
+    add_compile_options(-Wall -Wextra -Werror -Wno-deprecated -Wno-option-ignored)
 endif()
 
 cmake_policy(PUSH)
@@ -178,29 +181,26 @@ message(STATUS "CMAKE HIP ARCHITECTURES: ${CMAKE_HIP_ARCHITECTURES}")
 # That results in hipcc building the test for gfx803 (the default target)
 # preference to pass arch -
 # OFFLOAD_ARCH_STR
-# ENV{HCC_AMDGPU_TARGET}
 # rocm_agent_enumerator
 if(NOT DEFINED OFFLOAD_ARCH_STR
-   AND NOT DEFINED ENV{HCC_AMDGPU_TARGET}
    AND EXISTS "${ROCM_PATH}/bin/rocm_agent_enumerator"
    AND HIP_PLATFORM STREQUAL "amd" AND UNIX)
-    execute_process(COMMAND ${ROCM_PATH}/bin/rocm_agent_enumerator
+    execute_process(COMMAND "${ROCM_PATH}/bin/rocm_agent_enumerator"
          OUTPUT_VARIABLE HIP_GPU_ARCH
-         RESULT_VARIABLE ROCM_AGENT_ENUM_RESULT)
+         RESULT_VARIABLE ROCM_AGENT_ENUM_RESULT
+         OUTPUT_STRIP_TRAILING_WHITESPACE)
     # Trim out gfx000
     string(REPLACE "gfx000\n" "" HIP_GPU_ARCH ${HIP_GPU_ARCH})
     if (NOT HIP_GPU_ARCH STREQUAL "")
-        string(LENGTH ${HIP_GPU_ARCH} HIP_GPU_ARCH_LEN)
-        # If string has more gfx target except gfx000
-        if(${HIP_GPU_ARCH_LEN} GREATER_EQUAL 1)
-            string(REGEX REPLACE "\n" ";" HIP_GPU_ARCH_LIST "${HIP_GPU_ARCH}")
-            set(OFFLOAD_ARCH_STR "")
-            foreach(_hip_gpu_arch ${HIP_GPU_ARCH_LIST})
-                set(OFFLOAD_ARCH_STR "--offload-arch=${_hip_gpu_arch} ${OFFLOAD_ARCH_STR}")
-            endforeach()
-        endif()
+        string(REGEX REPLACE "\n" ";" HIP_GPU_ARCH_LIST "${HIP_GPU_ARCH}")
+        list(REMOVE_DUPLICATES  HIP_GPU_ARCH_LIST)
+        list(LENGTH HIP_GPU_ARCH_LIST HIP_GPU_ARCH_LEN)
+        set(OFFLOAD_ARCH_STR "")
+        foreach(_hip_gpu_arch ${HIP_GPU_ARCH_LIST})
+            set(OFFLOAD_ARCH_STR "--offload-arch=${_hip_gpu_arch} ${OFFLOAD_ARCH_STR}")
+        endforeach()
     else()
-        message(STATUS "ROCm Agent Enumurator found no valid architectures")
+        message(STATUS "ROCm Agent Enumerator found no valid architectures")
     endif()
 elseif(DEFINED OFFLOAD_ARCH_STR)
     string(REPLACE "--offload-arch=" "" HIP_GPU_ARCH_LIST ${OFFLOAD_ARCH_STR})
@@ -208,10 +208,6 @@ endif()
 
 if(DEFINED OFFLOAD_ARCH_STR)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OFFLOAD_ARCH_STR} ")
-elseif(DEFINED ENV{HCC_AMDGPU_TARGET})
-    # hipcc pl script appends it to the options
-    set(OFFLOAD_ARCH_STR "--offload-arch=$ENV{HCC_AMDGPU_TARGET}")
-    set(HIP_GPU_ARCH_LIST $ENV{HCC_AMDGPU_TARGET})
 endif()
 message(STATUS "Using offload arch string: ${OFFLOAD_ARCH_STR}")
 
@@ -226,7 +222,44 @@ if(git_result EQUAL 0)
   set(HIP_TESTS_GITHASH ${git_output})
 endif()
 
+set(OFFLOAD_ARCH_LIST ${OFFLOAD_ARCH_STR})
+separate_arguments(OFFLOAD_ARCH_LIST)
+list(REMOVE_DUPLICATES  OFFLOAD_ARCH_LIST)
+set(hip_gpu_arch_list "")
+foreach(__offload_arch ${OFFLOAD_ARCH_LIST})
+    string(REPLACE "--offload-arch=" "" targetid ${__offload_arch})
+    string(REPLACE ":" ";" target_id_list ${targetid})
+    list(GET target_id_list 0 arch)
+    string(APPEND hip_gpu_arch_list "${arch};")
+    list(REMOVE_DUPLICATES  hip_gpu_arch_list)
+endforeach()
 
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/hipTestMain/config)
+set(config_gen_path ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/hipTestMain/config)
+if(WIN32)
+    set(configToUse "config_amd_windows")
+    set(config_file ${CMAKE_SOURCE_DIR}/hipTestMain/config/${configToUse})
+    set(json_file ${config_gen_path}/${configToUse}.json)
+    set(CLANG_CPP "${HIP_PATH}/../lc/bin/clang-cpp.exe")
+
+    set(cmd "${CLANG_CPP} -P -DGITHASH=\"${HIP_VERSION_GITHASH}\" ${config_file}>${json_file}")
+    message(${cmd})
+    execute_process(COMMAND cmd.exe /C ${cmd}
+    RESULT_VARIABLE json_result)
+    message(STATUS "${configToUse}.json file generation result: ${json_result}")
+else()
+    set(configToUse "config_amd_linux")
+    foreach(arch ${hip_gpu_arch_list})
+        set(config_file ${CMAKE_SOURCE_DIR}/hipTestMain/config/${configToUse})
+        set(config_gen_path ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/hipTestMain/config)
+        set(json_file ${config_gen_path}/${configToUse}_${arch}.json)
+        set(cmd "${ROCM_PATH}/llvm/bin/clang-cpp -P -D${arch} -DGITHASH=\\\"${HIP_VERSION_GITHASH}\\\" ${config_file}>${json_file}")
+        message(${cmd})
+        execute_process(COMMAND bash -c ${cmd}
+        RESULT_VARIABLE json_result)
+        message(STATUS "${configToUse}_${arch}.json file generation result: ${json_result}")
+    endforeach()
+endif()
 # prints the catch info to a file
 string(TIMESTAMP _timestamp UTC)
 set(_autogen "# Auto-generated by cmake on ${_timestamp} UTC\n")
@@ -240,7 +273,7 @@ set(_subdirs ${_autogen} "subdirs(..)\n")
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/CTestTestfile.cmake ${_subdirs})
 
 # Enable device lambda on nvidia platforms
-if(HIP_COMPILER MATCHES "nvcc")
+if(HIP_PLATFORM STREQUAL "nvidia")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --extended-lambda")
 endif()
 
@@ -249,7 +282,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_custom_target(build_tests)
 
-
 # Tests folder
 add_subdirectory(unit ${CATCH_BUILD_DIR}/unit)
 add_subdirectory(ABM ${CATCH_BUILD_DIR}/ABM)
@@ -257,9 +289,9 @@ add_subdirectory(kernels ${CATCH_BUILD_DIR}/kernels)
 add_subdirectory(hipTestMain ${CATCH_BUILD_DIR}/hipTestMain)
 add_subdirectory(stress ${CATCH_BUILD_DIR}/stress)
 add_subdirectory(TypeQualifiers ${CATCH_BUILD_DIR}/TypeQualifiers)
-if(UNIX)
-   add_subdirectory(multiproc ${CATCH_BUILD_DIR}/multiproc)
-endif()
+add_subdirectory(perftests ${CATCH_BUILD_DIR}/perftests)
+add_subdirectory(multiproc ${CATCH_BUILD_DIR}/multiproc)
+add_subdirectory(performance ${CATCH_BUILD_DIR}/performance)
 
 cmake_policy(POP)
 

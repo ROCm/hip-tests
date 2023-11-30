@@ -48,7 +48,7 @@ THE SOFTWARE.
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEMPLATE_TEST_CASE("Unit_tex2D_Positive_ReadModeElementType", "", char, unsigned char, short,
+TEMPLATE_TEST_CASE("Unit_tex2Dgather_Positive_ReadModeElementType", "", char, unsigned char, short,
                    unsigned short, int, unsigned int, float) {
   TextureTestParams<TestType> params = {0};
   params.extent = make_hipExtent(16, 4, 0);
@@ -77,28 +77,25 @@ TEMPLATE_TEST_CASE("Unit_tex2D_Positive_ReadModeElementType", "", char, unsigned
 
   fixture.LoadOutput();
 
-  for (auto j = 0u; j < params.NumItersY(); ++j) {
-    for (auto i = 0u; i < params.NumItersX(); ++i) {
-      float x = GetCoordinate(i, params.NumItersX(), params.Width(), params.num_subdivisions,
-                              params.tex_desc.normalizedCoords);
-      float y = GetCoordinate(j, params.NumItersY(), params.Height(), params.num_subdivisions,
-                              params.tex_desc.normalizedCoords);
+  for (auto i = 0u; i < params.NumItersX() * params.NumItersY(); ++i) {
+    float x = i % params.NumItersX();
+    float y = i / params.NumItersX();
 
-      INFO("i: " << i);
-      INFO("j: " << j);
-      INFO("Normalized coordinates: " << std::boolalpha << params.tex_desc.normalizedCoords);
-      INFO("Address mode X: " << AddressModeToString(params.tex_desc.addressMode[0]));
-      INFO("Address mode Y: " << AddressModeToString(params.tex_desc.addressMode[1]));
-      INFO("x: " << std::fixed << std::setprecision(16) << x);
-      INFO("y: " << std::fixed << std::setprecision(16) << y);
+    x = GetCoordinate(x, params.NumItersX(), params.Width(), params.num_subdivisions,
+                      params.tex_desc.normalizedCoords);
+    y = GetCoordinate(y, params.NumItersY(), params.Height(), params.num_subdivisions,
+                      params.tex_desc.normalizedCoords);
 
-      auto index = j * params.NumItersX() + i;
+    INFO("Normalized coordinates: " << std::boolalpha << params.tex_desc.normalizedCoords);
+    INFO("Address mode X: " << AddressModeToString(params.tex_desc.addressMode[0]));
+    INFO("Address mode Y: " << AddressModeToString(params.tex_desc.addressMode[1]));
+    INFO("x: " << std::fixed << std::setprecision(16) << x);
+    INFO("y: " << std::fixed << std::setprecision(16) << y);
 
-      const auto ref_val = fixture.tex_h.Tex2DGather(x, y, comp, params.tex_desc);
-      REQUIRE(ref_val.x == fixture.out_alloc_h[index].x);
-      REQUIRE(ref_val.y == fixture.out_alloc_h[index].y);
-      REQUIRE(ref_val.z == fixture.out_alloc_h[index].z);
-      REQUIRE(ref_val.w == fixture.out_alloc_h[index].w);
-    }
+    const auto ref_val = fixture.tex_h.Tex2DGather(x, y, comp, params.tex_desc);
+    REQUIRE(ref_val.x == fixture.out_alloc_h[i].x);
+    REQUIRE(ref_val.y == fixture.out_alloc_h[i].y);
+    REQUIRE(ref_val.z == fixture.out_alloc_h[i].z);
+    REQUIRE(ref_val.w == fixture.out_alloc_h[i].w);
   }
 }

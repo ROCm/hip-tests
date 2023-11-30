@@ -22,6 +22,14 @@ project(cmake_hiprtc_test)
 
 cmake_minimum_required(VERSION 3.10.2)
 
+if(UNIX)
+  if(NOT DEFINED ROCM_PATH)
+    set(ROCM_PATH "/opt/rocm" CACHE STRING "Default ROCM installation directory.")
+  endif()
+  # Search for rocm in common locations
+  list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
+endif()
+
 # Find hiprtc
 find_package(hiprtc REQUIRED)
 # Find hip
@@ -34,3 +42,5 @@ add_executable(test saxpy.cpp)
 target_link_libraries(test hiprtc::hiprtc)
 # Link with HIP
 target_link_libraries(test hip::device)
+
+target_include_directories(test PRIVATE ../../common)

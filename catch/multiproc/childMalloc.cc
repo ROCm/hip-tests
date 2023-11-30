@@ -7,8 +7,6 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <dlfcn.h>
-#endif
-
 
 bool testMallocFromChild() {
   int fd[2];
@@ -60,3 +58,5 @@ TEST_CASE("ChildMalloc") {
   auto res = testMallocFromChild();
   REQUIRE(res == true);
 }
+
+#endif

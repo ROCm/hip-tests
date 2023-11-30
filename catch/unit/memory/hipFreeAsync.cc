@@ -21,24 +21,35 @@ THE SOFTWARE.
 */
 
 #include <hip_test_common.hh>
+#include <resource_guards.hh>
+#include <utils.hh>
 
-TEST_CASE("Unit_hipFreeAsync_negative") {
-  HIP_CHECK(hipSetDevice(0));
-  void* p = nullptr;
-  hipStream_t stream{nullptr};
-  HIP_CHECK(hipStreamCreate(&stream));
+TEST_CASE("Unit_hipFreeAsync_Negative_Parameters") {
+  int device_id = 0;
+  HIP_CHECK(hipSetDevice(device_id));
 
-  SECTION("dev_ptr is nullptr") { REQUIRE(hipFreeAsync(nullptr, stream) != hipSuccess); }
+  int* p = nullptr;
+  size_t alloc_size = 1024;
+  StreamGuard stream(Streams::created);
 
-  SECTION("invalid stream handle") {
-    HIP_CHECK(hipMallocAsync(static_cast<void**>(&p), 100, stream));
-    HIP_CHECK(hipStreamSynchronize(stream));
-    hipError_t error = hipFreeAsync(p, reinterpret_cast<hipStream_t>(-1));
-    HIP_CHECK(hipFreeAsync(p, stream));
-    HIP_CHECK(hipStreamSynchronize(stream));
-    REQUIRE(error != hipSuccess);
+  SECTION("dev_ptr is nullptr") {
+    HIP_CHECK_ERROR(hipFreeAsync(nullptr, stream.stream()), hipErrorInvalidValue);
   }
 
-  HIP_CHECK(hipStreamSynchronize(stream));
-  HIP_CHECK(hipStreamDestroy(stream));
+  SECTION("Invalid stream handle") {
+    HIP_CHECK(hipMallocAsync(reinterpret_cast<void**>(&p), alloc_size, stream.stream()));
+    HIP_CHECK(hipStreamSynchronize(stream.stream()));
+    HIP_CHECK_ERROR(hipFreeAsync(p, reinterpret_cast<hipStream_t>(-1)), hipErrorInvalidHandle);
+    HIP_CHECK(hipFreeAsync(reinterpret_cast<void*>(p), stream.stream()));
+    HIP_CHECK(hipStreamSynchronize(stream.stream()));
+  }
+
+  SECTION("Double free") {
+    HIP_CHECK(hipMallocAsync(reinterpret_cast<void**>(&p), alloc_size, stream.stream()));
+    HIP_CHECK(hipStreamSynchronize(stream.stream()));
+    HIP_CHECK(hipFreeAsync(reinterpret_cast<void*>(p), stream.stream()));
+    HIP_CHECK(hipStreamSynchronize(stream.stream()));
+    HIP_CHECK_ERROR(hipFreeAsync(reinterpret_cast<void*>(p), stream.stream()),
+                    hipErrorInvalidValue);
+  }
 }

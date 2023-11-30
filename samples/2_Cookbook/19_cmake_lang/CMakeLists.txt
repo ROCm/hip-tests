@@ -4,6 +4,14 @@ cmake_minimum_required(VERSION 3.18.0)
 
 project(cmake_lang_test CXX Fortran)
 
+if(UNIX)
+  if(NOT DEFINED ROCM_PATH)
+    set(ROCM_PATH "/opt/rocm" CACHE STRING "Default ROCM installation directory.")
+  endif()
+  # Search for rocm in common locations
+  list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
+endif()
+
 find_package(hip REQUIRED)
 
 add_executable(test_fortran TestFortran.F90)

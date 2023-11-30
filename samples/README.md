@@ -20,7 +20,7 @@ mkdir -p build && cd build
 
 rm -rf * (to clear up)
 
-cmake -DCMAKE_PREFIX_PATH=<path/to/rocm> -DHIP_CXX_COMPILER=<path/to/clang> ..
+cmake ..
 
 Then run,
 

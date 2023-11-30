@@ -23,6 +23,15 @@ project(dynamic_shared)
 cmake_minimum_required(VERSION 3.10)
 
 include_directories(../../common)
+
+if(UNIX)
+  if(NOT DEFINED ROCM_PATH)
+    set(ROCM_PATH "/opt/rocm" CACHE STRING "Default ROCM installation directory.")
+  endif()
+  # Search for rocm in common locations
+  list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
+endif()
+
 # Find hip
 find_package(hip)
 

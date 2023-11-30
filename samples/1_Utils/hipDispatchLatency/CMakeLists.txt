@@ -1,4 +1,4 @@
-# Copyright (c) 2020 - 2021 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2020 - 2023 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,12 +22,15 @@ project(hipDispatchLatency)
 
 cmake_minimum_required(VERSION 3.10)
 
-if (NOT DEFINED ROCM_PATH )
-     set ( ROCM_PATH "/opt/rocm"  CACHE STRING "Default ROCM installation directory." )
-endif ()
+include_directories(../../common)
 
-# Search for rocm in common locations
-list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/hip ${ROCM_PATH})
+if(UNIX)
+  if(NOT DEFINED ROCM_PATH)
+    set(ROCM_PATH "/opt/rocm" CACHE STRING "Default ROCM installation directory.")
+  endif()
+  # Search for rocm in common locations
+  list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
+endif()
 
 # Find hip
 find_package(hip)
@@ -55,5 +58,8 @@ add_dependencies(hipDispatchEnqueueRateMT codeobj)
 # Link with HIP
 target_link_libraries(hipDispatchLatency hip::host)
 target_link_libraries(hipDispatchEnqueueRateMT hip::host)
+if(UNIX)
+  target_link_libraries(hipDispatchEnqueueRateMT pthread)
+endif()
 set_property(TARGET hipDispatchLatency PROPERTY CXX_STANDARD 11)
 set_property(TARGET hipDispatchEnqueueRateMT PROPERTY CXX_STANDARD 11)

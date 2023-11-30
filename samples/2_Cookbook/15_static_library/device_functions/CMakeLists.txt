@@ -2,12 +2,13 @@ project(static_lib)
 
 cmake_minimum_required(VERSION 3.10)
 
-if (NOT DEFINED ROCM_PATH )
-     set ( ROCM_PATH "/opt/rocm"  CACHE STRING "Default ROCM installation directory." )
-endif ()
-
-# Search for rocm in common locations
-list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/hip ${ROCM_PATH})
+if(UNIX)
+  if(NOT DEFINED ROCM_PATH)
+    set(ROCM_PATH "/opt/rocm" CACHE STRING "Default ROCM installation directory.")
+  endif()
+  # Search for rocm in common locations
+  list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
+endif()
 
 # Find hip
 find_package(hip REQUIRED)
@@ -38,7 +39,7 @@ add_library(HipDevice STATIC ${CPP_SOURCES})
 
 target_compile_options(HipDevice PRIVATE -fgpu-rdc)
 target_link_libraries(HipDevice PRIVATE -fgpu-rdc)
-target_include_directories(HipDevice PRIVATE ${ROCM_PATH}/hsa/include)
+target_include_directories(HipDevice PRIVATE ${CMAKE_PREFIX_PATH}/hsa/include)
 
 # Create test executable that uses libHipDevice.a
 set(TEST_SOURCES ${CMAKE_SOURCE_DIR}/hipMain2.cpp)

@@ -20,6 +20,9 @@ THE SOFTWARE.
 #include <hip_array_common.hh>
 #include <hip_texture_helper.hh>
 
+#pragma clang diagnostic ignored "-Wunused-variable"
+#pragma clang diagnostic ignored "-Wunused-parameter"
+
 #define LOG_DATA 0
 
 template <typename T>
@@ -81,7 +84,7 @@ static void runTestR(const int width, const int height)
   }
 
   hipChannelFormatDesc channelDesc = hipCreateChannelDesc<T>();
-  hipArray *hipArray = nullptr;
+  hipArray_t hipArray = nullptr;
   HIP_CHECK(hipMallocArray (&hipArray, &channelDesc, width, height,
                             hipArraySurfaceLoadStore));
 
@@ -136,7 +139,7 @@ static void runTestW(const int width, const int height)
   memset(hData, 0, size);
 
   hipChannelFormatDesc channelDesc = hipCreateChannelDesc<T>();
-  hipArray *hipArray = nullptr;
+  hipArray_t hipArray = nullptr;
   HIP_CHECK(hipMallocArray (&hipArray, &channelDesc, width, height,
                             hipArraySurfaceLoadStore));
 
@@ -215,7 +218,7 @@ static void runTestRW(const int width, const int height)
 #endif
 
   hipChannelFormatDesc channelDesc = hipCreateChannelDesc<T>();
-  hipArray *hipArray = nullptr, *hipOutArray = nullptr;
+  hipArray_t hipArray = nullptr, hipOutArray = nullptr;
   HIP_CHECK(hipMallocArray (&hipArray, &channelDesc, width, height,
                             hipArraySurfaceLoadStore));
 

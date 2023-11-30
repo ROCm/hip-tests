@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include <iostream>
 #include <iomanip>
 #include "hip/hip_runtime.h"
+#include "hip_helper.h"
 
 #define KNRM "\x1B[0m"
 #define KRED "\x1B[31m"
@@ -32,20 +33,6 @@ THE SOFTWARE.
 #define KMAG "\x1B[35m"
 #define KCYN "\x1B[36m"
 #define KWHT "\x1B[37m"
-
-#define failed(...)                                                                                \
-    printf("%serror: ", KRED);                                                                     \
-    printf(__VA_ARGS__);                                                                           \
-    printf("\n");                                                                                  \
-    printf("error: TEST FAILED\n%s", KNRM);                                                        \
-    exit(EXIT_FAILURE);
-
-#define HIPCHECK(error)                                                                            \
-    if (error != hipSuccess) {                                                                     \
-        printf("%serror: '%s'(%d) at %s:%d%s\n", KRED, hipGetErrorString(error), error, __FILE__,  \
-               __LINE__, KNRM);                                                                    \
-        failed("API returned error code.");                                                        \
-    }
 
 void printCompilerInfo() {
 #ifdef __NVCC__
@@ -76,7 +63,7 @@ void printDeviceProp(int deviceId) {
     cout << setw(w1) << "device#" << deviceId << endl;
 
     hipDeviceProp_t props = {0};
-    HIPCHECK(hipGetDeviceProperties(&props, deviceId));
+    checkHipErrors(hipGetDeviceProperties(&props, deviceId));
 
     cout << setw(w1) << "Name: " << props.name << endl;
     cout << setw(w1) << "pciBusID: " << props.pciBusID << endl;
@@ -149,11 +136,11 @@ void printDeviceProp(int deviceId) {
     cout << setw(w1) << "gcnArchName: " << props.gcnArchName << endl;
 #endif
     int deviceCnt;
-    hipGetDeviceCount(&deviceCnt);
+    checkHipErrors(hipGetDeviceCount(&deviceCnt));
     cout << setw(w1) << "peers: ";
     for (int i = 0; i < deviceCnt; i++) {
         int isPeer;
-        hipDeviceCanAccessPeer(&isPeer, i, deviceId);
+        checkHipErrors(hipDeviceCanAccessPeer(&isPeer, i, deviceId));
         if (isPeer) {
             cout << "device#" << i << " ";
         }
@@ -162,7 +149,7 @@ void printDeviceProp(int deviceId) {
     cout << setw(w1) << "non-peers: ";
     for (int i = 0; i < deviceCnt; i++) {
         int isPeer;
-        hipDeviceCanAccessPeer(&isPeer, i, deviceId);
+        checkHipErrors(hipDeviceCanAccessPeer(&isPeer, i, deviceId));
         if (!isPeer) {
             cout << "device#" << i << " ";
         }
@@ -185,7 +172,7 @@ void printDeviceProp(int deviceId) {
 
 
     size_t free, total;
-    hipMemGetInfo(&free, &total);
+    checkHipErrors(hipMemGetInfo(&free, &total));
 
     cout << fixed << setprecision(2);
     cout << setw(w1) << "memInfo.total: " << bytesToGB(total) << " GB" << endl;
@@ -202,10 +189,10 @@ int main(int argc, char* argv[]) {
 
     int deviceCnt;
 
-    HIPCHECK(hipGetDeviceCount(&deviceCnt));
+    checkHipErrors(hipGetDeviceCount(&deviceCnt));
 
     for (int i = 0; i < deviceCnt; i++) {
-        hipSetDevice(i);
+        checkHipErrors(hipSetDevice(i));
         printDeviceProp(i);
     }
 

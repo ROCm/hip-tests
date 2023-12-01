@@ -50,6 +50,8 @@ THE SOFTWARE.
  */
 TEMPLATE_TEST_CASE("Unit_tex3DLod_Positive_ReadModeElementType", "", char, unsigned char, short,
                    unsigned short, int, unsigned int, float) {
+  CHECK_IMAGE_SUPPORT;
+
   TextureTestParams<TestType> params = {0};
   params.extent = make_hipExtent(2, 2, 2);
   params.num_subdivisions = 2;
@@ -100,7 +102,6 @@ TEMPLATE_TEST_CASE("Unit_tex3DLod_Positive_ReadModeElementType", "", char, unsig
     INFO("y: " << std::fixed << std::setprecision(16) << y);
     INFO("z: " << std::fixed << std::setprecision(16) << z);
 
-
     const auto ref_val = fixture.tex_h.Tex3D(x, y, z, params.tex_desc);
     REQUIRE(ref_val.x == fixture.out_alloc_h[i].x);
     REQUIRE(ref_val.y == fixture.out_alloc_h[i].y);
@@ -128,6 +129,8 @@ TEMPLATE_TEST_CASE("Unit_tex3DLod_Positive_ReadModeElementType", "", char, unsig
  */
 TEMPLATE_TEST_CASE("Unit_tex3DLod_Positive_ReadModeNormalizedFloat", "", char, unsigned char, short,
                    unsigned short) {
+  CHECK_IMAGE_SUPPORT;
+
   TextureTestParams<TestType> params = {0};
   params.extent = make_hipExtent(2, 2, 2);
   params.num_subdivisions = 2;
@@ -177,7 +180,6 @@ TEMPLATE_TEST_CASE("Unit_tex3DLod_Positive_ReadModeNormalizedFloat", "", char, u
     INFO("x: " << std::fixed << std::setprecision(16) << x);
     INFO("y: " << std::fixed << std::setprecision(16) << y);
     INFO("z: " << std::fixed << std::setprecision(16) << z);
-
 
     auto ref_val = Vec4Map<TestType>(fixture.tex_h.Tex3D(x, y, z, params.tex_desc),
                                      NormalizeInteger<TestType>);

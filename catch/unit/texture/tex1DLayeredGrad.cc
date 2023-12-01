@@ -58,7 +58,7 @@ TEMPLATE_TEST_CASE("Unit_tex1DLayeredGrad_Positive_ReadModeElementType", "", cha
   params.num_subdivisions = 4;
   params.GenerateTextureDesc();
 
-  TextureTestFixture<TestType> fixture{params};
+  TextureTestFixture<TestType, false, true> fixture{params};
 
   const auto [num_threads, num_blocks] = GetLaunchConfig(1024, params.NumItersX());
 
@@ -116,7 +116,7 @@ TEMPLATE_TEST_CASE("Unit_tex1DLayeredGrad_Positive_ReadModeNormalizedFloat", "",
   params.num_subdivisions = 4;
   params.GenerateTextureDesc(hipReadModeNormalizedFloat);
 
-  TextureTestFixture<TestType, true> fixture{params};
+  TextureTestFixture<TestType, true, true> fixture{params};
 
   const auto [num_threads, num_blocks] = GetLaunchConfig(1024, params.NumItersX());
 

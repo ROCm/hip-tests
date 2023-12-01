@@ -17,6 +17,7 @@
    THE SOFTWARE.
  */
 
+
 #include "mempool_common.hh"
 
 #include <resource_guards.hh>
@@ -65,14 +66,14 @@ TEST_CASE("Unit_hipMemPoolTrimTo_Positive_Basic") {
                                    mempool.mempool(), stream.stream()));
 
   int blocks = 2;
-  int clkRate;
+  int clk_rate;
   if (IsGfx11()) {
     HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeWallClockRate, 0));
-    kernel_500ms_gfx11<<<32, blocks, 0, stream.stream()>>>(alloc_mem1, clkRate);
+    kernel_500ms_gfx11<<<32, blocks, 0, stream.stream()>>>(alloc_mem1, clk_rate);
   } else {
     HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
 
-    kernel_500ms<<<32, blocks, 0, stream.stream()>>>(alloc_mem1, clkRate);
+    kernel_500ms<<<32, blocks, 0, stream.stream()>>>(alloc_mem1, clk_rate);
   }
 
   hipMemPoolAttr attr;
@@ -126,5 +127,5 @@ TEST_CASE("Unit_hipMemPoolTrimTo_Positive_Basic") {
   // Make sure the high watermark usage works - the both buffers must be reported
   REQUIRE((allocation_size1 + allocation_size2) == value64);
 
- HIP_CHECK(hipFreeAsync(reinterpret_cast<void*>(alloc_mem2), stream.stream()));
+  HIP_CHECK(hipFreeAsync(reinterpret_cast<void*>(alloc_mem2), stream.stream()));
 }

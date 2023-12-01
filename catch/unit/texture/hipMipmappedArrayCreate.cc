@@ -102,7 +102,7 @@ TEST_CASE("Unit_hipMipmappedArrayCreate_Negative_Parameters") {
     HIP_CHECK_ERROR(hipMipmappedArrayCreate(&array, &desc, levels), hipErrorInvalidValue);
   }
 
-#if HT_NVIDIA
+#if HT_NVIDIA  // Disabled due to defect EXSWHTEC-365
   SECTION("hipArraySparse && 1D array") {
     desc.Height = 0;
     desc.Depth = 0;

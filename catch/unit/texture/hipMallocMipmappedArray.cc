@@ -100,7 +100,7 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_Parameters") {
                     hipErrorInvalidValue);
   }
 
-#if HT_NVIDIA
+#if HT_NVIDIA  // Disabled due to defect EXSWHTEC-365
   SECTION("hipArraySparse && 1D array") {
     extent.height = 0;
     extent.depth = 0;

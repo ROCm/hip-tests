@@ -42,7 +42,9 @@ THE SOFTWARE.
 TEST_CASE("Unit_hipFreeMipmappedArray_Negative_Parameters") {
   CHECK_IMAGE_SUPPORT;
 
-  SECTION("array is nullptr") { HIP_CHECK(hipFreeMipmappedArray(nullptr)); }
+  SECTION("array is nullptr") {
+    HIP_CHECK_ERROR(hipFreeMipmappedArray(nullptr), hipErrorInvalidValue);
+  }
 
   SECTION("double free") {
     hipMipmappedArray_t array;

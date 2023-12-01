@@ -46,7 +46,7 @@ THE SOFTWARE.
  *    - unit/texture/tex2DGrad.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.7
  */
 TEMPLATE_TEST_CASE("Unit_tex2DGrad_Positive_ReadModeElementType", "", char, unsigned char, short,
                    unsigned short, int, unsigned int, float) {
@@ -55,7 +55,7 @@ TEMPLATE_TEST_CASE("Unit_tex2DGrad_Positive_ReadModeElementType", "", char, unsi
   params.num_subdivisions = 4;
   params.GenerateTextureDesc();
 
-  TextureTestFixture<TestType> fixture{params};
+  TextureTestFixture<TestType, false, true> fixture{params};
 
   const auto [num_threads_x, num_blocks_x] = GetLaunchConfig(32, params.NumItersX());
   const auto [num_threads_y, num_blocks_y] = GetLaunchConfig(32, params.NumItersY());
@@ -85,6 +85,7 @@ TEMPLATE_TEST_CASE("Unit_tex2DGrad_Positive_ReadModeElementType", "", char, unsi
     y = GetCoordinate(y, params.NumItersY(), params.Height(), params.num_subdivisions,
                       params.tex_desc.normalizedCoords);
 
+    INFO("Filtering mode: " << FilteringModeToString(params.tex_desc.filterMode));
     INFO("Normalized coordinates: " << std::boolalpha << params.tex_desc.normalizedCoords);
     INFO("Address mode X: " << AddressModeToString(params.tex_desc.addressMode[0]));
     INFO("Address mode Y: " << AddressModeToString(params.tex_desc.addressMode[1]));
@@ -114,7 +115,7 @@ TEMPLATE_TEST_CASE("Unit_tex2DGrad_Positive_ReadModeElementType", "", char, unsi
  *    - unit/texture/tex2DGrad.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.7
  */
 TEMPLATE_TEST_CASE("Unit_tex2DGrad_Positive_ReadModeNormalizedFloat", "", char, unsigned char,
                    short, unsigned short) {
@@ -123,7 +124,7 @@ TEMPLATE_TEST_CASE("Unit_tex2DGrad_Positive_ReadModeNormalizedFloat", "", char, 
   params.num_subdivisions = 4;
   params.GenerateTextureDesc(hipReadModeNormalizedFloat);
 
-  TextureTestFixture<TestType, true> fixture{params};
+  TextureTestFixture<TestType, true, true> fixture{params};
 
   const auto [num_threads_x, num_blocks_x] = GetLaunchConfig(32, params.NumItersX());
   const auto [num_threads_y, num_blocks_y] = GetLaunchConfig(32, params.NumItersY());

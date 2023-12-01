@@ -88,6 +88,7 @@ TEMPLATE_TEST_CASE("Unit_tex2DLayered_Positive_ReadModeElementType", "", char, u
                         params.tex_desc.normalizedCoords);
 
       INFO("Layer: " << layer);
+      INFO("Filtering mode: " << FilteringModeToString(params.tex_desc.filterMode));
       INFO("Normalized coordinates: " << std::boolalpha << params.tex_desc.normalizedCoords);
       INFO("Address mode X: " << AddressModeToString(params.tex_desc.addressMode[0]));
       INFO("Address mode Y: " << AddressModeToString(params.tex_desc.addressMode[1]));
@@ -160,6 +161,7 @@ TEMPLATE_TEST_CASE("Unit_tex2DLayered_Positive_ReadModeNormalizedFloat", "", cha
                         params.tex_desc.normalizedCoords);
 
       INFO("Layer: " << layer);
+      INFO("Filtering mode: " << FilteringModeToString(params.tex_desc.filterMode));
       INFO("Normalized coordinates: " << std::boolalpha << params.tex_desc.normalizedCoords);
       INFO("Address mode X: " << AddressModeToString(params.tex_desc.addressMode[0]));
       INFO("Address mode Y: " << AddressModeToString(params.tex_desc.addressMode[1]));

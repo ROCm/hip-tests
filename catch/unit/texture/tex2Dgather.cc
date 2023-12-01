@@ -86,6 +86,7 @@ TEMPLATE_TEST_CASE("Unit_tex2Dgather_Positive_ReadModeElementType", "", char, un
     y = GetCoordinate(y, params.NumItersY(), params.Height(), params.num_subdivisions,
                       params.tex_desc.normalizedCoords);
 
+    INFO("Filtering mode: " << FilteringModeToString(params.tex_desc.filterMode));
     INFO("Normalized coordinates: " << std::boolalpha << params.tex_desc.normalizedCoords);
     INFO("Address mode X: " << AddressModeToString(params.tex_desc.addressMode[0]));
     INFO("Address mode Y: " << AddressModeToString(params.tex_desc.addressMode[1]));

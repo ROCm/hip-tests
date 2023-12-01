@@ -52,7 +52,7 @@ TEMPLATE_TEST_CASE("Unit_tex3DGrad_Positive_ReadModeElementType", "", char, unsi
                    unsigned short, int, unsigned int, float) {
   CHECK_IMAGE_SUPPORT;
 
-  TextureTestParams<TestType> params = {0};
+  TextureTestParams<TestType> params = {};
   params.extent = make_hipExtent(2, 2, 2);
   params.num_subdivisions = 2;
   params.GenerateTextureDesc();
@@ -132,7 +132,7 @@ TEMPLATE_TEST_CASE("Unit_tex3DGrad_Positive_ReadModeNormalizedFloat", "", char, 
                    short, unsigned short) {
   CHECK_IMAGE_SUPPORT;
 
-  TextureTestParams<TestType> params = {0};
+  TextureTestParams<TestType> params = {};
   params.extent = make_hipExtent(2, 2, 2);
   params.num_subdivisions = 2;
   params.GenerateTextureDesc(hipReadModeNormalizedFloat);

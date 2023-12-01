@@ -19,6 +19,29 @@
 
 #include "mempool_common.hh"
 
+/**
+ * @addtogroup hipMemPoolDestroy hipMemPoolDestroy
+ * @{
+ * @ingroup StreamOTest
+ * `hipMemPoolDestroy(hipMemPool_t mem_pool)` -
+ * Destroys the specified memory pool
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipMemPoolCreate behavior with invalid arguments:
+ *    -# Nullptr mem_pool
+ *    -# Double hipMemPoolDestroy
+ *    -# Attempt to destroy default mempool
+ *
+ * Test source
+ * ------------------------
+ *  - /unit/graph/hipMemPoolDestroy.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMemPoolDestroy_Negative_Parameter") {
   int mem_pool_support = 0;
   HIP_CHECK(hipDeviceGetAttribute(&mem_pool_support, hipDeviceAttributeMemoryPoolsSupported, 0));

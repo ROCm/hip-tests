@@ -23,6 +23,28 @@
 #include <resource_guards.hh>
 #include <utils.hh>
 
+/**
+ * @addtogroup hipMemPoolTrimTo hipMemPoolTrimTo
+ * @{
+ * @ingroup StreamOTest
+ * `hipMemPoolTrimTo(hipMemPool_t mem_pool, size_t min_bytes_to_hold)` -
+ * Releases freed memory back to the OS
+ */
+
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipMemPoolTrimTo behavior with invalid arguments:
+ *    -# Nullptr mem_pool
+ *
+ * Test source
+ * ------------------------
+ *  - /unit/graph/hipMemPoolTrimTo.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMemPoolTrimTo_Negative_Parameter") {
   int device_id = 0;
   HIP_CHECK(hipSetDevice(device_id));
@@ -41,6 +63,18 @@ TEST_CASE("Unit_hipMemPoolTrimTo_Negative_Parameter") {
   }
 }
 
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic test to verify hipMemPoolTrimTo releases memory correctly to the OS.
+ * Test source
+ * ------------------------
+ *  - /unit/graph/hipMemPoolTrimTo.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMemPoolTrimTo_Positive_Basic") {
   int device_id = 0;
   HIP_CHECK(hipSetDevice(device_id));

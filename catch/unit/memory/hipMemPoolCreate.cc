@@ -19,6 +19,31 @@
 
 #include <hip_test_common.hh>
 
+/**
+ * @addtogroup hipMemPoolCreate hipMemPoolCreate
+ * @{
+ * @ingroup StreamOTest
+ * `hipMemPoolCreate(hipMemPool_t* mem_pool, const hipMemPoolProps* pool_props)` -
+ * Creates a memory pool and returns the handle in mem pool
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipMemPoolCreate behavior with invalid arguments:
+ *    -# Nullptr mem_pool
+ *    -# Nullptr props
+ *    -# Invalid props alloc type
+ *    -# Invalid props location type
+ *    -# Invalid props location id
+ *
+ * Test source
+ * ------------------------
+ *  - /unit/graph/hipMemPoolCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMemPoolCreate_Negative_Parameter") {
   int mem_pool_support = 0;
   HIP_CHECK(hipDeviceGetAttribute(&mem_pool_support, hipDeviceAttributeMemoryPoolsSupported, 0));

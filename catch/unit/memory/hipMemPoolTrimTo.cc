@@ -40,7 +40,7 @@
  *
  * Test source
  * ------------------------
- *  - /unit/graph/hipMemPoolTrimTo.cc
+ *  - /unit/memory/hipMemPoolTrimTo.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 6.0
@@ -70,7 +70,7 @@ TEST_CASE("Unit_hipMemPoolTrimTo_Negative_Parameter") {
  *  - Basic test to verify hipMemPoolTrimTo releases memory correctly to the OS.
  * Test source
  * ------------------------
- *  - /unit/graph/hipMemPoolTrimTo.cc
+ *  - /unit/memory/hipMemPoolTrimTo.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 6.0

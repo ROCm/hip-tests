@@ -37,7 +37,7 @@
  *
  * Test source
  * ------------------------
- *  - /unit/graph/hipMemPoolDestroy.cc
+ *  - /unit/memory/hipMemPoolDestroy.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 6.0

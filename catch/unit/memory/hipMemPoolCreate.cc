@@ -39,7 +39,7 @@
  *
  * Test source
  * ------------------------
- *  - /unit/graph/hipMemPoolCreate.cc
+ *  - /unit/memory/hipMemPoolCreate.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 6.0

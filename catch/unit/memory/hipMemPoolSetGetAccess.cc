@@ -21,6 +21,14 @@
 #include <resource_guards.hh>
 #include <utils.hh>
 
+/**
+ * @addtogroup hipMemPoolSetAccess hipMemPoolSetAccess
+ * @{
+ * @ingroup StreamOTest
+ * `hipMemPoolSetAccess(hipMemPool_t mem_pool, const hipMemAccessDesc* desc_list, size_t count)`
+ * - Controls visibility of the specified pool between devices
+ */
+
 __global__ void copyP2PAndScale(int* dst, const int* src, size_t N) {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -46,6 +54,17 @@ static void MemPoolSetGetAccess(const MemPools mempool_type, int src_device, int
   REQUIRE(flags == access_flags);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic test to verify hipMemPoolSetAccess/hipMemPoolGetAccess on a single device.
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMemPoolSetGetAccess.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMemPoolSetGetAccess_Positive_Basic") {
   const auto device = GENERATE(range(0, HipTest::getDeviceCount()));
 
@@ -73,6 +92,17 @@ int CheckP2PMemPoolSupport(int src_device, int dst_device) {
   return mem_pool_support;
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic test to verify hipMemPoolSetAccess/hipMemPoolGetAccess on multiple devices.
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMemPoolSetGetAccess.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMemPoolSetGetAccess_Positive_MultipleGPU") {
   const auto device_count = HipTest::getDeviceCount();
   if (device_count < 2) {
@@ -177,6 +207,17 @@ void MemPoolSetGetAccess_P2P(const MemPools mempool_type) {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic test to verify peer-to-peer access of stream ordered memory with hipMemPoolSetAccess.
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMemPoolSetGetAccess.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMemPoolSetGetAccess_Positive_P2P") {
   const auto device_count = HipTest::getDeviceCount();
   if (device_count < 2) {
@@ -189,6 +230,24 @@ TEST_CASE("Unit_hipMemPoolSetGetAccess_Positive_P2P") {
   SECTION("Created MemPool") { MemPoolSetGetAccess_P2P(MemPools::created); }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipMemPoolSetAccess behavior with invalid arguments:
+ *    -# Nullptr mem_pool
+ *    -# Desc is nullptr and count is > 0
+ *    -# Count > num_device
+ *    -# Invalid desc location type
+ *    -# Invalid desc location id
+ *    -# Revoking access to own memory pool
+ *
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMemPoolSetGetAccess.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMemPoolSetAccess_Negative_Parameters") {
   int device_id = 0;
   HIP_CHECK(hipSetDevice(device_id));
@@ -212,7 +271,7 @@ TEST_CASE("Unit_hipMemPoolSetAccess_Negative_Parameters") {
     HIP_CHECK_ERROR(hipMemPoolSetAccess(mempool.mempool(), nullptr, 1), hipErrorInvalidValue);
   }
 #endif
-  SECTION("Passing one desc and count is > 1") {
+  SECTION("Count > num_device") {
     HIP_CHECK_ERROR(hipMemPoolSetAccess(mempool.mempool(), &desc, (num_dev + 1)),
                     hipErrorNotSupported);
   }
@@ -236,6 +295,35 @@ TEST_CASE("Unit_hipMemPoolSetAccess_Negative_Parameters") {
   }
 }
 
+/**
+ * End doxygen group hipMemPoolSetAccess.
+ * @}
+ */
+
+/**
+ * @addtogroup hipMemPoolGetAccess hipMemPoolGetAccess
+ * @{
+ * @ingroup StreamOTest
+ * `hipMemPoolGetAccess(hipMemAccessFlags* flags, hipMemPool_t mem_pool, hipMemLocation* location)`
+ * - Returns the accessibility of a pool from a device
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipMemPoolGetAccess behavior with invalid arguments:
+ *    -# Nullptr mem_pool
+ *    -# Flags is nullptr
+ *    -# Invalid location type
+ *    -# Invalid location id
+ *
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMemPoolSetGetAccess.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMemPoolGetAccess_Negative_Parameters") {
   int device_id = 0;
   HIP_CHECK(hipSetDevice(device_id));
@@ -264,7 +352,7 @@ TEST_CASE("Unit_hipMemPoolGetAccess_Negative_Parameters") {
     location.type = hipMemLocationTypeDevice;
   }
 
-  SECTION("Passing invalid desc location id") {
+  SECTION("Passing invalid location id") {
     location.id = num_dev;
     HIP_CHECK_ERROR(hipMemPoolGetAccess(&flags, mempool.mempool(), &location),
                     hipErrorInvalidValue);

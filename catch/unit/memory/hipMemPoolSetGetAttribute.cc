@@ -21,6 +21,14 @@
 #include <resource_guards.hh>
 #include <utils.hh>
 
+/**
+ * @addtogroup hipMemPoolSetAttribute hipMemPoolSetAttribute
+ * @{
+ * @ingroup StreamOTest
+ * `hipMemPoolSetAttribute(hipMemPool_t mem_pool, hipMemPoolAttr attr, void* value)`
+ * - Sets attributes of a memory pool
+ */
+
 template <typename T>
 static void MemPoolSetGetAttribute(const hipMemPool_t mempool, const hipMemPoolAttr attr,
                                    T& set_value) {
@@ -30,6 +38,18 @@ static void MemPoolSetGetAttribute(const hipMemPool_t mempool, const hipMemPoolA
   REQUIRE(get_value == set_value);
 }
 
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic test to verify that default attribute values are correct.
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMemPoolSetGetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMemPoolSetGetAttribute_Positive_Default") {
   const auto device = GENERATE(range(0, HipTest::getDeviceCount()));
 
@@ -58,6 +78,17 @@ TEST_CASE("Unit_hipMemPoolSetGetAttribute_Positive_Default") {
   MemPoolSetGetAttribute(mempool.mempool(), attr_type, set_value);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic test to verify hipMemPoolSetAttribute/hipMemPoolGetAttribute functionality.
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMemPoolSetGetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMemPoolSetGetAttribute_Positive_MemBasic") {
   const auto device = GENERATE(range(0, HipTest::getDeviceCount()));
 
@@ -88,6 +119,17 @@ TEST_CASE("Unit_hipMemPoolSetGetAttribute_Positive_MemBasic") {
   MemPoolSetGetAttribute(mempool.mempool(), hipMemPoolAttrUsedMemHigh, set_value64);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic test to verify correct behavior of the Opportunistic attribute.
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMemPoolSetGetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMemPoolSetAttribute_Opportunistic") {
   int device_id = 0;
   HIP_CHECK(hipSetDevice(device_id));
@@ -298,6 +340,17 @@ TEST_CASE("Unit_hipMemPoolSetAttribute_Opportunistic") {
   HIP_CHECK(hipFreeAsync(reinterpret_cast<void*>(alloc_mem3), stream1.stream()));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic test to verify correct behavior of the EventDependencies attribute.
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMemPoolSetGetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMemPoolSetAttribute_EventDependencies") {
   int device_id = 0;
   HIP_CHECK(hipSetDevice(device_id));
@@ -426,6 +479,23 @@ TEST_CASE("Unit_hipMemPoolSetAttribute_EventDependencies") {
   HIP_CHECK(hipEventDestroy(event));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipMemPoolSetAttribute behavior with invalid arguments:
+ *    -# Nullptr mem_pool
+ *    -# Attribute value is not valid
+ *    -# Nullptr value
+ *    -# hipMemPoolAttrReservedMemHigh set to non-zero
+ *    -# IhipMemPoolAttrUsedMemHigh set to non-zero
+ *
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMemPoolSetGetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMemPoolSetAttribute_Negative_Parameters") {
   int device_id = 0;
   HIP_CHECK(hipSetDevice(device_id));
@@ -466,6 +536,34 @@ TEST_CASE("Unit_hipMemPoolSetAttribute_Negative_Parameters") {
   }
 }
 
+/**
+ * End doxygen group hipMemPoolSetAttribute.
+ * @}
+ */
+
+/**
+ * @addtogroup hipMemPoolGetAttribute hipMemPoolGetAttribute
+ * @{
+ * @ingroup StreamOTest
+ * `hipMemPoolGetAttribute(hipMemPool_t mem_pool, hipMemPoolAttr attr, void* value)`
+ * - 	Gets attributes of a memory pool
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipMemPoolGetAttribute behavior with invalid arguments:
+ *    -# Nullptr mem_pool
+ *    -# Attribute value is not valid
+ *    -# Nullptr value
+ *
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMemPoolSetGetAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMemPoolGetAttribute_Negative_Parameters") {
   int device_id = 0;
   HIP_CHECK(hipSetDevice(device_id));

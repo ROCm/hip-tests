@@ -17,32 +17,42 @@
    THE SOFTWARE.
  */
 
-#include "mempool_common.hh"
+#include <hip_test_common.hh>
 
-TEST_CASE("Unit_hipMemPoolDestroy_Negative_Parameter") {
-  int mem_pool_support = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&mem_pool_support, hipDeviceAttributeMemoryPoolsSupported, 0));
-  if (!mem_pool_support) {
-    SUCCEED("Runtime doesn't support Memory Pool. Skip the test case.");
-    return;
+namespace {
+constexpr hipMemPoolProps kPoolProps = {
+    hipMemAllocationTypePinned, hipMemHandleTypeNone, {hipMemLocationTypeDevice, 0}, nullptr, {0}};
+
+constexpr auto wait_ms = 500;
+}  // anonymous namespace
+
+
+template <typename T>
+__global__ void kernel_500ms(T* hostRes, int clkRate) {
+  int tid = threadIdx.x + blockIdx.x * blockDim.x;
+  hostRes[tid] = tid + 1;
+  __threadfence_system();
+  // expecting that the data is getting flushed to host here!
+  uint64_t start = clock64()/clkRate, cur;
+  if (clkRate > 1) {
+    do { cur = clock64()/clkRate-start;}while (cur < wait_ms);
+  } else {
+    do { cur = clock64()/start;}while (cur < wait_ms);
   }
+}
 
-  hipMemPool_t mem_pool = nullptr;
-
-  SECTION("Passing nullptr to mempool") {
-    HIP_CHECK_ERROR(hipMemPoolDestroy(nullptr), hipErrorInvalidValue);
+template <typename T>
+__global__ void kernel_500ms_gfx11(T* hostRes, int clkRate) {
+#if HT_AMD
+  int tid = threadIdx.x + blockIdx.x * blockDim.x;
+  hostRes[tid] = tid + 1;
+  __threadfence_system();
+  // expecting that the data is getting flushed to host here!
+  uint64_t start = wall_clock64()/clkRate, cur;
+  if (clkRate > 1) {
+    do { cur = wall_clock64()/clkRate-start;}while (cur < wait_ms);
+  } else {
+    do { cur = wall_clock64()/start;}while (cur < wait_ms);
   }
-
-  SECTION("Double hipMemPoolDestroy") {
-    HIP_CHECK(hipMemPoolCreate(&mem_pool, &kPoolProps));
-    HIP_CHECK(hipMemPoolDestroy(mem_pool));
-    HIP_CHECK_ERROR(hipMemPoolDestroy(mem_pool), hipErrorInvalidValue);
-  }
-
-  SECTION("Attempt to destroy default mempool") {
-    hipMemPool_t default_mem_pool = nullptr;
-    int device = 0;
-    HIP_CHECK(hipDeviceGetDefaultMemPool(&default_mem_pool, device));
-    HIP_CHECK_ERROR(hipMemPoolDestroy(default_mem_pool), hipErrorInvalidValue);
-  }
+#endif
 }

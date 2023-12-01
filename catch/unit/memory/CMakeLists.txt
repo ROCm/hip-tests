@@ -97,6 +97,9 @@ set(TEST_SRC
     hipMemcpyFromSymbol.cc
     hipPtrGetAttribute.cc
     hipMemPoolApi.cc
+    hipMemPoolCreate.cc
+    hipMemPoolDestroy.cc
+    hipMemPoolTrimTo.cc
     hipMemcpyPeer.cc
     hipMemcpyPeer_old.cc
     hipMemcpyPeerAsync.cc

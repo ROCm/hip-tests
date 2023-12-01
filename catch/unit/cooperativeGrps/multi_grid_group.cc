@@ -17,6 +17,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include "cooperative_groups_common.hh"
+#include "cg_common_kernels.hh"
 
 #include <cpu_grid.h>
 #include <resource_guards.hh>

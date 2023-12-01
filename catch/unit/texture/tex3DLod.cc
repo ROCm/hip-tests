@@ -46,7 +46,7 @@ THE SOFTWARE.
  *    - unit/texture/tex3DLod.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.7
  */
 TEMPLATE_TEST_CASE("Unit_tex3DLod_Positive_ReadModeElementType", "", char, unsigned char, short,
                    unsigned short, int, unsigned int, float) {
@@ -55,7 +55,7 @@ TEMPLATE_TEST_CASE("Unit_tex3DLod_Positive_ReadModeElementType", "", char, unsig
   params.num_subdivisions = 2;
   params.GenerateTextureDesc();
 
-  TextureTestFixture<TestType> fixture{params};
+  TextureTestFixture<TestType, false, true> fixture{params};
 
   const auto [num_threads_x, num_blocks_x] = GetLaunchConfig(10, params.NumItersX());
   const auto [num_threads_y, num_blocks_y] = GetLaunchConfig(10, params.NumItersY());
@@ -92,6 +92,7 @@ TEMPLATE_TEST_CASE("Unit_tex3DLod_Positive_ReadModeElementType", "", char, unsig
     z = GetCoordinate(z, params.NumItersZ(), params.Depth(), params.num_subdivisions,
                       params.tex_desc.normalizedCoords);
 
+    INFO("Filtering mode: " << FilteringModeToString(params.tex_desc.filterMode));
     INFO("Normalized coordinates: " << std::boolalpha << params.tex_desc.normalizedCoords);
     INFO("Address mode X: " << AddressModeToString(params.tex_desc.addressMode[0]));
     INFO("Address mode Y: " << AddressModeToString(params.tex_desc.addressMode[1]));
@@ -99,7 +100,6 @@ TEMPLATE_TEST_CASE("Unit_tex3DLod_Positive_ReadModeElementType", "", char, unsig
     INFO("x: " << std::fixed << std::setprecision(16) << x);
     INFO("y: " << std::fixed << std::setprecision(16) << y);
     INFO("z: " << std::fixed << std::setprecision(16) << z);
-
 
     const auto ref_val = fixture.tex_h.Tex3D(x, y, z, params.tex_desc);
     REQUIRE(ref_val.x == fixture.out_alloc_h[i].x);
@@ -124,7 +124,7 @@ TEMPLATE_TEST_CASE("Unit_tex3DLod_Positive_ReadModeElementType", "", char, unsig
  *    - unit/texture/tex3DLod.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.7
  */
 TEMPLATE_TEST_CASE("Unit_tex3DLod_Positive_ReadModeNormalizedFloat", "", char, unsigned char, short,
                    unsigned short) {
@@ -133,7 +133,7 @@ TEMPLATE_TEST_CASE("Unit_tex3DLod_Positive_ReadModeNormalizedFloat", "", char, u
   params.num_subdivisions = 2;
   params.GenerateTextureDesc(hipReadModeNormalizedFloat);
 
-  TextureTestFixture<TestType, true> fixture{params};
+  TextureTestFixture<TestType, true, true> fixture{params};
 
   const auto [num_threads_x, num_blocks_x] = GetLaunchConfig(10, params.NumItersX());
   const auto [num_threads_y, num_blocks_y] = GetLaunchConfig(10, params.NumItersY());
@@ -170,6 +170,7 @@ TEMPLATE_TEST_CASE("Unit_tex3DLod_Positive_ReadModeNormalizedFloat", "", char, u
     z = GetCoordinate(z, params.NumItersZ(), params.Depth(), params.num_subdivisions,
                       params.tex_desc.normalizedCoords);
 
+    INFO("Filtering mode: " << FilteringModeToString(params.tex_desc.filterMode));
     INFO("Normalized coordinates: " << std::boolalpha << params.tex_desc.normalizedCoords);
     INFO("Address mode X: " << AddressModeToString(params.tex_desc.addressMode[0]));
     INFO("Address mode Y: " << AddressModeToString(params.tex_desc.addressMode[1]));
@@ -177,7 +178,6 @@ TEMPLATE_TEST_CASE("Unit_tex3DLod_Positive_ReadModeNormalizedFloat", "", char, u
     INFO("x: " << std::fixed << std::setprecision(16) << x);
     INFO("y: " << std::fixed << std::setprecision(16) << y);
     INFO("z: " << std::fixed << std::setprecision(16) << z);
-
 
     auto ref_val = Vec4Map<TestType>(fixture.tex_h.Tex3D(x, y, z, params.tex_desc),
                                      NormalizeInteger<TestType>);

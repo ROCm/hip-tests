@@ -92,6 +92,7 @@ TEMPLATE_TEST_CASE("Unit_tex3D_Positive_ReadModeElementType", "", char, unsigned
     z = GetCoordinate(z, params.NumItersZ(), params.Depth(), params.num_subdivisions,
                       params.tex_desc.normalizedCoords);
 
+    INFO("Filtering mode: " << FilteringModeToString(params.tex_desc.filterMode));
     INFO("Normalized coordinates: " << std::boolalpha << params.tex_desc.normalizedCoords);
     INFO("Address mode X: " << AddressModeToString(params.tex_desc.addressMode[0]));
     INFO("Address mode Y: " << AddressModeToString(params.tex_desc.addressMode[1]));
@@ -169,6 +170,7 @@ TEMPLATE_TEST_CASE("Unit_tex3D_Positive_ReadModeNormalizedFloat", "", char, unsi
     z = GetCoordinate(z, params.NumItersZ(), params.Depth(), params.num_subdivisions,
                       params.tex_desc.normalizedCoords);
 
+    INFO("Filtering mode: " << FilteringModeToString(params.tex_desc.filterMode));
     INFO("Normalized coordinates: " << std::boolalpha << params.tex_desc.normalizedCoords);
     INFO("Address mode X: " << AddressModeToString(params.tex_desc.addressMode[0]));
     INFO("Address mode Y: " << AddressModeToString(params.tex_desc.addressMode[1]));

@@ -131,7 +131,7 @@ template <typename TestType, bool normalized_read = false> struct TextureTestFix
       SetVec4<TestType>(host_alloc.ptr()[i], i + test_value_offset);
     }
 
-    hipMemcpy3DParms memcpy_params = {0};
+    hipMemcpy3DParms memcpy_params = {};
     memcpy_params.dstArray = tex_alloc_d.ptr();
     memcpy_params.extent = params.LayeredExtent();
     memcpy_params.extent.height = memcpy_params.extent.height ?: 1;

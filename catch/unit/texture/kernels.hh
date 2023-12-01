@@ -54,23 +54,23 @@ __global__ void tex1DKernel(TexelType* const out, size_t N, hipTextureObject_t t
 template <typename TexelType>
 __global__ void tex1DLodKernel(TexelType* const out, size_t N, hipTextureObject_t tex_obj,
                                size_t width, size_t num_subdivisions, bool normalized_coords,
-                               float level_of_detail) {
+                               float level) {
   const auto tid = cg::this_grid().thread_rank();
   if (tid >= N) return;
 
   float x = GetCoordinate(tid, N, width, num_subdivisions, normalized_coords);
-  out[tid] = tex1DLod<TexelType>(tex_obj, x, level_of_detail);
+  out[tid] = tex1DLod<TexelType>(tex_obj, x, level);
 }
 
 template <typename TexelType>
 __global__ void tex1DLayeredLodKernel(TexelType* const out, size_t N, hipTextureObject_t tex_obj,
                                       size_t width, size_t num_subdivisions, bool normalized_coords,
-                                      int layer, float level_of_detail) {
+                                      int layer, float level) {
   const auto tid = cg::this_grid().thread_rank();
   if (tid >= N) return;
 
   float x = GetCoordinate(tid, N, width, num_subdivisions, normalized_coords);
-  out[tid] = tex1DLayeredLod<TexelType>(tex_obj, x, layer, level_of_detail);
+  out[tid] = tex1DLayeredLod<TexelType>(tex_obj, x, layer, level);
 }
 
 template <typename TexelType>
@@ -87,7 +87,7 @@ __global__ void tex1DGradKernel(TexelType* const out, size_t N, hipTextureObject
 template <typename TexelType>
 __global__ void tex1DLayeredGradKernel(TexelType* const out, size_t N, hipTextureObject_t tex_obj,
                                        size_t width, size_t num_subdivisions,
-                                       bool normalized_coords, float dx, float dy, int layer) {
+                                       bool normalized_coords, int layer, float dx, float dy) {
   const auto tid = cg::this_grid().thread_rank();
   if (tid >= N) return;
 

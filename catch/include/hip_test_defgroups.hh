@@ -144,6 +144,14 @@ THE SOFTWARE.
  * @}
  */
 
+ /**
+ * @defgroup StreamOTest Ordered Memory Allocator
+ * @{
+ * This section describes the tests for Stream Ordered Memory Allocator functions of HIP runtime
+ * API.
+ * @}
+ */
+
 /**
  * @defgroup StreamTest Stream Management
  * @{

@@ -24,6 +24,30 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 #include <utils.hh>
 
+/**
+ * @addtogroup hipFreeAsync hipFreeAsync
+ * @{
+ * @ingroup StreamOTest
+ * `hipFreeAsync(void* dev_ptr, hipStream_t stream)`
+ * - Frees memory with stream ordered semantics
+ */
+
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipFreeAsync behavior with invalid arguments:
+ *    -# Nullptr dev_ptr
+ *    -# Invalid stream handle
+ *    -# Double hipFreeAsync
+ *
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipFreeAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipFreeAsync_Negative_Parameters") {
   int device_id = 0;
   HIP_CHECK(hipSetDevice(device_id));

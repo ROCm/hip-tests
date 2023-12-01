@@ -21,6 +21,26 @@
 
 #include <limits>
 
+/**
+ * @addtogroup hipMallocAsync hipMallocAsync
+ * @{
+ * @ingroup StreamOTest
+ * `hipMallocAsync(void** dev_ptr, size_t size, hipStream_t stream)`
+ * - Allocates memory with stream ordered semantics
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic test to verify proper allocation and stream ordering of hipMallocAsync when one
+ * memory allocation is performed.
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMallocAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMallocAsync_Basic_OneAlloc") {
   MallocMemPoolAsync_OneAlloc(
       [](void** dev_ptr, size_t size, hipMemPool_t mem_pool, hipStream_t stream) {
@@ -29,6 +49,18 @@ TEST_CASE("Unit_hipMallocAsync_Basic_OneAlloc") {
       MemPools::dev_default);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic test to verify proper allocation and stream ordering of hipMallocAsync when two
+ * memory allocations are performed.
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMallocAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMallocAsync_Basic_TwoAllocs") {
   MallocMemPoolAsync_TwoAllocs(
       [](void** dev_ptr, size_t size, hipMemPool_t mem_pool, hipStream_t stream) {
@@ -37,6 +69,17 @@ TEST_CASE("Unit_hipMallocAsync_Basic_TwoAllocs") {
       MemPools::dev_default);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic test to verify that memory allocated with hipMallocAsync can be properly reused.
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMallocAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMallocAsync_Basic_Reuse") {
   MallocMemPoolAsync_Reuse([](void** dev_ptr, size_t size, hipMemPool_t mem_pool,
                               hipStream_t stream) { return hipMallocAsync(dev_ptr, size, stream); },
@@ -44,6 +87,21 @@ TEST_CASE("Unit_hipMallocAsync_Basic_Reuse") {
 }
 
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipMallocAsync behavior with invalid arguments:
+ *    -# Nullptr dev_ptr
+ *    -# Invalid stream handle
+ *    -# Size is max size_t
+ *
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMallocAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMallocAsync_Negative_Parameters") {
   int device_id = 0;
   HIP_CHECK(hipSetDevice(device_id));

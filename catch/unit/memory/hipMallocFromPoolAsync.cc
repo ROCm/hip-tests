@@ -21,6 +21,27 @@
 
 #include <limits>
 
+/**
+ * @addtogroup hipMallocFromPoolAsync hipMallocFromPoolAsync
+ * @{
+ * @ingroup StreamOTest
+ * `hipMallocFromPoolAsync(void** dev_ptr, size_t size, hipMemPool_t mem_pool, hipStream_t stream)`
+ * - Allocates memory from a specified pool with stream ordered semantics
+ */
+
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic test to verify proper allocation and stream ordering of hipMallocFromPoolAsync when one
+ * memory allocation is performed.
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMallocFromPoolAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMallocFromPoolAsync_Basic_OneAlloc") {
   MallocMemPoolAsync_OneAlloc(
       [](void** dev_ptr, size_t size, hipMemPool_t mem_pool, hipStream_t stream) {
@@ -29,6 +50,19 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_Basic_OneAlloc") {
       MemPools::created);
 }
 
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic test to verify proper allocation and stream ordering of hipMallocFromPoolAsync when two
+ * memory allocations are performed.
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMallocFromPoolAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMallocFromPoolAsync_Basic_TwoAllocs") {
   MallocMemPoolAsync_TwoAllocs(
       [](void** dev_ptr, size_t size, hipMemPool_t mem_pool, hipStream_t stream) {
@@ -37,6 +71,17 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_Basic_TwoAllocs") {
       MemPools::created);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic test to verify that memory allocated with hipMallocFromPoolAsync can be properly reused.
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMallocFromPoolAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMallocFromPoolAsync_Basic_Reuse") {
   MallocMemPoolAsync_Reuse(
       [](void** dev_ptr, size_t size, hipMemPool_t mem_pool, hipStream_t stream) {
@@ -45,6 +90,22 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_Basic_Reuse") {
       MemPools::created);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipMallocFromPoolAsync behavior with invalid arguments:
+ *    -# Nullptr dev_ptr
+ *    -# Nullptr mem_pool
+ *    -# Invalid stream handle
+ *    -# Size is max size_t
+ *
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMallocFromPoolAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipMallocFromPoolAsync_Negative_Parameters") {
   int device_id = 0;
   HIP_CHECK(hipSetDevice(device_id));
@@ -74,7 +135,7 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_Negative_Parameters") {
                     hipErrorInvalidValue);
   }
 
-  SECTION("invalid stream handle") {
+  SECTION("Invalid stream handle") {
     HIP_CHECK_ERROR(hipMallocFromPoolAsync(static_cast<void**>(&p), alloc_size, mempool.mempool(),
                                            reinterpret_cast<hipStream_t>(-1)),
                     hipErrorInvalidHandle);

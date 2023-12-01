@@ -52,7 +52,7 @@ TEMPLATE_TEST_CASE("Unit_tex1DLod_Positive_ReadModeElementType", "", char, unsig
                    unsigned short, int, unsigned int, float) {
   CHECK_IMAGE_SUPPORT;
 
-  TextureTestParams<TestType> params = {0};
+  TextureTestParams<TestType> params = {};
   params.extent = make_hipExtent(1024, 0, 0);
   params.num_subdivisions = 4;
   params.GenerateTextureDesc();
@@ -105,7 +105,7 @@ TEMPLATE_TEST_CASE("Unit_tex1DLod_Positive_ReadModeNormalizedFloat", "", char, u
                    unsigned short) {
   CHECK_IMAGE_SUPPORT;
 
-  TextureTestParams<TestType> params = {0};
+  TextureTestParams<TestType> params = {};
   params.extent = make_hipExtent(1024, 0, 0);
   params.num_subdivisions = 4;
   params.GenerateTextureDesc(hipReadModeNormalizedFloat);

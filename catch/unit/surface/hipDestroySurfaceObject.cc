@@ -59,7 +59,7 @@ TEST_CASE("Unit_hipDestroySurfaceObject_Negative_Parameters") {
     HIP_CHECK(hipCreateSurfaceObject(&surf, &resc));
 
     HIP_CHECK(hipDestroySurfaceObject(surf));
-    HIP_CHECK(hipDestroySurfaceObject(surf));
+    HIP_CHECK_ERROR(hipDestroySurfaceObject(surf), hipErrorInvalidValue);
 
     HIP_CHECK(hipFreeArray(array));
   }

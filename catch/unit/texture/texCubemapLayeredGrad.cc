@@ -52,7 +52,7 @@ TEMPLATE_TEST_CASE("Unit_texCubemapLayeredGrad_Positive_ReadModeElementType", ""
                    unsigned char, short, unsigned short, int, unsigned int, float) {
   CHECK_IMAGE_SUPPORT;
 
-  TextureTestParams<TestType> params = {0};
+  TextureTestParams<TestType> params = {};
   params.extent = make_hipExtent(2, 2, 6);
   params.num_subdivisions = 4;
   params.layers = 1;
@@ -140,7 +140,7 @@ TEMPLATE_TEST_CASE("Unit_texCubemapLayeredGrad_Positive_ReadModeNormalizedFloat"
                    unsigned char, short, unsigned short) {
   CHECK_IMAGE_SUPPORT;
 
-  TextureTestParams<TestType> params = {0};
+  TextureTestParams<TestType> params = {};
   params.extent = make_hipExtent(2, 2, 6);
   params.num_subdivisions = 4;
   params.layers = 1;

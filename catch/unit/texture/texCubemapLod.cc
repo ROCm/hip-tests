@@ -50,7 +50,9 @@ THE SOFTWARE.
  */
 TEMPLATE_TEST_CASE("Unit_texCubemapLod_Positive_ReadModeElementType", "", char, unsigned char,
                    short, unsigned short, int, unsigned int, float) {
-  TextureTestParams<TestType> params = {0};
+  CHECK_IMAGE_SUPPORT;
+
+  TextureTestParams<TestType> params = {};
   params.extent = make_hipExtent(2, 2, 6);
   params.num_subdivisions = 4;
   params.cubemap = true;
@@ -132,7 +134,9 @@ TEMPLATE_TEST_CASE("Unit_texCubemapLod_Positive_ReadModeElementType", "", char, 
  */
 TEMPLATE_TEST_CASE("Unit_texCubemapLod_Positive_ReadModeNormalizedFloat", "", char, unsigned char,
                    short, unsigned short) {
-  TextureTestParams<TestType> params = {0};
+  CHECK_IMAGE_SUPPORT;
+
+  TextureTestParams<TestType> params = {};
   params.extent = make_hipExtent(2, 2, 6);
   params.num_subdivisions = 4;
   params.cubemap = true;

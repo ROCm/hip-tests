@@ -52,7 +52,7 @@ TEMPLATE_TEST_CASE("Unit_texCubemap_Positive_ReadModeElementType", "", char, uns
                    unsigned short, int, unsigned int, float) {
   CHECK_IMAGE_SUPPORT;
 
-  TextureTestParams<TestType> params = {0};
+  TextureTestParams<TestType> params = {};
   params.extent = make_hipExtent(2, 2, 6);
   params.num_subdivisions = 4;
   params.cubemap = true;
@@ -136,7 +136,7 @@ TEMPLATE_TEST_CASE("Unit_texCubemap_Positive_ReadModeNormalizedFloat", "", char,
                    short, unsigned short) {
   CHECK_IMAGE_SUPPORT;
 
-  TextureTestParams<TestType> params = {0};
+  TextureTestParams<TestType> params = {};
   params.extent = make_hipExtent(2, 2, 6);
   params.num_subdivisions = 4;
   params.cubemap = true;

@@ -58,7 +58,7 @@ TEMPLATE_TEST_CASE("Unit_tex2DLayeredLod_Positive_ReadModeElementType", "", char
   params.num_subdivisions = 4;
   params.GenerateTextureDesc();
 
-  TextureTestFixture<TestType> fixture{params};
+  TextureTestFixture<TestType, false, true> fixture{params};
 
   const auto [num_threads_x, num_blocks_x] = GetLaunchConfig(32, params.NumItersX());
   const auto [num_threads_y, num_blocks_y] = GetLaunchConfig(32, params.NumItersY());
@@ -133,7 +133,7 @@ TEMPLATE_TEST_CASE("Unit_tex2DLayeredLod_Positive_ReadModeNormalizedFloat", "", 
   params.num_subdivisions = 4;
   params.GenerateTextureDesc(hipReadModeNormalizedFloat);
 
-  TextureTestFixture<TestType, true> fixture{params};
+  TextureTestFixture<TestType, true, true> fixture{params};
 
   const auto [num_threads_x, num_blocks_x] = GetLaunchConfig(32, params.NumItersX());
   const auto [num_threads_y, num_blocks_y] = GetLaunchConfig(32, params.NumItersY());

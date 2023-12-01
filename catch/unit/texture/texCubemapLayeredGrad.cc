@@ -46,7 +46,7 @@ THE SOFTWARE.
  *    - unit/texture/texCubemapLayeredGrad.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.7
  */
 TEMPLATE_TEST_CASE("Unit_texCubemapLayeredGrad_Positive_ReadModeElementType", "", char,
                    unsigned char, short, unsigned short, int, unsigned int, float) {
@@ -57,7 +57,7 @@ TEMPLATE_TEST_CASE("Unit_texCubemapLayeredGrad_Positive_ReadModeElementType", ""
   params.cubemap = true;
   params.GenerateTextureDesc();
 
-  TextureTestFixture<TestType> fixture{params};
+  TextureTestFixture<TestType, false, true> fixture{params};
 
   const auto [num_threads_x, num_blocks_x] = GetLaunchConfig(10, params.NumItersX());
   const auto [num_threads_y, num_blocks_y] = GetLaunchConfig(10, params.NumItersY());
@@ -96,6 +96,7 @@ TEMPLATE_TEST_CASE("Unit_texCubemapLayeredGrad_Positive_ReadModeElementType", ""
           INFO("i: " << i);
           INFO("j: " << j);
           INFO("k: " << k);
+          INFO("Filtering mode: " << FilteringModeToString(params.tex_desc.filterMode));
           INFO("Normalized coordinates: " << std::boolalpha << params.tex_desc.normalizedCoords);
           INFO("Address mode X: " << AddressModeToString(params.tex_desc.addressMode[0]));
           INFO("Address mode Y: " << AddressModeToString(params.tex_desc.addressMode[1]));
@@ -132,7 +133,7 @@ TEMPLATE_TEST_CASE("Unit_texCubemapLayeredGrad_Positive_ReadModeElementType", ""
  *    - unit/texture/texCubemapLayeredGrad.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.7
  */
 TEMPLATE_TEST_CASE("Unit_texCubemapLayeredGrad_Positive_ReadModeNormalizedFloat", "", char,
                    unsigned char, short, unsigned short) {
@@ -143,7 +144,7 @@ TEMPLATE_TEST_CASE("Unit_texCubemapLayeredGrad_Positive_ReadModeNormalizedFloat"
   params.cubemap = true;
   params.GenerateTextureDesc(hipReadModeNormalizedFloat);
 
-  TextureTestFixture<TestType, true> fixture{params};
+  TextureTestFixture<TestType, true, true> fixture{params};
 
   const auto [num_threads_x, num_blocks_x] = GetLaunchConfig(10, params.NumItersX());
   const auto [num_threads_y, num_blocks_y] = GetLaunchConfig(10, params.NumItersY());
@@ -182,6 +183,7 @@ TEMPLATE_TEST_CASE("Unit_texCubemapLayeredGrad_Positive_ReadModeNormalizedFloat"
           INFO("i: " << i);
           INFO("j: " << j);
           INFO("k: " << k);
+          INFO("Filtering mode: " << FilteringModeToString(params.tex_desc.filterMode));
           INFO("Normalized coordinates: " << std::boolalpha << params.tex_desc.normalizedCoords);
           INFO("Address mode X: " << AddressModeToString(params.tex_desc.addressMode[0]));
           INFO("Address mode Y: " << AddressModeToString(params.tex_desc.addressMode[1]));

@@ -167,6 +167,42 @@ template <typename T> class ArrayAllocGuard {
   const hipExtent extent_;
 };
 
+template <typename T> class MipmappedArrayAllocGuard {
+ public:
+  // extent should contain logical width
+  MipmappedArrayAllocGuard(const hipExtent extent, const unsigned int levels,
+                           const unsigned int flags)
+      : extent_{extent}, levels_{levels} {
+    hipChannelFormatDesc desc = hipCreateChannelDesc<T>();
+    HIP_CHECK(hipMallocMipmappedArray(&ptr_, &desc, extent_, levels_, flags));
+  }
+
+  MipmappedArrayAllocGuard(const hipExtent extent, const unsigned int flags = 0u)
+      : MipmappedArrayAllocGuard{extent, 1, flags} {}
+
+  ~MipmappedArrayAllocGuard() { static_cast<void>(hipFreeMipmappedArray(ptr_)); }
+
+  MipmappedArrayAllocGuard(const MipmappedArrayAllocGuard&) = delete;
+  MipmappedArrayAllocGuard(MipmappedArrayAllocGuard&&) = delete;
+
+  hipMipmappedArray_t ptr() const { return ptr_; }
+
+  hipArray_t GetLevel(unsigned int level) {
+    hipArray_t ret;
+    HIP_CHECK(hipGetMipmappedArrayLevel(&ret, ptr_, level));
+    return ret;
+  }
+
+  hipExtent extent() const { return extent_; }
+
+  unsigned int levels() const { return levels_; }
+
+ private:
+  hipMipmappedArray_t ptr_ = nullptr;
+  const hipExtent extent_;
+  const unsigned int levels_;
+};
+
 template <typename T> class DrvArrayAllocGuard {
  public:
   // extent should contain width in bytes

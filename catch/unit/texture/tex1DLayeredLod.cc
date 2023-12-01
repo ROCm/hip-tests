@@ -50,6 +50,8 @@ THE SOFTWARE.
  */
 TEMPLATE_TEST_CASE("Unit_tex1DLayeredLod_Positive_ReadModeElementType", "", char, unsigned char,
                    short, unsigned short, int, unsigned int, float) {
+  CHECK_IMAGE_SUPPORT;
+
   TextureTestParams<TestType> params = {0};
   params.extent = make_hipExtent(1024, 0, 0);
   params.layers = 2;
@@ -106,6 +108,8 @@ TEMPLATE_TEST_CASE("Unit_tex1DLayeredLod_Positive_ReadModeElementType", "", char
  */
 TEMPLATE_TEST_CASE("Unit_tex1DLayeredLod_Positive_ReadModeNormalizedFloat", "", char, unsigned char,
                    short, unsigned short) {
+  CHECK_IMAGE_SUPPORT;
+
   TextureTestParams<TestType> params = {0};
   params.extent = make_hipExtent(1024, 0, 0);
   params.layers = 2;

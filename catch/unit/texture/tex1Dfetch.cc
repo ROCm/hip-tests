@@ -48,6 +48,8 @@ THE SOFTWARE.
  */
 TEMPLATE_TEST_CASE("Unit_tex1Dfetch_Positive_ReadModeElementType", "", char, unsigned char, short,
                    unsigned short, int, unsigned int, float) {
+  CHECK_IMAGE_SUPPORT;
+
   std::vector<vec4<TestType>> tex_h(1024);
   for (auto i = 0u; i < tex_h.size(); ++i) {
     tex_h[i].x = i + 7;
@@ -109,6 +111,8 @@ TEMPLATE_TEST_CASE("Unit_tex1Dfetch_Positive_ReadModeElementType", "", char, uns
  */
 TEMPLATE_TEST_CASE("Unit_tex1Dfetch_Positive_ReadModeNormalizedFloat", "", char, unsigned char,
                    short, unsigned short) {
+  CHECK_IMAGE_SUPPORT;
+
   std::vector<vec4<TestType>> tex_h(1024);
   for (auto i = 0u; i < tex_h.size(); ++i) {
     tex_h[i].x = i + 7;

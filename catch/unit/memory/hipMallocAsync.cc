@@ -21,6 +21,8 @@
 
 #include <limits>
 
+#pragma clang diagnostic ignored "-Wunused-parameter"
+
 /**
  * @addtogroup hipMallocAsync hipMallocAsync
  * @{

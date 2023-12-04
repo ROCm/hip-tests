@@ -102,10 +102,10 @@ TEST_CASE("Unit_hipMemPoolTrimTo_Positive_Basic") {
   int blocks = 2;
   int clk_rate;
   if (IsGfx11()) {
-    HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeWallClockRate, 0));
+    HIP_CHECK(hipDeviceGetAttribute(&clk_rate, hipDeviceAttributeWallClockRate, 0));
     kernel_500ms_gfx11<<<32, blocks, 0, stream.stream()>>>(alloc_mem1, clk_rate);
   } else {
-    HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
+    HIP_CHECK(hipDeviceGetAttribute(&clk_rate, hipDeviceAttributeClockRate, 0));
 
     kernel_500ms<<<32, blocks, 0, stream.stream()>>>(alloc_mem1, clk_rate);
   }

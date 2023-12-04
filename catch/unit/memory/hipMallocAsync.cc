@@ -21,6 +21,8 @@
 
 #include <limits>
 
+#pragma clang diagnostic ignored "-Wunused-parameter"
+
 TEST_CASE("Unit_hipMallocAsync_Basic_OneAlloc") {
   MallocMemPoolAsync_OneAlloc(
       [](void** dev_ptr, size_t size, hipMemPool_t mem_pool, hipStream_t stream) {

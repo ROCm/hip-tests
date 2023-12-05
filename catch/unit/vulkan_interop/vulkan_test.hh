@@ -33,7 +33,6 @@ THE SOFTWARE.
 #include <aclapi.h>
 #include <securitybaseapi.h>
 #include <vulkan/vulkan_win32.h>
-
 #endif
 
 #include <vector>
@@ -58,7 +57,7 @@ protected:
     PSECURITY_DESCRIPTOR m_winPSecurityDescriptor;
 
 public:
-WindowsSecurityAttributes::WindowsSecurityAttributes()
+WindowsSecurityAttributes()
 {
     m_winPSecurityDescriptor = (PSECURITY_DESCRIPTOR)calloc(1, SECURITY_DESCRIPTOR_MIN_LENGTH + 2 * sizeof(void **));
     if (!m_winPSecurityDescriptor) {
@@ -92,12 +91,12 @@ WindowsSecurityAttributes::WindowsSecurityAttributes()
 }
 
 SECURITY_ATTRIBUTES *
-WindowsSecurityAttributes::operator&()
+operator&()
 {
     return &m_winSecurityAttributes;
 }
 
-WindowsSecurityAttributes::~WindowsSecurityAttributes()
+~WindowsSecurityAttributes()
 {
     PSID *ppSID = (PSID *)((PBYTE)m_winPSecurityDescriptor + SECURITY_DESCRIPTOR_MIN_LENGTH);
     PACL *ppACL = (PACL *)((PBYTE)ppSID + sizeof(PSID *));
@@ -292,7 +291,13 @@ VulkanTest::MappedBuffer<T> VulkanTest::CreateMappedStorage(uint32_t count,
   allocate_info.memoryTypeIndex =
       FindMemoryType(memory_requirements.memoryTypeBits,
                      VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-  REQUIRE(allocate_info.memoryTypeIndex != VK_MAX_MEMORY_TYPES);
+  if (allocate_info.memoryTypeIndex == VK_MAX_MEMORY_TYPES) {
+    WARN("Not supported memory type "
+         << memory_requirements.memoryTypeBits
+         <<
+        " with VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT");
+    return MappedBuffer<T>{nullptr, nullptr, 0, nullptr};
+  }
 
   VkExportMemoryAllocateInfoKHR vulkan_export_memory_allocate_info = {};
   if (external) {

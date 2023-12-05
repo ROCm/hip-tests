@@ -22,6 +22,12 @@ THE SOFTWARE.
 #include "casting_common.hh"
 #include "casting_double_negative_kernels_rtc.hh"
 
+/**
+ * @addtogroup HalfPrecisionCastingHalf2 HalfPrecisionCastingHalf2
+ * @{
+ * @ingroup MathTest
+ */
+
 #define CAST_DOUBLE2INT_TEST_DEF(T, kern_name, ref_func)                                           \
   CAST_KERNEL_DEF(kern_name, T, double)                                                            \
   CAST_F2I_REF_DEF(kern_name, T, double, ref_func)                                                 \

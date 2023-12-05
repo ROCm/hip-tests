@@ -23,12 +23,12 @@ THE SOFTWARE.
 #include "casting_double_negative_kernels_rtc.hh"
 
 /**
- * @addtogroup CastingDouble CastingDouble
+ * @addtogroup CastingDoubleType CastingDoubleType
  * @{
  * @ingroup MathTest
  */
 
-#define CAST_DOUBLE2INT_TEST_DEF(T, kern_name, ref_func)                                           \
+#define CAST_DOUBLE2INT_TEST_DEF(kern_name, T, ref_func)                                           \
   CAST_KERNEL_DEF(kern_name, T, double)                                                            \
   CAST_F2I_REF_DEF(kern_name, T, double, ref_func)                                                 \
                                                                                                    \
@@ -37,7 +37,7 @@ THE SOFTWARE.
     CastDoublePrecisionTest(kern_name##_kernel, ref, EqValidatorBuilderFactory<T>());              \
   }
 
-#define CAST_DOUBLE2INT_RZ_TEST_DEF(T, kern_name)                                                  \
+#define CAST_DOUBLE2INT_RZ_TEST_DEF(kern_name, T)                                                  \
   CAST_KERNEL_DEF(kern_name, T, double)                                                            \
   CAST_F2I_RZ_REF_DEF(kern_name, T, double)                                                        \
                                                                                                    \
@@ -60,7 +60,7 @@ THE SOFTWARE.
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2INT_TEST_DEF(int, double2int_rd, std::floor)
+CAST_DOUBLE2INT_TEST_DEF(__double2int_rd, int, std::floor)
 
 /**
  * Test Description
@@ -76,7 +76,7 @@ CAST_DOUBLE2INT_TEST_DEF(int, double2int_rd, std::floor)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2INT_TEST_DEF(int, double2int_rn, std::rint)
+CAST_DOUBLE2INT_TEST_DEF(__double2int_rn, int, std::rint)
 
 /**
  * Test Description
@@ -92,7 +92,7 @@ CAST_DOUBLE2INT_TEST_DEF(int, double2int_rn, std::rint)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2INT_TEST_DEF(int, double2int_ru, std::ceil)
+CAST_DOUBLE2INT_TEST_DEF(__double2int_ru, int, std::ceil)
 
 /**
  * Test Description
@@ -108,7 +108,7 @@ CAST_DOUBLE2INT_TEST_DEF(int, double2int_ru, std::ceil)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2INT_RZ_TEST_DEF(int, double2int_rz)
+CAST_DOUBLE2INT_RZ_TEST_DEF(__double2int_rz, int)
 
 /**
  * Test Description
@@ -122,7 +122,7 @@ CAST_DOUBLE2INT_RZ_TEST_DEF(int, double2int_rz)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_double2int_Negative_RTC") { NegativeTestRTCWrapper<12>(kDouble2Int); }
+TEST_CASE("Unit_Device___double2int_Negative_RTC") { NegativeTestRTCWrapper<12>(kDouble2Int); }
 
 /**
  * Test Description
@@ -138,7 +138,7 @@ TEST_CASE("Unit_Device_double2int_Negative_RTC") { NegativeTestRTCWrapper<12>(kD
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2INT_TEST_DEF(unsigned int, double2uint_rd, std::floor)
+CAST_DOUBLE2INT_TEST_DEF(__double2uint_rd, unsigned int, std::floor)
 
 /**
  * Test Description
@@ -154,7 +154,7 @@ CAST_DOUBLE2INT_TEST_DEF(unsigned int, double2uint_rd, std::floor)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2INT_TEST_DEF(unsigned int, double2uint_rn, std::rint)
+CAST_DOUBLE2INT_TEST_DEF(__double2uint_rn, unsigned int, std::rint)
 
 /**
  * Test Description
@@ -170,7 +170,7 @@ CAST_DOUBLE2INT_TEST_DEF(unsigned int, double2uint_rn, std::rint)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2INT_TEST_DEF(unsigned int, double2uint_ru, std::ceil)
+CAST_DOUBLE2INT_TEST_DEF(__double2uint_ru, unsigned int, std::ceil)
 
 /**
  * Test Description
@@ -186,7 +186,7 @@ CAST_DOUBLE2INT_TEST_DEF(unsigned int, double2uint_ru, std::ceil)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2INT_RZ_TEST_DEF(unsigned int, double2uint_rz)
+CAST_DOUBLE2INT_RZ_TEST_DEF(__double2uint_rz, unsigned int)
 
 /**
  * Test Description
@@ -200,9 +200,9 @@ CAST_DOUBLE2INT_RZ_TEST_DEF(unsigned int, double2uint_rz)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_double2uint_Negative_RTC") { NegativeTestRTCWrapper<12>(kDouble2Uint); }
+TEST_CASE("Unit_Device___double2uint_Negative_RTC") { NegativeTestRTCWrapper<12>(kDouble2Uint); }
 
-#define CAST_DOUBLE2LL_TEST_DEF(T, kern_name, ref_func)                                            \
+#define CAST_DOUBLE2LL_TEST_DEF(kern_name, T, ref_func)                                            \
   CAST_KERNEL_DEF(kern_name, T, double)                                                            \
   CAST_F2I_REF_DEF(kern_name, T, double, ref_func)                                                 \
                                                                                                    \
@@ -213,7 +213,7 @@ TEST_CASE("Unit_Device_double2uint_Negative_RTC") { NegativeTestRTCWrapper<12>(k
                                        static_cast<double>(std::numeric_limits<T>::max()));        \
   }
 
-#define CAST_DOUBLE2LL_RZ_TEST_DEF(T, kern_name)                                                   \
+#define CAST_DOUBLE2LL_RZ_TEST_DEF(kern_name, T)                                                   \
   CAST_KERNEL_DEF(kern_name, T, double)                                                            \
   CAST_F2I_RZ_REF_DEF(kern_name, T, double)                                                        \
                                                                                                    \
@@ -238,7 +238,7 @@ TEST_CASE("Unit_Device_double2uint_Negative_RTC") { NegativeTestRTCWrapper<12>(k
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2LL_TEST_DEF(long long int, double2ll_rd, std::floor)
+CAST_DOUBLE2LL_TEST_DEF(__double2ll_rd, long long int, std::floor)
 
 /**
  * Test Description
@@ -254,7 +254,7 @@ CAST_DOUBLE2LL_TEST_DEF(long long int, double2ll_rd, std::floor)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2LL_TEST_DEF(long long int, double2ll_rn, std::rint)
+CAST_DOUBLE2LL_TEST_DEF(__double2ll_rn, long long int, std::rint)
 
 /**
  * Test Description
@@ -270,7 +270,7 @@ CAST_DOUBLE2LL_TEST_DEF(long long int, double2ll_rn, std::rint)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2LL_TEST_DEF(long long int, double2ll_ru, std::ceil)
+CAST_DOUBLE2LL_TEST_DEF(__double2ll_ru, long long int, std::ceil)
 
 /**
  * Test Description
@@ -286,7 +286,7 @@ CAST_DOUBLE2LL_TEST_DEF(long long int, double2ll_ru, std::ceil)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2LL_RZ_TEST_DEF(long long int, double2ll_rz)
+CAST_DOUBLE2LL_RZ_TEST_DEF(__double2ll_rz, long long int)
 
 /**
  * Test Description
@@ -300,7 +300,7 @@ CAST_DOUBLE2LL_RZ_TEST_DEF(long long int, double2ll_rz)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_double2ll_Negative_RTC") { NegativeTestRTCWrapper<12>(kDouble2LL); }
+TEST_CASE("Unit_Device___double2ll_Negative_RTC") { NegativeTestRTCWrapper<12>(kDouble2LL); }
 
 /**
  * Test Description
@@ -316,7 +316,7 @@ TEST_CASE("Unit_Device_double2ll_Negative_RTC") { NegativeTestRTCWrapper<12>(kDo
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2LL_TEST_DEF(unsigned long long int, double2ull_rd, std::floor)
+CAST_DOUBLE2LL_TEST_DEF(__double2ull_rd, unsigned long long int, std::floor)
 
 /**
  * Test Description
@@ -332,7 +332,7 @@ CAST_DOUBLE2LL_TEST_DEF(unsigned long long int, double2ull_rd, std::floor)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2LL_TEST_DEF(unsigned long long int, double2ull_rn, std::rint)
+CAST_DOUBLE2LL_TEST_DEF(__double2ull_rn, unsigned long long int, std::rint)
 
 /**
  * Test Description
@@ -348,7 +348,7 @@ CAST_DOUBLE2LL_TEST_DEF(unsigned long long int, double2ull_rn, std::rint)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2LL_TEST_DEF(unsigned long long int, double2ull_ru, std::ceil)
+CAST_DOUBLE2LL_TEST_DEF(__double2ull_ru, unsigned long long int, std::ceil)
 
 /**
  * Test Description
@@ -364,7 +364,7 @@ CAST_DOUBLE2LL_TEST_DEF(unsigned long long int, double2ull_ru, std::ceil)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2LL_RZ_TEST_DEF(unsigned long long int, double2ull_rz)
+CAST_DOUBLE2LL_RZ_TEST_DEF(__double2ull_rz, unsigned long long int)
 
 /**
  * Test Description
@@ -378,7 +378,7 @@ CAST_DOUBLE2LL_RZ_TEST_DEF(unsigned long long int, double2ull_rz)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_double2ull_Negative_RTC") { NegativeTestRTCWrapper<12>(kDouble2ULL); }
+TEST_CASE("Unit_Device___double2ull_Negative_RTC") { NegativeTestRTCWrapper<12>(kDouble2ULL); }
 
 #define CAST_DOUBLE2FLOAT_TEST_DEF(kern_name, round_dir)                                           \
   CAST_KERNEL_DEF(kern_name, float, double)                                                        \
@@ -412,7 +412,7 @@ TEST_CASE("Unit_Device_double2ull_Negative_RTC") { NegativeTestRTCWrapper<12>(kD
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2FLOAT_TEST_DEF(double2float_rd, FE_DOWNWARD)
+CAST_DOUBLE2FLOAT_TEST_DEF(__double2float_rd, FE_DOWNWARD)
 
 /**
  * Test Description
@@ -428,7 +428,7 @@ CAST_DOUBLE2FLOAT_TEST_DEF(double2float_rd, FE_DOWNWARD)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2FLOAT_RN_TEST_DEF(double2float_rn)
+CAST_DOUBLE2FLOAT_RN_TEST_DEF(__double2float_rn)
 
 /**
  * Test Description
@@ -444,7 +444,7 @@ CAST_DOUBLE2FLOAT_RN_TEST_DEF(double2float_rn)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2FLOAT_TEST_DEF(double2float_ru, FE_UPWARD)
+CAST_DOUBLE2FLOAT_TEST_DEF(__double2float_ru, FE_UPWARD)
 
 /**
  * Test Description
@@ -460,7 +460,7 @@ CAST_DOUBLE2FLOAT_TEST_DEF(double2float_ru, FE_UPWARD)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_DOUBLE2FLOAT_TEST_DEF(double2float_rz, FE_TOWARDZERO)
+CAST_DOUBLE2FLOAT_TEST_DEF(__double2float_rz, FE_TOWARDZERO)
 
 /**
  * Test Description
@@ -474,11 +474,11 @@ CAST_DOUBLE2FLOAT_TEST_DEF(double2float_rz, FE_TOWARDZERO)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_double2float_Negative_RTC") { NegativeTestRTCWrapper<12>(kDouble2Float); }
+TEST_CASE("Unit_Device___double2float_Negative_RTC") { NegativeTestRTCWrapper<12>(kDouble2Float); }
 
-CAST_KERNEL_DEF(double2hiint, int, double)
+CAST_KERNEL_DEF(__double2hiint, int, double)
 
-int double2hiint_ref(double arg) {
+int __double2hiint_ref(double arg) {
   int tmp[2];
   memcpy(tmp, &arg, sizeof(tmp));
   return tmp[1];
@@ -498,9 +498,9 @@ int double2hiint_ref(double arg) {
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_double2hiint_Positive") {
-  int (*ref)(double) = double2hiint_ref;
-  CastDoublePrecisionTest(double2hiint_kernel, ref, EqValidatorBuilderFactory<int>());
+TEST_CASE("Unit_Device___double2hiint_Positive") {
+  int (*ref)(double) = __double2hiint_ref;
+  CastDoublePrecisionTest(__double2hiint_kernel, ref, EqValidatorBuilderFactory<int>());
 }
 
 /**
@@ -515,11 +515,11 @@ TEST_CASE("Unit_Device_double2hiint_Positive") {
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_double2hiint_Negative_RTC") { NegativeTestRTCWrapper<3>(kDouble2Hiint); }
+TEST_CASE("Unit_Device___double2hiint_Negative_RTC") { NegativeTestRTCWrapper<3>(kDouble2Hiint); }
 
-CAST_KERNEL_DEF(double2loint, int, double)
+CAST_KERNEL_DEF(__double2loint, int, double)
 
-int double2loint_ref(double arg) {
+int __double2loint_ref(double arg) {
   int tmp[2];
   memcpy(tmp, &arg, sizeof(tmp));
   return tmp[0];
@@ -539,9 +539,9 @@ int double2loint_ref(double arg) {
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_double2loint_Positive") {
-  int (*ref)(double) = double2loint_ref;
-  CastDoublePrecisionTest(double2loint_kernel, ref, EqValidatorBuilderFactory<int>());
+TEST_CASE("Unit_Device___double2loint_Positive") {
+  int (*ref)(double) = __double2loint_ref;
+  CastDoublePrecisionTest(__double2loint_kernel, ref, EqValidatorBuilderFactory<int>());
 }
 
 /**
@@ -556,9 +556,9 @@ TEST_CASE("Unit_Device_double2loint_Positive") {
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_double2loint_Negative_RTC") { NegativeTestRTCWrapper<3>(kDouble2Loint); }
+TEST_CASE("Unit_Device___double2loint_Negative_RTC") { NegativeTestRTCWrapper<3>(kDouble2Loint); }
 
-CAST_KERNEL_DEF(double_as_longlong, long long int, double)
+CAST_KERNEL_DEF(__double_as_longlong, long long int, double)
 
 /**
  * Test Description
@@ -574,9 +574,9 @@ CAST_KERNEL_DEF(double_as_longlong, long long int, double)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_double_as_longlong_Positive") {
+TEST_CASE("Unit_Device___double_as_longlong_Positive") {
   long long int (*ref)(double) = type2_as_type1_ref<long long int, double>;
-  CastDoublePrecisionTest(double_as_longlong_kernel, ref,
+  CastDoublePrecisionTest(__double_as_longlong_kernel, ref,
                           EqValidatorBuilderFactory<long long int>());
 }
 
@@ -592,6 +592,6 @@ TEST_CASE("Unit_Device_double_as_longlong_Positive") {
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_double_as_longlong_Negative_RTC") {
+TEST_CASE("Unit_Device___double_as_longlong_Negative_RTC") {
   NegativeTestRTCWrapper<3>(kDoubleAsLonglong);
 }

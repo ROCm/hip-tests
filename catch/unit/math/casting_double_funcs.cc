@@ -23,7 +23,7 @@ THE SOFTWARE.
 #include "casting_double_negative_kernels_rtc.hh"
 
 /**
- * @addtogroup HalfPrecisionCastingHalf2 HalfPrecisionCastingHalf2
+ * @addtogroup CastingDouble CastingDouble
  * @{
  * @ingroup MathTest
  */

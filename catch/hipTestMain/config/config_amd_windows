@@ -241,6 +241,8 @@
         "Unit_hipVectorTypes_test_on_device",
         "Unit_Layered1DTexture_Check_DeviceBufferToFromLayered1DArray - ushort4",
         "Unit_Layered2DTexture_Check_DeviceBufferToFromLayered2DArray - float4",
+        "=== Patch which removes the typetraits implementation from std namespace in hiprtc is reverted ===",
+        "Unit_hiprtc_stdheaders",
     #endif
         "End of json"
     ]

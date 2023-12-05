@@ -23,12 +23,12 @@ THE SOFTWARE.
 #include "casting_float_negative_kernels_rtc.hh"
 
 /**
- * @addtogroup CastingFloatTypes CastingFloatTypes
+ * @addtogroup CastingFloatType CastingFloatType
  * @{
  * @ingroup MathTest
  */
 
-#define CAST_FLOAT2INT_TEST_DEF(T, kern_name, ref_func)                                            \
+#define CAST_FLOAT2INT_TEST_DEF(kern_name, T, ref_func)                                            \
   CAST_KERNEL_DEF(kern_name, T, float)                                                             \
   CAST_F2I_REF_DEF(kern_name, T, float, ref_func)                                                  \
                                                                                                    \
@@ -39,7 +39,7 @@ THE SOFTWARE.
                                   std::numeric_limits<float>::max());                              \
   }
 
-#define CAST_FLOAT2INT_RZ_TEST_DEF(T, kern_name)                                                   \
+#define CAST_FLOAT2INT_RZ_TEST_DEF(kern_name, T)                                                   \
   CAST_KERNEL_DEF(kern_name, T, float)                                                             \
   CAST_F2I_RZ_REF_DEF(kern_name, T, float)                                                         \
                                                                                                    \
@@ -63,7 +63,7 @@ THE SOFTWARE.
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2INT_TEST_DEF(int, float2int_rd, std::floor)
+CAST_FLOAT2INT_TEST_DEF(__float2int_rd, int, std::floor)
 
 /**
  * Test Description
@@ -78,7 +78,7 @@ CAST_FLOAT2INT_TEST_DEF(int, float2int_rd, std::floor)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2INT_TEST_DEF(int, float2int_rn, std::rint)
+CAST_FLOAT2INT_TEST_DEF(__float2int_rn, int, std::rint)
 
 /**
  * Test Description
@@ -93,7 +93,7 @@ CAST_FLOAT2INT_TEST_DEF(int, float2int_rn, std::rint)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2INT_TEST_DEF(int, float2int_ru, std::ceil)
+CAST_FLOAT2INT_TEST_DEF(__float2int_ru, int, std::ceil)
 
 /**
  * Test Description
@@ -108,7 +108,7 @@ CAST_FLOAT2INT_TEST_DEF(int, float2int_ru, std::ceil)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2INT_TEST_DEF(int, float2int_rz, std::trunc)
+CAST_FLOAT2INT_TEST_DEF(__float2int_rz, int, std::trunc)
 
 /**
  * Test Description
@@ -122,7 +122,7 @@ CAST_FLOAT2INT_TEST_DEF(int, float2int_rz, std::trunc)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_float2int_Negative_RTC") { NegativeTestRTCWrapper<12>(kFloat2Int); }
+TEST_CASE("Unit_Device___float2int_Negative_RTC") { NegativeTestRTCWrapper<12>(kFloat2Int); }
 
 /**
  * Test Description
@@ -137,7 +137,7 @@ TEST_CASE("Unit_Device_float2int_Negative_RTC") { NegativeTestRTCWrapper<12>(kFl
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2INT_TEST_DEF(unsigned int, float2uint_rd, std::floor)
+CAST_FLOAT2INT_TEST_DEF(__float2uint_rd, unsigned int, std::floor)
 
 /**
  * Test Description
@@ -152,7 +152,7 @@ CAST_FLOAT2INT_TEST_DEF(unsigned int, float2uint_rd, std::floor)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2INT_TEST_DEF(unsigned int, float2uint_rn, std::rint)
+CAST_FLOAT2INT_TEST_DEF(__float2uint_rn, unsigned int, std::rint)
 
 /**
  * Test Description
@@ -167,7 +167,7 @@ CAST_FLOAT2INT_TEST_DEF(unsigned int, float2uint_rn, std::rint)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2INT_TEST_DEF(unsigned int, float2uint_ru, std::ceil)
+CAST_FLOAT2INT_TEST_DEF(__float2uint_ru, unsigned int, std::ceil)
 
 /**
  * Test Description
@@ -183,7 +183,7 @@ CAST_FLOAT2INT_TEST_DEF(unsigned int, float2uint_ru, std::ceil)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2INT_RZ_TEST_DEF(unsigned int, float2uint_rz)
+CAST_FLOAT2INT_RZ_TEST_DEF(__float2uint_rz, unsigned int)
 
 /**
  * Test Description
@@ -197,9 +197,9 @@ CAST_FLOAT2INT_RZ_TEST_DEF(unsigned int, float2uint_rz)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_float2uint_Negative_RTC") { NegativeTestRTCWrapper<12>(kFloat2Uint); }
+TEST_CASE("Unit_Device___float2uint_Negative_RTC") { NegativeTestRTCWrapper<12>(kFloat2Uint); }
 
-#define CAST_FLOAT2LL_TEST_DEF(T, kern_name, ref_func)                                             \
+#define CAST_FLOAT2LL_TEST_DEF(kern_name, T, ref_func)                                             \
   CAST_KERNEL_DEF(kern_name, T, float)                                                             \
   CAST_F2I_REF_DEF(kern_name, T, float, ref_func)                                                  \
                                                                                                    \
@@ -210,7 +210,7 @@ TEST_CASE("Unit_Device_float2uint_Negative_RTC") { NegativeTestRTCWrapper<12>(kF
                                   static_cast<float>(std::numeric_limits<T>::max()));              \
   }
 
-#define CAST_FLOAT2LL_RZ_TEST_DEF(T, kern_name)                                                    \
+#define CAST_FLOAT2LL_RZ_TEST_DEF(kern_name, T)                                                    \
   CAST_KERNEL_DEF(kern_name, T, float)                                                             \
   CAST_F2I_RZ_REF_DEF(kern_name, T, float)                                                         \
                                                                                                    \
@@ -234,7 +234,7 @@ TEST_CASE("Unit_Device_float2uint_Negative_RTC") { NegativeTestRTCWrapper<12>(kF
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2LL_TEST_DEF(long long int, float2ll_rd, std::floor)
+CAST_FLOAT2LL_TEST_DEF(__float2ll_rd, long long int, std::floor)
 
 /**
  * Test Description
@@ -249,7 +249,7 @@ CAST_FLOAT2LL_TEST_DEF(long long int, float2ll_rd, std::floor)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2LL_TEST_DEF(long long int, float2ll_rn, std::rint)
+CAST_FLOAT2LL_TEST_DEF(__float2ll_rn, long long int, std::rint)
 
 /**
  * Test Description
@@ -264,7 +264,7 @@ CAST_FLOAT2LL_TEST_DEF(long long int, float2ll_rn, std::rint)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2LL_TEST_DEF(long long int, float2ll_ru, std::ceil)
+CAST_FLOAT2LL_TEST_DEF(__float2ll_ru, long long int, std::ceil)
 
 /**
  * Test Description
@@ -280,7 +280,7 @@ CAST_FLOAT2LL_TEST_DEF(long long int, float2ll_ru, std::ceil)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2LL_RZ_TEST_DEF(long long int, float2ll_rz)
+CAST_FLOAT2LL_RZ_TEST_DEF(__float2ll_rz, long long int)
 
 /**
  * Test Description
@@ -294,7 +294,7 @@ CAST_FLOAT2LL_RZ_TEST_DEF(long long int, float2ll_rz)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_float2ll_Negative_RTC") { NegativeTestRTCWrapper<12>(kFloat2LL); }
+TEST_CASE("Unit_Device___float2ll_Negative_RTC") { NegativeTestRTCWrapper<12>(kFloat2LL); }
 
 /**
  * Test Description
@@ -309,7 +309,7 @@ TEST_CASE("Unit_Device_float2ll_Negative_RTC") { NegativeTestRTCWrapper<12>(kFlo
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2LL_TEST_DEF(unsigned long long int, float2ull_rd, std::floor)
+CAST_FLOAT2LL_TEST_DEF(__float2ull_rd, unsigned long long int, std::floor)
 
 /**
  * Test Description
@@ -324,7 +324,7 @@ CAST_FLOAT2LL_TEST_DEF(unsigned long long int, float2ull_rd, std::floor)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2LL_TEST_DEF(unsigned long long int, float2ull_rn, std::rint)
+CAST_FLOAT2LL_TEST_DEF(__float2ull_rn, unsigned long long int, std::rint)
 
 /**
  * Test Description
@@ -339,7 +339,7 @@ CAST_FLOAT2LL_TEST_DEF(unsigned long long int, float2ull_rn, std::rint)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2LL_TEST_DEF(unsigned long long int, float2ull_ru, std::ceil)
+CAST_FLOAT2LL_TEST_DEF(__float2ull_ru, unsigned long long int, std::ceil)
 
 /**
  * Test Description
@@ -355,7 +355,7 @@ CAST_FLOAT2LL_TEST_DEF(unsigned long long int, float2ull_ru, std::ceil)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-CAST_FLOAT2LL_RZ_TEST_DEF(unsigned long long int, float2ull_rz)
+CAST_FLOAT2LL_RZ_TEST_DEF(__float2ull_rz, unsigned long long int)
 
 /**
  * Test Description
@@ -369,9 +369,9 @@ CAST_FLOAT2LL_RZ_TEST_DEF(unsigned long long int, float2ull_rz)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_float2ull_Negative_RTC") { NegativeTestRTCWrapper<12>(kFloat2ULL); }
+TEST_CASE("Unit_Device___float2ull_Negative_RTC") { NegativeTestRTCWrapper<12>(kFloat2ULL); }
 
-CAST_KERNEL_DEF(float_as_int, int, float)
+CAST_KERNEL_DEF(__float_as_int, int, float)
 
 /**
  * Test Description
@@ -386,9 +386,9 @@ CAST_KERNEL_DEF(float_as_int, int, float)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_float_as_int_Positive") {
+TEST_CASE("Unit_Device___float_as_int_Positive") {
   int (*ref)(float) = type2_as_type1_ref<int, float>;
-  UnarySinglePrecisionTest(float_as_int_kernel, ref, EqValidatorBuilderFactory<int>());
+  UnarySinglePrecisionTest(__float_as_int_kernel, ref, EqValidatorBuilderFactory<int>());
 }
 
 /**
@@ -403,9 +403,9 @@ TEST_CASE("Unit_Device_float_as_int_Positive") {
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_float_as_int_Negative_RTC") { NegativeTestRTCWrapper<3>(kFloatAsInt); }
+TEST_CASE("Unit_Device___float_as_int_Negative_RTC") { NegativeTestRTCWrapper<3>(kFloatAsInt); }
 
-CAST_KERNEL_DEF(float_as_uint, unsigned int, float)
+CAST_KERNEL_DEF(__float_as_uint, unsigned int, float)
 
 /**
  * Test Description
@@ -420,9 +420,9 @@ CAST_KERNEL_DEF(float_as_uint, unsigned int, float)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_float_as_uint_Positive") {
+TEST_CASE("Unit_Device___float_as_uint_Positive") {
   unsigned int (*ref)(float) = type2_as_type1_ref<unsigned int, float>;
-  UnarySinglePrecisionTest(float_as_uint_kernel, ref, EqValidatorBuilderFactory<unsigned int>());
+  UnarySinglePrecisionTest(__float_as_uint_kernel, ref, EqValidatorBuilderFactory<unsigned int>());
 }
 
 /**
@@ -437,4 +437,4 @@ TEST_CASE("Unit_Device_float_as_uint_Positive") {
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Device_float_as_uint_Negative_RTC") { NegativeTestRTCWrapper<3>(kFloatAsUint); }
+TEST_CASE("Unit_Device___float_as_uint_Negative_RTC") { NegativeTestRTCWrapper<3>(kFloatAsUint); }

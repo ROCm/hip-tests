@@ -24,6 +24,14 @@ project(cmake_cxx_amdclang++_test
         DESCRIPTION "Verifies CXX Language Support with amdclang++"
         LANGUAGES CXX)
 
+if(UNIX)
+  if(NOT DEFINED ROCM_PATH)
+    set(ROCM_PATH "/opt/rocm" CACHE STRING "Default ROCM installation directory.")
+  endif()
+  # Search for rocm in common locations
+  list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
+endif()
+
 # Find HIP
 find_package(hip REQUIRED)
 

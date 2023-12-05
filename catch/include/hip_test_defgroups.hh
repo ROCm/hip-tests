@@ -101,6 +101,13 @@ THE SOFTWARE.
  */
 
 /**
+ * @defgroup MathTest Math Device Functions
+ * @{
+ * This section describes tests for device math functions of HIP runtime API.
+ * @}
+ */
+
+/**
  * @defgroup MemoryTest memory Management APIs
  * @{
  * This section describes the memory management types & functions of HIP runtime API.
@@ -119,6 +126,12 @@ THE SOFTWARE.
  * @defgroup ShflTest warp shuffle function Management
  * @{
  * This section describes the warp shuffle types & functions of HIP runtime API.
+ */
+
+/**
+ * @defgroup p2pTest P2P Management
+ * @{
+ * This section describes the P2P management types & functions of HIP runtime API.
  * @}
  */
 
@@ -144,8 +157,8 @@ THE SOFTWARE.
  */
 
 /**
- * @defgroup MathTest Math Device Functions
+ * @defgroup PrintfTest Printf API Management
  * @{
- * This section describes tests for device math functions of HIP runtime API.
+ * This section describes the various Printf use case Scenarios.
  * @}
  */

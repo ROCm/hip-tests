@@ -77,7 +77,7 @@ static void runTestR(const int width)
 
   hipChannelFormatDesc channelDesc = hipCreateChannelDesc<T>();
 
-  hipArray *hipArray = nullptr;
+  hipArray_t hipArray = nullptr;
   HIP_CHECK(hipMallocArray(&hipArray, &channelDesc, width, 0, hipArraySurfaceLoadStore));
 
   HIP_CHECK(hipMemcpyToArray(hipArray, 0, 0, hData, size, hipMemcpyHostToDevice));
@@ -128,7 +128,7 @@ static void runTestW(const int width)
 
   hipChannelFormatDesc channelDesc = hipCreateChannelDesc<T>();
 
-  hipArray *hipArray = nullptr;
+  hipArray_t hipArray = nullptr;
   HIP_CHECK(hipMallocArray(&hipArray, &channelDesc, width, 0, hipArraySurfaceLoadStore));
 
   HIP_CHECK(hipMemcpyToArray(hipArray, 0, 0, hData, size, hipMemcpyHostToDevice));
@@ -188,7 +188,7 @@ static void runTestRW(const int width)
 
   hipChannelFormatDesc channelDesc = hipCreateChannelDesc<T>();
 
-  hipArray *hipArray = nullptr, *hipOutArray = nullptr;
+  hipArray_t hipArray = nullptr, hipOutArray = nullptr;
   HIP_CHECK(hipMallocArray(&hipArray, &channelDesc, width, 0, hipArraySurfaceLoadStore));
 
   HIP_CHECK(hipMemcpyToArray(hipArray, 0, 0, hData, size, hipMemcpyHostToDevice));

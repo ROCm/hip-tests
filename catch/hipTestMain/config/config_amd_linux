@@ -92,8 +92,6 @@
         "Unit_hipMemcpyPeer_Positive_ZeroSize",
         "Unit_hipMemcpyPeerAsync_Positive_ZeroSize",
         "Fails in Stress test SWDEV-398971",
-        "SWDEV-398975 Seg faults in stress test",
-        "Unit_hipMemcpyWithStream_MultiThread",
         "SWDEV-398977 fails in stress tests",
         "Unit_hipMemset2DSync",
         "SWDEV-398981 fails in stress test",

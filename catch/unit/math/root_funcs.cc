@@ -25,6 +25,11 @@ THE SOFTWARE.
 #include "quaternary_common.hh"
 #include "math_root_negative_kernels_rtc.hh"
 
+/**
+ * @addtogroup RootMathFuncs RootMathFuncs
+ * @{
+ * @ingroup MathTest
+ */
 
 /********** Unary Functions **********/
 

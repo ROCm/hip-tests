@@ -1,4 +1,4 @@
-# Copyright (c) 2020 - 2021 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2020 - 2023 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,12 +22,15 @@ project(dynamic_shared)
 
 cmake_minimum_required(VERSION 3.10)
 
-if (NOT DEFINED ROCM_PATH )
-     set ( ROCM_PATH "/opt/rocm"  CACHE STRING "Default ROCM installation directory." )
-endif ()
+include_directories(../../common)
 
-# Search for rocm in common locations
-list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/hip ${ROCM_PATH})
+if(UNIX)
+  if(NOT DEFINED ROCM_PATH)
+    set(ROCM_PATH "/opt/rocm" CACHE STRING "Default ROCM installation directory.")
+  endif()
+  # Search for rocm in common locations
+  list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
+endif()
 
 # Find hip
 find_package(hip)
@@ -38,6 +41,8 @@ set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 
 # Create the excutable
 add_executable(dynamic_shared dynamic_shared.cpp)
+
+target_include_directories(dynamic_shared PRIVATE ../../common)
 
 # Link with HIP
 target_link_libraries(dynamic_shared hip::host)

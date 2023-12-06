@@ -22,6 +22,12 @@ THE SOFTWARE.
 #include "unary_common.hh"
 #include "math_log_negative_kernels_rtc.hh"
 
+/**
+ * @addtogroup LogMathFuncs LogMathFuncs
+ * @{
+ * @ingroup MathTest
+ */
+
 /********** Unary Functions **********/
 
 /**
@@ -190,6 +196,18 @@ __global__ void ilogb_kernel(int* const ys, const size_t num_xs, T* const xs) {
   }
 }
 
+template <typename T> int ilogb_ref(T arg) {
+  if (arg == 0) {
+    return std::numeric_limits<int>::min();
+  } else if (std::isnan(arg)) {
+    return std::numeric_limits<int>::max();
+  } else if (std::isinf(arg)) {
+    return std::numeric_limits<int>::max();
+  } else {
+    return std::ilogb(arg);
+  }
+}
+
 /**
  * Test Description
  * ------------------------
@@ -204,8 +222,8 @@ __global__ void ilogb_kernel(int* const ys, const size_t num_xs, T* const xs) {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_Device_ilogbf_Accuracy_Positive") {
-  int (*ref)(double) = std::ilogb;
-  UnarySinglePrecisionTest(ilogb_kernel<float>, ref, EqValidatorBuilderFactory<int>());
+  UnarySinglePrecisionTest(ilogb_kernel<float>, ilogb_ref<double>,
+                           EqValidatorBuilderFactory<int>());
 }
 
 /**
@@ -223,8 +241,8 @@ TEST_CASE("Unit_Device_ilogbf_Accuracy_Positive") {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_Device_ilogb_Accuracy_Positive") {
-  int (*ref)(long double) = std::ilogb;
-  UnaryDoublePrecisionTest(ilogb_kernel<double>, ref, EqValidatorBuilderFactory<int>());
+  UnaryDoublePrecisionTest(ilogb_kernel<double>, ilogb_ref<long double>,
+                           EqValidatorBuilderFactory<int>());
 }
 
 /**

@@ -652,87 +652,53 @@ TEST_CASE("Unit_hipMemAdvise_TstAccessedByFlg4") {
   }
 }
 
-
 /* Allocate memory using aligned_alloc(), assign PreferredLocation flag to
    the allocated memory and launch a kernel. Kernel should get executed
    successfully without hang or segfault*/
 #if __linux__ && HT_AMD
 TEST_CASE("Unit_hipMemAdvise_TstAlignedAllocMem") {
-  if ((setenv("HSA_XNACK", "1", 1)) != 0) {
-    WARN("Unable to turn on HSA_XNACK, hence terminating the Test case!");
-    REQUIRE(false);
-  }
-  // The following code block checks for gfx90a,940,941,942 so as to skip if the device is not
-
+  // The following code block checks for xnack+
+  // so as to skip if the device is not xnack+
   hipDeviceProp_t prop;
   int device;
   HIP_CHECK(hipGetDevice(&device));
   HIP_CHECK(hipGetDeviceProperties(&prop, device));
   std::string gfxName(prop.gcnArchName);
 
-  if (CheckIfFeatSupported(CTFeatures::CT_FEATURE_HMM, prop.gcnArchName)) {
-    int stat = 0;
-    if (fork() == 0) {
-      // The below part should be inside fork
-      int managedMem = 0, pageMemAccess = 0;
-      HIP_CHECK(hipDeviceGetAttribute(&pageMemAccess,
-                hipDeviceAttributePageableMemoryAccess, 0));
-      WARN("hipDeviceAttributePageableMemoryAccess:" << pageMemAccess);
-
-      HIP_CHECK(hipDeviceGetAttribute(&managedMem, hipDeviceAttributeManagedMemory, 0));
-      WARN("hipDeviceAttributeManagedMemory: " << managedMem);
-      if ((managedMem == 1) && (pageMemAccess == 1)) {
-        int *Mllc = nullptr, MemSz = 4096 * 4, NumElms = 4096, InitVal = 123;
-        // Mllc = reinterpret_cast<(int *)>(aligned_alloc(4096, MemSz));
-        Mllc = reinterpret_cast<int*>(aligned_alloc(4096, 4096*4));
-        for (int i = 0; i < NumElms; ++i) {
-          Mllc[i] = InitVal;
-        }
-        hipStream_t strm;
-        int DataMismatch = 0;
-        HIP_CHECK(hipStreamCreate(&strm));
-        // The following hipMemAdvise() call is made to know if advise on
-        // aligned_alloc() is causing any issue
-        HIP_CHECK(hipMemAdvise(Mllc, MemSz, hipMemAdviseSetPreferredLocation, 0));
-        HIP_CHECK(hipMemPrefetchAsync(Mllc, MemSz, 0, strm));
-        HIP_CHECK(hipStreamSynchronize(strm));
-        MemAdvise2<<<(NumElms/32), 32, 0, strm>>>(Mllc, NumElms);
-        HIP_CHECK(hipStreamSynchronize(strm));
+  if (gfxName.find("xnack+") != std::string::npos) {
+    int managedMem = 0, pageMemAccess = 0;
+    HIP_CHECK(hipDeviceGetAttribute(&pageMemAccess,
+              hipDeviceAttributePageableMemoryAccess, 0));
+    WARN("hipDeviceAttributePageableMemoryAccess:" << pageMemAccess);
+    HIP_CHECK(hipDeviceGetAttribute(&managedMem, hipDeviceAttributeManagedMemory, 0));
+    WARN("hipDeviceAttributeManagedMemory: " << managedMem);
+    if ((managedMem == 1) && (pageMemAccess == 1)) {
+      int *Mllc = nullptr, MemSz = 4096 * 4, NumElms = 4096, InitVal = 123;
+      // Mllc = reinterpret_cast<(int *)>(aligned_alloc(4096, MemSz));
+      Mllc = reinterpret_cast<int*>(aligned_alloc(4096, 4096*4));
+      for (int i = 0; i < NumElms; ++i) {
+        Mllc[i] = InitVal;
+      }
+      hipStream_t strm;
+      int DataMismatch = 0;
+      HIP_CHECK(hipStreamCreate(&strm));
+      // The following hipMemAdvise() call is made to know if advise on
+      // aligned_alloc() is causing any issue
+      HIP_CHECK(hipMemAdvise(Mllc, MemSz, hipMemAdviseSetPreferredLocation, 0));
+      HIP_CHECK_ERROR(hipMemPrefetchAsync(Mllc, MemSz, 0, strm), hipErrorInvalidValue);
+      HIP_CHECK(hipStreamSynchronize(strm));
+      MemAdvise2<<<(NumElms/32), 32, 0, strm>>>(Mllc, NumElms);
+      HIP_CHECK(hipStreamSynchronize(strm));
         for (int i = 0; i < NumElms; ++i) {
           if (Mllc[i] != (InitVal + 10)) {
             DataMismatch++;
           }
         }
-        if (DataMismatch != 0) {
-          WARN("DataMismatch observed!!");
-          exit(9);  // 9 for failure
-        } else {
-          exit(10);  // 10 for Pass result
-        }
-      } else {
-        SUCCEED("GPU 0 doesn't support ManagedMemory with hipDeviceAttributePageableMemoryAccess "
-                "attribute. Hence skipping the testing with Pass result.\n");
-        exit(Catch::ResultDisposition::ContinueOnFailure);
+      REQUIRE(DataMismatch == 0);
       }
-    } else {
-      wait(&stat);
-      int Result = WEXITSTATUS(stat);
-      if (Result == Catch::ResultDisposition::ContinueOnFailure) {
-        WARN("GPU 0 doesn't support ManagedMemory with hipDeviceAttributePageableMemoryAccess "
-             "attribute. Hence skipping the testing with Pass result.\n");
-      } else {
-        if (Result != 10) {
-          REQUIRE(false);
-        }
-      }
-    }
   } else {
-      SUCCEED("Memory model feature is only supported for gfx90a, gfx940, gx941, gfx942, Hence"
-              "skipping the testcase for this GPU " << device);
-      WARN("Memory model feature is only supported for gfx90a, gfx940, gx941, gfx942, Hence"
-              "skipping the testcase for this GPU " << device);
-  }
-
+      HipTest::HIP_SKIP_TEST("GPU is not xnack enabled hence skipping the test...\n");
+    }
 }
 #endif
 

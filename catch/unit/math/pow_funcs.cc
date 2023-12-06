@@ -24,6 +24,12 @@ THE SOFTWARE.
 #include "pow_common.hh"
 #include "math_pow_negative_kernels_rtc.hh"
 
+/**
+ * @addtogroup PowMathFuncs PowMathFuncs
+ * @{
+ * @ingroup MathTest
+ */
+
 /********** Unary Functions **********/
 
 /**

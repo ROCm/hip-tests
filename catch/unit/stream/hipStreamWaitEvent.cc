@@ -25,7 +25,7 @@ Unit_hipStreamWaitEvent_DifferentStreams - Test waiting for an event on a differ
 */
 
 #include <hip_test_common.hh>
-
+#include <utils.hh>
 TEST_CASE("Unit_hipStreamWaitEvent_Negative") {
   enum class StreamTestType { NullStream = 0, StreamPerThread, CreatedStream };
 
@@ -73,40 +73,11 @@ TEST_CASE("Unit_hipStreamWaitEvent_UninitializedStream_Negative") {
 
   HIP_CHECK(hipEventCreate(&event));
 
-  HIP_CHECK_ERROR(hipStreamWaitEvent(stream, event, 0), hipErrorContextIsDestroyed);
+  HIP_CHECK_ERROR(hipStreamWaitEvent(stream, event, 0), hipErrorInvalidHandle);
 
   HIP_CHECK(hipEventDestroy(event));
 }
 #endif
-
-// Since we can not use atomic*_system on every gpu, we will use wait based on clock rate.
-// This wont be accurate since clock rate of a GPU varies depending on many variables including
-// thermals, load, utilization
-__global__ void waitKernel(int clockRate, int seconds) {
-  auto start = clock();
-  auto ms = seconds * 1000;
-  long long waitTill = clockRate * (long long)ms;
-  while (1) {
-    auto end = clock();
-    if ((end - start) > waitTill) {
-      return;
-    }
-  }
-}
-
-__global__ void waitKernel_gfx11(int clockRate, int seconds) {
-#if HT_AMD
-  auto start = wall_clock64();
-  auto ms = seconds * 1000;
-  long long waitTill = clockRate * (long long)ms;
-  while (1) {
-    auto end = wall_clock64();
-    if ((end - start) > waitTill) {
-      return;
-    }
-  }
-#endif
-}
 
 TEST_CASE("Unit_hipStreamWaitEvent_Default") {
   hipStream_t stream{nullptr};
@@ -118,15 +89,7 @@ TEST_CASE("Unit_hipStreamWaitEvent_Default") {
   REQUIRE(stream != nullptr);
   REQUIRE(waitEvent != nullptr);
 
-  int deviceId {};
-  HIP_CHECK(hipGetDevice(&deviceId));
-
-  hipDeviceProp_t prop{};
-  HIP_CHECK(hipGetDeviceProperties(&prop, deviceId));
-  auto clockRate = prop.clockRate;
-
-  auto waitKernel_used = IsGfx11() ? waitKernel_gfx11 : waitKernel;
-  waitKernel_used<<<1, 1, 0, stream>>>(clockRate, 2);  // Wait for 2 seconds
+  LaunchDelayKernel(std::chrono::milliseconds(2000), stream);
 
   HIP_CHECK(hipEventRecord(waitEvent, stream));
 
@@ -154,15 +117,8 @@ TEST_CASE("Unit_hipStreamWaitEvent_DifferentStreams") {
   REQUIRE(streamBlockedOnStreamA != nullptr);
   REQUIRE(waitEvent != nullptr);
 
-  int deviceId {};
-  HIP_CHECK(hipGetDevice(&deviceId));
+  LaunchDelayKernel(std::chrono::milliseconds(3000), blockedStreamA);
 
-  hipDeviceProp_t prop{};
-  HIP_CHECK(hipGetDeviceProperties(&prop, deviceId));
-  auto clockRate = prop.clockRate;
-  auto waitKernel_used = IsGfx11() ? waitKernel_gfx11 : waitKernel;
-  waitKernel_used<<<1, 1, 0, blockedStreamA>>>(clockRate,
-                                          3);  // wait for 3 seconds
   HIP_CHECK(hipEventRecord(waitEvent, blockedStreamA));
 
   // Make sure stream is waiting for data to be set
@@ -170,7 +126,7 @@ TEST_CASE("Unit_hipStreamWaitEvent_DifferentStreams") {
 
   HIP_CHECK(hipStreamWaitEvent(streamBlockedOnStreamA, waitEvent, 0));
 
-  waitKernel_used<<<1, 1, 0, streamBlockedOnStreamA>>>(clockRate, 2);  // Wait for 2 seconds
+  LaunchDelayKernel(std::chrono::milliseconds(2000), streamBlockedOnStreamA);
 
   HIP_CHECK(hipStreamSynchronize(unblockingStream));
 

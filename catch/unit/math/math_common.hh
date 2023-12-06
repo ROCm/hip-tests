@@ -71,7 +71,7 @@ template <typename T, typename... Ts> class MathTest {
   template <bool parallel, typename RT, typename ValidatorBuilder, typename... RTs, size_t... I>
   void RunImpl(const ValidatorBuilder& validator_builder, const size_t grid_dim,
                const size_t block_dim, RT (*const ref_func)(RTs...), const size_t num_args,
-               std::index_sequence<I...> is, const Ts*... xss) {
+               std::index_sequence<I...>, const Ts*... xss) {
     const auto xss_tup = std::make_tuple(xss...);
 
     constexpr auto f = [](auto dst, auto src, size_t size) {

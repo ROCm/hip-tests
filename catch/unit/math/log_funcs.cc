@@ -200,7 +200,7 @@ template <typename T> int ilogb_ref(T arg) {
   if (arg == 0) {
     return std::numeric_limits<int>::min();
   } else if (std::isnan(arg)) {
-    return std::numeric_limits<int>::max();
+    return std::numeric_limits<int>::min();
   } else if (std::isinf(arg)) {
     return std::numeric_limits<int>::max();
   } else {

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip/hip_runtime.h>
+#include <hip_test_context.hh>
 
 __global__ void test_kernel() {
   printf("%08d\n", 42);
@@ -32,8 +32,23 @@ __global__ void test_kernel() {
   printf("%+08d\n", 42);
   printf("%-8s\n", "xyzzy");
   printf("% i\n", -42);
+  printf("% i\n", 42);
   printf("%-16.8d\n", 42);
   printf("%16.8d\n", 42);
+  printf("%#o\n", 42);
+  printf("%#x\n", 42);
+  printf("%#X\n", 42);
+#if HT_AMD
+  printf("%#F\n", 42.);
+#else
+  printf("%#f\n", 42.);
+#endif
+  printf("%#e\n", 42.);
+  printf("%#E\n", 42.);
+  printf("%#g\n", 42.);
+  printf("%#G\n", 42.);
+  printf("%#a\n", 42.);
+  printf("%#A\n", 42.);
 }
 
 int main() {

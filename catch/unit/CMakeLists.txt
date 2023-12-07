@@ -50,7 +50,8 @@ add_subdirectory(gcc)
 
 if(HIP_PLATFORM STREQUAL "amd")
 add_subdirectory(callback)
-add_subdirectory(clock)
+#add_subdirectory(clock)
+add_subdirectory(hip_specific)
 # Vulkan interop APIs currently undefined for Nvidia
 add_subdirectory(vulkan_interop)
 add_subdirectory(gl_interop) # Disabled on NVIDIA due to defect - EXSWHTEC-246

@@ -20,56 +20,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
-#include <hip_test_process.hh>
+#pragma once
 
-/**
-* @addtogroup printf printf
-* @{
-* @ingroup PrintfTest
-* `int printf()` -
-* Method to print the content on output device.
-*/
-
-
-/**
- * Test Description
- * ------------------------
- *    - Sanity test for `printf(format, ...)` to check all format specifier flags.
- *
- * Test source
- * ------------------------
- *    - unit/printf/printfFlags.cc
- * Test requirements
- * ------------------------
- *    - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_Printf_flags_Sanity_Positive") {
-  std::string reference(R"here(00000042
--0000042
-00000042
-0123.456
-+0000042
--42
-+0000042
-xyzzy   
--42
- 42
-00000042        
-        00000042
-052
-0x2a
-0X2A
-42.000000
-4.200000e+01
-4.200000E+01
-42.0000
-42.0000
-0x1.5p+5
-0X1.5P+5
-)here");
-
-  hip::SpawnProc proc("printfFlags_exe", true);
-  REQUIRE(proc.run() == 0);
-  REQUIRE(proc.getOutput() == reference);
-}
+static constexpr auto kPrintfParam{
+    R"(
+        struct Dummy {
+          __device__ Dummy() {}
+          __device__ ~Dummy() {}
+        };
+        __global__ void printf_n1(int* p) { printf(p); }
+        __global__ void printf_n2(unsigned int* p) { printf(p); }
+        __global__ void printf_n3(short* p) { printf(p); }
+        __global__ void printf_n4(long* p) { printf(p); }
+        __global__ void printf_n5(unsigned long* p) { printf(p); }
+        __global__ void printf_n6(long long* p) { printf(p); }
+        __global__ void printf_n7(unsigned long long* p) { printf(p); }
+        __global__ void printf_n8(float* p) { printf(p); }
+        __global__ void printf_n9(double* p) { printf(p); }
+        __global__ void printf_n10(long double* p) { printf(p); }
+        __global__ void printf_n11(Dummy* p) { printf(p); }
+    )"};

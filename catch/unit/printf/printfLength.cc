@@ -31,45 +31,57 @@ THE SOFTWARE.
 * Method to print the content on output device.
 */
 
-
 /**
  * Test Description
  * ------------------------
- *    - Sanity test for `printf(format, ...)` to check all format specifier flags.
+ *    - Sanity test for `printf(format, ...)` to check all format specifier length sub-specifiers.
  *
  * Test source
  * ------------------------
- *    - unit/printf/printfFlags.cc
+ *    - unit/printf/printfLength.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_Printf_flags_Sanity_Positive") {
-  std::string reference(R"here(00000042
--0000042
-00000042
-0123.456
-+0000042
--42
-+0000042
-xyzzy   
--42
- 42
-00000042        
-        00000042
-052
-0x2a
-0X2A
-42.000000
-4.200000e+01
-4.200000E+01
-42.0000
-42.0000
-0x1.5p+5
-0X1.5P+5
+TEST_CASE("Unit_Printf_length_Sanity_Positive") {
+#if HT_NVIDIA
+  std::string reference(R"here(-42 -42
+-42 -42
+-42 -42
+42 52
+42 52
+42 52
+2a 2A
+2a 2A
+2a 2A
+123.456000
+x
 )here");
+#else
+  std::string reference(R"here(-42 -42
+-42 -42
+-42 -42
+42 52
+42 52
+42 52
+2a 2A
+2a 2A
+2a 2A
+123.456000
+x
+123.456000
+-42 -42
+-42 -42
+-42 -42
+0 0
+42 52
+42 52
+42 52
+0 0
+)here");
+#endif
 
-  hip::SpawnProc proc("printfFlags_exe", true);
-  REQUIRE(proc.run() == 0);
+  hip::SpawnProc proc("printfLength_exe", true);
+  REQUIRE(0 == proc.run());
   REQUIRE(proc.getOutput() == reference);
 }

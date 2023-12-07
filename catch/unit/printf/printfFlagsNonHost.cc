@@ -21,7 +21,7 @@ THE SOFTWARE.
 #include <hip_test_defgroups.hh>
 
 /**
-* @addtogroup printf
+* @addtogroup printf printf
 * @{
 * @ingroup PrintfTest
 * `int printf()` -

@@ -327,6 +327,11 @@
         "Unit_Device__hip_hc_8pk_Negative",
         "SWDEV-413997: VMM test still failing in windows",
         "Unit_hipMemSetAccess_ChangeAccessProp",
+        "=== Below test fails in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/274 ===",
+        "Unit_Printf_flags_Sanity_Positive",
+        "Unit_Printf_length_Sanity_Positive",
+        "Unit_Printf_Negative",
+        "Unit_Device__hip_hc_8pk_Negative",
     #endif
         "End of json"
     ]

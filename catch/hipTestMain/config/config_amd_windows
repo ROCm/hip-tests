@@ -243,6 +243,9 @@
         "Unit_Layered2DTexture_Check_DeviceBufferToFromLayered2DArray - float4",
         "=== Patch which removes the typetraits implementation from std namespace in hiprtc is reverted ===",
         "Unit_hiprtc_stdheaders",
+        "=== Below 2 tests are disable due to defect EXSWHTEC-369 ===",
+        "Unit_Device_ilogbf_Accuracy_Positive",
+        "Unit_Device_ilogb_Accuracy_Positive",
     #endif
         "End of json"
     ]

@@ -22,6 +22,7 @@ THE SOFTWARE.
 
 #include <hip/hiprtc.h>
 #include <hip/hip_runtime.h>
+#include <hip_helper.h>
 
 #include <cassert>
 #include <cstddef>
@@ -69,7 +70,7 @@ int main()
 
     hipDeviceProp_t props;
     int device = 0;
-    hipGetDeviceProperties(&props, device);
+    checkHipErrors(hipGetDeviceProperties(&props, device));
 
     const char* options[] = {};
 
@@ -100,8 +101,8 @@ int main()
     hipModule_t module;
     hipFunction_t kernel;
 
-    hipModuleLoadData(&module, code.data());
-    hipModuleGetFunction(&kernel, module, "saxpy");
+    checkHipErrors(hipModuleLoadData(&module, code.data()));
+    checkHipErrors(hipModuleGetFunction(&kernel, module, "saxpy"));
 
     size_t n = NUM_THREADS * NUM_BLOCKS;
     size_t bufferSize = n * sizeof(float);
@@ -117,11 +118,11 @@ int main()
     }
 
     hipDeviceptr_t dX, dY, dOut;
-    hipMalloc((void **)&dX, bufferSize);
-    hipMalloc((void **)&dY, bufferSize);
-    hipMalloc((void **)&dOut, bufferSize);
-    hipMemcpyHtoD(dX, hX.get(), bufferSize);
-    hipMemcpyHtoD(dY, hY.get(), bufferSize);
+    checkHipErrors(hipMalloc((void **)&dX, bufferSize));
+    checkHipErrors(hipMalloc((void **)&dY, bufferSize));
+    checkHipErrors(hipMalloc((void **)&dOut, bufferSize));
+    checkHipErrors(hipMemcpyHtoD(dX, hX.get(), bufferSize));
+    checkHipErrors(hipMemcpyHtoD(dY, hY.get(), bufferSize));
 
     struct {
         float a_;
@@ -136,9 +137,9 @@ int main()
                       HIP_LAUNCH_PARAM_BUFFER_SIZE, &size,
                       HIP_LAUNCH_PARAM_END};
 
-    hipModuleLaunchKernel(kernel, NUM_BLOCKS, 1, 1, NUM_THREADS, 1, 1,
-                          0, nullptr, nullptr, config);
-    hipMemcpyDtoH(hOut.get(), dOut, bufferSize);
+    checkHipErrors(hipModuleLaunchKernel(kernel, NUM_BLOCKS, 1, 1, NUM_THREADS, 1, 1,
+                          0, nullptr, nullptr, config));
+    checkHipErrors(hipMemcpyDtoH(hOut.get(), dOut, bufferSize));
 
     for (size_t i = 0; i < n; ++i) {
         if (fabs(a * hX[i] + hY[i] - hOut[i]) > fabs(hOut[i])* 1e-6) {
@@ -146,11 +147,11 @@ int main()
         }
     }
 
-    hipFree((void *)dX);
-    hipFree((void *)dY);
-    hipFree((void *)dOut);
+    checkHipErrors(hipFree((void *)dX));
+    checkHipErrors(hipFree((void *)dY));
+    checkHipErrors(hipFree((void *)dOut));
 
-    hipModuleUnload(module);
+    checkHipErrors(hipModuleUnload(module));
 
     cout << "SAXPY test completed" << endl;
 }

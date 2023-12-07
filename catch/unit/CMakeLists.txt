@@ -41,6 +41,8 @@ add_subdirectory(g++)
 add_subdirectory(module)
 add_subdirectory(channelDescriptor)
 add_subdirectory(executionControl)
+add_subdirectory(p2p)
+add_subdirectory(gcc)
 
 if(HIP_PLATFORM STREQUAL "amd")
 add_subdirectory(callback)
@@ -49,3 +51,4 @@ add_subdirectory(hip_specific)
 # Vulkan interop APIs currently undefined for Nvidia
 add_subdirectory(vulkan_interop)
 endif()
+add_subdirectory(vector_types)

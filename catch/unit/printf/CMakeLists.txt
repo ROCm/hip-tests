@@ -1,14 +1,34 @@
 # AMD Tests
 set(TEST_SRC
-    printf_flags.cc
-    printf_specifiers.cc
-    printf_length.cc
+    printfFlags.cc
+    printfLength.cc
+    printfSpecifiers.cc
+    printfFlagsNonHost.cc
+    printfSpecifiersNonHost.cc
+    printfHost.cc
 )
 
 if(HIP_PLATFORM MATCHES "nvidia")
   set(LINKER_LIBS nvrtc)
 elseif(HIP_PLATFORM MATCHES "amd")
   set(LINKER_LIBS hiprtc)
+endif()
+
+if(UNIX)
+  set(AMD_TEST_SRC
+      printfNonHost.cc)
+endif()
+
+if(HIP_PLATFORM MATCHES "amd")
+  set(TEST_SRC ${TEST_SRC} ${AMD_TEST_SRC})
+endif()
+
+if(UNIX)
+  if(HIP_PLATFORM MATCHES "amd")
+    set_source_files_properties(printfFlagsNonHost.cc PROPERTIES COMPILE_OPTIONS "-mprintf-kind=buffered")
+    set_source_files_properties(printfSpecifiersNonHost.cc PROPERTIES COMPILE_OPTIONS "-mprintf-kind=buffered")
+    set_source_files_properties(printfNonHost.cc PROPERTIES COMPILE_OPTIONS "-mprintf-kind=buffered")
+  endif()
 endif()
 
 if(HIP_PLATFORM MATCHES "amd")
@@ -25,16 +45,21 @@ elseif (HIP_PLATFORM MATCHES "nvidia")
                     COMPILE_OPTIONS -std=c++17)
 endif()
 
-add_test(NAME Unit_Device_printf_Negative
+add_test(NAME Unit_Printf_Negative
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
          ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
          printf_negative_kernels.cc 11)
 
 # Standalone exes
-add_executable(printf_flags_exe EXCLUDE_FROM_ALL printf_flags_exe.cc)
-add_executable(printf_specifiers_exe EXCLUDE_FROM_ALL printf_specifiers_exe.cc)
-add_executable(printf_length_exe EXCLUDE_FROM_ALL printf_length_exe.cc)
+add_executable(printfFlags_exe EXCLUDE_FROM_ALL printfFlags_exe.cc)
+add_executable(printfLength_exe EXCLUDE_FROM_ALL printfLength_exe.cc)
+add_executable(printfSpecifiers_exe EXCLUDE_FROM_ALL printfSpecifiers_exe.cc)
+add_executable(printfFlagsNonHost_exe EXCLUDE_FROM_ALL printfFlagsNonHost_exe.cc)
+add_executable(printfSpecifiersNonHost_exe EXCLUDE_FROM_ALL printfSpecifiersNonHost_exe.cc)
 
-add_dependencies(build_tests printf_flags_exe)
-add_dependencies(build_tests printf_specifiers_exe)
-add_dependencies(build_tests printf_length_exe)
+add_dependencies(build_tests printfFlags_exe)
+add_dependencies(build_tests printfLength_exe)
+add_dependencies(build_tests printfSpecifiers_exe)
+add_dependencies(build_tests printfFlagsNonHost_exe)
+add_dependencies(build_tests printfSpecifiersNonHost_exe)
+

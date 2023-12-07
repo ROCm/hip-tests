@@ -59,7 +59,7 @@ void BesselDoublePrecisionBruteForceTest(kernel_bessel_n_sig<double> kernel,
   LinearAllocGuard<double> x2s{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(double)};
 
   MathTest math_test(kernel, max_batch_size);
-  std::fill_n(x1s.ptr(), max_batch_size, 1);
+  std::fill_n(x1s.ptr(), max_batch_size, n_input);
 
   auto batch_size = max_batch_size;
   const auto num_threads = thread_pool.thread_count();
@@ -72,7 +72,7 @@ void BesselDoublePrecisionBruteForceTest(kernel_bessel_n_sig<double> kernel,
     auto base_idx = 0u;
     for (auto i = 0u; i < num_threads; ++i) {
       const auto sub_batch_size = min_sub_batch_size + (i < tail);
-      thread_pool.Post([=, &x1s, &x2s] {
+      thread_pool.Post([=, &x2s] {
         const auto generator = [=] {
           static thread_local std::mt19937 rng(std::random_device{}());
           std::uniform_real_distribution<RefType_t<double>> unif_dist(a, b);
@@ -96,15 +96,12 @@ void BesselSinglePrecisionRangeTest(kernel_bessel_n_sig<float> kernel,
                                     const ValidatorBuilder& validator_builder, int n_input,
                                     const float a, const float b) {
   const auto [grid_size, block_size] = GetOccupancyMaxPotentialBlockSize(kernel);
-  uint64_t stop = std::numeric_limits<uint32_t>::max() + 1ul;
   const auto max_batch_size = GetMaxAllowedDeviceMemoryUsage() / (sizeof(float) * 2 + sizeof(int));
   LinearAllocGuard<int> x1s{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(int)};
   LinearAllocGuard<float> x2s{LinearAllocs::hipHostMalloc, max_batch_size * sizeof(float)};
 
   MathTest math_test(kernel, max_batch_size);
   std::fill_n(x1s.ptr(), max_batch_size, n_input);
-
-  const auto num_threads = thread_pool.thread_count();
 
   size_t inserted = 0u;
   for (float v = a; v != b; v = std::nextafter(v, b)) {

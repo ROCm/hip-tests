@@ -26,6 +26,13 @@ THE SOFTWARE.
 
 #include <boost/math/special_functions.hpp>
 
+
+/**
+ * @addtogroup SpecialMathFuncs SpecialMathFuncs
+ * @{
+ * @ingroup MathTest
+ */
+
 /********** Unary Functions **********/
 
 /**

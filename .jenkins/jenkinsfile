@@ -2,38 +2,25 @@ def hipBuildTest(String backendLabel) {
         node(backendLabel) {
           stage("SYNC - ${backendLabel}") {
 
-            // Checkout hip repository with the PR patch
+            // Checkout hip-tests repository with the PR patch
             dir("${WORKSPACE}/hip-tests") {
                    checkout scm
                    env.HIP_TESTS_DIR = "${WORKSPACE}" + "/hip-tests"
             }
             
-            // Clone HIP repository
+            // Clone hip repository
             dir("${WORKSPACE}/hip") {
                git branch: 'develop',
-               url: 'https://github.com/ROCm-Developer-Tools/HIP'
+               url: 'https://github.com/ROCm-Developer-Tools/hip'
                env.HIP_DIR = "${WORKSPACE}" + "/hip"
             }
 
-            // Clone hipamd repository
-            dir("${WORKSPACE}/hipamd") {
+            // Clone clr repository
+            dir("${WORKSPACE}/clr") {
               git branch: 'develop',
-              url: 'https://github.com/ROCm-Developer-Tools/hipamd'
-              env.HIPAMD_DIR = "${WORKSPACE}" + "/hipamd"
-            }
-
-            // Clone vdi and opencl for only amd backend server
-            if (backendLabel =~ /.*amd.*/) {  
-               dir("${WORKSPACE}/ROCm-OpenCL-Runtime") {
-                   git branch:'develop',
-                   url: 'https://github.com/RadeonOpenCompute/ROCm-OpenCL-Runtime'
-                   env.OPENCL_DIR = "${WORKSPACE}" + "/ROCm-OpenCL-Runtime"
-               }
-               dir("${WORKSPACE}/ROCclr") {
-                   git branch:'develop',
-                   url: 'https://github.com/ROCm-Developer-Tools/ROCclr'
-                   env.ROCclr_DIR = "${WORKSPACE}" + "/ROCclr"
-               }
+              credentialsId: 'branch-credentials',
+              url: 'https://github.com/ROCm-Developer-Tools/clr'
+              env.CLR_DIR = "${WORKSPACE}" + "/clr"
             }
 
             // Clone hipcc repspoitory
@@ -46,10 +33,11 @@ def hipBuildTest(String backendLabel) {
         }
 
         stage("BUILD HIP - ${backendLabel}") {
-            // Running the build on hipamd workspace
-            dir("${WORKSPACE}/hipamd") {
+            // Running the build on clr workspace
+            dir("${WORKSPACE}/clr") {
                 sh  """#!/usr/bin/env bash
                     set -x
+                    rm -rf build
                     mkdir -p build
                     cd build
                     # Check if backend label contains string "amd" or backend host is a server with amd gpu
@@ -67,7 +55,7 @@ def hipBuildTest(String backendLabel) {
         stage("BUILD HIP TESTS - ${backendLabel}") {
             // Running the build on HIP TESTS workspace
             dir("${WORKSPACE}/hip-tests") {
-                env.HIP_PATH = "${HIPAMD_DIR}" + "/build/install"
+                env.HIP_PATH = "${CLR_DIR}" + "/build/install"
                 sh  """#!/usr/bin/env bash
                     set -x
                     rm -rf build
@@ -76,27 +64,29 @@ def hipBuildTest(String backendLabel) {
                     echo "testing $HIP_PATH"
                     # Check if backend label contains string "amd" or backend host is a server with amd gpu
                     if [[ $backendLabel =~ amd ]]; then
-                        cmake -DHIP_PLATFORM=amd ../catch 
+                        cmake -DHIP_PLATFORM=amd -DHIP_PATH=\$CLR_DIR/build/install ../catch 
                     else
                         export HIP_PLATFORM=nvidia
-                        cmake -DHIP_PLATFORM=nvidia ../catch
+                        cmake -DHIP_PLATFORM=nvidia -DHIP_PATH=\$CLR_DIR/build/install ../catch
                     fi
                     make -j\$(nproc) build_tests
                     """
             }
         }
 
-        stage("TEST - ${backendLabel}") {
-            dir("${WORKSPACE}/hip-tests") {
-                sh  """#!/usr/bin/env bash
-                    set -x
-                    cd build
+        timeout(time: 1, unit: 'HOURS') {
+            stage("TEST - ${backendLabel}") {
+                dir("${WORKSPACE}/hip-tests") {
+                    sh  """#!/usr/bin/env bash
+                        set -x
+                        cd build
                     if [[ $backendLabel =~ amd ]]; then
-                        ctest
+                        ctest --overwrite BuildDirectory=. --output-junit hiptest_output_catch_amd.xml
                     else
-                        ctest -E 'Unit_hipMemcpyHtoD_Positive_Synchronization_Behavior|Unit_hipMemcpy_Positive_Synchronization_Behavior|Unit_hipFreeNegativeHost'
+                        ctest --overwrite BuildDirectory=. --output-junit hiptest_output_catch_nvidia.xml -E 'Unit_hipMemcpyHtoD_Positive_Synchronization_Behavior|Unit_hipMemcpy_Positive_Synchronization_Behavior|Unit_hipFreeNegativeHost'
                     fi
                     """
+               }
             }
         }
     }
@@ -107,7 +97,7 @@ timestamps {
         skipDefaultCheckout()
 
         // labels belonging to each backend - AMD, NVIDIA
-        String[] labels = ['hip-amd-vg20-ubu1804', 'hip-nvidia-rtx5000-ubu1804']
+        String[] labels = ['hip-amd-mi100-ubu2004', 'hip-nvidia-rtx5000-ubu2004']
         buildMap = [:]
 
         labels.each { backendLabel ->

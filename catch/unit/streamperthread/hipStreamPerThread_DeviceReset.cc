@@ -51,8 +51,11 @@ TEST_CASE("Unit_hipStreamPerThread_DeviceReset_1") {
 
   for (auto &th : threads) {
     th = std::thread(Copy_to_device);
-    th.detach();
   }
+  for (auto &th : threads) {
+    th.join();
+  }
+
   HIP_CHECK(hipDeviceReset());
 }
 

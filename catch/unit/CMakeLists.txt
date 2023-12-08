@@ -45,6 +45,7 @@ add_subdirectory(channelDescriptor)
 add_subdirectory(executionControl)
 add_subdirectory(vector_types)
 add_subdirectory(atomics)
+add_subdirectory(complex)
 add_subdirectory(p2p)
 add_subdirectory(gcc)
 

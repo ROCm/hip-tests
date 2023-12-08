@@ -335,6 +335,19 @@
         "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/279 ===",
         "Unit_Device_memcpy_Negative",
         "Unit_Device_memset_Negative",
+        "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/356 ===",
+        "Unit_Device_Complex_Unary_Negative_Parameters_RTC",
+        "Unit_Device_Complex_Binary_Negative_Parameters_RTC",
+        "Unit_Device_Complex_hipCfma_Negative_Parameters_RTC",
+        "Unit_Device_make_Complex_Negative_Parameters_RTC",
+        "Unit_Device_Complex_Cast_Negative_Parameters_RTC",
+        "Unit_Device_Complex_make_Negative",
+        "Unit_Device_Complex_Cast_Negative",
+        "Unit_Device_Complex_Unary_float_Negative",
+        "Unit_Device_Complex_Unary_double_Negative",
+        "Unit_Device_Complex_Binary_float_Negative",
+        "Unit_Device_Complex_Binary_double_Negative",
+        "Unit_Device_Complex_hipCfma_Negative",
     #endif
         "End of json"
     ]

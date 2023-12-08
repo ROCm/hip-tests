@@ -193,3 +193,10 @@ THE SOFTWARE.
  * This section describes tests for the surface management functions of HIP runtime API.
  * @}
  */
+
+ /**
+ * @defgroup ComplexTest Complex type
+ * @{
+ * This section describes tests for the Complex type functions.
+ * @}
+ */

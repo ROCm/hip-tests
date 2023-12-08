@@ -109,6 +109,9 @@ set(TEST_SRC
     hipMemPoolApi.cc
     hipMemPoolSetGetAccess.cc
     hipMemPoolSetGetAttribute.cc
+    hipMemPoolCreate.cc
+    hipMemPoolDestroy.cc
+    hipMemPoolTrimTo.cc
     hipMemcpyPeer.cc
     hipMemcpyPeer_old.cc
     hipMemcpyPeerAsync.cc

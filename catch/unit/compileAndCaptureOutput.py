@@ -80,7 +80,7 @@ if __name__ == '__main__':
     CompileAndCapture.platform = sys.argv[2]
   except IndexError:
     CompileAndCapture.platform = None
-  
+
   try:
     CompileAndCapture.hip_path = sys.argv[3]
   except IndexError:
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     CompileAndCapture.expected_error_count = int(sys.argv[5])
   except IndexError:
     CompileAndCapture.expected_error_count = 0
-  
+
   try:
     CompileAndCapture.expected_warning_count = int(sys.argv[6])
   except IndexError:

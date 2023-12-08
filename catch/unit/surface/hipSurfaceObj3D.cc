@@ -88,7 +88,7 @@ static void runTestR(const int width, const int height, const int depth)
 
   // Allocate array and copy image data
   hipChannelFormatDesc channelDesc = hipCreateChannelDesc<T>();
-  hipArray *hipArray = nullptr;
+  hipArray_t hipArray = nullptr;
   HIP_CHECK(hipMalloc3DArray(&hipArray, &channelDesc, make_hipExtent(width, height, depth),
                              hipArraySurfaceLoadStore));
 
@@ -155,7 +155,7 @@ static void runTestW(const int width, const int height, const int depth)
 
   // Allocate array and copy image data
   hipChannelFormatDesc channelDesc = hipCreateChannelDesc<T>();
-  hipArray *hipArray = nullptr;
+  hipArray_t hipArray = nullptr;
   HIP_CHECK(hipMalloc3DArray(&hipArray, &channelDesc, make_hipExtent(width, height, depth),
                              hipArraySurfaceLoadStore));
 
@@ -245,7 +245,7 @@ static void runTestRW(const int width, const int height, const int depth)
 
   // Allocate array and copy image data
   hipChannelFormatDesc channelDesc = hipCreateChannelDesc<T>();
-  hipArray *hipArray = nullptr, *hipOutArray = nullptr;
+  hipArray_t hipArray = nullptr, hipOutArray = nullptr;
   HIP_CHECK(hipMalloc3DArray(&hipArray, &channelDesc, make_hipExtent(width, height, depth),
                              hipArraySurfaceLoadStore));
 

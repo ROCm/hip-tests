@@ -159,7 +159,7 @@ if (WIN32)
 endif()
 
 if(HIP_PLATFORM STREQUAL "amd")
-    add_compile_options(-Wall -Wextra -Werror -Wno-deprecated)
+    add_compile_options(-Wall -Wextra -Wvla -Werror -Wno-deprecated -Wno-option-ignored)
 endif()
 
 cmake_policy(PUSH)
@@ -282,7 +282,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_custom_target(build_tests)
 
-
 # Tests folder
 add_subdirectory(unit ${CATCH_BUILD_DIR}/unit)
 add_subdirectory(ABM ${CATCH_BUILD_DIR}/ABM)
@@ -291,9 +290,7 @@ add_subdirectory(hipTestMain ${CATCH_BUILD_DIR}/hipTestMain)
 add_subdirectory(stress ${CATCH_BUILD_DIR}/stress)
 add_subdirectory(TypeQualifiers ${CATCH_BUILD_DIR}/TypeQualifiers)
 add_subdirectory(perftests ${CATCH_BUILD_DIR}/perftests)
-if(UNIX)
-   add_subdirectory(multiproc ${CATCH_BUILD_DIR}/multiproc)
-endif()
+add_subdirectory(multiproc ${CATCH_BUILD_DIR}/multiproc)
 add_subdirectory(performance ${CATCH_BUILD_DIR}/performance)
 
 cmake_policy(POP)

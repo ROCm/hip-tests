@@ -20,7 +20,7 @@ $ export HIP_PATH=[MYHIP]
 $ cd ~/hip/samples/0_Intro/square
   mkdir -p build && cd build
 
-  cmake -DCMAKE_PREFIX_PATH=<path/to/rocm> -DHIP_CXX_COMPILER=<path/to/clang> ..
+  cmake ..
   make
 
 $ Building without cmake

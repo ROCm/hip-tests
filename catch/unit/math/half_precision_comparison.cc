@@ -114,8 +114,8 @@ MATH_UNARY_HP_TEST_DEF_IMPL(__hisnan2, __hisnan2_ref, EqValidatorBuilderFactory<
 
 /********** Binary Functions **********/
 
-#define MATH_BOOL_BINARY_HP_TEST_DEF(func_name, ref_func)                                          \
-  __global__ void func_name##_kernel(bool* const ys, const size_t num_xs, Float16* const x1s,      \
+#define MATH_COMPARISON_HP_TEST_DEF(func_name, ref_func, T, RT, nan_value)                         \
+  __global__ void func_name##_kernel(T* const ys, const size_t num_xs, Float16* const x1s,         \
                                      Float16* const x2s) {                                         \
     const auto tid = cg::this_grid().thread_rank();                                                \
     const auto stride = cg::this_grid().size();                                                    \
@@ -126,10 +126,17 @@ MATH_UNARY_HP_TEST_DEF_IMPL(__hisnan2, __hisnan2_ref, EqValidatorBuilderFactory<
   }                                                                                                \
                                                                                                    \
   TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive") {                                      \
-    BinaryFloatingPointTest(func_name##_kernel, ref_func, EqValidatorBuilderFactory<bool>());      \
+    BinaryFloatingPointTest(func_name##_kernel, ref_func<nan_value, RT>,                           \
+                            EqValidatorBuilderFactory<RT>());                                      \
   }
 
-static bool __heq_ref(float x1, float x2) { return x1 == x2; }
+
+template <bool nan_value, typename T> static T __heq_ref(float x1, float x2) {
+  if (std::isnan(x1) || std::isnan(x2)) {
+    return static_cast<T>(nan_value);
+  }
+  return x1 == x2;
+}
 
 /**
  * Test Description
@@ -145,7 +152,7 @@ static bool __heq_ref(float x1, float x2) { return x1 == x2; }
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__heq, __heq_ref)
+MATH_COMPARISON_HP_TEST_DEF(__heq, __heq_ref, bool, bool, false)
 
 /**
  * Test Description
@@ -161,7 +168,7 @@ MATH_BOOL_BINARY_HP_TEST_DEF(__heq, __heq_ref)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hbeq2, __heq_ref)
+MATH_COMPARISON_HP_TEST_DEF(__hbeq2, __heq_ref, bool, bool, false)
 
 /**
  * Test Description
@@ -177,7 +184,7 @@ MATH_BOOL_BINARY_HP_TEST_DEF(__hbeq2, __heq_ref)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hequ, __heq_ref)
+MATH_COMPARISON_HP_TEST_DEF(__hequ, __heq_ref, bool, bool, true)
 
 /**
  * Test Description
@@ -193,11 +200,7 @@ MATH_BOOL_BINARY_HP_TEST_DEF(__hequ, __heq_ref)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hbequ2, __heq_ref)
-
-static float __heq2_ref(float x1, float x2) { return x1 == x2; }
-
-MATH_BINARY_HP_KERNEL_DEF(__heq2)
+MATH_COMPARISON_HP_TEST_DEF(__hbequ2, __heq_ref, bool, bool, true)
 
 /**
  * Test Description
@@ -213,9 +216,7 @@ MATH_BINARY_HP_KERNEL_DEF(__heq2)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BINARY_HP_TEST_DEF_IMPL(__heq2, __heq2_ref, EqValidatorBuilderFactory<float>())
-
-MATH_BINARY_HP_KERNEL_DEF(__hequ2)
+MATH_COMPARISON_HP_TEST_DEF(__heq2, __heq_ref, Float16, float, false)
 
 /**
  * Test Description
@@ -231,9 +232,15 @@ MATH_BINARY_HP_KERNEL_DEF(__hequ2)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BINARY_HP_TEST_DEF_IMPL(__hequ2, __heq2_ref, EqValidatorBuilderFactory<float>())
+MATH_COMPARISON_HP_TEST_DEF(__hequ2, __heq_ref, Float16, float, true)
 
-static bool __hne_ref(float x1, float x2) { return x1 != x2; }
+
+template <bool nan_value, typename T> static T __hne_ref(float x1, float x2) {
+  if (std::isnan(x1) || std::isnan(x2)) {
+    return static_cast<T>(nan_value);
+  }
+  return x1 != x2;
+}
 
 /**
  * Test Description
@@ -249,7 +256,7 @@ static bool __hne_ref(float x1, float x2) { return x1 != x2; }
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hne, __hne_ref)
+MATH_COMPARISON_HP_TEST_DEF(__hne, __hne_ref, bool, bool, false)
 
 /**
  * Test Description
@@ -265,7 +272,7 @@ MATH_BOOL_BINARY_HP_TEST_DEF(__hne, __hne_ref)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hbne2, __hne_ref)
+MATH_COMPARISON_HP_TEST_DEF(__hbne2, __hne_ref, bool, bool, false)
 
 /**
  * Test Description
@@ -281,7 +288,7 @@ MATH_BOOL_BINARY_HP_TEST_DEF(__hbne2, __hne_ref)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hneu, __hne_ref)
+MATH_COMPARISON_HP_TEST_DEF(__hneu, __hne_ref, bool, bool, true)
 
 /**
  * Test Description
@@ -297,11 +304,7 @@ MATH_BOOL_BINARY_HP_TEST_DEF(__hneu, __hne_ref)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hbneu2, __hne_ref)
-
-static float __hne2_ref(float x1, float x2) { return x1 != x2; }
-
-MATH_BINARY_HP_KERNEL_DEF(__hne2)
+MATH_COMPARISON_HP_TEST_DEF(__hbneu2, __hne_ref, bool, bool, true)
 
 /**
  * Test Description
@@ -317,9 +320,7 @@ MATH_BINARY_HP_KERNEL_DEF(__hne2)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BINARY_HP_TEST_DEF_IMPL(__hne2, __hne2_ref, EqValidatorBuilderFactory<float>())
-
-MATH_BINARY_HP_KERNEL_DEF(__hneu2)
+MATH_COMPARISON_HP_TEST_DEF(__hne2, __hne_ref, Float16, float, false)
 
 /**
  * Test Description
@@ -335,9 +336,15 @@ MATH_BINARY_HP_KERNEL_DEF(__hneu2)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BINARY_HP_TEST_DEF_IMPL(__hneu2, __hne2_ref, EqValidatorBuilderFactory<float>())
+MATH_COMPARISON_HP_TEST_DEF(__hneu2, __hne_ref, Float16, float, true)
 
-static bool __hge_ref(float x1, float x2) { return x1 >= x2; }
+
+template <bool nan_value, typename T> static T __hge_ref(float x1, float x2) {
+  if (std::isnan(x1) || std::isnan(x2)) {
+    return static_cast<T>(nan_value);
+  }
+  return x1 >= x2;
+}
 
 /**
  * Test Description
@@ -353,7 +360,7 @@ static bool __hge_ref(float x1, float x2) { return x1 >= x2; }
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hge, __hge_ref)
+MATH_COMPARISON_HP_TEST_DEF(__hge, __hge_ref, bool, bool, false)
 
 /**
  * Test Description
@@ -369,7 +376,7 @@ MATH_BOOL_BINARY_HP_TEST_DEF(__hge, __hge_ref)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hbge2, __hge_ref)
+MATH_COMPARISON_HP_TEST_DEF(__hbge2, __hge_ref, bool, bool, false)
 
 /**
  * Test Description
@@ -385,7 +392,7 @@ MATH_BOOL_BINARY_HP_TEST_DEF(__hbge2, __hge_ref)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hgeu, __hge_ref)
+MATH_COMPARISON_HP_TEST_DEF(__hgeu, __hge_ref, bool, bool, true)
 
 /**
  * Test Description
@@ -401,11 +408,7 @@ MATH_BOOL_BINARY_HP_TEST_DEF(__hgeu, __hge_ref)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hbgeu2, __hge_ref)
-
-static float __hge2_ref(float x1, float x2) { return x1 >= x2; }
-
-MATH_BINARY_HP_KERNEL_DEF(__hge2)
+MATH_COMPARISON_HP_TEST_DEF(__hbgeu2, __hge_ref, bool, bool, true)
 
 /**
  * Test Description
@@ -421,9 +424,7 @@ MATH_BINARY_HP_KERNEL_DEF(__hge2)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BINARY_HP_TEST_DEF_IMPL(__hge2, __hge2_ref, EqValidatorBuilderFactory<float>())
-
-MATH_BINARY_HP_KERNEL_DEF(__hgeu2)
+MATH_COMPARISON_HP_TEST_DEF(__hge2, __hge_ref, Float16, float, false)
 
 /**
  * Test Description
@@ -439,9 +440,15 @@ MATH_BINARY_HP_KERNEL_DEF(__hgeu2)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BINARY_HP_TEST_DEF_IMPL(__hgeu2, __hge2_ref, EqValidatorBuilderFactory<float>())
+MATH_COMPARISON_HP_TEST_DEF(__hgeu2, __hge_ref, Float16, float, true)
 
-static bool __hgt_ref(float x1, float x2) { return x1 > x2; }
+
+template <bool nan_value, typename T> static T __hgt_ref(float x1, float x2) {
+  if (std::isnan(x1) || std::isnan(x2)) {
+    return static_cast<T>(nan_value);
+  }
+  return x1 > x2;
+}
 
 /**
  * Test Description
@@ -457,7 +464,7 @@ static bool __hgt_ref(float x1, float x2) { return x1 > x2; }
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hgt, __hgt_ref)
+MATH_COMPARISON_HP_TEST_DEF(__hgt, __hgt_ref, bool, bool, false)
 
 /**
  * Test Description
@@ -473,7 +480,7 @@ MATH_BOOL_BINARY_HP_TEST_DEF(__hgt, __hgt_ref)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hbgt2, __hgt_ref)
+MATH_COMPARISON_HP_TEST_DEF(__hbgt2, __hgt_ref, bool, bool, false)
 
 /**
  * Test Description
@@ -489,7 +496,7 @@ MATH_BOOL_BINARY_HP_TEST_DEF(__hbgt2, __hgt_ref)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hgtu, __hgt_ref)
+MATH_COMPARISON_HP_TEST_DEF(__hgtu, __hgt_ref, bool, bool, true)
 
 /**
  * Test Description
@@ -505,11 +512,7 @@ MATH_BOOL_BINARY_HP_TEST_DEF(__hgtu, __hgt_ref)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hbgtu2, __hgt_ref)
-
-static float __hgt2_ref(float x1, float x2) { return x1 > x2; }
-
-MATH_BINARY_HP_KERNEL_DEF(__hgt2)
+MATH_COMPARISON_HP_TEST_DEF(__hbgtu2, __hgt_ref, bool, bool, true)
 
 /**
  * Test Description
@@ -525,9 +528,7 @@ MATH_BINARY_HP_KERNEL_DEF(__hgt2)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BINARY_HP_TEST_DEF_IMPL(__hgt2, __hgt2_ref, EqValidatorBuilderFactory<float>())
-
-MATH_BINARY_HP_KERNEL_DEF(__hgtu2)
+MATH_COMPARISON_HP_TEST_DEF(__hgt2, __hgt_ref, Float16, float, false)
 
 /**
  * Test Description
@@ -543,9 +544,15 @@ MATH_BINARY_HP_KERNEL_DEF(__hgtu2)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BINARY_HP_TEST_DEF_IMPL(__hgtu2, __hgt2_ref, EqValidatorBuilderFactory<float>())
+MATH_COMPARISON_HP_TEST_DEF(__hgtu2, __hgt_ref, Float16, float, true)
 
-static bool __hle_ref(float x1, float x2) { return x1 <= x2; }
+
+template <bool nan_value, typename T> static T __hle_ref(float x1, float x2) {
+  if (std::isnan(x1) || std::isnan(x2)) {
+    return static_cast<T>(nan_value);
+  }
+  return x1 <= x2;
+}
 
 /**
  * Test Description
@@ -561,7 +568,7 @@ static bool __hle_ref(float x1, float x2) { return x1 <= x2; }
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hle, __hle_ref)
+MATH_COMPARISON_HP_TEST_DEF(__hle, __hle_ref, bool, bool, false)
 
 /**
  * Test Description
@@ -577,7 +584,7 @@ MATH_BOOL_BINARY_HP_TEST_DEF(__hle, __hle_ref)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hble2, __hle_ref)
+MATH_COMPARISON_HP_TEST_DEF(__hble2, __hle_ref, bool, bool, false)
 
 /**
  * Test Description
@@ -593,7 +600,7 @@ MATH_BOOL_BINARY_HP_TEST_DEF(__hble2, __hle_ref)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hleu, __hle_ref)
+MATH_COMPARISON_HP_TEST_DEF(__hleu, __hle_ref, bool, bool, true)
 
 /**
  * Test Description
@@ -609,11 +616,7 @@ MATH_BOOL_BINARY_HP_TEST_DEF(__hleu, __hle_ref)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hbleu2, __hle_ref)
-
-static float __hle2_ref(float x1, float x2) { return x1 <= x2; }
-
-MATH_BINARY_HP_KERNEL_DEF(__hle2)
+MATH_COMPARISON_HP_TEST_DEF(__hbleu2, __hle_ref, bool, bool, true)
 
 /**
  * Test Description
@@ -629,9 +632,7 @@ MATH_BINARY_HP_KERNEL_DEF(__hle2)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BINARY_HP_TEST_DEF_IMPL(__hle2, __hle2_ref, EqValidatorBuilderFactory<float>())
-
-MATH_BINARY_HP_KERNEL_DEF(__hleu2)
+MATH_COMPARISON_HP_TEST_DEF(__hle2, __hle_ref, Float16, float, false)
 
 /**
  * Test Description
@@ -647,9 +648,15 @@ MATH_BINARY_HP_KERNEL_DEF(__hleu2)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BINARY_HP_TEST_DEF_IMPL(__hleu2, __hle2_ref, EqValidatorBuilderFactory<float>())
+MATH_COMPARISON_HP_TEST_DEF(__hleu2, __hle_ref, Float16, float, true)
 
-static bool __hlt_ref(float x1, float x2) { return x1 < x2; }
+
+template <bool nan_value, typename T> static T __hlt_ref(float x1, float x2) {
+  if (std::isnan(x1) || std::isnan(x2)) {
+    return static_cast<T>(nan_value);
+  }
+  return x1 < x2;
+}
 
 /**
  * Test Description
@@ -665,7 +672,7 @@ static bool __hlt_ref(float x1, float x2) { return x1 < x2; }
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hlt, __hlt_ref)
+MATH_COMPARISON_HP_TEST_DEF(__hlt, __hlt_ref, bool, bool, false)
 
 /**
  * Test Description
@@ -681,7 +688,7 @@ MATH_BOOL_BINARY_HP_TEST_DEF(__hlt, __hlt_ref)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hblt2, __hlt_ref)
+MATH_COMPARISON_HP_TEST_DEF(__hblt2, __hlt_ref, bool, bool, false)
 
 /**
  * Test Description
@@ -697,7 +704,7 @@ MATH_BOOL_BINARY_HP_TEST_DEF(__hblt2, __hlt_ref)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hltu, __hlt_ref)
+MATH_COMPARISON_HP_TEST_DEF(__hltu, __hlt_ref, bool, bool, true)
 
 /**
  * Test Description
@@ -713,11 +720,7 @@ MATH_BOOL_BINARY_HP_TEST_DEF(__hltu, __hlt_ref)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BOOL_BINARY_HP_TEST_DEF(__hbltu2, __hlt_ref)
-
-static float __hlt2_ref(float x1, float x2) { return x1 < x2; }
-
-MATH_BINARY_HP_KERNEL_DEF(__hlt2)
+MATH_COMPARISON_HP_TEST_DEF(__hbltu2, __hlt_ref, bool, bool, true)
 
 /**
  * Test Description
@@ -733,9 +736,7 @@ MATH_BINARY_HP_KERNEL_DEF(__hlt2)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BINARY_HP_TEST_DEF_IMPL(__hlt2, __hlt2_ref, EqValidatorBuilderFactory<float>())
-
-MATH_BINARY_HP_KERNEL_DEF(__hltu2)
+MATH_COMPARISON_HP_TEST_DEF(__hlt2, __hlt_ref, Float16, float, false)
 
 /**
  * Test Description
@@ -751,7 +752,7 @@ MATH_BINARY_HP_KERNEL_DEF(__hltu2)
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-MATH_BINARY_HP_TEST_DEF_IMPL(__hltu2, __hlt2_ref, EqValidatorBuilderFactory<float>())
+MATH_COMPARISON_HP_TEST_DEF(__hltu2, __hlt_ref, Float16, float, true)
 
 MATH_BINARY_HP_KERNEL_DEF(__hmax)
 

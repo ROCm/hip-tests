@@ -250,8 +250,6 @@ TEST_CASE("Unit_hipGetDeviceAttribute_CheckAttrValues") {
   HIP_CHECK(test_hipDeviceGetAttribute(deviceId,
                                        hipDeviceAttributeTexturePitchAlignment,
                                        props.texturePitchAlignment));
-  HIP_CHECK(test_hipDeviceGetAttribute(deviceId,
-                              hipDeviceAttributeUnifiedAddressing, 1/*true*/));
 }
 
 /*
@@ -418,7 +416,7 @@ using AttributeToStringMap = std::array<std::pair<hipDeviceAttribute_t, const ch
 
 namespace {
 
-constexpr AttributeToStringMap<57> kCommonAttributes{{
+constexpr AttributeToStringMap<58> kCommonAttributes{{
     {hipDeviceAttributeEccEnabled, "hipDeviceAttributeEccEnabled"},
     {hipDeviceAttributeCanMapHostMemory, "hipDeviceAttributeCanMapHostMemory"},
     {hipDeviceAttributeClockRate, "hipDeviceAttributeClockRate"},
@@ -479,9 +477,10 @@ constexpr AttributeToStringMap<57> kCommonAttributes{{
     {hipDeviceAttributeTotalGlobalMem, "hipDeviceAttributeTotalGlobalMem"},
     {hipDeviceAttributeWarpSize, "hipDeviceAttributeWarpSize"},
     {hipDeviceAttributeMemoryPoolsSupported, "hipDeviceAttributeMemoryPoolsSupported"},
-	{hipDeviceAttributeUnifiedAddressing, "hipDeviceAttributeUnifiedAddressing"},
+    {hipDeviceAttributeUnifiedAddressing, "hipDeviceAttributeUnifiedAddressing"},
     {hipDeviceAttributeVirtualMemoryManagementSupported,
-     "hipDeviceAttributeVirtualMemoryManagementSupported"}
+     "hipDeviceAttributeVirtualMemoryManagementSupported"},
+    {hipDeviceAttributeHostRegisterSupported, "hipDeviceAttributeHostRegisterSupported"}
 }};
 
 #if HT_NVIDIA
@@ -609,4 +608,39 @@ TEST_CASE("Print_Out_Attributes") {
 #endif
 
   std::flush(std::cout);
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - verify hipDeviceAttributeHostRegisterSupported attribute.
+ * Test source
+ * ------------------------
+ *  - unit/device/hipGetDeviceAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+TEST_CASE("Unit_hipGetDeviceAttribute_hipDevAttrHostRegisterSupported") {
+  hipError_t ret_val;
+  int hipDevAttr = 0;
+  ret_val = hipDeviceGetAttribute(&hipDevAttr,
+                                  hipDeviceAttributeHostRegisterSupported, 0);
+  INFO("hipDeviceAttributeHostRegisterSupported: " << hipDevAttr);
+
+  if (ret_val == hipSuccess) {
+    auto x = std::unique_ptr<int>(new int);
+    HIP_CHECK(hipHostRegister(x.get(), sizeof(int), hipHostRegisterDefault));
+
+    void* device_memory;
+    HIP_CHECK(hipHostGetDevicePointer(&device_memory, x.get(), 0));
+
+    HIP_CHECK(hipHostUnregister(x.get()));
+    HIP_CHECK_ERROR(hipHostGetDevicePointer(&device_memory, x.get(), 0),
+                    hipErrorInvalidValue);
+  } else {
+    HipTest::HIP_SKIP_TEST("Skipping the test as GPU 0 doesn't support "
+             "hipDeviceAttributeHostRegisterSupported attribute.\n");
+    return;
+  }
 }

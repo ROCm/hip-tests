@@ -42,6 +42,8 @@ add_subdirectory(module)
 add_subdirectory(channelDescriptor)
 add_subdirectory(executionControl)
 add_subdirectory(math)
+add_subdirectory(p2p)
+add_subdirectory(gcc)
 
 if(HIP_PLATFORM STREQUAL "amd")
 add_subdirectory(callback)

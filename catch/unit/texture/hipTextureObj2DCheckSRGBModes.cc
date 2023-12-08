@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -17,6 +17,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#pragma clang diagnostic ignored "-Wunused-parameter"
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 #include <hip_texture_helper.hh>
@@ -53,7 +54,7 @@ static void runTest(const int width, const int height, const float offsetX, cons
   }
 
   hipChannelFormatDesc channelDesc = hipCreateChannelDesc<uchar4>();
-  hipArray *hipArray;
+  hipArray_t hipArray;
   HIP_CHECK(hipMallocArray(&hipArray, &channelDesc, width, height));
 
   HIP_CHECK(hipMemcpy2DToArray(hipArray, 0, 0, hData, width * sizeof(uchar4), width * sizeof(uchar4), height, hipMemcpyHostToDevice));

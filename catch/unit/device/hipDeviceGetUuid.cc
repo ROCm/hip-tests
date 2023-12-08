@@ -134,7 +134,7 @@ TEST_CASE("Unit_hipDeviceGetUuid_From_RocmInfo") {
   }
   char command_op[BUFFER_LEN];
   int j = 0;
-  std::string output[deviceCount];  //NOLINT
+  std::vector<std::string> output(deviceCount);  //NOLINT
   while (fgets(command_op, BUFFER_LEN, fpipe)) {
     std::string rocminfo_line(command_op);
     if ((std::string::npos != rocminfo_line.find("CPU-"))) {

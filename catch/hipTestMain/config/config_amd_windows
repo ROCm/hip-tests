@@ -71,7 +71,6 @@
         "Unit_hipStreamValue_Wait32_Blocking_NoMask_Eq",
         "Unit_hipStreamValue_Wait32_Blocking_NoMask_Gte",
         "Unit_hipStreamValue_Wait32_Blocking_NoMask_And",
-        "Unit_hipStreamValue_Wait32_Blocking_NoMask_Nor",
         "Unit_hipStreamValue_Wait64_Blocking_Mask_Gte_1",
         "Unit_hipStreamValue_Wait64_Blocking_Mask_Gte_2",
         "Unit_hipStreamValue_Wait64_Blocking_Mask_Eq_1",
@@ -79,8 +78,6 @@
         "Unit_hipStreamValue_Wait64_Blocking_Mask_And",
         "Unit_hipStreamValue_Wait64_Blocking_NoMask_Gte",
         "Unit_hipStreamValue_Wait64_Blocking_NoMask_Eq",
-        "Unit_hipStreamValue_Wait64_Blocking_NoMask_And",
-        "Unit_hipStreamValue_Wait64_Blocking_NoMask_Nor",
         "Unit_hipGetDeviceFlags_Positive_Context",
         "Unit_hipIpcCloseMemHandle_Negative_Close_In_Originating_Process",
         "Unit_hipIpcOpenMemHandle_Negative_Open_In_Creating_Process",
@@ -176,7 +173,6 @@
         "Unit_hipGraphExecMemsetNodeSetParams_Positive_Basic - uint16_t",
         "Unit_hipGraphExecMemsetNodeSetParams_Positive_Basic - uint32_t",
         "Unit_hipGraphMemsetNodeSetParams_Positive_Basic - uint8_t",
-        "Unit_hipStreamWaitEvent_UninitializedStream_Negative",
         "Unit_hipDeviceGetUuid_Positive",
         "Disabling test tracked SWDEV-394199",
         "Unit_hipStreamCreateWithPriority_MulthreadNonblockingflag",
@@ -245,6 +241,8 @@
         "Unit_hipVectorTypes_test_on_device",
         "Unit_Layered1DTexture_Check_DeviceBufferToFromLayered1DArray - ushort4",
         "Unit_Layered2DTexture_Check_DeviceBufferToFromLayered2DArray - float4",
+        "=== Patch which removes the typetraits implementation from std namespace in hiprtc is reverted ===",
+        "Unit_hiprtc_stdheaders",
     #endif
         "End of json"
     ]

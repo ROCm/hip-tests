@@ -3,19 +3,16 @@
 Simple test below is an example, shows how to use hipify-perl to port CUDA code to HIP:
 
 - Add hip/bin path to the PATH
-
 ```
 $ export PATH=$PATH:[MYHIP]/bin
 ```
 
 - Define environment variable
-
 ```
 $ export HIP_PATH=[MYHIP]
 ```
 
 - Build executable file
-
 ```
 $ cd ~/hip/samples/0_Intro/square
   mkdir -p build && cd build

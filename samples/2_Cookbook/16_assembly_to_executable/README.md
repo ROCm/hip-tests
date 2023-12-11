@@ -56,12 +56,16 @@ Finally, using the system linker, hipcc, or clang, link the host and device obje
 ```
 
 ## How to build and run this sample:
-Use these make commands to compile into assembly, compile assembly into executable, and execute it.
-- To compile the HIP application into host and device assembly: `make src_to_asm`.
-- To compile the assembly files into an executable: `make asm_to_exec`.
-- To execute, run
+- Build the sample using cmake
 ```
-./square_asm.out
+$ mkdir build; cd build
+$ cmake .. -DCMAKE_PREFIX_PATH=/opt/rocm
+$ make
+```
+
+- Execute sample
+```
+$ ./square_asm.out
 info: running on device AMD Radeon Graphics
 info: allocate host mem (  7.63 MB)
 info: allocate device mem (  7.63 MB)

@@ -2,10 +2,10 @@
 I. Build
 
 ```
-mkdir -p build; cd build
-rm -rf *;
-cmake -DCMAKE_PREFIX_PATH=/opt/rocm ..
-make
+$ mkdir -p build; cd build
+$ rm -rf *;
+$ cmake -DCMAKE_PREFIX_PATH=/opt/rocm ..
+$ make
 ```
 
 II. Test

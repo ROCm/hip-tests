@@ -36,9 +36,18 @@ In this tutorial, we'll use `__shfl()` ops. In the same sourcecode, we used for 
 Be careful while using shfl operations, since all exchanges are possible between the threads of corresponding warp only.
 
 ## How to build and run:
-Use the make command and execute it using ./exe
-Use hipcc to build the application, which is using hcc on AMD and nvcc on nvidia.
-
+- Build the sample using cmake
+```
+$ mkdir build; cd build
+$ cmake .. -DCMAKE_PREFIX_PATH=/opt/rocm
+$ make
+```
+- Execute the sample
+```
+$ ./shfl
+Device name Navi 14 [Radeon Pro W5500]
+PASSED!
+```
 ## requirement for nvidia
 please make sure you have a 3.0 or higher compute capable device in order to use warp shfl operations and add `-gencode arch=compute=30, code=sm_30` nvcc flag in the Makefile while using this application.
 

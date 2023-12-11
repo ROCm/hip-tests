@@ -2,10 +2,10 @@
 I. Build
 
 ```
-mkdir -p build; cd build
-rm -rf *;
-CXX="$(hipconfig -l)"/amdclang++ cmake -DCMAKE_PREFIX_PATH=/opt/rocm ..
-make
+$ mkdir -p build; cd build
+$ rm -rf *;
+$ CXX="$(hipconfig -l)"/amdclang++ cmake -DCMAKE_PREFIX_PATH=/opt/rocm ..
+$ make
 ```
 
 II. Test

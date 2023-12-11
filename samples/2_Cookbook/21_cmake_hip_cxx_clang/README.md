@@ -7,10 +7,9 @@ rm -rf *;
 CXX="$(hipconfig -l)"/amdclang++ cmake -DCMAKE_PREFIX_PATH=/opt/rocm ..
 make
 ```
-To enable compiler auto detection of gpu users may need to add ADMGPU support as command line option, 
-if test failed to run, for example,
+To enable compiler auto detection of gpu users may need to add ADMGPU support as command line option, if test failed to run, for example,
 ```
-CXX="$(hipconfig -l)"/amdclang++ cmake -DCMAKE_PREFIX_PATH=/opt/rocm -DAMDGPU_TARGETS=native ..
+CXX="$(hipconfig -l)"/amdclang++ cmake -DCMAKE_PREFIX_PATH=/opt/rocm -DAMDGPU_TARGETS="gfx1102" ..
 ```
 II. Test
 

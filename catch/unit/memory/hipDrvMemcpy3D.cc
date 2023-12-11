@@ -29,6 +29,8 @@ THE SOFTWARE.
 #include <utils.hh>
 
 TEST_CASE("Unit_hipDrvMemcpy3D_Positive_Basic") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr bool async = false;
 
 #if HT_NVIDIA  // Disabled on AMD due to defect - EXSWHTEC-236
@@ -52,6 +54,8 @@ TEST_CASE("Unit_hipDrvMemcpy3D_Positive_Basic") {
 }
 
 TEST_CASE("Unit_hipDrvMemcpy3D_Positive_Synchronization_Behavior") {
+  CHECK_IMAGE_SUPPORT
+
   HIP_CHECK(hipDeviceSynchronize());
 
   SECTION("Host to Device") { Memcpy3DHtoDSyncBehavior(DrvMemcpy3DWrapper<>, true); }
@@ -78,18 +82,24 @@ TEST_CASE("Unit_hipDrvMemcpy3D_Positive_Synchronization_Behavior") {
 }
 
 TEST_CASE("Unit_hipDrvMemcpy3D_Positive_Parameters") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr bool async = false;
   Memcpy3DZeroWidthHeightDepth<async>(DrvMemcpy3DWrapper<async>);
 }
 
 // Disabled on AMD due to defect - EXSWHTEC-238
 TEST_CASE("Unit_hipDrvMemcpy3D_Positive_Array") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr bool async = false;
   SECTION("Array from/to Host") { DrvMemcpy3DArrayHostShell<async>(DrvMemcpy3DWrapper<async>); }
   SECTION("Array from/to Device") { DrvMemcpy3DArrayDeviceShell<async>(DrvMemcpy3DWrapper<async>); }
 }
 
 TEST_CASE("Unit_hipDrvMemcpy3D_Negative_Parameters") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr hipExtent extent{128 * sizeof(int), 128, 8};
 
   constexpr auto NegativeTests = [](hipPitchedPtr dst_ptr, hipPos dst_pos, hipPitchedPtr src_ptr,

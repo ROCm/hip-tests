@@ -8,28 +8,28 @@ I. Prepare
 
 II. Build
 ```
-mkdir -p build; cd build
-rm -rf *;
-CXX="$(hipconfig -l)"/clang++ FC=$(which gfortran) cmake -DCMAKE_PREFIX_PATH=/opt/rocm ..
-cmake ..
-make
+$ mkdir -p build; cd build
+$ rm -rf *;
+$ CXX="$(hipconfig -l)"/clang++ FC=$(which gfortran) cmake -DCMAKE_PREFIX_PATH=/opt/rocm ..
+$ cmake ..
+$ make
 ```
 
 Note, users may need to add AMD GPU support, if test failed, for example,
 ```
-CXX="$(hipconfig -l)"/clang++ FC=$(which gfortran) cmake -DCMAKE_PREFIX_PATH=/opt/rocm -DAMDGPU_TARGETS="gfx1102" ..
+$ CXX="$(hipconfig -l)"/clang++ FC=$(which gfortran) cmake -DCMAKE_PREFIX_PATH=/opt/rocm -DAMDGPU_TARGETS="gfx1102" ..
 ```
-To enable compiler auto detection of gpu users may need to add ADMGPU support as command line option, 
+To enable compiler auto detection of gpu users may need to add ADMGPU support as command line option,
 if test failed to run, for example,
 ```
-CXX="$(hipconfig -l)"/clang++ FC=$(which gfortran) cmake -DCMAKE_PREFIX_PATH=/opt/rocm -DAMDGPU_TARGETS=native ..
+$ CXX="$(hipconfig -l)"/clang++ FC=$(which gfortran) cmake -DCMAKE_PREFIX_PATH=/opt/rocm -DAMDGPU_TARGETS=native ..
 ```
 III. Test
 ```
-./test_fortran
+$ ./test_fortran
  Succeeded testing Fortran!
 
-./test_cpp
+$ ./test_cpp
 Device name AMD Radeon Graphics
 PASSED!
 ```

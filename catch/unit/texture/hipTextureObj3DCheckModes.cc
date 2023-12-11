@@ -68,7 +68,7 @@ static void runTest(const int width, const int height, const int depth, const fl
 
   // Allocate array and copy image data
   hipChannelFormatDesc channelDesc = hipCreateChannelDesc<float>();
-  hipArray* arr;
+  hipArray_t arr;
 
   HIP_CHECK(
       hipMalloc3DArray(&arr, &channelDesc, make_hipExtent(width, height, depth), hipArrayDefault));
@@ -120,8 +120,11 @@ static void runTest(const int width, const int height, const int depth, const fl
   dim3 dimGrid((width + dimBlock.x - 1) / dimBlock.x, (height + dimBlock.y - 1) / dimBlock.y,
                (depth + dimBlock.z - 1) / dimBlock.z);
 
-  hipLaunchKernelGGL(tex3DKernel<normalizedCoords>, dimGrid, dimBlock, 0, 0, dData, textureObject,
-                     width, height, depth, offsetX, offsetY, offsetZ);
+  // Resets any prior last error to hipSuccess, so that the hipGetLastError after the
+  // kernel launch will not return the earlier errors
+  res = hipGetLastError();
+  hipLaunchKernelGGL(tex3DKernel<normalizedCoords>, dimGrid, dimBlock, 0, 0, dData,
+                     textureObject, width, height, depth, offsetX, offsetY, offsetZ);
   HIP_CHECK(hipGetLastError());
 
   HIP_CHECK(hipDeviceSynchronize());

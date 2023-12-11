@@ -56,7 +56,7 @@ static bool hipPerfDevMemReadSpeed_test() {
 
   int deviceId = 0;
   HIP_CHECK(hipSetDevice(deviceId));
-  hipDeviceProp_t props = {0};
+  hipDeviceProp_t props;
   HIP_CHECK(hipGetDeviceProperties(&props, deviceId));
 
   INFO("info: running on bus " << "0x" << props.pciBusID << " " <<

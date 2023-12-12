@@ -31,8 +31,6 @@ if( NOT DEFINED CMAKE_HIP_COMPILER_ROCM)
  set(CMAKE_HIP_COMPILER_ROCM_ROOT ${ROCM_PATH})
 endif()
 
-set(CMAKE_HIP_ARCHITECTURES OFF)
-
 project(cmake_hip_lang_support VERSION 1.0
         DESCRIPTION "HIP Language Support with upstream CMake"
         LANGUAGES HIP)

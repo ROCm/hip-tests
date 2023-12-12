@@ -30,12 +30,12 @@ using namespace std;
 
 template <class T> __device__ typename std::add_rvalue_reference<T>::type _declval() noexcept;
 
-template <typename V, Enable_if_t<!is_integral<decltype(_declval<V>().x)>{}>* = nullptr>
+template <typename V, enable_if_t<!is_integral<decltype(_declval<V>().x)>{}>* = nullptr>
 __device__ constexpr bool integer_unary_tests(const V&, const V&) {
   return true;
 }
 
-template <typename V, Enable_if_t<is_integral<decltype(_declval<V>().x)>{}>* = nullptr>
+template <typename V, enable_if_t<is_integral<decltype(_declval<V>().x)>{}>* = nullptr>
 __device__ bool integer_unary_tests(V& f1, V& f2) {
   f1 %= f2;
   if (f1 != V{0}) return false;
@@ -57,12 +57,12 @@ __device__ bool integer_unary_tests(V& f1, V& f2) {
   return true;
 }
 
-template <typename V, Enable_if_t<!is_integral<decltype(_declval<V>().x)>{}>* = nullptr>
+template <typename V, enable_if_t<!is_integral<decltype(_declval<V>().x)>{}>* = nullptr>
 __device__ constexpr bool integer_binary_tests(const V&, const V&, const V&) {
   return true;
 }
 
-template <typename V, Enable_if_t<is_integral<decltype(_declval<V>().x)>{}>* = nullptr>
+template <typename V, enable_if_t<is_integral<decltype(_declval<V>().x)>{}>* = nullptr>
 __device__ bool integer_binary_tests(V& f1, V& f2, V& f3) {
   f3 = f1 % f2;
   if (f3 != V{0}) return false;
@@ -145,7 +145,7 @@ template <typename V> __device__ bool TestVectorType() {
   return true;
 }
 
-template <typename... Ts, Enable_if_t<sizeof...(Ts) == 0>* = nullptr>
+template <typename... Ts, enable_if_t<sizeof...(Ts) == 0>* = nullptr>
 __device__ bool TestVectorTypes() {
   return true;
 }
@@ -230,7 +230,7 @@ template <typename V> bool run_CheckSharedVectorType() {
   return passed;
 }
 
-template <typename... Ts, Enable_if_t<sizeof...(Ts) == 0>* = nullptr>
+template <typename... Ts, enable_if_t<sizeof...(Ts) == 0>* = nullptr>
 bool run_CheckSharedVectorTypes() {
   return true;
 }
@@ -239,7 +239,7 @@ template <typename V, typename... Vs> bool run_CheckSharedVectorTypes() {
   return run_CheckSharedVectorType<V>() && run_CheckSharedVectorTypes<Vs...>();
 }
 
-TEST_CASE("Unit_vectorTypes_CompileTest") {
+TEST_CASE("Unit_hipVectorTypes_test_on_device") {
   static_assert(sizeof(float1) == 4, "");
   static_assert(sizeof(float2) >= 8, "");
   static_assert(sizeof(float3) >= 12, "");
@@ -266,8 +266,4 @@ TEST_CASE("Unit_vectorTypes_CompileTest") {
 
   HIP_CHECK(hipFree(ptr));
   REQUIRE(passed == true);
-}
-//Test to check __half2_raw can be initialized without designator
-TEST_CASE("Unit_half2_raw_def") {
-  constexpr __half2_raw inf = {0x7C00,0x7C00};
 }

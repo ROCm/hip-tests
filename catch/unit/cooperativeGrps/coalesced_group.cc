@@ -33,7 +33,8 @@ namespace cg = cooperative_groups;
 
 template <unsigned int warp_size, typename BaseType = cg::coalesced_group>
 static __global__ void coalesced_group_size_getter(unsigned int* sizes, uint64_t active_mask) {
-  const auto tile = cg::tiled_partition<warp_size>(cg::this_thread_block());
+  const cg::thread_block_tile<warp_size> tile =
+      cg::tiled_partition<warp_size>(cg::this_thread_block());
   if (active_mask & (static_cast<uint64_t>(1) << tile.thread_rank())) {
     BaseType active = cg::coalesced_threads();
     sizes[thread_rank_in_grid()] = active.size();
@@ -43,7 +44,8 @@ static __global__ void coalesced_group_size_getter(unsigned int* sizes, uint64_t
 template <unsigned int warp_size, typename BaseType = cg::coalesced_group>
 static __global__ void coalesced_group_thread_rank_getter(unsigned int* thread_ranks,
                                                           uint64_t active_mask) {
-  const auto tile = cg::tiled_partition<warp_size>(cg::this_thread_block());
+  const cg::thread_block_tile<warp_size> tile =
+      cg::tiled_partition<warp_size>(cg::this_thread_block());
   if (active_mask & (static_cast<uint64_t>(1) << tile.thread_rank())) {
     BaseType active = cg::coalesced_threads();
     thread_ranks[thread_rank_in_grid()] = active.thread_rank();
@@ -53,7 +55,8 @@ static __global__ void coalesced_group_thread_rank_getter(unsigned int* thread_r
 template <unsigned int warp_size>
 static __global__ void coalesced_group_non_member_size_getter(unsigned int* sizes,
                                                               uint64_t active_mask) {
-  const auto tile = cg::tiled_partition<warp_size>(cg::this_thread_block());
+  const cg::thread_block_tile<warp_size> tile =
+      cg::tiled_partition<warp_size>(cg::this_thread_block());
   if (active_mask & (static_cast<uint64_t>(1) << tile.thread_rank())) {
     cg::coalesced_group active = cg::coalesced_threads();
     sizes[thread_rank_in_grid()] = cg::group_size(active);
@@ -63,7 +66,8 @@ static __global__ void coalesced_group_non_member_size_getter(unsigned int* size
 template <unsigned int warp_size>
 static __global__ void coalesced_group_non_member_thread_rank_getter(unsigned int* thread_ranks,
                                                                      uint64_t active_mask) {
-  const auto tile = cg::tiled_partition<warp_size>(cg::this_thread_block());
+  const cg::thread_block_tile<warp_size> tile =
+      cg::tiled_partition<warp_size>(cg::this_thread_block());
   if (active_mask & (static_cast<uint64_t>(1) << tile.thread_rank())) {
     cg::coalesced_group active = cg::coalesced_threads();
     thread_ranks[thread_rank_in_grid()] = cg::thread_rank(active);
@@ -384,7 +388,8 @@ TEST_CASE("Unit_Coalesced_Group_Getters_Via_Non_Member_Functions_Positive_Basic"
 template <typename T, unsigned int warp_size>
 __global__ void coalesced_group_shfl_up(T* const out, const unsigned int delta,
                                         const uint64_t active_mask) {
-  const auto tile = cg::tiled_partition<warp_size>(cg::this_thread_block());
+  const cg::thread_block_tile<warp_size> tile =
+      cg::tiled_partition<warp_size>(cg::this_thread_block());
   if (active_mask & (static_cast<uint64_t>(1) << tile.thread_rank())) {
     cg::coalesced_group active = cg::coalesced_threads();
     T var = static_cast<T>(active.thread_rank());
@@ -452,7 +457,8 @@ TEMPLATE_TEST_CASE("Unit_Coalesced_Group_Shfl_Up_Positive_Basic", "", int, unsig
 template <typename T, unsigned int warp_size>
 __global__ void coalesced_group_shfl_down(T* const out, const unsigned int delta,
                                           const uint64_t active_mask) {
-  const auto tile = cg::tiled_partition<warp_size>(cg::this_thread_block());
+  const cg::thread_block_tile<warp_size> tile =
+      cg::tiled_partition<warp_size>(cg::this_thread_block());
   if (active_mask & (static_cast<uint64_t>(1) << tile.thread_rank())) {
     cg::coalesced_group active = cg::coalesced_threads();
     T var = static_cast<T>(active.thread_rank());
@@ -530,7 +536,8 @@ TEMPLATE_TEST_CASE("Unit_Coalesced_Group_Shfl_Down_Positive_Basic", "", int, uns
 template <typename T, unsigned int warp_size>
 __global__ void coalesced_group_shfl(T* const out, uint8_t* target_lanes,
                                      const uint64_t active_mask) {
-  const auto tile = cg::tiled_partition<warp_size>(cg::this_thread_block());
+  const cg::thread_block_tile<warp_size> tile =
+      cg::tiled_partition<warp_size>(cg::this_thread_block());
   if (active_mask & (static_cast<uint64_t>(1) << tile.thread_rank())) {
     cg::coalesced_group active = cg::coalesced_threads();
     T var = static_cast<T>(active.thread_rank());
@@ -632,7 +639,7 @@ __global__ void coalesced_group_sync_check(T* global_data, unsigned int* wait_mo
   T* const data = use_global ? global_data : reinterpret_cast<T*>(shared_data);
   const auto tid = cg::this_grid().thread_rank();
   const auto block = cg::this_thread_block();
-  const auto partition = cg::tiled_partition<warp_size>(block);
+  const cg::thread_block_tile<warp_size> partition = cg::tiled_partition<warp_size>(block);
 
   const auto data_idx = [&block](unsigned int i) { return use_global ? i : (i % block.size()); };
 

@@ -23,63 +23,14 @@ THE SOFTWARE.
 #include <hip/hip_cooperative_groups.h>
 
 namespace {
-#if HT_AMD
-constexpr size_t kWarpSize = 64;
-#else
+#if (!__GFX8__ && !__GFX9__) || HT_NVIDIA
 constexpr size_t kWarpSize = 32;
+#else
+constexpr size_t kWarpSize = 64;
 #endif
 }  // namespace
 
-#define ASSERT_EQUAL(lhs, rhs) HIP_ASSERT(lhs == rhs)
-#define ASSERT_LE(lhs, rhs) HIPASSERT(lhs <= rhs)
-#define ASSERT_GE(lhs, rhs) HIPASSERT(lhs >= rhs)
-
 constexpr int MaxGPUs = 8;
-
-template <typename T> void compareResults(T* cpu, T* gpu, int size) {
-  for (unsigned int i = 0; i < size / sizeof(T); i++) {
-    if (cpu[i] != gpu[i]) {
-      INFO("Results do not match at index " << i);
-      REQUIRE(cpu[i] == gpu[i]);
-    }
-  }
-}
-
-// Search if the sum exists in the expected results array
-template <typename T> void verifyResults(T* hPtr, T* dPtr, int size) {
-  int i = 0, j = 0;
-  for (i = 0; i < size; i++) {
-    for (j = 0; j < size; j++) {
-      if (hPtr[i] == dPtr[j]) {
-        break;
-      }
-    }
-    if (j == size) {
-      INFO("Result verification failed!");
-      REQUIRE(j != size);
-    }
-  }
-}
-
-inline bool operator==(const dim3& l, const dim3& r) {
-  return l.x == r.x && l.y == r.y && l.z == r.z;
-}
-
-inline bool operator!=(const dim3& l, const dim3& r) { return !(l == r); }
-
-template <typename T, typename F>
-static inline void ArrayAllOf(const T* arr, uint32_t count, F value_gen) {
-  for (auto i = 0u; i < count; ++i) {
-    const std::optional<T> expected_val = value_gen(i);
-    if (!expected_val.has_value()) continue;
-    // Using require on every iteration leads to a noticeable performance loss on large arrays,
-    // even when the require passes.
-    if (arr[i] != expected_val.value()) {
-      INFO("Mismatch at index: " << i);
-      REQUIRE(arr[i] == expected_val.value());
-    }
-  }
-}
 
 __device__ inline unsigned int thread_rank_in_grid() {
   const auto block_size = blockDim.x * blockDim.y * blockDim.z;
@@ -99,79 +50,4 @@ static __device__ void busy_wait(unsigned long long wait_period) {
     }
     last_clock = cur_clock;
   }
-}
-
-inline dim3 GenerateThreadDimensions() {
-  hipDeviceProp_t props;
-  HIP_CHECK(hipGetDeviceProperties(&props, 0));
-  const auto multipliers = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3,
-                            1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5};
-  return GENERATE_COPY(
-      dim3(1, 1, 1), dim3(props.maxThreadsDim[0], 1, 1), dim3(1, props.maxThreadsDim[1], 1),
-      dim3(1, 1, props.maxThreadsDim[2]),
-      map([max = props.maxThreadsDim[0]](
-              double i) { return dim3(std::min(static_cast<int>(i * kWarpSize), max), 1, 1); },
-          values(multipliers)),
-      map([max = props.maxThreadsDim[1]](
-              double i) { return dim3(1, std::min(static_cast<int>(i * kWarpSize), max), 1); },
-          values(multipliers)),
-      map([max = props.maxThreadsDim[2]](
-              double i) { return dim3(1, 1, std::min(static_cast<int>(i * kWarpSize), max)); },
-          values(multipliers)),
-      dim3(16, 8, 8), dim3(32, 32, 1), dim3(64, 8, 2), dim3(16, 16, 3), dim3(kWarpSize - 1, 3, 3),
-      dim3(kWarpSize + 1, 3, 3));
-}
-
-inline dim3 GenerateBlockDimensions() {
-  hipDeviceProp_t props;
-  HIP_CHECK(hipGetDeviceProperties(&props, 0));
-  const auto multipliers = {0.1, 0.5, 0.9, 1.0, 1.1, 1.5, 1.9, 2.0, 3.0, 4.0};
-  return GENERATE_COPY(dim3(1, 1, 1),
-                       map([sm = props.multiProcessorCount](
-                               double i) { return dim3(static_cast<int>(i * sm), 1, 1); },
-                           values(multipliers)),
-                       map([sm = props.multiProcessorCount](
-                               double i) { return dim3(1, static_cast<int>(i * sm), 1); },
-                           values(multipliers)),
-                       map([sm = props.multiProcessorCount](
-                               double i) { return dim3(1, 1, static_cast<int>(i * sm)); },
-                           values(multipliers)),
-                       dim3(5, 5, 5));
-}
-
-inline dim3 GenerateThreadDimensionsForShuffle() {
-  hipDeviceProp_t props;
-  HIP_CHECK(hipGetDeviceProperties(&props, 0));
-  const auto multipliers = {0.5, 0.9, 1.0, 1.5, 2.0};
-  return GENERATE_COPY(
-      dim3(1, 1, 1), dim3(props.maxThreadsDim[0], 1, 1), dim3(1, props.maxThreadsDim[1], 1),
-      dim3(1, 1, props.maxThreadsDim[2]),
-      map([max = props.maxThreadsDim[0]](
-              double i) { return dim3(std::min(static_cast<int>(i * kWarpSize), max), 1, 1); },
-          values(multipliers)),
-      map([max = props.maxThreadsDim[1]](
-              double i) { return dim3(1, std::min(static_cast<int>(i * kWarpSize), max), 1); },
-          values(multipliers)),
-      map([max = props.maxThreadsDim[2]](
-              double i) { return dim3(1, 1, std::min(static_cast<int>(i * kWarpSize), max)); },
-          values(multipliers)),
-      dim3(16, 8, 8), dim3(32, 32, 1), dim3(64, 8, 2), dim3(16, 16, 3), dim3(kWarpSize - 1, 3, 3),
-      dim3(kWarpSize + 1, 3, 3));
-}
-
-inline dim3 GenerateBlockDimensionsForShuffle() {
-  hipDeviceProp_t props;
-  HIP_CHECK(hipGetDeviceProperties(&props, 0));
-  const auto multipliers = {0.5, 1.0};
-  return GENERATE_COPY(dim3(1, 1, 1),
-                       map([sm = props.multiProcessorCount](
-                               double i) { return dim3(static_cast<int>(i * sm), 1, 1); },
-                           values(multipliers)),
-                       map([sm = props.multiProcessorCount](
-                               double i) { return dim3(1, static_cast<int>(i * sm), 1); },
-                           values(multipliers)),
-                       map([sm = props.multiProcessorCount](
-                               double i) { return dim3(1, 1, static_cast<int>(i * sm)); },
-                           values(multipliers)),
-                       dim3(5, 5, 5));
 }

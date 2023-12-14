@@ -80,8 +80,13 @@ TEST_CASE("Unit_BuiltInAtomicAdd_CoherentGlobalMem") {
       HIP_CHECK(hipGetLastError()); 
        std::cout << "test 1" << std::endl;
       HIP_CHECK(hipDeviceSynchronize());
-      REQUIRE(A_h[0] == INITIAL_VAL);
-      REQUIRE(*result_h == 0);
+      if ((gfxName == "gfx90a" || gfxName.find("gfx90a:")) == 0) {
+        REQUIRE(A_h[0] == INITIAL_VAL);
+        REQUIRE(*result_h == 0);
+      } else {
+        REQUIRE(A_h[0] == INITIAL_VAL + INC_VAL);
+        REQUIRE(*result_h == INITIAL_VAL);
+      }
       HIP_CHECK(hipHostFree(A_h));
       HIP_CHECK(hipFree(result));
     }
@@ -198,12 +203,17 @@ TEST_CASE("Unit_BuiltInAtomicAdd_CoherentGlobalMemWithRtc") {
       void* config_d[] = {HIP_LAUNCH_PARAM_BUFFER_POINTER, &args_f,
                           HIP_LAUNCH_PARAM_BUFFER_SIZE,
                           &size, HIP_LAUNCH_PARAM_END};
-      hipModuleLaunchKernel(fmaxkernel, 1, 1, 1, 1, 1, 1, 0,
-                            nullptr, nullptr, config_d);
+      HIP_CHECK(hipModuleLaunchKernel(fmaxkernel, 1, 1, 1, 1, 1, 1, 0,
+                            nullptr, nullptr, config_d));
       HIP_CHECK(hipDeviceSynchronize());
       HIP_CHECK(hipMemcpy(B_h, result, sizeof(double), hipMemcpyDeviceToHost));
-      REQUIRE(A_h[0] == INITIAL_VAL);
-      REQUIRE(*B_h == 0);
+      if ((gfxName == "gfx90a" || gfxName.find("gfx90a:")) == 0) {
+        REQUIRE(A_h[0] == INITIAL_VAL);
+        REQUIRE(*B_h == 0);
+      } else {
+        REQUIRE(A_h[0] == INITIAL_VAL + INC_VAL);
+        REQUIRE(*B_h == INITIAL_VAL);
+      }
       HIP_CHECK(hipHostFree(A_h));
       HIP_CHECK(hipFree(result));
       free(B_h);
@@ -278,8 +288,8 @@ TEST_CASE("Unit_BuiltInAtomicAdd_NonCoherentGlobalMemWithRtc") {
       void* config_d[] = {HIP_LAUNCH_PARAM_BUFFER_POINTER, &args_f,
                           HIP_LAUNCH_PARAM_BUFFER_SIZE,
                           &size, HIP_LAUNCH_PARAM_END};
-      hipModuleLaunchKernel(fmaxkernel, 1, 1, 1, 1, 1, 1, 0,
-                            nullptr, nullptr, config_d);
+      HIP_CHECK(hipModuleLaunchKernel(fmaxkernel, 1, 1, 1, 1, 1, 1, 0,
+                            nullptr, nullptr, config_d));
       HIP_CHECK(hipDeviceSynchronize());
       HIP_CHECK(hipMemcpy(B_h, result, sizeof(double), hipMemcpyDeviceToHost));
       REQUIRE(A_h[0] == INITIAL_VAL + INC_VAL);

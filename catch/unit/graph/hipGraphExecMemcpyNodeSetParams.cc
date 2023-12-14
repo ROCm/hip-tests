@@ -38,8 +38,10 @@ Negative-
 /* Test verifies hipGraphExecMemcpyNodeSetParams API Negative scenarios.
  */
 TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParams_Negative") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr int width{10}, height{10}, depth{10};
-  hipArray *devArray, *devArray2;
+  hipArray_t devArray, devArray2;
   hipChannelFormatKind formatKind = hipChannelFormatKindSigned;
   hipMemcpy3DParms myparms;
   hipError_t ret;
@@ -152,11 +154,13 @@ TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParams_Negative") {
 /* Test verifies hipGraphExecMemcpyNodeSetParams API Functional scenarios.
  */
 TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParams_Functional") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr int XSIZE = 1024;
   int harray1D[XSIZE]{};
   int harray1Dres[XSIZE]{};
   constexpr int width{XSIZE};
-  hipArray *devArray1, *devArray2;
+  hipArray_t devArray1, devArray2;
   hipChannelFormatKind formatKind = hipChannelFormatKindSigned;
   hipMemcpy3DParms myparams;
   hipGraph_t graph;
@@ -224,7 +228,7 @@ TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParams_Functional") {
   HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
 
   int harray1Dupdate[XSIZE]{};
-  hipArray *devArray3;
+  hipArray_t devArray3;
   HIP_CHECK(hipMalloc3DArray(&devArray3, &channelDesc,
                        make_hipExtent(width, 0, 0), hipArrayDefault));
 

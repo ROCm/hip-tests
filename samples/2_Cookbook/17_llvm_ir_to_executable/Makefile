@@ -1,4 +1,4 @@
-# Copyright (c) 2020 - 2021 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2020 - 2023 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,9 +22,6 @@ ifeq ($(OS),Windows_NT)
 endif
 ROCM_PATH?= $(wildcard /opt/rocm/)
 HIP_PATH?= $(ROCM_PATH)
-ifeq (,$(HIP_PATH))
-	HIP_PATH=../../..
-endif
 
 HIPCC=$(HIP_PATH)/bin/hipcc
 CLANG=$(HIP_PATH)/llvm/bin/clang
@@ -32,6 +29,7 @@ LLVM_MC=$(HIP_PATH)/llvm/bin/llvm-mc
 CLANG_OFFLOAD_BUNDLER=$(HIP_PATH)/llvm/bin/clang-offload-bundler
 LLVM_AS=$(HIP_PATH)/llvm/bin/llvm-as
 LLVM_DIS=$(HIP_PATH)/llvm/bin/llvm-dis
+INCLUDES  := -I../../common
 
 SRCS=square.cpp
 
@@ -60,8 +58,8 @@ GPU_ARCH9=gfx1103
 all: src_to_ir bc_to_ll ll_to_bc ir_to_exec
 
 src_to_ir:
-	$(HIPCC) -c -emit-llvm --cuda-host-only -target x86_64-linux-gnu -o $(SQ_HOST_BC) $(SRCS)
-	$(HIPCC) -c -emit-llvm --cuda-device-only --offload-arch=$(GPU_ARCH1) --offload-arch=$(GPU_ARCH2) --offload-arch=$(GPU_ARCH3) --offload-arch=$(GPU_ARCH4) --offload-arch=$(GPU_ARCH5) --offload-arch=$(GPU_ARCH6) --offload-arch=$(GPU_ARCH7) --offload-arch=$(GPU_ARCH8) --offload-arch=$(GPU_ARCH9) $(SRCS)
+	$(HIPCC) $(INCLUDES) -c -emit-llvm --cuda-host-only -target x86_64-linux-gnu -o $(SQ_HOST_BC) $(SRCS)
+	$(HIPCC) $(INCLUDES) -c -emit-llvm --cuda-device-only --offload-arch=$(GPU_ARCH1) --offload-arch=$(GPU_ARCH2) --offload-arch=$(GPU_ARCH3) --offload-arch=$(GPU_ARCH4) --offload-arch=$(GPU_ARCH5) --offload-arch=$(GPU_ARCH6) --offload-arch=$(GPU_ARCH7) --offload-arch=$(GPU_ARCH8) --offload-arch=$(GPU_ARCH9) $(SRCS)
 
 # By default, the LLVM IR Bitcode file names will be:
 #   square-hip-amdgcn-amd-amdhsa-gfx900.bc

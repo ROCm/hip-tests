@@ -18,15 +18,13 @@ THE SOFTWARE.
 */
 
 #include "cooperative_groups_common.hh"
-#include "cpu_grid.h"
 
+#include <cpu_grid.h>
 #include <optional>
 #include <resource_guards.hh>
 #include <utils.hh>
 
 #include <cmd_options.hh>
-#include <hip_test_common.hh>
-#include <hip/hip_cooperative_groups.h>
 
 /**
  * @addtogroup thread_block thread_block

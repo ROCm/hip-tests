@@ -18,15 +18,16 @@ THE SOFTWARE.
 */
 
 #include "cooperative_groups_common.hh"
-#include "cpu_grid.h"
 
 #include <bitset>
 #include <array>
 
 #include <cmd_options.hh>
+#include <cpu_grid.h>
 #include <hip_test_common.hh>
 #include <hip/hip_cooperative_groups.h>
 #include <resource_guards.hh>
+#include <utils.hh>
 
 
 /**
@@ -44,7 +45,8 @@ __global__ void thread_block_partition_size_getter(unsigned int* sizes) {
   if constexpr (dynamic) {
     sizes[thread_rank_in_grid()] = cg::tiled_partition(group, tile_size).size();
   } else {
-    sizes[thread_rank_in_grid()] = cg::tiled_partition<tile_size>(group).size();
+    cg::thread_block_tile<tile_size> tiled_partition = cg::tiled_partition<tile_size>(group);
+    sizes[thread_rank_in_grid()] = tiled_partition.size();
   }
 }
 
@@ -54,7 +56,8 @@ __global__ void thread_block_partition_thread_rank_getter(unsigned int* thread_r
   if constexpr (dynamic) {
     thread_ranks[thread_rank_in_grid()] = cg::tiled_partition(group, tile_size).thread_rank();
   } else {
-    thread_ranks[thread_rank_in_grid()] = cg::tiled_partition<tile_size>(group).thread_rank();
+    cg::thread_block_tile<tile_size> tiled_partition = cg::tiled_partition<tile_size>(group);
+    thread_ranks[thread_rank_in_grid()] = tiled_partition.thread_rank();
   }
 }
 
@@ -118,7 +121,7 @@ template <bool dynamic, size_t... tile_sizes> void BlockPartitionGettersBasicTes
  */
 TEST_CASE("Unit_Thread_Block_Tile_Getters_Positive_Basic") {
   BlockPartitionGettersBasicTest<false, 2, 4, 8, 16, 32>();
-#if HT_AMD
+#if HT_AMD && (__GFX8__ || __GFX9__)
   BlockPartitionGettersBasicTest<false, 64>();
 #endif
 }
@@ -138,7 +141,7 @@ TEST_CASE("Unit_Thread_Block_Tile_Getters_Positive_Basic") {
  */
 TEST_CASE("Unit_Thread_Block_Tile_Dynamic_Getters_Positive_Basic") {
   BlockPartitionGettersBasicTest<true, 2, 4, 8, 16, 32>();
-#if HT_AMD
+#if HT_AMD && (__GFX8__ || __GFX9__)
   BlockPartitionGettersBasicTest<true, 64>();
 #endif
 }
@@ -146,7 +149,8 @@ TEST_CASE("Unit_Thread_Block_Tile_Dynamic_Getters_Positive_Basic") {
 
 template <typename T, size_t tile_size>
 __global__ void block_tile_shfl_up(T* const out, const unsigned int delta) {
-  const auto partition = cg::tiled_partition<tile_size>(cg::this_thread_block());
+  const cg::thread_block_tile<tile_size> partition =
+      cg::tiled_partition<tile_size>(cg::this_thread_block());
   T var = static_cast<T>(partition.thread_rank());
   out[thread_rank_in_grid()] = partition.shfl_up(var, delta);
 }
@@ -197,7 +201,7 @@ template <typename T, size_t... tile_sizes> void BlockTileShflUpTest() {
 TEMPLATE_TEST_CASE("Unit_Thread_Block_Tile_Shfl_Up_Positive_Basic", "", int, unsigned int, long,
                    unsigned long, long long, unsigned long long, float, double) {
   BlockTileShflUpTest<TestType, 2, 4, 8, 16, 32>();
-#if HT_AMD
+#if HT_AMD && (__GFX8__ || __GFX9__)
   BlockTileShflUpTest<TestType, 64>();
 #endif
 }
@@ -205,7 +209,8 @@ TEMPLATE_TEST_CASE("Unit_Thread_Block_Tile_Shfl_Up_Positive_Basic", "", int, uns
 
 template <typename T, size_t tile_size>
 __global__ void block_tile_shfl_down(T* const out, const unsigned int delta) {
-  const auto partition = cg::tiled_partition<tile_size>(cg::this_thread_block());
+  const cg::thread_block_tile<tile_size> partition =
+      cg::tiled_partition<tile_size>(cg::this_thread_block());
   T var = static_cast<T>(partition.thread_rank());
   out[thread_rank_in_grid()] = partition.shfl_down(var, delta);
 }
@@ -268,7 +273,7 @@ template <typename T, size_t... tile_sizes> void BlockTileShflDownTest() {
 TEMPLATE_TEST_CASE("Unit_Thread_Block_Tile_Shfl_Down_Positive_Basic", "", int, unsigned int, long,
                    unsigned long, long long, unsigned long long, float, double) {
   BlockTileShflDownTest<TestType, 2, 4, 8, 16, 32>();
-#if HT_AMD
+#if HT_AMD && (__GFX8__ || __GFX9__)
   BlockTileShflDownTest<TestType, 64>();
 #endif
 }
@@ -276,7 +281,8 @@ TEMPLATE_TEST_CASE("Unit_Thread_Block_Tile_Shfl_Down_Positive_Basic", "", int, u
 
 template <typename T, size_t tile_size>
 __global__ void block_tile_shfl_xor(T* const out, const unsigned mask) {
-  const auto partition = cg::tiled_partition<tile_size>(cg::this_thread_block());
+  const cg::thread_block_tile<tile_size> partition =
+      cg::tiled_partition<tile_size>(cg::this_thread_block());
   T var = static_cast<T>(partition.thread_rank());
   out[thread_rank_in_grid()] = partition.shfl_xor(var, mask);
 }
@@ -334,14 +340,15 @@ template <typename T, size_t... tile_sizes> void BlockTileShflXORTest() {
 TEMPLATE_TEST_CASE("Unit_Thread_Block_Tile_Shfl_XOR_Positive_Basic", "", int, unsigned int, long,
                    unsigned long, long long, unsigned long long, float, double) {
   BlockTileShflXORTest<TestType, 2, 4, 8, 16, 32>();
-#if HT_AMD
+#if HT_AMD && (__GFX8__ || __GFX9__)
   BlockTileShflXORTest<TestType, 64>();
 #endif
 }
 
 template <typename T, size_t tile_size>
 __global__ void block_tile_shfl(T* const out, uint8_t* target_lanes) {
-  const auto partition = cg::tiled_partition<tile_size>(cg::this_thread_block());
+  const cg::thread_block_tile<tile_size> partition =
+      cg::tiled_partition<tile_size>(cg::this_thread_block());
   T var = static_cast<T>(partition.thread_rank());
   out[thread_rank_in_grid()] = partition.shfl(var, target_lanes[partition.thread_rank()]);
 }
@@ -362,7 +369,6 @@ template <typename T, size_t tile_size> void BlockTileShflTestImpl() {
     auto threads = GenerateThreadDimensionsForShuffle();
     INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);
     INFO("Block dimensions: x " << threads.x << ", y " << threads.y << ", z " << threads.z);
-    auto run_repetitions = GENERATE(range(0, 5));
     CPUGrid grid(blocks, threads);
 
     const auto alloc_size = grid.thread_count_ * sizeof(T);
@@ -417,7 +423,7 @@ template <typename T, size_t... tile_sizes> void BlockTileShflTest() {
 TEMPLATE_TEST_CASE("Unit_Thread_Block_Tile_Shfl_Positive_Basic", "", int, unsigned int, long,
                    unsigned long, long long, unsigned long long, float, double) {
   BlockTileShflTest<TestType, 2, 4, 8, 16, 32>();
-#if HT_AMD
+#if HT_AMD && (__GFX8__ || __GFX9__)
   BlockTileShflTest<TestType, 64>();
 #endif
 }
@@ -429,7 +435,8 @@ __global__ void block_tile_sync_check(T* global_data, unsigned int* wait_modifie
   T* const data = use_global ? global_data : reinterpret_cast<T*>(shared_data);
   const auto tid = cg::this_grid().thread_rank();
   const auto block = cg::this_thread_block();
-  const auto partition = cg::tiled_partition<tile_size>(cg::this_thread_block());
+  const cg::thread_block_tile<tile_size> partition =
+      cg::tiled_partition<tile_size>(cg::this_thread_block());
 
   const auto data_idx = [&block](unsigned int i) { return use_global ? i : (i % block.size()); };
 
@@ -533,13 +540,13 @@ template <bool global_memory, typename T, size_t... tile_sizes> void BlockTileSy
 TEMPLATE_TEST_CASE("Unit_Thread_Block_Tile_Sync_Positive_Basic", "", uint8_t, uint16_t, uint32_t) {
   SECTION("Global memory") {
     BlockTileSyncTest<true, TestType, 2, 4, 8, 16, 32>();
-#if HT_AMD
+#if HT_AMD && (__GFX8__ || __GFX9__)
     BlockTileSyncTest<true, TestType, 64>();
 #endif
   }
   SECTION("Shared memory") {
     BlockTileSyncTest<false, TestType, 2, 4, 8, 16, 32>();
-#if HT_AMD
+#if HT_AMD && (__GFX8__ || __GFX9__)
     BlockTileSyncTest<true, TestType, 64>();
 #endif
   }

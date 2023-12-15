@@ -70,6 +70,9 @@
         "Unit_Device_Complex_Unary_double_Negative",
         "Unit_Device_Complex_Binary_float_Negative",
         "Unit_Device_Complex_Binary_double_Negative",
-        "Unit_Device_Complex_hipCfma_Negative"
+        "Unit_Device_Complex_hipCfma_Negative",
+        "=== Below 2 tests are disabled due to defect EXSWHTEC-342 ===",
+        "Unit_hipDeviceSetLimit_Negative_Parameters",
+        "Unit_hipDeviceGetLimit_Negative_Parameters"
     ]
 }

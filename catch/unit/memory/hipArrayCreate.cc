@@ -188,7 +188,9 @@ void testArrayAsTexture(hipArray_t array, const size_t width, const size_t heigh
   std::fill(std::begin(hostData), std::end(hostData), 0);
   HIP_CHECK(hipMemcpy(hostData.data(), device_data, size, hipMemcpyDeviceToHost));
 
+#if !defined(__HIP_NO_IMAGE_SUPPORT) || !__HIP_NO_IMAGE_SUPPORT
   checkDataIsAscending(hostData);
+#endif
 
   // clean up
   HIP_CHECK(hipTexObjectDestroy(textObj));

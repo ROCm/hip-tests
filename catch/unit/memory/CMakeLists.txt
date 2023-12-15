@@ -112,6 +112,7 @@ set(TEST_SRC
     hipMemPoolCreate.cc
     hipMemPoolDestroy.cc
     hipMemPoolTrimTo.cc
+    hipMallocFromPoolAsync.cc
     hipMemcpyPeer.cc
     hipMemcpyPeer_old.cc
     hipMemcpyPeerAsync.cc

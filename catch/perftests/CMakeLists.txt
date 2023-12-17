@@ -22,3 +22,6 @@ add_custom_target(perf_test COMMAND "${CMAKE_CTEST_COMMAND}" -R "Perf_"
                             COMMENT "Build complete, now executing the performnce test ...")
 
 add_subdirectory(memory)
+add_subdirectory(stream)
+add_subdirectory(dispatch)
+add_subdirectory(compute)

@@ -10,7 +10,7 @@ The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
@@ -94,7 +94,7 @@ int calling_combination_function(std::vector<std::string> combi_vec_list) {
   int combi_size = combi_vec_list.size();
   int fast_math_present = -1, undef_present = 0;
   int max_thread_position;
-  std::string hold_CO[combi_size];
+  std::vector<std::string> hold_CO(combi_size, "");
   const char** Combination_CO = new const char*[combi_size];
   picojson::array undef_compiler_option = get_array_parameters(
                                           "compiler_option", "undef_macro");

@@ -27,16 +27,13 @@
 
 #include <hip_test_common.hh>
 
-static size_t typeSizeList[] = {
-  1, 2, 4, 8, 16, 32, 64, 128,
-};
-
 static unsigned int sizeList[] = {
   256, 512, 1024, 2048, 4096, 8192,
 };
 
 static unsigned int eleNumList[] = {
-  0x0020000, 0x0080000, 0x0200000, 0x0800000, 0x2000000,
+    0x100, 0x400, 0x1000, 0x4000, 0x10000, 0x20000, 0x40000, 0x80000, 0x100000,
+    0x200000, 0x400000, 0x800000, 0x1000000
 };
 
 typedef struct _dataType {
@@ -46,21 +43,21 @@ typedef struct _dataType {
   int memsetD32val = 0xDEADBEEF;
 }dataType;
 
-#define NUM_ITER 100
+#define NUM_ITER 1000
 
 enum MemsetType {
   hipMemsetTypeDefault,
   hipMemsetTypeD8,
   hipMemsetTypeD16,
-  hipMemsetTypeD32
+  hipMemsetTypeD32,
+  hipMemsetTypeMax
+
 };
 
 class hipPerfMemset {
  private:
-  unsigned int bufSize_;
-  unsigned int num_typeSize_;
+  uint64_t     bufSize_;
   unsigned int num_elements_;
-  size_t testTypeSize_;
   unsigned int testNumEle_;
   unsigned int _numSubTests = 0;
   unsigned int _numSubTests2D = 0;
@@ -69,13 +66,12 @@ class hipPerfMemset {
 
  public:
   hipPerfMemset() {
-  num_typeSize_ = sizeof(typeSizeList) / sizeof(size_t);
-  num_elements_ = sizeof(eleNumList) / sizeof(unsigned int);
-  _numSubTests = num_elements_ * num_typeSize_;
+    num_elements_ = sizeof(eleNumList) / sizeof(unsigned int);
+    _numSubTests = num_elements_ * hipMemsetTypeMax;
 
-  num_sizes_ = sizeof(sizeList) / sizeof(unsigned int);
-  _numSubTests2D = num_sizes_;
-  _numSubTests3D = _numSubTests2D;
+    num_sizes_ = sizeof(sizeList) / sizeof(unsigned int);
+    _numSubTests2D = num_sizes_;
+    _numSubTests3D = _numSubTests2D;
   }
 
   ~hipPerfMemset() {}
@@ -111,7 +107,7 @@ bool hipPerfMemset::open(int deviceId) {
   }
 
   HIP_CHECK(hipSetDevice(deviceId));
-  hipDeviceProp_t props = {0};
+  hipDeviceProp_t props;
   HIP_CHECK(hipGetDeviceProperties(&props, deviceId));
   INFO("info: running on bus " << "0x" << props.pciBusID << " " << props.name
         << " with " << props.multiProcessorCount << " CUs and device id: "
@@ -124,20 +120,25 @@ void hipPerfMemset::run1D(unsigned int test, T memsetval,
                           enum MemsetType type, bool async) {
   T *A_h, *A_d;
 
-  testTypeSize_ = typeSizeList[(test / num_elements_) % num_typeSize_];
   testNumEle_ = eleNumList[test % num_elements_];
 
-  bufSize_ = testNumEle_ * 4;
+  bufSize_ = testNumEle_ * sizeof(uint32_t);
 
   HIP_CHECK(hipMalloc(&A_d, bufSize_));
 
   A_h = reinterpret_cast<T*> (malloc(bufSize_));
 
   hipStream_t stream;
-  HIP_CHECK(hipStreamCreate(&stream));
+  HIP_CHECK(hipStreamCreateWithFlags(&stream, hipStreamNonBlocking));
 
   // Warm-up
-  HIP_CHECK(hipMemset(reinterpret_cast<void *>(A_d), memsetval, bufSize_));
+  if (async) {
+    HIP_CHECK(hipMemsetAsync((void *)A_d, memsetval, bufSize_, stream));
+    HIP_CHECK(hipStreamSynchronize(stream));
+  } else {
+    HIP_CHECK(hipMemset((void *)A_d, memsetval, bufSize_));
+    HIP_CHECK(hipDeviceSynchronize());
+  }
 
   auto start = std::chrono::steady_clock::now();
 
@@ -149,29 +150,28 @@ void hipPerfMemset::run1D(unsigned int test, T memsetval,
     } else if (type == hipMemsetTypeD8 && !async) {
       HIP_CHECK(hipMemsetD8((hipDeviceptr_t)A_d, memsetval, bufSize_));
     } else if (type == hipMemsetTypeD8 && async) {
-      HIP_CHECK(hipMemsetD8Async((hipDeviceptr_t)A_d, memsetval, bufSize_));
+      HIP_CHECK(hipMemsetD8Async((hipDeviceptr_t)A_d, memsetval, bufSize_, stream));
     } else if (type == hipMemsetTypeD16 && !async) {
-      HIP_CHECK(hipMemsetD16((hipDeviceptr_t)A_d, memsetval,
-                             bufSize_/sizeof(T)));
+      HIP_CHECK(hipMemsetD16((hipDeviceptr_t)A_d, memsetval, bufSize_/sizeof(T)));
     } else if (type == hipMemsetTypeD16 && async) {
-      HIP_CHECK(hipMemsetD16Async((hipDeviceptr_t)A_d, memsetval,
-                                  bufSize_/sizeof(T)));
+      HIP_CHECK(hipMemsetD16Async((hipDeviceptr_t)A_d, memsetval, bufSize_/sizeof(T), stream));
     } else if (type == hipMemsetTypeD32 && !async) {
-      HIP_CHECK(hipMemsetD32((hipDeviceptr_t)A_d, memsetval,
-                             bufSize_/sizeof(T)));
+      HIP_CHECK(hipMemsetD32((hipDeviceptr_t)A_d, memsetval, bufSize_/sizeof(T)));
     } else if (type == hipMemsetTypeD32 && async) {
-      HIP_CHECK(hipMemsetD32Async((hipDeviceptr_t)A_d, memsetval,
-                                  bufSize_/sizeof(T)));
+      HIP_CHECK(hipMemsetD32Async((hipDeviceptr_t)A_d, memsetval, bufSize_/sizeof(T), stream));
     }
   }
-
-  HIP_CHECK(hipDeviceSynchronize());
+  if (async) {
+    HIPCHECK(hipStreamSynchronize(stream));
+  } else {
+    HIPCHECK(hipDeviceSynchronize());
+  }
 
   auto end = std::chrono::steady_clock::now();
 
   HIP_CHECK(hipMemcpy(A_h, A_d, bufSize_, hipMemcpyDeviceToHost) );
 
-  for (int i = 0; i < bufSize_/testTypeSize_; i++) {
+  for (int i = 0; i < bufSize_ / sizeof(T); i++) {
     if (A_h[i] != memsetval) {
       INFO("mismatch at index " << i << " computed: " <<
             static_cast<int> (A_h[i]) << ", memsetval: " <<
@@ -188,9 +188,10 @@ void hipPerfMemset::run1D(unsigned int test, T memsetval,
   auto sec = diff.count();
   auto perf = static_cast<double>((bufSize_ * NUM_ITER * (1e-09)) / sec);
 
-  INFO("hipPerf1DMemset[" << test << "] " << (int)bufSize_/1024 << " Kb "
-        << std::setw(4) << " typeSize " << (int) testTypeSize_ << ":"
-        << std::setw(5) << perf <<  " GB/s \n");
+  std::cout << "[" << std::setw(2)
+        << test << "] " << std::setw(5) <<  bufSize_/1024
+        << " Kb " << std::setw(4) << " typeSize " << sizeof(T) << " : "
+        << std::setw(7) << perf <<  " GB/s \n";
 }
 
 template<typename T>
@@ -215,11 +216,16 @@ void hipPerfMemset::run2D(unsigned int test, T memsetval,
   }
 
   hipStream_t stream;
-  HIP_CHECK(hipStreamCreate(&stream));
+  HIP_CHECK(hipStreamCreateWithFlags(&stream, hipStreamNonBlocking));
 
   // Warm-up
-  HIP_CHECK(hipMemset2D(A_d, pitch_A, memsetval, numW, numH));
-
+  if (async) {
+    HIP_CHECK(hipMemset2DAsync(A_d, pitch_A, memsetval, numW, numH, stream));
+    HIP_CHECK(hipStreamSynchronize(stream));
+  } else {
+    HIP_CHECK(hipMemset2D(A_d, pitch_A, memsetval, numW, numH));
+    HIP_CHECK(hipDeviceSynchronize());
+  }
   auto start = std::chrono::steady_clock::now();
 
   for (uint i = 0; i < NUM_ITER; i++) {
@@ -230,7 +236,11 @@ void hipPerfMemset::run2D(unsigned int test, T memsetval,
     }
   }
 
-  HIP_CHECK(hipStreamSynchronize(stream));
+  if (async) {
+    HIP_CHECK(hipStreamSynchronize(stream));
+  } else {
+    HIP_CHECK(hipDeviceSynchronize());
+  }
 
   auto end = std::chrono::steady_clock::now();
 
@@ -251,9 +261,9 @@ void hipPerfMemset::run2D(unsigned int test, T memsetval,
   auto sec = diff.count();
   auto perf = static_cast<double>((sizeElements* NUM_ITER * (1e-09)) / sec);
 
-  INFO("hipPerf2DMemset[" << test << "] " <<"  " << "(GB/s) for " <<
-       (int)bufSize_ << " x " << bufSize_ << " bytes : " << std::setw(5) <<
-       perf << "\n");
+  std::cout << "hipPerf2DMemset" << (async ? "Async" : "     ") << "[" << test << "] "
+       << "  " << "(GB/s) for " << std::setw(5) << bufSize_
+       << " x " << std::setw(5) << bufSize_ << " bytes : " << std::setw(7) << perf << "\n";
 
   HIP_CHECK(hipStreamDestroy(stream));
   HIP_CHECK(hipFree(A_d));
@@ -273,7 +283,7 @@ void hipPerfMemset::run3D(unsigned int test, T memsetval,
   size_t elements = numW* numH* depth;
 
   hipStream_t stream;
-  HIP_CHECK(hipStreamCreate(&stream));
+  HIP_CHECK(hipStreamCreateWithFlags(&stream, hipStreamNonBlocking));
 
   T *A_h;
 
@@ -289,7 +299,13 @@ void hipPerfMemset::run3D(unsigned int test, T memsetval,
   }
 
   // Warm up
-  HIP_CHECK(hipMemset3D(devPitchedPtr, memsetval, extent));
+  if (async) {
+    HIP_CHECK(hipMemset3DAsync(devPitchedPtr, memsetval, extent, stream));
+    HIP_CHECK(hipStreamSynchronize(stream));
+  } else {
+    HIP_CHECK(hipMemset3D(devPitchedPtr, memsetval, extent));
+    HIP_CHECK(hipDeviceSynchronize());
+  }
 
   auto start = std::chrono::steady_clock::now();
 
@@ -301,11 +317,17 @@ void hipPerfMemset::run3D(unsigned int test, T memsetval,
     }
   }
 
-  HIP_CHECK(hipStreamSynchronize(stream));
+  if (async) {
+    HIP_CHECK(hipStreamSynchronize(stream));
+  } else {
+    HIP_CHECK(hipDeviceSynchronize());
+  }
 
   auto end = std::chrono::steady_clock::now();
 
-  hipMemcpy3DParms myparms = {0};
+  hipMemcpy3DParms myparms ;
+  myparms.srcArray = nullptr;
+  myparms.dstArray = nullptr;
   myparms.srcPos = make_hipPos(0, 0, 0);
   myparms.dstPos = make_hipPos(0, 0, 0);
   myparms.dstPtr = make_hipPitchedPtr(A_h, width , numW, numH);
@@ -330,9 +352,9 @@ void hipPerfMemset::run3D(unsigned int test, T memsetval,
   auto sec = diff.count();
   auto perf = static_cast<double>((sizeElements * NUM_ITER * (1e-09)) / sec);
 
-  INFO("hipPerf3DMemset[" << test << "] " <<"  " << "(GB/s) for " <<
-        (int)bufSize_ << " x " << bufSize_  << " x " <<depth << " bytes : " <<
-        std::setw(5) << perf << "\n");
+  std::cout << "hipPerf3DMemset" << (async ? "Async" : "     ") << "[" << test << "] " << "  "
+      << "(GB/s) for " << std::setw(5) << bufSize_ << " x " << std::setw(5)
+      << bufSize_  << " x " << depth << " bytes : " << std::setw(7) << perf << "\n";
   HIP_CHECK(hipFree(devPitchedPtr.ptr));
   free(A_h);
 }
@@ -364,56 +386,46 @@ TEST_CASE("Perf_hipPerfMemset_test") {
   bool async = false;
 
   for (uint i = 0; i < 2 ; i++) {
-    if (async) {
-      INFO("Perf of hipMemsetAsync for 1D arrays \n");
-    } else {
-      INFO("Perf of hipMemset for 1D arrays \n");
-    }
-
+    std::cout << "--------------------- 1D buffer -------------------\n";
     for (auto testCase = 0; testCase < numTests; testCase++) {
-      if (testCase < 5) {
-        INFO("API: hipMemset \n");
-        hipPerfMemset.run1D(testCase, pattern.memsetval,
-                            hipMemsetTypeDefault, async);
-      } else if (testCase < 10) {
-        INFO("API: hipMemsetD16 \n");
-        hipPerfMemset.run1D(testCase, pattern.memsetD16val,
-                            hipMemsetTypeD16, async);
-      } else if (testCase < 15) {
-        INFO("API: hipMemsetD32 \n");
-        hipPerfMemset.run1D(testCase, pattern.memsetD32val,
-                            hipMemsetTypeD32, async);
+      if (testCase < sizeof(eleNumList) / sizeof(uint32_t)) {
+        std::cout << "hipMemsetD8" << (async ? "Async " : "      ");
+        hipPerfMemset.run1D(testCase, pattern.memsetval, hipMemsetTypeD8, async);
+      } else if (testCase < 2 * sizeof(eleNumList) / sizeof(uint32_t)) {
+        std::cout << "hipMemsetD16" << (async ? "Async" : "     ");
+        hipPerfMemset.run1D(testCase, pattern.memsetD16val, hipMemsetTypeD16, async);
+      } else if (testCase < 3 * sizeof(eleNumList) / sizeof(uint32_t)) {
+        std::cout << "hipMemsetD32" << (async ? "Async" : "     ");
+        hipPerfMemset.run1D(testCase, pattern.memsetD32val, hipMemsetTypeD32, async);
       } else {
-        INFO("API: hipMemset \n");
-        hipPerfMemset.run1D(testCase, pattern.memsetval,
-                            hipMemsetTypeDefault, async);
+        std::cout << "hipMemset" << (async ? "Async   " : "        ");
+        hipPerfMemset.run1D(testCase, pattern.memsetval, hipMemsetTypeDefault, async);
       }
     }
     async = true;
   }
 
-  for (uint i = 0; i < 2; i++) {
-    if (async) {
-      INFO("Perf of hipMemset2DAsync for 2D arrays \n");
-    } else {
-      INFO("Perf of hipMemset2D for 2D arrays \n");
-    }
+  INFO("\n");
+  std::cout << "------------------ 2D buffer arrays ---------------\n";
 
+  async = false;
+  for (uint i = 0; i < 2; i++) {
+    INFO("\n");
     for (uint test = 0; test < numTests2D; test++) {
       hipPerfMemset.run2D(test, pattern.memsetval, hipMemsetTypeDefault, async);
     }
-  async = false;
+    async = true;
   }
 
-  for (uint i = 0; i < 2; i++) {
-    if (async) {
-      INFO("Perf of hipMemset3DAsync for 3D arrays \n");
-    } else {
-      INFO("Perf of hipMemset3D for 3D arrays \n");
-    }
+  INFO("\n");
+  std::cout << "------------------ 3D buffer arrays ---------------\n";
 
+  async = false;
+  for (uint i = 0; i < 2; i++) {
+    INFO("\n");
     for (uint test = 0; test < numTests3D; test++) {
       hipPerfMemset.run3D(test, pattern.memsetval, hipMemsetTypeDefault, async);
     }
+    async = true;
   }
 }

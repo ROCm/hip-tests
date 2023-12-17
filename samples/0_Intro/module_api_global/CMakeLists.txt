@@ -39,19 +39,27 @@ set(CMAKE_CXX_COMPILER ${HIP_HIPCC_EXECUTABLE})
 set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 
 # Create the excutable
-add_executable(runKernel.hip.out runKernel.cpp)
+if(TARGET build_intro)
+set(EXCLUDE_OPTION EXCLUDE_FROM_ALL)
+else()
+set(EXCLUDE_OPTION )
+endif()
 
+add_executable(runKernel1.hip.out ${EXCLUDE_OPTION} runKernel.cpp)
 # Generate code object
 add_custom_target(
-  codeobj
-  ALL
-  COMMAND  ${HIP_HIPCC_EXECUTABLE} --genco  ../vcpy_kernel.cpp -o vcpy_kernel.code
-  COMMENT "codeobj generated"
+  codeobj1
+  COMMAND  ${HIP_HIPCC_EXECUTABLE} --genco  ${CMAKE_CURRENT_SOURCE_DIR}/vcpy_kernel.cpp -o vcpy_kernel.code
+  COMMENT "codeobj1 generated"
 )
 
-add_dependencies(runKernel.hip.out codeobj)
+add_dependencies(runKernel1.hip.out codeobj1)
 
-target_include_directories(runKernel.hip.out PRIVATE ../../common)
+target_include_directories(runKernel1.hip.out PRIVATE ../../common)
 
 # Link with HIP
-target_link_libraries(runKernel.hip.out hip::host)
+target_link_libraries(runKernel1.hip.out hip::host)
+
+if(TARGET build_intro)
+add_dependencies(build_intro runKernel1.hip.out)
+endif()

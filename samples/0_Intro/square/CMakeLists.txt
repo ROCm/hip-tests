@@ -1,4 +1,4 @@
-# Copyright (c) 2020 - 2021 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2020 - 2023 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,17 @@ project(square)
 
 cmake_minimum_required(VERSION 3.10)
 
-if (NOT DEFINED ROCM_PATH )
-     set ( ROCM_PATH "/opt/rocm"  CACHE STRING "Default ROCM installation directory." )
-endif ()
-
-# Search for rocm in common locations
-list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/hip ${ROCM_PATH})
+if(UNIX)
+  if(NOT DEFINED ROCM_PATH)
+    set(ROCM_PATH "/opt/rocm" CACHE STRING "Default ROCM installation directory.")
+  endif()
+  # Search for rocm in common locations
+  list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
+endif()
 
 # create square.cpp
-execute_process(COMMAND sh -c "${ROCM_PATH}/hip/bin/hipify-perl ../square.cu > ../square.cpp")
+execute_process(COMMAND sh -c "${CMAKE_PREFIX_PATH}/bin/hipify-perl \
+         ${CMAKE_CURRENT_SOURCE_DIR}/square.cu > ${CMAKE_CURRENT_BINARY_DIR}/square.cpp")
 
 # Find hip
 find_package(hip)
@@ -42,7 +44,16 @@ set(CMAKE_CXX_COMPILER ${HIP_HIPCC_EXECUTABLE})
 set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 
 # Create the excutable
-add_executable(square square.cpp)
+if(TARGET build_intro)
+set(EXCLUDE_OPTION EXCLUDE_FROM_ALL)
+else()
+set(EXCLUDE_OPTION )
+endif()
+add_executable(square ${EXCLUDE_OPTION} ${CMAKE_CURRENT_BINARY_DIR}/square.cpp)
 
 # Link with HIP
 target_link_libraries(square hip::host)
+
+if(TARGET build_intro)
+add_dependencies(build_intro square)
+endif()

@@ -163,9 +163,6 @@ TEST_CASE("Unit_hipGetDeviceAttribute_CheckAttrValues") {
                                       hipDeviceAttributePciDeviceId,
                                       props.pciDeviceID));
   HIP_CHECK(test_hipDeviceGetAttribute(deviceId,
-                      hipDeviceAttributeMaxSharedMemoryPerMultiprocessor,
-                      props.maxSharedMemoryPerMultiProcessor));
-  HIP_CHECK(test_hipDeviceGetAttribute(deviceId,
                                       hipDeviceAttributeIntegrated,
                                       props.integrated));
   HIP_CHECK(test_hipDeviceGetAttribute(deviceId,
@@ -194,6 +191,9 @@ TEST_CASE("Unit_hipGetDeviceAttribute_CheckAttrValues") {
                           props.cooperativeMultiDeviceLaunch));
 
 #if HT_AMD
+  HIP_CHECK(test_hipDeviceGetAttribute(deviceId,
+                      hipDeviceAttributeMaxSharedMemoryPerMultiprocessor,
+                      props.maxSharedMemoryPerMultiProcessor));
   HIP_CHECK(test_hipDeviceGetHdpAddress(deviceId,
                                      hipDeviceAttributeHdpMemFlushCntl,
                                      props.hdpMemFlushCntl));
@@ -250,8 +250,6 @@ TEST_CASE("Unit_hipGetDeviceAttribute_CheckAttrValues") {
   HIP_CHECK(test_hipDeviceGetAttribute(deviceId,
                                        hipDeviceAttributeTexturePitchAlignment,
                                        props.texturePitchAlignment));
-  HIP_CHECK(test_hipDeviceGetAttribute(deviceId,
-                              hipDeviceAttributeUnifiedAddressing, 1/*true*/));
 }
 
 /*
@@ -418,7 +416,7 @@ using AttributeToStringMap = std::array<std::pair<hipDeviceAttribute_t, const ch
 
 namespace {
 
-constexpr AttributeToStringMap<57> kCommonAttributes{{
+constexpr AttributeToStringMap<58> kCommonAttributes{{
     {hipDeviceAttributeEccEnabled, "hipDeviceAttributeEccEnabled"},
     {hipDeviceAttributeCanMapHostMemory, "hipDeviceAttributeCanMapHostMemory"},
     {hipDeviceAttributeClockRate, "hipDeviceAttributeClockRate"},
@@ -462,7 +460,7 @@ constexpr AttributeToStringMap<57> kCommonAttributes{{
     {hipDeviceAttributeMemoryClockRate, "hipDeviceAttributeMemoryClockRate"},
     {hipDeviceAttributeComputeCapabilityMinor, "hipDeviceAttributeComputeCapabilityMinor"},
     {hipDeviceAttributeMultiprocessorCount, "hipDeviceAttributeMultiprocessorCount"},
-    {hipDeviceAttributeName, "hipDeviceAttributeName"},
+    {hipDeviceAttributeUnused1, "hipDeviceAttributeUnused1"},
     {hipDeviceAttributePageableMemoryAccess, "hipDeviceAttributePageableMemoryAccess"},
     {hipDeviceAttributePageableMemoryAccessUsesHostPageTables,
      "hipDeviceAttributePageableMemoryAccessUsesHostPageTables"},
@@ -479,9 +477,10 @@ constexpr AttributeToStringMap<57> kCommonAttributes{{
     {hipDeviceAttributeTotalGlobalMem, "hipDeviceAttributeTotalGlobalMem"},
     {hipDeviceAttributeWarpSize, "hipDeviceAttributeWarpSize"},
     {hipDeviceAttributeMemoryPoolsSupported, "hipDeviceAttributeMemoryPoolsSupported"},
-	{hipDeviceAttributeUnifiedAddressing, "hipDeviceAttributeUnifiedAddressing"},
+    {hipDeviceAttributeUnifiedAddressing, "hipDeviceAttributeUnifiedAddressing"},
     {hipDeviceAttributeVirtualMemoryManagementSupported,
-     "hipDeviceAttributeVirtualMemoryManagementSupported"}
+     "hipDeviceAttributeVirtualMemoryManagementSupported"},
+    {hipDeviceAttributeHostRegisterSupported, "hipDeviceAttributeHostRegisterSupported"}
 }};
 
 #if HT_NVIDIA
@@ -520,17 +519,17 @@ constexpr AttributeToStringMap<33> kCudaOnlyAttributes{
      {hipDeviceAttributeStreamPrioritiesSupported, "hipDeviceAttributeStreamPrioritiesSupported"},
      {hipDeviceAttributeSurfaceAlignment, "hipDeviceAttributeSurfaceAlignment"},
      {hipDeviceAttributeTccDriver, "hipDeviceAttributeTccDriver"},
-     {hipDeviceAttributeUuid, "hipDeviceAttributeUuid"}}};
+     {hipDeviceAttributeUnused2, "hipDeviceAttributeUnused2"}}};
 #endif
 
 #if HT_AMD
 constexpr AttributeToStringMap<17> kAmdOnlyAttributes{{
     {hipDeviceAttributeClockInstructionRate, "hipDeviceAttributeClockInstructionRate"},
-    {hipDeviceAttributeArch, "hipDeviceAttributeArch"},
+    {hipDeviceAttributeUnused3, "hipDeviceAttributeUnused3"},
     {hipDeviceAttributeMaxSharedMemoryPerMultiprocessor,
      "hipDeviceAttributeMaxSharedMemoryPerMultiprocessor"},
-    {hipDeviceAttributeGcnArch, "hipDeviceAttributeGcnArch"},
-    {hipDeviceAttributeGcnArchName, "hipDeviceAttributeGcnArchName"},
+    {hipDeviceAttributeUnused4, "hipDeviceAttributeUnused4"},
+    {hipDeviceAttributeUnused5, "hipDeviceAttributeUnused5"},
     {hipDeviceAttributeHdpMemFlushCntl, "hipDeviceAttributeHdpMemFlushCntl"},
     {hipDeviceAttributeHdpRegFlushCntl, "hipDeviceAttributeHdpRegFlushCntl"},
     {hipDeviceAttributeCooperativeMultiDeviceUnmatchedFunc,
@@ -609,4 +608,39 @@ TEST_CASE("Print_Out_Attributes") {
 #endif
 
   std::flush(std::cout);
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - verify hipDeviceAttributeHostRegisterSupported attribute.
+ * Test source
+ * ------------------------
+ *  - unit/device/hipGetDeviceAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+TEST_CASE("Unit_hipGetDeviceAttribute_hipDevAttrHostRegisterSupported") {
+  hipError_t ret_val;
+  int hipDevAttr = 0;
+  ret_val = hipDeviceGetAttribute(&hipDevAttr,
+                                  hipDeviceAttributeHostRegisterSupported, 0);
+  INFO("hipDeviceAttributeHostRegisterSupported: " << hipDevAttr);
+
+  if (ret_val == hipSuccess) {
+    auto x = std::unique_ptr<int>(new int);
+    HIP_CHECK(hipHostRegister(x.get(), sizeof(int), hipHostRegisterDefault));
+
+    void* device_memory;
+    HIP_CHECK(hipHostGetDevicePointer(&device_memory, x.get(), 0));
+
+    HIP_CHECK(hipHostUnregister(x.get()));
+    HIP_CHECK_ERROR(hipHostGetDevicePointer(&device_memory, x.get(), 0),
+                    hipErrorInvalidValue);
+  } else {
+    HipTest::HIP_SKIP_TEST("Skipping the test as GPU 0 doesn't support "
+             "hipDeviceAttributeHostRegisterSupported attribute.\n");
+    return;
+  }
 }

@@ -203,6 +203,8 @@ TEST_CASE("Unit_hipGetLastError_with_hipMemcpyDtoHAsync") {
 *  - HIP_VERSION >= 6.0
 */
 TEST_CASE("Unit_hipGetLastError_with_hipMemcpyParam2DAsync") {
+  CHECK_IMAGE_SUPPORT
+
   float* A_h{nullptr}, *B_h{nullptr}, *C_h{nullptr}, * A_d{nullptr};
   size_t pitch_A;
   size_t width{WIDTH * sizeof(float)};
@@ -283,6 +285,8 @@ TEST_CASE("Unit_hipGetLastError_with_hipDrvMemcpy3DAsync") {
 */
 
 TEST_CASE("Unit_hipGetLastError_with_hipMemcpy3DAsync") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr int width{10}, height{10}, depth{10};
   auto size = width * height * depth * sizeof(int);
   hipArray_t devArray;
@@ -469,6 +473,8 @@ TEST_CASE("Unit_hipGetLastError_with_hipMemPrefetchAsync") {
 */
 
 TEST_CASE("Unit_hipGetLastError_with_hipMemcpy2DAsync") {
+  CHECK_IMAGE_SUPPORT
+
   int* A_h{nullptr}, *A_d{nullptr};
   size_t pitch_A;
   size_t width{WIDTH * sizeof(int)};

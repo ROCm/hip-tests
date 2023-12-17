@@ -36,4 +36,3 @@ struct CmdOptions {
 };
 
 extern CmdOptions cmd_options;
-

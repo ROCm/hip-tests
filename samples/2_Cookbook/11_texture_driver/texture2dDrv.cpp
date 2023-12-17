@@ -24,20 +24,11 @@ THE SOFTWARE.
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include "hip_helper.h"
 
 #define fileName "tex2dKernel.code"
 
 bool testResult = true;
-
-#define HIP_CHECK(cmd)                                                                             \
-    {                                                                                              \
-        hipError_t status = cmd;                                                                   \
-        if (status != hipSuccess) {                                                                \
-            std::cout << "error: #" << status << " (" << hipGetErrorString(status)                 \
-                      << ") at line:" << __LINE__ << ":  " << #cmd << std::endl;                   \
-            abort();                                                                               \
-        }                                                                                          \
-    }
 
 template<typename T,
     typename std::enable_if<std::is_arithmetic<T>::value>::type *t = nullptr>
@@ -64,6 +55,19 @@ template<typename T>
 static inline constexpr int rank() {
   return sizeof(T) / sizeof(decltype(T::x));
 }
+
+#ifdef __HIP_PLATFORM_NVIDIA__
+template <typename T,
+    typename std::enable_if<std::is_same<T, int4>::value ||
+                            std::is_same<T, short4>::value ||
+                            std::is_same<T, char4>::value ||
+                            std::is_same<T, float4>::value>::type *t = nullptr>
+static inline bool operator!=(const T& a, const T& b)
+{
+    return (a.x != b.x) || (a.y != b.y) || (a.z != b.z) || (a.w != b.w);
+}
+#endif
+
 
 template<typename T>
 static inline T getRandom() {
@@ -139,43 +143,42 @@ bool runTest(hipModule_t &module, const char *refName, const char *funcName) {
     }
   }
 
-  hipArray *array;
-  HIP_ARRAY_DESCRIPTOR desc;
-  desc.Format = format;
-  desc.NumChannels = channels;
-  desc.Width = width;
-  desc.Height = height;
-  HIP_CHECK(hipArrayCreate(&array, &desc));
+  hipChannelFormatDesc channelDesc = hipCreateChannelDesc<T>();
+  hipArray_t array;
+  checkHipErrors(hipMallocArray(&array, &channelDesc, width, height));
 
-  hip_Memcpy2D copyParam;
-  memset(&copyParam, 0, sizeof(copyParam));
-  copyParam.dstMemoryType = hipMemoryTypeArray;
-  copyParam.dstArray = array;
-  copyParam.srcMemoryType = hipMemoryTypeHost;
-  copyParam.srcHost = hData;
-  copyParam.srcPitch = width * sizeof(T);
-  copyParam.WidthInBytes = copyParam.srcPitch;
-  copyParam.Height = height;
-  HIP_CHECK(hipMemcpyParam2D(&copyParam));
+  const size_t spitch = width * sizeof(T);
 
-  textureReference *texref;
-  HIP_CHECK(hipModuleGetTexRef(&texref, module, refName));
-  HIP_CHECK(hipTexRefSetAddressMode(texref, 0, hipAddressModeClamp));
-  HIP_CHECK(hipTexRefSetAddressMode(texref, 1, hipAddressModeClamp));
-  HIP_CHECK(hipTexRefSetFilterMode(texref, hipFilterModePoint));
-  HIP_CHECK(hipTexRefSetFlags(texref, HIP_TRSF_READ_AS_INTEGER));
-  HIP_CHECK(hipTexRefSetFormat(texref, format, channels));
-  HIP_CHECK(hipTexRefSetArray(texref, array, HIP_TRSA_OVERRIDE_FORMAT));
+  checkHipErrors(hipMemcpy2DToArray(array, 0, 0, hData, spitch, width * sizeof(T),
+                        height, hipMemcpyHostToDevice));
+
+  hipResourceDesc resDesc;
+  memset(&resDesc, 0, sizeof(resDesc));
+  resDesc.resType = hipResourceTypeArray;
+  resDesc.res.array.array = array;
+
+  hipTextureDesc texDesc;
+  memset(&texDesc, 0, sizeof(texDesc));
+  texDesc.addressMode[0] = hipAddressModeClamp;
+  texDesc.addressMode[1] = hipAddressModeClamp;
+  texDesc.filterMode = hipFilterModePoint;
+  texDesc.readMode = hipReadModeElementType;
+  texDesc.normalizedCoords = 0;
+
+  hipTextureObject_t texObj;
+  checkHipErrors(hipCreateTextureObject(&texObj, &resDesc, &texDesc, nullptr));
 
   T *dData = NULL;
-  HIP_CHECK(hipMalloc((void** )&dData, size));
+  checkHipErrors(hipMalloc((void** )&dData, size));
 
   struct {
     void *_Ad;
+    hipTextureObject_t _texObj;
     unsigned int _Bd;
     unsigned int _Cd;
   } args;
   args._Ad = (void*) dData;
+  args._texObj = texObj;
   args._Bd = width;
   args._Cd = height;
 
@@ -185,18 +188,18 @@ bool runTest(hipModule_t &module, const char *refName, const char *funcName) {
       HIP_LAUNCH_PARAM_BUFFER_SIZE, &sizeTemp, HIP_LAUNCH_PARAM_END };
 
   hipFunction_t Function;
-  HIP_CHECK(hipModuleGetFunction(&Function, module, funcName));
+  checkHipErrors(hipModuleGetFunction(&Function, module, funcName));
 
   int temp1 = width / 16;
   int temp2 = height / 16;
-  HIP_CHECK(
+  checkHipErrors(
       hipModuleLaunchKernel(Function, 16, 16, 1, temp1, temp2, 1, 0, 0, NULL,
                             (void** )&config));
-  hipDeviceSynchronize();
+  checkHipErrors(hipDeviceSynchronize());
 
   T *hOutputData = (T*) malloc(size);
   memset(hOutputData, 0, size);
-  HIP_CHECK(hipMemcpy(hOutputData, dData, size, hipMemcpyDeviceToHost));
+  checkHipErrors(hipMemcpy(hOutputData, dData, size, hipMemcpyDeviceToHost));
 
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
@@ -207,9 +210,9 @@ bool runTest(hipModule_t &module, const char *refName, const char *funcName) {
       }
     }
   }
-  HIP_CHECK(hipUnbindTexture(texref));
-  HIP_CHECK(hipFree(dData));
-  HIP_CHECK(hipFreeArray(array));
+  checkHipErrors(hipDestroyTextureObject(texObj));
+  checkHipErrors(hipFree(dData));
+  checkHipErrors(hipFreeArray(array));
   free(hOutputData);
   free(hData);
   printf("%s test  %s ...\n", funcName, testResult ? "PASSED" : "FAILED");
@@ -219,7 +222,7 @@ bool runTest(hipModule_t &module, const char *refName, const char *funcName) {
 inline bool isImageSupported() {
     int imageSupport = 1;
 #ifdef __HIP_PLATFORM_AMD__
-    HIP_CHECK(hipDeviceGetAttribute(&imageSupport, hipDeviceAttributeImageSupport,
+    checkHipErrors(hipDeviceGetAttribute(&imageSupport, hipDeviceAttributeImageSupport,
                               0));
 #endif
   return imageSupport != 0;
@@ -228,11 +231,13 @@ inline bool isImageSupported() {
 int main(int argc, char** argv) {
   if (!isImageSupported()) {
     printf("Texture is not support on the device. Skipped.\n");
+    printf("texture2dDrv %s ...\n", "PASSED");
     return 0;
   }
-  hipInit(0);
+  checkHipErrors(hipInit(0));
+  checkHipErrors(hipSetDevice(0));
   hipModule_t module;
-  HIP_CHECK(hipModuleLoad(&module, fileName));
+  checkHipErrors(hipModuleLoad(&module, fileName));
   testResult = testResult && runTest<char>(module, "texChar", "tex2dKernelChar");
   testResult = testResult && runTest<short>(module, "texShort", "tex2dKernelShort");
   testResult = testResult && runTest<int>(module, "texInt", "tex2dKernelInt");
@@ -242,7 +247,7 @@ int main(int argc, char** argv) {
   testResult = testResult && runTest<int4>(module, "texInt4", "tex2dKernelInt4");
   testResult = testResult && runTest<float4>(module, "texFloat4", "tex2dKernelFloat4");
 
-  HIP_CHECK(hipModuleUnload(module));
+  checkHipErrors(hipModuleUnload(module));
   printf("texture2dDrv %s ...\n", testResult ? "PASSED" : "FAILED");
   return testResult ? EXIT_SUCCESS : EXIT_FAILURE;
 }

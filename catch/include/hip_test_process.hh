@@ -31,6 +31,8 @@ THE SOFTWARE.
 #include <random>
 #include <fstream>
 #include <streambuf>
+#include <thread>
+#include <future>
 
 namespace hip {
 /*
@@ -46,6 +48,7 @@ class SpawnProc {
   std::string exeName;
   std::string resultStr;
   std::string tmpFileName;
+  std::future<int> ret_from_run;
   bool captureOutput;
 
   std::string getRandomString(size_t len = 6) {
@@ -68,7 +71,7 @@ class SpawnProc {
     exeName = dir.string();
     // On Windows, fs::exists returns false without extension.
     if (TestContext::get().isWindows()) {
-      if(fs::path(exeName).extension().empty()) {
+      if (fs::path(exeName).extension().empty()) {
         exeName += ".exe";
       }
     }
@@ -81,6 +84,10 @@ class SpawnProc {
       tmpFileName = path.string();
       INFO("Testing that capture file does not exist already: " << tmpFileName);
       REQUIRE(!fs::exists(tmpFileName));
+    }
+    if (TestContext::get().isWindows()) {
+      exeName = (exeName.find(" ", 0) == std::string::npos) ? exeName : ("\"" + exeName + "\"");
+      tmpFileName = (tmpFileName.find(" ", 0) == std::string::npos) ? tmpFileName : ("\"" + tmpFileName + "\"");
     }
   }
 
@@ -97,6 +104,9 @@ class SpawnProc {
       execCmd += " > ";
       execCmd += tmpFileName;
     }
+    if (TestContext::get().isWindows()) {
+      execCmd = (execCmd.find(" ", 0) == std::string::npos) ? execCmd : ("\"" + execCmd + "\"");
+    }
     auto res = std::system(execCmd.c_str());
 
     if (captureOutput) {
@@ -110,6 +120,15 @@ class SpawnProc {
 #else
     return res;
 #endif
+  }
+
+  void run_async(std::string commandLineArgs = "") {
+    ret_from_run = std::async(std::launch::async, &hip::SpawnProc::run, this, commandLineArgs);
+  }
+
+  int wait() {
+    ret_from_run.wait();
+    return ret_from_run.get();
   }
 
   std::string getOutput() { return resultStr; }

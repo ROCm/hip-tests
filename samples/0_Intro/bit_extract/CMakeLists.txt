@@ -1,4 +1,4 @@
-# Copyright (c) 2020 - 2021 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2020 - 2023 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,16 +26,17 @@ if(NOT WIN32 AND NOT DEFINED __HIP_ENABLE_PCH)
   set(__HIP_ENABLE_PCH ON CACHE BOOL "enable/disable pre-compiled hip headers")
 endif()
 
-if (NOT DEFINED ROCM_PATH )
-     set ( ROCM_PATH "/opt/rocm"  CACHE STRING "Default ROCM installation directory." )
-endif ()
-
 if(${__HIP_ENABLE_PCH})
   add_definitions(-D__HIP_ENABLE_PCH)
 endif()
 
-# Search for rocm in common locations
-list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/hip ${ROCM_PATH})
+if(UNIX)
+  if(NOT DEFINED ROCM_PATH)
+    set(ROCM_PATH "/opt/rocm" CACHE STRING "Default ROCM installation directory.")
+  endif()
+  # Search for rocm in common locations
+  list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
+endif()
 
 # Find hip
 find_package(hip)
@@ -46,7 +47,18 @@ set(CMAKE_CXX_COMPILER ${HIP_HIPCC_EXECUTABLE})
 set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 
 # Create the excutable
-add_executable(bit_extract bit_extract.cpp)
+if(TARGET build_intro)
+set(EXCLUDE_OPTION EXCLUDE_FROM_ALL)
+else()
+set(EXCLUDE_OPTION )
+endif()
+add_executable(bit_extract ${EXCLUDE_OPTION} bit_extract.cpp)
+
+target_include_directories(bit_extract PRIVATE ../../common)
 
 # Link with HIP
 target_link_libraries(bit_extract hip::host)
+
+if(TARGET build_intro)
+  add_dependencies(build_intro bit_extract)
+endif()

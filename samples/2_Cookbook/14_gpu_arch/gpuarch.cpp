@@ -19,6 +19,7 @@ THE SOFTWARE.
 
 #include "hip/hip_runtime.h"
 #include <iostream>
+#include "hip_helper.h"
 
 #define THREADS_PER_BLOCK   64
 #define BLOCKS_PER_GRID     4

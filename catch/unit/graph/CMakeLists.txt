@@ -26,6 +26,7 @@
 set(TEST_SRC
   hipGraphAddEmptyNode.cc
   hipGraphAddDependencies.cc
+  hipGraphAddDependencies_old.cc
   hipGraphAddEventRecordNode.cc
   hipGraphAddEventWaitNode.cc
   hipGraph.cc
@@ -46,14 +47,18 @@ set(TEST_SRC
   hipGraphMemcpyNodeSetParamsToSymbol.cc
   hipGraphDestroyNode.cc
   hipGraphGetNodes.cc
+  hipGraphGetNodes_old.cc
   hipGraphGetRootNodes.cc
+  hipGraphGetRootNodes_old.cc
   hipGraphHostNodeSetParams.cc
   hipGraphAddMemcpyNode1D.cc
   hipGraphAddChildGraphNode.cc
   hipGraphNodeGetType.cc
   hipGraphExecMemcpyNodeSetParams1D.cc
   hipGraphGetEdges.cc
+  hipGraphGetEdges_old.cc
   hipGraphRemoveDependencies.cc
+  hipGraphRemoveDependencies_old.cc
   hipGraphInstantiate.cc
   hipGraphExecUpdate.cc
   hipGraphExecEventRecordNodeSetEvent.cc
@@ -102,7 +107,9 @@ set(TEST_SRC
   hipGraphExecMemcpyNodeSetParamsToSymbol_old.cc
   hipGraphExecMemcpyNodeSetParamsToSymbol.cc
   hipGraphNodeGetDependentNodes.cc
+  hipGraphNodeGetDependentNodes_old.cc
   hipGraphNodeGetDependencies.cc
+  hipGraphNodeGetDependencies_old.cc
   hipGraphHostNodeGetParams.cc
   hipGraphExecChildGraphNodeSetParams.cc
   hipStreamGetCaptureInfo_v2.cc
@@ -126,9 +133,13 @@ set(TEST_SRC
   hipGraphExecDestroy.cc
   hipGraphUpload.cc
   hipGraphKernelNodeCopyAttributes.cc
+  hipGraphAddNodeBeginCapture.cc
   hipGraphCycle.cc
+  hipGraphPerf.cc
   hipGraphKernelNodeGetAttribute.cc
-  hipGraphKernelNodeSetAttribute.cc)
+  hipGraphKernelNodeSetAttribute.cc
+  hipGraphMemAllocNodeGetParams.cc
+)
 
 add_custom_target(add_Kernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/add_Kernel.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../graph/add_Kernel.code -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 

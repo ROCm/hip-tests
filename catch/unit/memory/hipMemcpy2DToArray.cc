@@ -35,6 +35,8 @@ unsuccessful execution of hipMemcpy2DToArray api when parameters are invalid
 
 
 TEST_CASE("Unit_hipMemcpy2DToArray_Positive_Default") {
+  CHECK_IMAGE_SUPPORT
+
   using namespace std::placeholders;
 
   const auto width = GENERATE(16, 32, 48);
@@ -85,6 +87,8 @@ TEST_CASE("Unit_hipMemcpy2DToArray_Positive_Default") {
 }
 
 TEST_CASE("Unit_hipMemcpy2DToArray_Positive_Synchronization_Behavior") {
+  CHECK_IMAGE_SUPPORT
+
   using namespace std::placeholders;
   HIP_CHECK(hipDeviceSynchronize());
 
@@ -109,6 +113,8 @@ TEST_CASE("Unit_hipMemcpy2DToArray_Positive_Synchronization_Behavior") {
 }
 
 TEST_CASE("Unit_hipMemcpy2DToArray_Positive_ZeroWidthHeight") {
+  CHECK_IMAGE_SUPPORT
+
   using namespace std::placeholders;
   const auto width = 16;
   const auto height = 16;
@@ -142,6 +148,8 @@ TEST_CASE("Unit_hipMemcpy2DToArray_Positive_ZeroWidthHeight") {
 }
 
 TEST_CASE("Unit_hipMemcpy2DToArray_Negative_Parameters") {
+  CHECK_IMAGE_SUPPORT
+
   using namespace std::placeholders;
 
   const auto width = 32;

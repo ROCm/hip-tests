@@ -6,6 +6,8 @@ set(CMAKE_CXX_COMPILER_WORKS 1)
 
 project(hiptests)
 
+option(ASAN_BUILD "Option to enable ASAN build" OFF)
+
 # flag to generate standalone exe per src file.
 message(STATUS "STANDALONE_TESTS : ${STANDALONE_TESTS}")
 
@@ -19,15 +21,15 @@ if(WIN32)
 endif()
 
 if(HIP_PLATFORM STREQUAL "amd")
-   if(UNIX AND DEFINED ROCM_PATH)
-      # Read -DROCM_PATH and set CXX_FLAGS for amd platform only
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --rocm-path=${ROCM_PATH}")
-   endif()
+    if(UNIX AND DEFINED ROCM_PATH)
+        # Read -DROCM_PATH and set CXX_FLAGS for amd platform only
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --rocm-path=${ROCM_PATH}")
+    endif()
 
-   if(DEFINED HIP_PATH)
-      # Read -DHIP_PATH and set CXX_FLAGS for amd platform only
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --hip-path=${HIP_PATH}")
-   endif()
+    if(DEFINED HIP_PATH)
+        # Read -DHIP_PATH and set CXX_FLAGS for amd platform only
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --hip-path=${HIP_PATH}")
+    endif()
 endif()
 
 # Read -DHIP_PATH
@@ -64,6 +66,14 @@ execute_process(COMMAND ${HIPCONFIG_EXECUTABLE} --version
 
 # enforce c++17
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++17")
+
+# Address sanitizer options
+if(ASAN_BUILD)
+    message(STATUS "Building catch tests with Address Sanitizer options")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -shared-libasan -g -gz")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -shared-libasan -g -gz")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-new-dtags -fuse-ld=lld -fsanitize=address -shared-libasan -g -gz -Wl,--build-id=sha1 -L${ROCM_PATH}/lib/asan")
+endif()
 
 string(REPLACE "." ";" VERSION_LIST ${HIP_VERSION})
 list(GET VERSION_LIST 0 HIP_VERSION_MAJOR)
@@ -159,7 +169,7 @@ if (WIN32)
 endif()
 
 if(HIP_PLATFORM STREQUAL "amd")
-    add_compile_options(-Wall -Wextra -Werror -Wno-deprecated -Wno-option-ignored)
+    add_compile_options(-Wall -Wextra -Wvla -Werror -Wno-deprecated -Wno-option-ignored)
 endif()
 
 cmake_policy(PUSH)
@@ -282,7 +292,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_custom_target(build_tests)
 
-
 # Tests folder
 add_subdirectory(unit ${CATCH_BUILD_DIR}/unit)
 add_subdirectory(ABM ${CATCH_BUILD_DIR}/ABM)
@@ -291,9 +300,7 @@ add_subdirectory(hipTestMain ${CATCH_BUILD_DIR}/hipTestMain)
 add_subdirectory(stress ${CATCH_BUILD_DIR}/stress)
 add_subdirectory(TypeQualifiers ${CATCH_BUILD_DIR}/TypeQualifiers)
 add_subdirectory(perftests ${CATCH_BUILD_DIR}/perftests)
-if(UNIX)
-   add_subdirectory(multiproc ${CATCH_BUILD_DIR}/multiproc)
-endif()
+add_subdirectory(multiproc ${CATCH_BUILD_DIR}/multiproc)
 add_subdirectory(performance ${CATCH_BUILD_DIR}/performance)
 
 cmake_policy(POP)

@@ -119,7 +119,7 @@ class TestContext {
 
   static std::string getEnvVar(std::string var) {
     #if defined(_WIN32)
-    rsize_t MAX_LEN = 4096;
+    constexpr rsize_t MAX_LEN = 4096;
     char dstBuf[MAX_LEN];
     size_t dstSize;
     if (!::getenv_s(&dstSize, dstBuf, MAX_LEN, var.c_str())) {

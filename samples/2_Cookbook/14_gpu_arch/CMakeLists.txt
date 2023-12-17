@@ -22,6 +22,14 @@ project(gpuarch)
 
 cmake_minimum_required(VERSION 3.10)
 
+if(UNIX)
+  if(NOT DEFINED ROCM_PATH)
+    set(ROCM_PATH "/opt/rocm" CACHE STRING "Default ROCM installation directory.")
+  endif()
+  # Search for rocm in common locations
+  list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
+endif()
+
 # Find hip
 find_package(hip)
 
@@ -31,9 +39,18 @@ set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 set(CMAKE_BUILD_TYPE Release)
 
 # Create the excutable
-add_executable(gpuarch gpuarch.cpp)
+if(TARGET build_cookbook)
+set(EXCLUDE_OPTION EXCLUDE_FROM_ALL)
+else()
+set(EXCLUDE_OPTION )
+endif()
+add_executable(gpuarch ${EXCLUDE_OPTION} gpuarch.cpp)
 
 target_include_directories(gpuarch PRIVATE ../../common)
 
 # Link with HIP
 target_link_libraries(gpuarch hip::host)
+
+if(TARGET build_cookbook)
+add_dependencies(build_cookbook gpuarch)
+endif()

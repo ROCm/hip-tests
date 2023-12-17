@@ -23,6 +23,15 @@ project(hipDispatchLatency)
 cmake_minimum_required(VERSION 3.10)
 
 include_directories(../../common)
+
+if(UNIX)
+  if(NOT DEFINED ROCM_PATH)
+    set(ROCM_PATH "/opt/rocm" CACHE STRING "Default ROCM installation directory.")
+  endif()
+  # Search for rocm in common locations
+  list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
+endif()
+
 # Find hip
 find_package(hip)
 
@@ -32,19 +41,23 @@ set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 set(CMAKE_BUILD_TYPE Release)
 
 # Create the excutable
-add_executable(hipDispatchLatency hipDispatchLatency.cpp)
-add_executable(hipDispatchEnqueueRateMT hipDispatchEnqueueRateMT.cpp)
+if(TARGET build_utils)
+set(EXCLUDE_OPTION EXCLUDE_FROM_ALL)
+else()
+set(EXCLUDE_OPTION )
+endif()
+add_executable(hipDispatchLatency ${EXCLUDE_OPTION} hipDispatchLatency.cpp)
+add_executable(hipDispatchEnqueueRateMT ${EXCLUDE_OPTION} hipDispatchEnqueueRateMT.cpp)
 
 # Generate code object
 add_custom_target(
-  codeobj
-  ALL
-  COMMAND  ${HIP_HIPCC_EXECUTABLE} --genco  ../test_kernel.cpp -o test_kernel.code
-  COMMENT "codeobj generated"
+  codeobj2
+  COMMAND  ${HIP_HIPCC_EXECUTABLE} --genco  ${CMAKE_CURRENT_SOURCE_DIR}/test_kernel.cpp -o test_kernel.code
+  COMMENT "codeobj2 generated"
 )
 
-add_dependencies(hipDispatchLatency codeobj)
-add_dependencies(hipDispatchEnqueueRateMT codeobj)
+add_dependencies(hipDispatchLatency codeobj2)
+add_dependencies(hipDispatchEnqueueRateMT codeobj2)
 
 # Link with HIP
 target_link_libraries(hipDispatchLatency hip::host)
@@ -54,3 +67,7 @@ if(UNIX)
 endif()
 set_property(TARGET hipDispatchLatency PROPERTY CXX_STANDARD 11)
 set_property(TARGET hipDispatchEnqueueRateMT PROPERTY CXX_STANDARD 11)
+
+if(TARGET build_utils)
+add_dependencies(build_utils hipDispatchLatency hipDispatchEnqueueRateMT)
+endif()

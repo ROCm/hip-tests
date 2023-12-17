@@ -57,7 +57,7 @@ static bool verifyVectorSquare(int *A_h, int* C_h, size_t size) {
 static void checkGraphContinousKernelCall(const unsigned int kNumNode) {
   unsigned blocks = HipTest::setNumBlocks(blocksPerCU, threadsPerBlock, N);
   hipGraphNode_t memCpy1, memCpy2, memCpy3;
-  hipGraphNode_t kNode[kNumNode];
+  std::vector<hipGraphNode_t> kNode(kNumNode);
   hipGraph_t graph;
   hipGraphExec_t graphExec;
 
@@ -114,7 +114,7 @@ static void checkGraphContinousKernelCallIn2Blocks(
                  const unsigned int kNumNode1, const unsigned int kNumNode2) {
   unsigned blocks = HipTest::setNumBlocks(blocksPerCU, threadsPerBlock, N);
   hipGraphNode_t memCpy1, memCpy2, memCpy3, memCpy4;
-  hipGraphNode_t kNode1[kNumNode1], kNode2[kNumNode2];
+  std::vector<hipGraphNode_t> kNode1(kNumNode1), kNode2(kNumNode2);
   hipGraph_t graph;
   hipGraphExec_t graphExec;
 
@@ -191,8 +191,8 @@ static void checkGraphContinousKernelCallIn2Blocks(
 static void checkGraphMemcpyKernelMixCall(const unsigned int kNumIter) {
   unsigned blocks = HipTest::setNumBlocks(blocksPerCU, threadsPerBlock, N);
   constexpr int kNumNode = 3;
-  hipGraphNode_t node[kNumIter * kNumNode];
-  hipGraphNode_t kNode[kNumIter];
+  std::vector<hipGraphNode_t> node(kNumIter * kNumNode);
+  std::vector<hipGraphNode_t> kNode(kNumIter);
   hipGraph_t graph;
   hipGraphExec_t graphExec;
 
@@ -249,8 +249,8 @@ static void checkGraphMemcpyKernelMixCall(const unsigned int kNumIter) {
 static void checkGraphMemcpyMemsetKernelMixCall(const unsigned int kNumIter) {
   unsigned blocks = HipTest::setNumBlocks(blocksPerCU, threadsPerBlock, N);
   constexpr int kNumNode = 3;
-  hipGraphNode_t node[kNumIter * kNumNode];
-  hipGraphNode_t kNode[kNumIter];
+  std::vector<hipGraphNode_t> node(kNumIter * kNumNode);
+  std::vector<hipGraphNode_t> kNode(kNumIter);
   hipGraph_t graph;
   hipGraphExec_t graphExec;
   int pitch_M = 0;

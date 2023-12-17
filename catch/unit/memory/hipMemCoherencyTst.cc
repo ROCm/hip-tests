@@ -35,8 +35,9 @@
 #include <chrono>
 
 __global__ void CoherentTst(int* ptr) {  // ptr was set to 1
-  atomicAdd(ptr, 1);                     // now ptr is 2
-  while (atomicCAS(ptr, 3, 4) != 3) {    // wait till ptr is 3, then change it to 4
+  atomicAdd_system(ptr, 1);              // now ptr is 2
+  while (atomicCAS_system(ptr, 3, 4) != 3) {
+    // wait till ptr is updated to 3 in host, then change it to 4
   }
 }
 
@@ -44,8 +45,6 @@ __global__  void SquareKrnl(int *ptr) {
   // ptr value squared here
   *ptr = (*ptr) * (*ptr);
 }
-
-
 
 // The variable below will work as signal to decide pass/fail
 static bool YES_COHERENT = false;
@@ -66,18 +65,28 @@ static void TstCoherency(int* ptr, bool hmmMem) {
   } else {
     CoherentTst<<<1, 1, 0, stream>>>(ptr);
   }
-
-  std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
-  while (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start)
-                 .count() < 3 &&
-         *ptr == 2) {
-  }          // wait till ptr is 2 from kernel or 3 seconds
-
-  *ptr += 1; // increment it to 3
+  // To prevent Windows batch dispatching issue, run inspecting code in thread
+  std::thread my_thread([ptr] {
+    int d = 0;
+    std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+    while (
+        std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start)
+            .count() <= 3) {
+      d = __sync_fetch_and_add(ptr, 0);  // Retrieve *ptr
+      if (d == 2) break; // If kernel has updated *ptr to 2, exit
+    }  // wait till ptr is updated to 2 from kernel or 3 seconds
+    if (d != 2) {
+      // 3 seconds should be long enough for kernel to update ptr
+      fprintf(stderr, "d = %d hasn't been updated to 2 in 3s\n", d);
+      return;
+    }
+    // increment it to 3
+    __sync_fetch_and_add(ptr, 1);
+  });
 
   HIP_CHECK(hipStreamSynchronize(stream));
   HIP_CHECK(hipStreamDestroy(stream));
-
+  my_thread.join();
   if (*ptr == 4) {
     YES_COHERENT = true;
   }
@@ -206,7 +215,7 @@ TEST_CASE("Unit_hipMalloc_CoherentTst") {
    hipExtMallocWithFlags()*/
 #if HT_AMD
 TEST_CASE("Unit_hipExtMallocWithFlags_CoherentTst") {
-  int *Ptr = nullptr, SIZE = sizeof(int), InitVal = 9, Pageable = 0, managed = 0;
+  int *Ptr = nullptr, SIZE = sizeof(int), InitVal = 9, Pageable = 0, managed = 0, finegrain = 0;
   bool FineGrain = true;
   YES_COHERENT = false;
 
@@ -214,14 +223,16 @@ TEST_CASE("Unit_hipExtMallocWithFlags_CoherentTst") {
                                  hipDeviceAttributePageableMemoryAccess, 0));
   INFO("hipDeviceAttributePageableMemoryAccess: " << Pageable);
 
-  HIP_CHECK(hipDeviceGetAttribute(&managed, hipDeviceAttributeManagedMemory,
-                                  0));
+  HIP_CHECK(hipDeviceGetAttribute(&managed, hipDeviceAttributeManagedMemory, 0));
   INFO("hipDeviceAttributeManagedMemory: " << managed);
   if (managed == 1 && Pageable == 1) {
     // Allocating hipExtMallocWithFlags() memory with flags
-    SECTION("hipExtMallocWithFlags with hipDeviceMallocFinegrained flag") {
-      HIP_CHECK(hipExtMallocWithFlags(reinterpret_cast<void**>(&Ptr), SIZE*2,
-                                      hipDeviceMallocFinegrained));
+    HIP_CHECK(hipDeviceGetAttribute(&finegrain, hipDeviceAttributeFineGrainSupport, 0));
+    if (finegrain == 1) {
+      SECTION("hipExtMallocWithFlags with hipDeviceMallocFinegrained flag") {
+        HIP_CHECK(hipExtMallocWithFlags(reinterpret_cast<void**>(&Ptr), SIZE*2,
+                                        hipDeviceMallocFinegrained));
+      }
     }
     SECTION("hipExtMallocWithFlags with hipDeviceMallocSignalMemory flag") {
       // for hipMallocSignalMemory flag the size of memory must be 8

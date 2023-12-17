@@ -22,6 +22,7 @@ THE SOFTWARE.
 
 #pragma once
 #include "hip_test_common.hh"
+#include "hip_array_common.hh"
 #include <iostream>
 #include <fstream>
 #include <regex>
@@ -79,9 +80,9 @@ bool checkArray(T* hData, T* hOutputData, size_t width, size_t height, size_t de
     for (size_t j = 0; j < height; j++) {
       for (size_t k = 0; k < width; k++) {
         int offset = i * width * height + j * width + k;
-        if (hData[offset] != hOutputData[offset]) {
-          INFO("Mismatch at [" << i << "," << j << "," << k << "]:" << hData[offset] << "----"
-                               << hOutputData[offset]);
+        if (!isEqual(hData[offset], hOutputData[offset])) {
+          INFO("Mismatch at [" << i << "," << j << "," << k << "]:" << getString(hData[offset])
+                               << "----" << getString(hOutputData[offset]));
           CHECK(false);
           return false;
         }

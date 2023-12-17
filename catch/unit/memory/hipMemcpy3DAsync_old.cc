@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2021-2023 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -16,6 +16,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
+/**
+ * @addtogroup hipMemcpy3DAsync hipMemcpy3DAsync
+ * @{
+ * @ingroup MemoryTest
+ * `hipMemcpy3DAsync(const hipMemcpy3DParms* p, hipStream_t stream)` -
+ * Copies data between 3D objects.
+ */
 
 /*
  * This testfile verifies the following Scenarios of hipMemcpy3DAsync API
@@ -653,13 +661,23 @@ void Memcpy3DAsync<T>::simple_Memcpy3DAsync() {
   free(hOutputData);
   DeAllocateMemory();
 }
-/*
-This testcase verifies hipMemcpyAsync for different datatypes
-and different sizes
-*/
-TEMPLATE_TEST_CASE("Unit_hipMemcpy3DAsync_Basic", "[hipMemcpy3DAsync]", int, unsigned int, float) {
-  CHECK_IMAGE_SUPPORT
 
+/**
+ * Test Description
+ * ------------------------
+ *  - This testcase verifies hipMemcpyAsync for different datatypes and different sizes
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy3DAsync_old.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+
+TEMPLATE_TEST_CASE("Unit_hipMemcpy3DAsync_Basic",
+                   "[hipMemcpy3DAsync]",
+                   int, unsigned int, float) {
+  CHECK_IMAGE_SUPPORT
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   int device = -1;
@@ -687,25 +705,39 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpy3DAsync_Basic", "[hipMemcpy3DAsync]", int, uns
   }
 }
 
-/*
-This testcase performs the extent validation scenarios of
-hipMemcpy3D API
-*/
+/**
+ * Test Description
+ * ------------------------
+ *  - This testcase performs the extent validation scenarios of hipMemcpy3D API
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy3DAsync_old.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+
 TEST_CASE("Unit_hipMemcpy3DAsync_ExtentValidation") {
   CHECK_IMAGE_SUPPORT
-
   Memcpy3DAsync<int> memcpy3d(width, height, depth,
                               hipChannelFormatKindSigned);
   memcpy3d.Extent_Validation();
 }
 
-/*
-This testcase performs the negative scenarios of
-hipMemcpy3DAsync API
-*/
+/**
+ * Test Description
+ * ------------------------
+ *  - This testcase performs the negative scenarios of hipMemcpy3DAsync API
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy3DAsync_old.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+
 TEST_CASE("Unit_hipMemcpy3DAsync_multiDevice-Negative") {
   CHECK_IMAGE_SUPPORT
-
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {
@@ -717,13 +749,20 @@ TEST_CASE("Unit_hipMemcpy3DAsync_multiDevice-Negative") {
   }
 }
 
-/*
-This testcase performs the D2H,H2D and D2D on peer
-GPU device
-*/
+/**
+ * Test Description
+ * ------------------------
+ *  - This testcase performs the D2H,H2D and D2D on peer GPU device
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy3DAsync_old.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+
 TEST_CASE("Unit_hipMemcpy3DAsync_multiDevice-D2D") {
   CHECK_IMAGE_SUPPORT
-
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {
@@ -743,14 +782,21 @@ TEST_CASE("Unit_hipMemcpy3DAsync_multiDevice-D2D") {
   }
 }
 
-/*
-This testcase checks hipMemcpy3DAsync API by 
-allocating memory in one GPU and creating stream
-in another GPU
-*/
+/**
+ * Test Description
+ * ------------------------
+ *  - This testcase checks hipMemcpy3DAsync API by
+      allocating memory in one GPU and creating stream in another GPU
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy3DAsync_old.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+
 TEST_CASE("Unit_hipMemcpy3DAsync_multiDevice-DiffStream") {
   CHECK_IMAGE_SUPPORT
-
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {
@@ -759,5 +805,33 @@ TEST_CASE("Unit_hipMemcpy3DAsync_multiDevice-DiffStream") {
     memcpy3dAsync.D2D_SameDeviceMem_StreamDiffDevice();
   } else {
     SUCCEED("skipping the testcases as numDevices < 2");
+  }
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - This testcase performs size check on hipMemcpy3DAsync API
+      1. Verify with 128 for all height, width & depth value
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy3DAsync_old.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+
+TEST_CASE("Unit_hipMemcpy3DAsync_Basic_Size_Test") {
+  CHECK_IMAGE_SUPPORT
+  constexpr int size_128b = 128;
+  int numDevices = 0;
+  HIP_CHECK(hipGetDeviceCount(&numDevices));
+
+  if (numDevices > 1) {
+    SECTION("Verify with 128 for all height, width & depth value") {
+      Memcpy3DAsync<float> memcpy3dAsync(size_128b, size_128b, size_128b,
+                                         hipChannelFormatKindFloat);
+      memcpy3dAsync.D2D_SameDeviceMem_StreamDiffDevice();
+    }
   }
 }

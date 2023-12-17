@@ -65,7 +65,7 @@ static void runSimpleTexture3D_Check(int width, int height, int depth,
 
   // Allocate array and copy image data
   hipChannelFormatDesc channelDesc = hipCreateChannelDesc<T>();
-  hipArray *arr;
+  hipArray_t arr;
 
   HIP_CHECK(hipMalloc3DArray(&arr, &channelDesc,
             make_hipExtent(width, height, depth), hipArrayDefault));

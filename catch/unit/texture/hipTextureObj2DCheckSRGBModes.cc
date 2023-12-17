@@ -54,7 +54,7 @@ static void runTest(const int width, const int height, const float offsetX, cons
   }
 
   hipChannelFormatDesc channelDesc = hipCreateChannelDesc<uchar4>();
-  hipArray *hipArray;
+  hipArray_t hipArray;
   HIP_CHECK(hipMallocArray(&hipArray, &channelDesc, width, height));
 
   HIP_CHECK(hipMemcpy2DToArray(hipArray, 0, 0, hData, width * sizeof(uchar4), width * sizeof(uchar4), height, hipMemcpyHostToDevice));

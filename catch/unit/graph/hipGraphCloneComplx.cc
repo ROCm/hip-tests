@@ -377,7 +377,7 @@ static void hipGraphClone_Test_hipGraphMemcpyNodeSetParams() {
   uint32_t size = width * height * depth * sizeof(int);
   hipGraphNode_t memcpyNodeH2D, memcpyNodeD2H, memcpyNodeD2D;
   hipMemcpy3DParms myparms, myparms1, myparms_updated;
-  hipArray *devArray, *devArray_2;
+  hipArray_t devArray, devArray_2;
   hipChannelFormatKind formatKind = hipChannelFormatKindSigned;
 
   int *hData, *hDataTemp, *hOutputData;
@@ -482,6 +482,8 @@ static void hipGraphClone_Test_hipGraphMemcpyNodeSetParams() {
 }
 
 TEST_CASE("Unit_hipGraphClone_Test_hipGraphMemcpyNodeSetParams") {
+  CHECK_IMAGE_SUPPORT
+
   hipGraphClone_Test_hipGraphMemcpyNodeSetParams();
 }
 
@@ -502,7 +504,7 @@ static void hipGraphClone_Test_hipGraphExecMemcpyNodeSetParams() {
   int harray1D[XSIZE]{};
   int harray1Dres[XSIZE]{};
   constexpr int width{XSIZE};
-  hipArray *devArray1, *devArray2;
+  hipArray_t devArray1, devArray2;
   hipChannelFormatKind formatKind = hipChannelFormatKindSigned;
   hipMemcpy3DParms myparams;
   hipGraphNode_t memcpyNode1, memcpyNode2, memcpyNode3;
@@ -572,7 +574,7 @@ static void hipGraphClone_Test_hipGraphExecMemcpyNodeSetParams() {
                                 nullptr, nullptr, 0));
 
   int harray1Dupdate[XSIZE]{};
-  hipArray *devArray3;
+  hipArray_t devArray3;
   HIP_CHECK(hipMalloc3DArray(&devArray3, &channelDesc,
                        make_hipExtent(width, 0, 0), hipArrayDefault));
 
@@ -1873,6 +1875,9 @@ static void hipGraphClone_Test_All_API(int dev) {
  Run all the above writen test cases for multiple GPU scenarios */
 
 TEST_CASE("Unit_hipGraphClone_multi_GPU_test") {
+  //FIXME: This test tests 3D as well, decouple it
+  CHECK_IMAGE_SUPPORT
+
   int devcount = 0;
   HIP_CHECK(hipGetDeviceCount(&devcount));
   // If only single GPU is detected then return
@@ -1990,8 +1995,6 @@ TEST_CASE("Unit_hipGraphClone_hipUserObject_hipGraphUserObject_Negative") {
  Oroginal graph and releasing it for other graph) */
 
 TEST_CASE("Unit_hipGraphChild_hipUserObject_hipGraphUserObject") {
-  HipTest::HIP_SKIP_TEST("Test times out in Nvidia but passes in AMD. Need to understand more.");
-  return;
   constexpr size_t Nbytes = N * sizeof(int);
   constexpr auto blocksPerCU = 6;  // to hide latency
   constexpr auto threadsPerBlock = 256;

@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 
+#pragma clang diagnostic ignored "-Wunused-function"
+
 struct BoxStruct {
   int count;
   BoxStruct() { INFO("Constructor called for Struct!\n"); }

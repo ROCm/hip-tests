@@ -7,4 +7,4 @@ set(TEST_SRC
 hip_add_exe_to_target(NAME stream_stress
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME stress_test
-                      COMPILE_OPTIONS -std=c++14)
+                      COMPILE_OPTIONS -std=c++17)

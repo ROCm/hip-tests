@@ -29,8 +29,8 @@ set(TEST_SRC
     hipTextureObj2D.cc
     hipSimpleTexture3D.cc
     hipTextureRef2D.cc
+    hipSimpleTexture1DLayered.cc
     hipSimpleTexture2DLayered.cc
-    hipTextureMipmapObj2D.cc
     hipBindTex2DPitch.cc
     hipBindTexRef1DFetch.cc
     hipTex1DFetchCheckModes.cc
@@ -44,7 +44,19 @@ set(TEST_SRC
     hipTextureObj2DCheckSRGBModes.cc
     tex2D.cc
     tex2DLayered.cc
+    hipTexObjectTests.cc
+    hipTextureObjectTests.cc
+    hipBindTextureToMipmappedArray.cc
 )
+
+if(WIN32)
+set(TEST_SRC
+    ${TEST_SRC}
+    hipTextureMipmapObj1D.cc
+    hipTextureMipmapObj2D.cc
+    hipTextureMipmapObj3D.cc
+)
+endif()
 
 hip_add_exe_to_target(NAME TextureTest
                       TEST_SRC ${TEST_SRC}

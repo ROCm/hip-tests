@@ -39,19 +39,27 @@ set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 set(CMAKE_BUILD_TYPE Release)
 
 # Create the excutable
-add_executable(texture2dDrv texture2dDrv.cpp)
+if(TARGET build_cookbook)
+set(EXCLUDE_OPTION EXCLUDE_FROM_ALL)
+else()
+set(EXCLUDE_OPTION )
+endif()
+add_executable(texture2dDrv ${EXCLUDE_OPTION} texture2dDrv.cpp)
 
 # Generate code object
 add_custom_target(
-  codeobj
-  ALL
-  COMMAND  ${HIP_HIPCC_EXECUTABLE} --genco  ../tex2dKernel.cpp -o tex2dKernel.code
-  COMMENT "codeobj generated"
+  codeobj3
+  COMMAND  ${HIP_HIPCC_EXECUTABLE} --genco  ${CMAKE_CURRENT_SOURCE_DIR}/tex2dKernel.cpp -o tex2dKernel.code
+  COMMENT "codeobj3 generated"
 )
 
-add_dependencies(texture2dDrv codeobj)
+add_dependencies(texture2dDrv codeobj3)
 
 target_include_directories(texture2dDrv PRIVATE ../../common)
 
 # Link with HIP
 target_link_libraries(texture2dDrv hip::host)
+
+if(TARGET build_cookbook)
+add_dependencies(build_cookbook texture2dDrv)
+endif()

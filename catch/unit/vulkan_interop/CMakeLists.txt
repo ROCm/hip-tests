@@ -10,25 +10,41 @@ set(TEST_SRC
     hipDestroyExternalSemaphore.cc
    )
 
+if(WIN32)
+  set(Vulkan_LIBRARY $ENV{VULKAN_SDK}/Lib/vulkan-l)
+else()
+  # The code can be compiled in Linux, but some required instance extentions
+  # aren't supported in Linux, thus test will fail at VulkanTest::CreateInstance()
+  # with VK_ERROR_EXTENSION_NOT_PRESENT(-7).
+  # Now temperally ignore it in Linux
+  message(STATUS "Ignore vulkan_interop test in Linux")
+  return()
+endif()
 find_package(Vulkan)
+message(STATUS "Vulkan_FOUND: ${Vulkan_FOUND}")
+message(STATUS "Vulkan_LIBRARIES: ${Vulkan_LIBRARIES}")
+message(STATUS "Vulkan_INCLUDE_DIRS: ${Vulkan_INCLUDE_DIRS}")
+
 if(NOT Vulkan_FOUND)
-  if(EXISTS "${VULKAN_PATH}")
-    message(STATUS "Vulkan SDK: ${VULKAN_PATH}")
-  elseif (EXISTS "$ENV{VULKAN_SDK}")
+  if (EXISTS "$ENV{VULKAN_SDK}")
     message(STATUS "FOUND VULKAN SDK: $ENV{VULKAN_SDK}")
-    set(VULKAN_PATH  $ENV{VULKAN_SDK})
+    message(STATUS "Please check Vulkan_LIBRARY if it is missing. Ignore vulkan test!")
+    return()
   else()
-    message(STATUS "Vulkan sdk not found, interop test not enabled. Please add VULKAN_PATH to enable the test")
+    message(STATUS "Vulkan sdk not found, interop test not enabled. Please set ENV VULKAN_SDK to enable the test")
     return()
   endif()
 endif()
 
 if(WIN32)
-  set(LINKER_LIBS vulkan-1)
+  set(LINKER_LIBS vulkan-1 advapi32)
 else()
   set(LINKER_LIBS vulkan)
 endif()
 
+#set(CMAKE_BUILD_TYPE DEBUG)
+include_directories(AFTER ${Vulkan_INCLUDE_DIRS})
+link_directories(${Vulkan_INCLUDE_DIRS}/../bin;${Vulkan_INCLUDE_DIRS}/../lib)
 hip_add_exe_to_target(NAME VulkanInteropTest
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests

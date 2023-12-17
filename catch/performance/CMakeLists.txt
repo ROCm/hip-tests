@@ -19,3 +19,5 @@
 # THE SOFTWARE.
 
 add_subdirectory(kernelLaunch)
+add_subdirectory(event)
+add_subdirectory(example)

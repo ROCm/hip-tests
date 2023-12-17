@@ -41,15 +41,20 @@ set(CMAKE_CXX_COMPILER ${HIP_HIPCC_EXECUTABLE})
 set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 
 # Create the excutable
-add_executable(runKernel.hip.out runKernel.cpp)
-add_executable(launchKernelHcc.hip.out launchKernelHcc.cpp)
-add_executable(defaultDriver.hip.out defaultDriver.cpp)
+if(TARGET build_intro)
+set(EXCLUDE_OPTION EXCLUDE_FROM_ALL)
+else()
+set(EXCLUDE_OPTION )
+endif()
+
+add_executable(runKernel.hip.out ${EXCLUDE_OPTION} runKernel.cpp)
+add_executable(launchKernelHcc.hip.out ${EXCLUDE_OPTION} launchKernelHcc.cpp)
+add_executable(defaultDriver.hip.out ${EXCLUDE_OPTION} defaultDriver.cpp)
 
 # Generate code object
 add_custom_target(
   codeobj
-  ALL
-  COMMAND  ${HIP_HIPCC_EXECUTABLE} --genco  ../vcpy_kernel.cpp -o vcpy_kernel.code
+  COMMAND  ${HIP_HIPCC_EXECUTABLE} --genco  ${CMAKE_CURRENT_SOURCE_DIR}/vcpy_kernel.cpp -o vcpy_kernel.code
   COMMENT "codeobj generated"
 )
 
@@ -61,3 +66,7 @@ add_dependencies(defaultDriver.hip.out codeobj)
 target_link_libraries(runKernel.hip.out hip::host)
 target_link_libraries(launchKernelHcc.hip.out hip::host)
 target_link_libraries(defaultDriver.hip.out hip::host)
+
+if(TARGET build_intro)
+ add_dependencies(build_intro runKernel.hip.out launchKernelHcc.hip.out defaultDriver.hip.out)
+endif()

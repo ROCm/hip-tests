@@ -47,9 +47,18 @@ set(CMAKE_CXX_COMPILER ${HIP_HIPCC_EXECUTABLE})
 set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 
 # Create the excutable
-add_executable(bit_extract bit_extract.cpp)
+if(TARGET build_intro)
+set(EXCLUDE_OPTION EXCLUDE_FROM_ALL)
+else()
+set(EXCLUDE_OPTION )
+endif()
+add_executable(bit_extract ${EXCLUDE_OPTION} bit_extract.cpp)
 
 target_include_directories(bit_extract PRIVATE ../../common)
 
 # Link with HIP
 target_link_libraries(bit_extract hip::host)
+
+if(TARGET build_intro)
+  add_dependencies(build_intro bit_extract)
+endif()

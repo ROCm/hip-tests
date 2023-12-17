@@ -82,7 +82,7 @@ static std::atomic<bool> g_thTestPassed{true};
 /**
  * Validates data consistency on supplied gpu
  */
-static bool validateMemoryOnGPU(int gpu, bool concurOnOneGPU = false) {
+static bool validateMemoryOnGPU(int gpu) {
   int *A_d, *B_d, *C_d;
   int *A_h, *B_h, *C_h;
   bool TestPassed = true;
@@ -148,7 +148,7 @@ static bool regressAllocInLoop(int gpu) {
  * Validates data consistency on supplied gpu
  * In Multithreaded Environment
  */
-static bool validateMemoryOnGpuMThread(int gpu, bool concurOnOneGPU = false) {
+static bool validateMemoryOnGpuMThread(int gpu) {
   int *A_d, *B_d, *C_d;
   int *A_h, *B_h, *C_h;
   bool TestPassed = true;
@@ -213,7 +213,7 @@ static bool regressAllocInLoopMthread(int gpu) {
  * Thread func to regress alloc and check data consistency
  */
 static void threadFunc(int gpu) {
-  g_thTestPassed = regressAllocInLoopMthread(gpu) && validateMemoryOnGpuMThread(gpu, true);
+  g_thTestPassed = regressAllocInLoopMthread(gpu) && validateMemoryOnGpuMThread(gpu);
 
   UNSCOPED_INFO("thread execution status on gpu" << gpu << ":" << g_thTestPassed.load());
 }

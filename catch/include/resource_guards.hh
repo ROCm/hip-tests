@@ -231,12 +231,12 @@ template <typename T> class DrvArrayAllocGuard {
   DrvArrayAllocGuard(const DrvArrayAllocGuard&) = delete;
   DrvArrayAllocGuard(DrvArrayAllocGuard&&) = delete;
 
-  hiparray ptr() const { return ptr_; }
+  hipArray_t ptr() const { return ptr_; }
 
   hipExtent extent() const { return extent_; }
 
  private:
-  hiparray ptr_ = nullptr;
+  hipArray_t ptr_ = nullptr;
   const hipExtent extent_;
 };
 

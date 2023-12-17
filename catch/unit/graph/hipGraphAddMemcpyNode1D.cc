@@ -49,7 +49,7 @@ static void validateMemcpyNode1DArray(bool peerAccess) {
   int harray1D[SIZE]{};
   int harray1Dres[SIZE]{};
   hipGraph_t graph;
-  hipArray *devArray1, *devArray2;
+  hipArray_t devArray1, devArray2;
   hipGraphNode_t memcpyH2D, memcpyD2H, memcpyD2D;
   constexpr int numBytes{SIZE * sizeof(int)};
   hipStream_t streamForGraph;

@@ -96,19 +96,11 @@ TEST_CASE("Unit_hipPtrGetAttribute_Simple") {
   unsigned int datatype;
   HIP_CHECK(hipPointerGetAttribute(&datatype, HIP_POINTER_ATTRIBUTE_MEMORY_TYPE,
             reinterpret_cast<hipDeviceptr_t>(A_d)));
-#ifdef __HIP_PLATFORM_NVCC__
-  REQUIRE(datatype == CU_MEMORYTYPE_DEVICE);
-#else
   REQUIRE(datatype == hipMemoryTypeDevice);
-#endif
 
   HIP_CHECK(hipPointerGetAttribute(&datatype, HIP_POINTER_ATTRIBUTE_MEMORY_TYPE,
             reinterpret_cast<hipDeviceptr_t>(A_Pinned_h)));
-#ifdef __HIP_PLATFORM_NVCC__
-  REQUIRE(datatype == CU_MEMORYTYPE_HOST);
-#else
   REQUIRE(datatype == hipMemoryTypeHost);
-#endif
 
   // HIP_POINTER_ATTRIBUTE_IS_MANAGED
   bool isHmm;

@@ -10,7 +10,7 @@ The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
@@ -894,7 +894,7 @@ bool check_slp_vectorize_enabled(const char** Combination_CO,
   if (Combination_CO_size != -1) {
     int Combination_CO_IRadded_size = Combination_CO_size+3;
     int b = 0;
-    std::string add_ir_forcombi[Combination_CO_size+3];
+    std::vector<std::string> add_ir_forcombi(Combination_CO_size + 3, "");
     const char** Combination_CO_IRadded =
                                        new const char*[Combination_CO_size+3];
     for (int i = 0; i < Combination_CO_size+3; ++i) {
@@ -1056,7 +1056,7 @@ bool check_slp_vectorize_disabled(const char** Combination_CO,
   if (Combination_CO_size != -1) {
     int Combination_CO_IRadded_size = Combination_CO_size+3;
     int b = 0;
-    std::string add_ir_forcombi[Combination_CO_size+3];
+    std::vector<std::string> add_ir_forcombi(Combination_CO_size + 3, "");
     const char** Combination_CO_IRadded =
                                        new const char*[Combination_CO_size+3];
     for (int i = 0; i < Combination_CO_size+3; ++i) {
@@ -1303,7 +1303,7 @@ bool check_undef_macro(const char** Combination_CO,
   for (auto& indx : comp_opt) {
     compiler_option.push_back(indx.get<std::string>());
   }
-  std::string variable[compiler_option.size()];
+  std::vector<std::string> variable(compiler_option.size(), "");
   const char** appended_compiler_options =
                                      new const char*[compiler_option.size()];
   for (int i = 0; i < compiler_option.size(); ++i) {
@@ -1439,13 +1439,13 @@ bool check_header_dir(const char** Combination_CO,
   for (auto& indx : double_vec_expected) {
     Expected_Results_int.push_back(static_cast<int>(indx));
   }
-  std::string src_var_hdr_lst[Src_headers_list.size()];
+  std::vector<std::string> src_var_hdr_lst(Src_headers_list.size(), "");
   const char** src_hder_lst = new const char*[Src_headers_list.size()];
   for (int i = 0; i < Src_headers_list.size(); ++i) {
     src_var_hdr_lst[i] = Src_headers_list[i];
     src_hder_lst[i] = src_var_hdr_lst[i].c_str();
   }
-  std::string var_hdr_lst[Headers_list.size()];
+  std::vector<std::string> var_hdr_lst(Headers_list.size(), "");
   const char** hder_lst = new const char*[Headers_list.size()];
   for (int i = 0; i < Headers_list.size(); ++i) {
     var_hdr_lst[i] = Headers_list[i];
@@ -2003,7 +2003,7 @@ bool check_max_thread(const char** Combination_CO,
     Target_Thrd_Vals_int.push_back(static_cast<int>(indx));
   }
   int a = 0;
-  std::string variable[Target_Thrd_Vals_int.size()];
+  std::vector<std::string> variable(Target_Thrd_Vals_int.size(), "");
   const char** appended_compiler_options =
                                  new const char*[Target_Thrd_Vals_int.size()];
   for (int i = 0; i < Target_Thrd_Vals_int.size() ; i++) {
@@ -2163,7 +2163,7 @@ bool check_unsafe_atomic_enabled(const char** Combination_CO,
   const char* kername = kernel_name.c_str();
   const char *compiler_option_cstr = compiler_option.c_str();
   float *A_d;
-  int N = 1000;
+  const int N = 1000;
   float A_h[N];
   float Nbytes = N * sizeof(float);
   double sum_w = 0, sum_wo = 0, sum_tocheck = 0;
@@ -2278,7 +2278,7 @@ bool check_unsafe_atomic_disabled(const char** Combination_CO,
   const char* kername = kernel_name.c_str();
   const char* compiler_option = retrieved_CO.c_str();
   float *A_d;
-  int N = 1000;
+  const int N = 1000;
   float A_h[N];
   float Nbytes = N * sizeof(float);
   double sum = 0, sum_tocheck = 0;
@@ -2800,7 +2800,7 @@ bool check_associative_math_enabled(const char** Combination_CO,
   if (Combination_CO_size != -1) {
     int Combination_CO_IRadded_size = Combination_CO_size+1;
     int b = 0;
-    std::string add_ir_forcombi[Combination_CO_size+1];
+    std::vector<std::string> add_ir_forcombi(Combination_CO_size + 1, "");
     const char** Combination_CO_IRadded =
                                    new const char*[Combination_CO_size+1];
     for (int i = 0; i < Combination_CO_size+1; ++i) {
@@ -2890,7 +2890,7 @@ bool check_associative_math_disabled(const char** Combination_CO,
   if (Combination_CO_size != -1) {
     int Combination_CO_IRadded_size = Combination_CO_size+1;
     int b = 0;
-    std::string add_ir_forcombi[Combination_CO_size+1];
+    std::vector<std::string> add_ir_forcombi(Combination_CO_size + 1, "");
     const char** Combination_CO_IRadded =
                                    new const char*[Combination_CO_size+1];
     for (int i = 0; i < Combination_CO_size+1; ++i) {
@@ -3217,7 +3217,7 @@ std::string checking_IR(const char* kername, const char** extra_CO_IRadded,
   if (Combination_CO_size != -1) {
     Combination_CO_IRadded_size = Combination_CO_size+2;
     int b = 0;
-    std::string add_ir_forcombi[Combination_CO_size+2];
+    std::vector<std::string> add_ir_forcombi(Combination_CO_size + 2, "");
     const char** Combination_CO_IRadded =
                                   new const char*[Combination_CO_size+2];
     for (int i = 0; i < Combination_CO_size+2; ++i) {

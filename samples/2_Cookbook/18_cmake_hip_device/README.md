@@ -12,11 +12,7 @@ Note, users may need to add ADMGPU support as command line option, if test faile
 ```
 CXX="$(hipconfig -l)"/clang++ cmake -DCMAKE_PREFIX_PATH=/opt/rocm -DAMDGPU_TARGETS="gfx1102" ..
 ```
-To enable compiler auto detection of gpu users may need to add ADMGPU support as command line option, 
-if test failed to run, for example,
-```
-CXX="$(hipconfig -l)"/clang++ cmake -DCMAKE_PREFIX_PATH=/opt/rocm -DAMDGPU_TARGETS=native ..
-```
+
 II. Test
 
 ```

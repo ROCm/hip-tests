@@ -26,6 +26,13 @@ set(CMAKE_CXX_COMPILER_WORKS 1)
 project(hipInfo)
 
 cmake_minimum_required(VERSION 3.10)
+if(UNIX)
+  if(NOT DEFINED ROCM_PATH)
+    set(ROCM_PATH "/opt/rocm" CACHE STRING "Default ROCM installation directory.")
+  endif()
+  # Search for rocm in common locations
+  list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
+endif()
 
 # flag is set to ON in compute build for windows
 option(HIPINFO_INTERNAL_BUILD "Enable building hipInfo from compute" OFF)
@@ -45,7 +52,12 @@ set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 set(CMAKE_BUILD_TYPE Release)
 
 # Create the excutable
-add_executable(hipInfo hipInfo.cpp)
+if(TARGET build_utils)
+set(EXCLUDE_OPTION EXCLUDE_FROM_ALL)
+else()
+set(EXCLUDE_OPTION )
+endif()
+add_executable(hipInfo ${EXCLUDE_OPTION} hipInfo.cpp)
 
 # Link with HIP
 target_link_libraries(hipInfo hip::host)
@@ -57,4 +69,8 @@ target_include_directories(hipInfo PRIVATE ../../common)
 # hipInfo.exe will be installed to install/hip/bin path
 if (WIN32 AND HIPINFO_INTERNAL_BUILD)
      install(FILES ${PROJECT_BINARY_DIR}/hipInfo.exe DESTINATION .)
+endif()
+
+if(TARGET build_utils)
+add_dependencies(build_utils hipInfo)
 endif()

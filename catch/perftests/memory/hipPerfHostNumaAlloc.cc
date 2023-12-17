@@ -64,7 +64,6 @@ int getCpuAgentCount() {
 bool test(int cpuId, int gpuId, int numaMode, unsigned int hostMallocflags) {
   void *pages[NUM_PAGES];
   int status[NUM_PAGES];
-  int nodes[NUM_PAGES];
   int ret_code;
 
   INFO("set cpu " << cpuId << ", gpu " << gpuId << ", numaMode "

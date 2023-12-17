@@ -29,6 +29,8 @@ THE SOFTWARE.
 #include <utils.hh>
 
 TEST_CASE("Unit_hipDrvMemcpy3DAsync_Positive_Basic") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr bool async = true;
 
   const auto stream_type = GENERATE(Streams::nullstream, Streams::perThread, Streams::created);
@@ -56,6 +58,8 @@ TEST_CASE("Unit_hipDrvMemcpy3DAsync_Positive_Basic") {
 }
 
 TEST_CASE("Unit_hipDrvMemcpy3DAsync_Positive_Synchronization_Behavior") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr bool async = true;
 
   HIP_CHECK(hipDeviceSynchronize());
@@ -82,18 +86,24 @@ TEST_CASE("Unit_hipDrvMemcpy3DAsync_Positive_Synchronization_Behavior") {
 }
 
 TEST_CASE("Unit_hipDrvMemcpy3DAsync_Positive_Parameters") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr bool async = true;
   Memcpy3DZeroWidthHeightDepth<async>(DrvMemcpy3DWrapper<async>);
 }
 
 // Disabled on AMD due to defect - EXSWHTEC-238
 TEST_CASE("Unit_hipDrvMemcpy3DAsync_Positive_Array") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr bool async = true;
   SECTION("Array from/to Host") { DrvMemcpy3DArrayHostShell<async>(DrvMemcpy3DWrapper<async>); }
   SECTION("Array from/to Device") { DrvMemcpy3DArrayDeviceShell<async>(DrvMemcpy3DWrapper<async>); }
 }
 
 TEST_CASE("Unit_hipDrvMemcpy3DAsync_Negative_Parameters") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr bool async = true;
   constexpr hipExtent extent{128 * sizeof(int), 128, 8};
 

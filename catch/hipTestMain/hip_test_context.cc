@@ -49,27 +49,64 @@ std::string TestContext::getCurrentArch() {
     std::string res = buffer.data();
     result = res;
   }
+
   result.erase(std::remove(result.begin(), result.end(), '\n'), result.end());
   size_t pos = result.find("gfx000");
   if (pos != std::string::npos) {
     result.erase(pos, 7);
   }
-  std::stringstream arch_list(result);
-  std::string arch1 = "", arch2 = "";
-  if (!arch_list.eof()) {
-    getline(arch_list, arch1, ';');
+
+  std::string s_visible_devices = TestContext::getEnvVar("HIP_VISIBLE_DEVICES");
+
+  auto parser = [](std::string input, char c) -> std::vector<std::string> {
+    std::vector<std::string> ret;
+    auto loc = input.find(c);
+    while (loc != std::string::npos) {
+      auto t_str = input.substr(0, loc);
+      ret.push_back(t_str);
+      input.erase(0, loc + 1);
+      loc = input.find(c);
+    }
+    if (input.size() > 0) {
+      ret.push_back(input);
+    }
+    return ret;
+  };
+
+  std::vector<std::string> archs = parser(result, ';');
+  std::vector<std::string> v_visible_devices = parser(s_visible_devices, ',');
+  std::vector<int> visible_devices;
+  std::for_each(v_visible_devices.begin(), v_visible_devices.end(),
+                [&](const std::string& in) { visible_devices.push_back(std::stoi(in)); });
+
+  if (archs.size() == 0) {
+    return "";  // rocm_agent_enum gave us garbage
   }
-  while (!arch_list.eof()) {
-    getline(arch_list, arch2, ';');
-    int result = strcmp(arch1.c_str(), arch2.c_str());
-    if (result != 0) {
+
+  auto first_arch = archs[0];
+  if (!std::all_of(archs.begin(), archs.end(),
+                   [&](const std::string& in) { return in == first_arch; })) {
+    // We have multiple archs in rocm_agent_enum
+    // Check if they are same or not by applying HIP_VISIBLE_DEVICES filter
+    std::vector<std::string> filtered_archs;
+    if (visible_devices.size() > 0) {
+      for (size_t i = 0; i < visible_devices.size(); i++) {
+        filtered_archs.push_back(archs[visible_devices[i]]);
+      }
+    } else {
+      filtered_archs = archs;
+    }
+    auto first_filtered_arch = filtered_archs[0];
+    if (!std::all_of(filtered_archs.begin(), filtered_archs.end(),
+                     [&](const std::string& in) { return in == first_filtered_arch; })) {
       LogPrintf("%s",
                 "[ERROR] Cannot run tests on Hetrogenous Architecture. Please set "
                 "HIP_VISIBLE_DEVICES with devices of same arch");
-      abort();
+      std::abort();
     }
+    return first_filtered_arch;
   }
-  return arch1;
+  return first_arch;
 #else
   return "";
 #endif
@@ -79,6 +116,7 @@ std::string TestContext::getMatchingConfigFile(std::string config_dir) {
   std::string configFileToUse = "";
   if (isLinux() && isAmd()) {
     std::string cur_arch = getCurrentArch();
+    LogPrintf("The arch present: %s", cur_arch.c_str());
     configFileToUse = config_dir + "/config_" + getConfig().platform + "_" + getConfig().os + "_" +
         cur_arch + ".json";
   } else {

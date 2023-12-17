@@ -119,6 +119,12 @@ THE SOFTWARE.
  * @defgroup ShflTest warp shuffle function Management
  * @{
  * This section describes the warp shuffle types & functions of HIP runtime API.
+ */
+
+/**
+ * @defgroup p2pTest P2P Management
+ * @{
+ * This section describes the P2P management types & functions of HIP runtime API.
  * @}
  */
 
@@ -144,8 +150,8 @@ THE SOFTWARE.
  */
 
 /**
- * @defgroup DeviceLanguageTest Device Language
+ * @defgroup PrintfTest Printf API Management
  * @{
- * This section describes tests for the Device Language API.
+ * This section describes the various Printf use case Scenarios.
  * @}
  */

@@ -43,7 +43,7 @@ static void MemoryAlloc3DDiffSizes(int gpu) {
     size_t height{sizes}, depth{sizes};
     hipPitchedPtr devPitchedPtr[CHUNK_LOOP];
     hipExtent extent = make_hipExtent(width, height, depth);
-    size_t tot, avail, ptot, pavail;
+    size_t ptot, pavail;
     HIPCHECK(hipMemGetInfo(&pavail, &ptot));
     for (int i = 0; i < CHUNK_LOOP; i++) {
       HIPCHECK(hipMalloc3D(&devPitchedPtr[i], extent));
@@ -63,6 +63,8 @@ static void Malloc3DThreadFunc(int gpu) {
  * assigning width,height and depth as 10
  */
 TEST_CASE("Unit_hipMalloc3D_Basic") {
+  CHECK_IMAGE_SUPPORT
+
   size_t width = SMALL_SIZE * sizeof(char);
   size_t height{SMALL_SIZE}, depth{SMALL_SIZE};
   hipPitchedPtr devPitchedPtr;
@@ -75,6 +77,8 @@ This testcase verifies the hipMalloc3D API by allocating
 smaller and big chunk data.
 */
 TEST_CASE("Unit_hipMalloc3D_SmallandBigChunks") {
+  CHECK_IMAGE_SUPPORT
+
   MemoryAlloc3DDiffSizes(0);
 }
 
@@ -84,6 +88,8 @@ scenario by launching threads in parallel on multiple GPUs
 and verifies the hipMalloc3D API with small and big chunks data
 */
 TEST_CASE("Unit_hipMalloc3D_MultiThread") {
+  CHECK_IMAGE_SUPPORT
+
   std::vector<std::thread> threadlist;
   int devCnt = 0;
 

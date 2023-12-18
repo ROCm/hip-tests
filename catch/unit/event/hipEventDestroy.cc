@@ -25,7 +25,7 @@ THE SOFTWARE.
 #include <hip_test_kernels.hh>
 #include <hip_test_common.hh>
 #include "hip/hip_runtime_api.h"
-
+#include <utils.hh>
 /**
  * @addtogroup hipEventDestroy hipEventDestroy
  * @{
@@ -53,7 +53,7 @@ static inline void launchVectorAdd(float*& A_h, float*& B_h, float*& C_h,
   HIP_CHECK(hipHostGetDevicePointer(reinterpret_cast<void**>(&A_d), A_h, 0));
   HIP_CHECK(hipHostGetDevicePointer(reinterpret_cast<void**>(&B_d), B_h, 0));
   HIP_CHECK(hipHostGetDevicePointer(reinterpret_cast<void**>(&C_d), C_h, 0));
-  HipTest::runKernelForDuration(delay, stream);
+  LaunchDelayKernel(delay, stream);
   HipTest::vectorADD<<<1, 1, 0, stream>>>(A_d, B_d, C_d, vectorSize);
 }
 

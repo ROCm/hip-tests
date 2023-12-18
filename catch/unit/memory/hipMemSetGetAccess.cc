@@ -44,6 +44,16 @@ THE SOFTWARE.
 #define DATA_SIZE (1 << 13)
 #define NEW_DATA_SIZE (2*DATA_SIZE)
 constexpr int initializer = 0;
+
+/**
+ Kernel to perform Square of input data.
+ */
+static __global__ void square_kernel(int* Buff) {
+  int i = threadIdx.x + blockDim.x * blockIdx.x;
+  int temp = Buff[i] * Buff[i];
+  Buff[i] = temp;
+}
+
 /**
  * Test Description
  * ------------------------
@@ -58,9 +68,6 @@ constexpr int initializer = 0;
  * ------------------------
  *    - HIP_VERSION >= 6.1
  */
-#if HT_NVIDIA
-// This test is disabled. Will be enabled once VMM feature is fully
-// available
 TEST_CASE("Unit_hipMemSetAccess_SetGet") {
   size_t granularity = 0;
   constexpr int N = DATA_SIZE;
@@ -134,7 +141,7 @@ TEST_CASE("Unit_hipMemSetAccess_MultDevSetGet") {
   size_t granularity = 0;
   constexpr int N = DATA_SIZE;
   size_t buffer_size = N * sizeof(int);
-  int deviceId = 0, value = 0, device_count = 0;
+  int deviceId = 0, device_count = 0;
   hipDevice_t device0, device1;
   HIP_CHECK(hipGetDeviceCount(&device_count));
   if (device_count < 2) {
@@ -188,7 +195,6 @@ TEST_CASE("Unit_hipMemSetAccess_MultDevSetGet") {
   HIP_CHECK(hipMemUnmap(ptrA, size_mem));
   HIP_CHECK(hipMemAddressFree(ptrA, size_mem));
 }
-#endif
 
 /**
  * Test Description
@@ -325,9 +331,6 @@ TEST_CASE("Unit_hipMemGetAccess_NegTst") {
  * ------------------------
  *    - HIP_VERSION >= 6.1
  */
-#if HT_NVIDIA
-// This test is disabled. Will be enabled once VMM feature is fully
-// available
 TEST_CASE("Unit_hipMemSetAccess_FuncTstOnMultDev") {
   size_t granularity = 0;
   constexpr int N = DATA_SIZE;
@@ -378,7 +381,6 @@ TEST_CASE("Unit_hipMemSetAccess_FuncTstOnMultDev") {
     HIP_CHECK(hipMemAddressFree(ptrA, size_mem));
   }
 }
-#endif
 
 /**
  * Test Description
@@ -1018,9 +1020,6 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2VMMInterDevMemCpy") {
  * ------------------------
  *    - HIP_VERSION >= 6.1
  */
-#if HT_NVIDIA
-// This test is disabled. Will be enabled once VMM feature is fully
-// available
 TEST_CASE("Unit_hipMemSetAccess_MapPhysChksFromMulDev") {
   int devicecount = 0;
   HIP_CHECK(hipGetDeviceCount(&devicecount));
@@ -1097,7 +1096,6 @@ TEST_CASE("Unit_hipMemSetAccess_MapPhysChksFromMulDev") {
   free(handle);
   free(size_mem);
 }
-#endif
 
 /**
  * Test Description
@@ -1225,9 +1223,7 @@ class vmm_resize_class {
     return 0;
   }
 };
-#if HT_NVIDIA
-// This test is disabled. Will be enabled once VMM feature is fully
-// available
+
 TEST_CASE("Unit_hipMemSetAccess_GrowVMM") {
   hipDeviceptr_t ptr;
   constexpr int N = DATA_SIZE;
@@ -1278,7 +1274,6 @@ TEST_CASE("Unit_hipMemSetAccess_GrowVMM") {
   free(ptrA_h);
   resizeobj.free_vmm();
 }
-#endif
 
 /**
  * Test Description

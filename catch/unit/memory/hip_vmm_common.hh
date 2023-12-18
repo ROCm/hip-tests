@@ -22,6 +22,8 @@ THE SOFTWARE.
 
 #pragma once
 
+#include "hip_test_context.hh"
+
 #define checkVMMSupported(device) {\
   int value = 0;\
   hipDeviceAttribute_t\
@@ -46,14 +48,4 @@ THE SOFTWARE.
   }\
 }
 
-#if HT_NVIDIA
 constexpr int threadsPerBlk = 64;
-/**
- Kernel to perform Square of input data.
- */
-static __global__ void square_kernel(int* Buff) {
-  int i = threadIdx.x + blockDim.x * blockIdx.x;
-  int temp = Buff[i] * Buff[i];
-  Buff[i] = temp;
-}
-#endif

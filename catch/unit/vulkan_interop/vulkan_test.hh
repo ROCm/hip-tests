@@ -20,12 +20,22 @@ THE SOFTWARE.
 #pragma once
 
 #include <vulkan/vulkan.h>
-#include <vector>
 
 #ifdef _WIN64
+
+#include <Windows.h>
+#include <winnt.h>
 #include <VersionHelpers.h>
+
+#include <winapifamily.h>
+#include <dxgi1_2.h>
+#include <windef.h>
+#include <aclapi.h>
+#include <securitybaseapi.h>
+#include <vulkan/vulkan_win32.h>
 #endif
 
+#include <vector>
 #include <hip_test_common.hh>
 #include <hip/hip_runtime_api.h>
 
@@ -38,6 +48,72 @@ THE SOFTWARE.
       REQUIRE(false);                                                                              \
     }                                                                                              \
   }
+
+#ifdef _WIN64
+class WindowsSecurityAttributes
+{
+protected:
+    SECURITY_ATTRIBUTES m_winSecurityAttributes;
+    PSECURITY_DESCRIPTOR m_winPSecurityDescriptor;
+
+public:
+WindowsSecurityAttributes()
+{
+    m_winPSecurityDescriptor = (PSECURITY_DESCRIPTOR)calloc(1, SECURITY_DESCRIPTOR_MIN_LENGTH + 2 * sizeof(void **));
+    if (!m_winPSecurityDescriptor) {
+        throw std::runtime_error("Failed to allocate memory for security descriptor");
+    }
+
+    PSID *ppSID = (PSID *)((PBYTE)m_winPSecurityDescriptor + SECURITY_DESCRIPTOR_MIN_LENGTH);
+    PACL *ppACL = (PACL *)((PBYTE)ppSID + sizeof(PSID *));
+
+    InitializeSecurityDescriptor(m_winPSecurityDescriptor, SECURITY_DESCRIPTOR_REVISION);
+
+    SID_IDENTIFIER_AUTHORITY sidIdentifierAuthority = SECURITY_WORLD_SID_AUTHORITY;
+    AllocateAndInitializeSid(&sidIdentifierAuthority, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, ppSID);
+
+    EXPLICIT_ACCESS explicitAccess;
+    ZeroMemory(&explicitAccess, sizeof(EXPLICIT_ACCESS));
+    explicitAccess.grfAccessPermissions = STANDARD_RIGHTS_ALL | SPECIFIC_RIGHTS_ALL;
+    explicitAccess.grfAccessMode = SET_ACCESS;
+    explicitAccess.grfInheritance = INHERIT_ONLY;
+    explicitAccess.Trustee.TrusteeForm = TRUSTEE_IS_SID;
+    explicitAccess.Trustee.TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP;
+    explicitAccess.Trustee.ptstrName = (LPTSTR) * ppSID;
+
+    SetEntriesInAcl(1, &explicitAccess, NULL, ppACL);
+
+    SetSecurityDescriptorDacl(m_winPSecurityDescriptor, TRUE, *ppACL, FALSE);
+
+    m_winSecurityAttributes.nLength = sizeof(m_winSecurityAttributes);
+    m_winSecurityAttributes.lpSecurityDescriptor = m_winPSecurityDescriptor;
+    m_winSecurityAttributes.bInheritHandle = TRUE;
+}
+
+SECURITY_ATTRIBUTES *
+operator&()
+{
+    return &m_winSecurityAttributes;
+}
+
+~WindowsSecurityAttributes()
+{
+    PSID *ppSID = (PSID *)((PBYTE)m_winPSecurityDescriptor + SECURITY_DESCRIPTOR_MIN_LENGTH);
+    PACL *ppACL = (PACL *)((PBYTE)ppSID + sizeof(PSID *));
+
+    if (*ppSID) {
+        FreeSid(*ppSID);
+    }
+    if (*ppACL) {
+        LocalFree(*ppACL);
+    }
+    free(m_winPSecurityDescriptor);
+}
+};
+
+
+#endif /* _WIN64 */
+
 
 class VulkanTest {
  public:
@@ -215,7 +291,13 @@ VulkanTest::MappedBuffer<T> VulkanTest::CreateMappedStorage(uint32_t count,
   allocate_info.memoryTypeIndex =
       FindMemoryType(memory_requirements.memoryTypeBits,
                      VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-  REQUIRE(allocate_info.memoryTypeIndex != VK_MAX_MEMORY_TYPES);
+  if (allocate_info.memoryTypeIndex == VK_MAX_MEMORY_TYPES) {
+    WARN("Not supported memory type "
+         << memory_requirements.memoryTypeBits
+         <<
+        " with VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT");
+    return MappedBuffer<T>{nullptr, nullptr, 0, nullptr};
+  }
 
   VkExportMemoryAllocateInfoKHR vulkan_export_memory_allocate_info = {};
   if (external) {

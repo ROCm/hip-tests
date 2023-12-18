@@ -18,10 +18,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# Common Tests - Test independent of all platforms
+# FIXME: cjatin
+# This is a temp hack to pass it on windows since it has a char limit for
+# command line. Eventually we need to use rsp files with ninja on windows.
+# But this exposes several problems with hipcc and build system on windows.
+# While those are fixed, this hack should allow us to pass windows CI.
 set(TEST_SRC
   hipGraphAddEmptyNode.cc
   hipGraphAddDependencies.cc
+  hipGraphAddDependencies_old.cc
   hipGraphAddEventRecordNode.cc
   hipGraphAddEventWaitNode.cc
   hipGraph.cc
@@ -43,14 +48,18 @@ set(TEST_SRC
   hipGraphMemcpyNodeSetParamsToSymbol.cc
   hipGraphDestroyNode.cc
   hipGraphGetNodes.cc
+  hipGraphGetNodes_old.cc
   hipGraphGetRootNodes.cc
+  hipGraphGetRootNodes_old.cc
   hipGraphHostNodeSetParams.cc
   hipGraphAddMemcpyNode1D.cc
   hipGraphAddChildGraphNode.cc
   hipGraphNodeGetType.cc
   hipGraphExecMemcpyNodeSetParams1D.cc
   hipGraphGetEdges.cc
+  hipGraphGetEdges_old.cc
   hipGraphRemoveDependencies.cc
+  hipGraphRemoveDependencies_old.cc
   hipGraphInstantiate.cc
   hipGraphExecUpdate.cc
   hipGraphExecEventRecordNodeSetEvent.cc
@@ -67,7 +76,20 @@ set(TEST_SRC
   hipStreamBeginCapture.cc
   hipStreamBeginCapture_old.cc
   hipStreamIsCapturing.cc
-  hipStreamIsCapturing_old.cc
+  hipStreamIsCapturing_old.cc)
+
+if(HIP_PLATFORM MATCHES "amd")
+  set(AMD_SRC
+    hipStreamCaptureExtModuleLaunchKernel.cc
+  )
+  set(TEST_SRC ${TEST_SRC} ${AMD_SRC})
+endif()
+
+hip_add_exe_to_target(NAME GraphsTest1
+                      TEST_SRC ${TEST_SRC}
+                      TEST_TARGET_NAME build_tests)
+
+set(TEST_SRC
   hipStreamGetCaptureInfo.cc
   hipStreamGetCaptureInfo_old.cc
   hipStreamEndCapture.cc
@@ -89,7 +111,9 @@ set(TEST_SRC
   hipGraphExecMemcpyNodeSetParamsToSymbol_old.cc
   hipGraphExecMemcpyNodeSetParamsToSymbol.cc
   hipGraphNodeGetDependentNodes.cc
+  hipGraphNodeGetDependentNodes_old.cc
   hipGraphNodeGetDependencies.cc
+  hipGraphNodeGetDependencies_old.cc
   hipGraphHostNodeGetParams.cc
   hipGraphExecChildGraphNodeSetParams.cc
   hipStreamGetCaptureInfo_v2.cc
@@ -113,17 +137,17 @@ set(TEST_SRC
   hipGraphExecDestroy.cc
   hipGraphUpload.cc
   hipGraphKernelNodeCopyAttributes.cc
+  hipGraphAddNodeBeginCapture.cc
+  hipGraphCycle.cc
+  hipGraphPerf.cc
   hipGraphKernelNodeGetAttribute.cc
+  hipGraphKernelNodeSetAttribute.cc
+  hipGraphMemAllocNodeGetParams.cc
 )
 
-if(HIP_PLATFORM MATCHES "amd")
-  set(AMD_SRC
-    hipStreamCaptureExtModuleLaunchKernel.cc
-  )
-  set(TEST_SRC ${TEST_SRC} ${AMD_SRC})
-endif()
+add_custom_target(add_Kernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/add_Kernel.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../graph/add_Kernel.code -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 
-hip_add_exe_to_target(NAME GraphsTest
+hip_add_exe_to_target(NAME GraphsTest2
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests)
 
@@ -131,3 +155,5 @@ if(HIP_PLATFORM MATCHES "amd")
   add_custom_target(hipMatMul COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/hipMatMul.cc -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/graph/hipMatMul.code -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
   add_dependencies(build_tests hipMatMul)
 endif()
+
+add_dependencies(build_tests add_Kernel.code)

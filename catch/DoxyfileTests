@@ -2160,7 +2160,8 @@ PREDEFINED             = TEMPLATE_TEST_CASE(x)=x() \
                          __linux__ \
                          HT_AMD \
                          HT_NVIDIA \
-                         __HIP_PLATFORM_NVCC__
+                         __HIP_PLATFORM_NVIDIA__ \
+                         __GNUC__
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The

@@ -232,6 +232,93 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpy2D_H2D-D2D-D2H_WithOffset", ""
 /**
  * Test Description
  * ------------------------
+ *  - This testcase performs the following scenarios of hipMemcpy2D API on same GPU.
+    1. H2D-D2D-D2H for Host Memory<-->hipMallocManaged memory
+    2. H2D-D2D-D2H for Pinned Host Memory<-->hipMallocManaged memory
+    3. H2D-D2D-D2H (kind = hipMemcpyDefault) for Host Memory<-->hipMallocManaged memory
+    4. H2D-D2D-D2H (kind = hipMemcpyDefault) for Pinned Host Memory<-->hipMallocManaged memory
+    The src and dst input pointers to hipMemCpy2D add an offset to the pointers
+    returned by the allocation functions.
+
+    Input : "A_h" initialized based on data type
+             "A_h" --> "A_d" using H2D copy
+             "A_d" --> "B_d" using D2D copy
+             "B_d" --> "B_h" using D2H copy
+    Output: Validating A_h with B_h both should be equal for
+            the number of COLUMNS and ROWS copied
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy2D.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+TEMPLATE_TEST_CASE("Unit_hipMemcpy2D_H2D-D2D-D2H_Managed_WithOffset", ""
+                   , int, float, double) {
+  CHECK_IMAGE_SUPPORT
+  // 1 refers to pinned host memory
+  auto mem_type = GENERATE(0, 1);
+  auto memcpy_default = GENERATE(0,1);
+  HIP_CHECK(hipSetDevice(0));
+  TestType  *A_h{nullptr}, *B_h{nullptr}, *C_h{nullptr}, *A_d{nullptr},
+            *B_d{nullptr};
+
+  // Allocating memory
+  if (mem_type) {
+    HipTest::initArrays<TestType>(nullptr, nullptr, nullptr,
+                                  &A_h, &B_h, &C_h, NUM_W*NUM_H, true);
+  } else {
+    HipTest::initArrays<TestType>(nullptr, nullptr, nullptr,
+                                  &A_h, &B_h, &C_h, NUM_W*NUM_H, false);
+  }
+  HIP_CHECK(hipMallocManaged(reinterpret_cast<void**>(&A_d),
+                          (COLUMNS * ROWS + 1) * sizeof(TestType)));
+  HIP_CHECK(hipMallocManaged(reinterpret_cast<void**>(&B_d),
+                          (COLUMNS * ROWS + 1) * sizeof(TestType)));
+
+  size_t pitch_A = COLUMNS * sizeof(TestType);
+  size_t pitch_B = COLUMNS * sizeof(TestType);;
+
+  // Initialize the data
+  HipTest::setDefaultData<TestType>(NUM_W*NUM_H, A_h, B_h, C_h);
+
+  // Host to Device
+  HIP_CHECK(hipMemcpy2D(A_d + 1, pitch_A, A_h,
+                        COLUMNS*sizeof(TestType),  COLUMNS*sizeof(TestType),
+                        ROWS, memcpy_default ? hipMemcpyDefault : hipMemcpyHostToDevice));
+
+  // Performs D2D on same GPU device
+  HIP_CHECK(hipMemcpy2D(B_d + 1, pitch_B,
+                        A_d + 1 ,
+                        pitch_A, COLUMNS*sizeof(TestType),
+                        ROWS, memcpy_default ? hipMemcpyDefault : hipMemcpyDeviceToDevice));
+
+  // hipMemcpy2D Device to Host
+  HIP_CHECK(hipMemcpy2D(B_h, COLUMNS*sizeof(TestType),
+                        B_d + 1 , pitch_B,
+                        COLUMNS*sizeof(TestType), ROWS,
+                        memcpy_default ? hipMemcpyDefault : hipMemcpyDeviceToHost));
+
+
+  // Validating the result
+  REQUIRE(HipTest::checkArray<TestType>(A_h, B_h, COLUMNS, ROWS) == true);
+
+
+  // DeAllocating the memory
+  HIP_CHECK(hipFree(A_d));
+  HIP_CHECK(hipFree(B_d));
+  if (mem_type) {
+    HipTest::freeArrays<TestType>(nullptr, nullptr, nullptr,
+                                  A_h, B_h, C_h, true);
+  } else {
+    HipTest::freeArrays<TestType>(nullptr, nullptr, nullptr,
+                                  A_h, B_h, C_h, false);
+  }
+}
+
+/**
+ * Test Description
+ * ------------------------
  *  - This testcases performs the following scenarios of hipMemcpy2D API on Peer GPU
     1. H2D-D2D-D2H for Host Memory<-->Device Memory
     2. H2D-D2D-D2H for Pinned Host Memory<-->Device Memory

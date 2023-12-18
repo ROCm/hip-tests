@@ -22,6 +22,7 @@
 
 set(TEST_SRC
     vector_types.cc
+    dim3.cc
 )
 
 hip_add_exe_to_target(NAME VectorTypesTest

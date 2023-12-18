@@ -8,6 +8,8 @@
 #define HIP_SAMPLING_VERIFY_ABSOLUTE_THRESHOLD  0.1
 
 #if HT_NVIDIA
+typedef unsigned char uchar;
+
 template<typename T>
 typename std::enable_if<sizeof(T) / sizeof(decltype(T::x)) == 4, T>::type
 inline __host__ __device__ operator+(const T &a, const T &b)
@@ -47,7 +49,11 @@ inline __host__ __device__ operator*=(T &a, const decltype(T::x) &b)
 }
 #endif // HT_NVIDIA
 
-// See https://en.wikipedia.org/wiki/SRGB#Transformation
+template <typename T> struct mipmapLevelArray {
+  T* data;      // level array data
+  hipExtent e;  // level array size
+};
+
 // From CIE 1931 color space to sRGB
 inline float hipSRGBMap(float fc) {
   double c = static_cast<double>(fc);
@@ -215,7 +221,7 @@ T hipTextureGetValue(const T *data, const int x, const int width,
     default:
       break;
   }
-  if (sRGB && std::is_same<T, float4>::value) {
+  if constexpr (sRGB && std::is_same<T, float4>::value) {
     result = hipSRGBUnmap(result);
   }
   return result;

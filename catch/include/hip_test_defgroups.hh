@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2021 - 2023 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -30,9 +30,115 @@ THE SOFTWARE.
  */
 
 /**
+ * @defgroup ContextTest Context Management
+ * @{
+ * This section describes tests for the context management functions of HIP runtime API.
+ * @warning All Context Management APIs are **deprecated** and shall not be implemented.
+ * @}
+ */
+
+/**
+ * @defgroup DeviceLanguageTest Device Language
+ * @{
+ * This section describes tests for the Device Language API.
+ * @}
+ */
+
+/**
+ * @defgroup DeviceTest Device Management
+ * @{
+ * This section describes tests for device management functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup DriverTest Initialization and Version
+ * @{
+ * This section describes tests for the initialization and version functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup DynamicLoadingTest Kernel Loading Management
+ * @{
+ * This section describes the different kernel launch approaches.
+ * @}
+ */
+
+/**
+ * @defgroup ErrorTest Error Handling
+ * @{
+ * This section describes tests for the error handling functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup EventTest Event Management
+ * @{
+ * This section describes tests for the event management functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup ExecutionTest Execution Control
+ * @{
+ * This section describes tests for the execution control functions of HIP runtime API.
+ * @}
+ */
+
+/**
  * @defgroup GraphTest Graph Management
  * @{
- * This section describes the graph management types & functions of HIP runtime API.
+ * This section describes tests for the graph management types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+* @defgroup KernelTest Kernel Functions Management
+ * @{
+ * This section describes the various kernel functions invocation.
+ * @}
+ */
+
+/**
+ * @defgroup MemoryTest memory Management APIs
+ * @{
+ * This section describes the memory management types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup PeerToPeerTest PeerToPeer Device Memory Access
+ * @{
+ * This section describes tests for the PeerToPeer device memory access functions of HIP runtime API.
+ * @warning PeerToPeer support is experimental.
+ * @}
+ */
+
+ /**
+ * @defgroup ShflTest warp shuffle function Management
+ * @{
+ * This section describes the warp shuffle types & functions of HIP runtime API.
+ */
+
+/**
+ * @defgroup p2pTest P2P Management
+ * @{
+ * This section describes the P2P management types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup StreamTest Stream Management
+ * @{
+ * This section describes the stream management types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup TextureTest Texture Management
+ * @{
+ * This section describes tests for the texture management functions of HIP runtime API.
  * @}
  */
 
@@ -40,174 +146,18 @@ THE SOFTWARE.
  * @defgroup VectorTypeTest Vector types
  * @{
  * This section describes tests for the Vector type functions and operators.
+ * @}
  */
 
 /**
- * @addtogroup make_vector make_vector
+ * @defgroup PrintfTest Printf API Management
  * @{
- * @ingroup VectorTypeTest
- */
-
-/**
- * Test Description
- * ------------------------
- *    - Compiles kernels and host functions
- *    - Negate (-) operation applied on the unsigned vectors
- * Test source
- * ------------------------
- *    - unit/vector_types/CMakeLists.txt
- * Test requirements
- * ------------------------
- *    - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_NegateUnsigned_Negative_Parameters") {}
-
-/**
- * Test Description
- * ------------------------
- *    - Compiles kernels and host functions
- *    - Bitwise operations applied on the float vectors
- * Test source
- * ------------------------
- *    - unit/vector_types/CMakeLists.txt
- * Test requirements
- * ------------------------
- *    - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_BitwiseFloat_Negative_Parameters") {}
-
-/**
- * Test Description
- * ------------------------
- *    - Compiles kernels and host functions
- *    - Bitwise operations applied on the double vectors
- * Test source
- * ------------------------
- *    - unit/vector_types/CMakeLists.txt
- * Test requirements
- * ------------------------
- *    - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_BitwiseDouble_Negative_Parameters") {}
-
-/**
- * Test Description
- * ------------------------
- *    - Compiles kernels and host functions
- *    - Calculate-assign operations applied on the 1D signed vectors
- * Test source
- * ------------------------
- *    - unit/vector_types/CMakeLists.txt
- * Test requirements
- * ------------------------
- *    - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_CalculateAssign1D_Negative_Parameters") {}
-
-/**
- * Test Description
- * ------------------------
- *    - Compiles kernels and host functions
- *    - Calculate-assign operations applied on the 2D signed vectors
- * Test source
- * ------------------------
- *    - unit/vector_types/CMakeLists.txt
- * Test requirements
- * ------------------------
- *    - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_CalculateAssign2D_Negative_Parameters") {}
-
-/**
- * Test Description
- * ------------------------
- *    - Compiles kernels and host functions
- *    - Calculate-assign operations applied on the 3D signed vectors
- * Test source
- * ------------------------
- *    - unit/vector_types/CMakeLists.txt
- * Test requirements
- * ------------------------
- *    - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_CalculateAssign3D_Negative_Parameters") {}
-
-/**
- * Test Description
- * ------------------------
- *    - Compiles kernels and host functions
- *    - Calculate-assign operations applied on the 4D signed vectors
- * Test source
- * ------------------------
- *    - unit/vector_types/CMakeLists.txt
- * Test requirements
- * ------------------------
- *    - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_CalculateAssign4D_Negative_Parameters") {}
-
-/**
- * Test Description
- * ------------------------
- *    - Compiles kernels and host functions
- *    - Calculate-assign operations applied on the 1D unsigned vectors
- * Test source
- * ------------------------
- *    - unit/vector_types/CMakeLists.txt
- * Test requirements
- * ------------------------
- *    - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_CalculateAssignUnsigned1D_Negative_Parameters") {}
-
-/**
- * Test Description
- * ------------------------
- *    - Compiles kernels and host functions
- *    - Calculate-assign operations applied on the 2D unsigned vectors
- * Test source
- * ------------------------
- *    - unit/vector_types/CMakeLists.txt
- * Test requirements
- * ------------------------
- *    - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_CalculateAssignUnsigned2D_Negative_Parameters") {}
-
-/**
- * Test Description
- * ------------------------
- *    - Compiles kernels and host functions
- *    - Calculate-assign operations applied on the 3D unsigned vectors
- * Test source
- * ------------------------
- *    - unit/vector_types/CMakeLists.txt
- * Test requirements
- * ------------------------
- *    - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_CalculateAssignUnsigned3D_Negative_Parameters") {}
-
-/**
- * Test Description
- * ------------------------
- *    - Compiles kernels and host functions
- *    - Calculate-assign operations applied on the 4D unsigned vectors
- * Test source
- * ------------------------
- *    - unit/vector_types/CMakeLists.txt
- * Test requirements
- * ------------------------
- *    - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_CalculateAssignUnsigned4D_Negative_Parameters") {}
-
-/**
- * End doxygen group make_vector.
+ * This section describes the various Printf use case Scenarios.
  * @}
  */
 
 /**
- * End doxygen group VectorTypeTest.
- * @}
+ * @defgroup VectorTypeTest Vector types
+ * @{
+ * This section describes tests for the Vector type functions and operators.
  */

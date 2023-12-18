@@ -348,6 +348,32 @@ TEST_CASE("Unit_hipGraphInstantiateWithFlags_FlagAutoFreeOnLaunch_check") {
   HIP_CHECK(hipGraphLaunch(graphExec, stream));
   HIP_CHECK(hipStreamSynchronize(stream));
 
+  size_t bmem = 0, bmemres = 0;
+  HIP_CHECK(hipDeviceGraphMemTrim(0));
+  HIP_CHECK(hipDeviceGetGraphMemAttribute(0, hipGraphMemAttrUsedMemCurrent, &bmem));
+  HIP_CHECK(hipDeviceGetGraphMemAttribute(0, hipGraphMemAttrReservedMemCurrent, &bmemres));
+
+  HIP_CHECK(hipGraphLaunch(graphExec, stream));
+  HIP_CHECK(hipStreamSynchronize(stream));
+
+  size_t amem = 0, amemres = 0;
+  HIP_CHECK(hipDeviceGraphMemTrim(0));
+  HIP_CHECK(hipDeviceGetGraphMemAttribute(0, hipGraphMemAttrUsedMemCurrent, &amem));
+  HIP_CHECK(hipDeviceGetGraphMemAttribute(0, hipGraphMemAttrReservedMemCurrent, &amemres));
+
+  REQUIRE(bmem == amem);
+  REQUIRE(bmemres == amemres);
+
+  HIP_CHECK(hipGraphLaunch(graphExec, stream));
+  HIP_CHECK(hipStreamSynchronize(stream));
+
+  HIP_CHECK(hipDeviceGraphMemTrim(0));
+  HIP_CHECK(hipDeviceGetGraphMemAttribute(0, hipGraphMemAttrUsedMemCurrent, &amem));
+  HIP_CHECK(hipDeviceGetGraphMemAttribute(0, hipGraphMemAttrReservedMemCurrent, &amemres));
+
+  REQUIRE(bmem == amem);
+  REQUIRE(bmemres == amemres);
+
   HIP_CHECK(hipFree(A_d));  //  free allocMemory manually
   HIP_CHECK(hipGraphDestroy(graph));
   HIP_CHECK(hipGraphExecDestroy(graphExec));

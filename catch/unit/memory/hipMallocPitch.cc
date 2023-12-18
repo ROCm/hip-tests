@@ -131,6 +131,8 @@ hipExtent generateExtent(AllocationApi api) {
 
 
 TEST_CASE("Unit_hipMalloc3D_ValidatePitch") {
+  CHECK_IMAGE_SUPPORT
+
   hipPitchedPtr hipPitchedPtr;
   hipExtent validExtent{generateExtent(AllocationApi::hipMalloc3D)};
 
@@ -140,6 +142,8 @@ TEST_CASE("Unit_hipMalloc3D_ValidatePitch") {
 }
 
 TEST_CASE("Unit_hipMemAllocPitch_ValidatePitch") {
+  CHECK_IMAGE_SUPPORT
+
   size_t pitch = 0;
   hipDeviceptr_t ptr;
   hipExtent validExtent{generateExtent(AllocationApi::hipMemAllocPitch)};
@@ -159,6 +163,8 @@ TEST_CASE("Unit_hipMemAllocPitch_ValidatePitch") {
 }
 
 TEST_CASE("Unit_hipMallocPitch_ValidatePitch") {
+  CHECK_IMAGE_SUPPORT
+
   size_t pitch = 0;
   void* ptr;
   hipExtent validExtent{generateExtent(AllocationApi::hipMemAllocPitch)};
@@ -168,6 +174,8 @@ TEST_CASE("Unit_hipMallocPitch_ValidatePitch") {
 }
 
 TEST_CASE("Unit_hipMalloc3D_Negative") {
+  CHECK_IMAGE_SUPPORT
+
   SECTION("Invalid ptr") {
     hipExtent validExtent{1, 1, 1};
     HIP_CHECK_ERROR(hipMalloc3D(nullptr, validExtent), hipErrorInvalidValue);
@@ -204,6 +212,8 @@ TEST_CASE("Unit_hipMalloc3D_Negative") {
 }
 
 TEST_CASE("Unit_hipMallocPitch_Negative") {
+  CHECK_IMAGE_SUPPORT
+
   size_t pitch = 0;
   void* ptr;
   constexpr size_t maxSizeT = std::numeric_limits<size_t>::max();
@@ -228,7 +238,26 @@ TEST_CASE("Unit_hipMallocPitch_Negative") {
   }
 }
 
+TEST_CASE("Unit_hipMallocPitch_Zero_Dims") {
+  CHECK_IMAGE_SUPPORT
+
+  void* ptr = nullptr;
+  size_t pitch = 0;
+
+  SECTION("width == 0") {
+    HIP_CHECK(hipMallocPitch(&ptr, &pitch, 0, 1));
+    REQUIRE(ptr == nullptr);
+  }
+
+  SECTION("height == 0") {
+    HIP_CHECK(hipMallocPitch(&ptr, &pitch, 1, 0));
+    REQUIRE(ptr == nullptr);
+  }
+}
+
 TEST_CASE("Unit_hipMemAllocPitch_Negative") {
+  CHECK_IMAGE_SUPPORT
+
   size_t pitch = 0;
   hipDeviceptr_t ptr{};
   unsigned int validElementSizeBytes{4};
@@ -360,54 +389,21 @@ static void MemoryAllocDiffSizes(int gpu) {
 static void threadFunc(int gpu) {
   MemoryAllocDiffSizes<float>(gpu);
 }
-/*
- * This testcase verifies the negative scenarios of hipMallocPitch API
- */
-#if 0 //TODO: Review, fix and re-enable test
-TEST_CASE("Unit_hipMallocPitch_Negative") {
-  float* A_d;
-  size_t pitch_A = 0;
-  size_t width{NUM_W * sizeof(float)};
-#if HT_NVIDIA
-  SECTION("NullPtr to Pitched Ptr") {
-    REQUIRE(hipMallocPitch(nullptr,
-            &pitch_A, width, NUM_H) != hipSuccess);
-  }
 
-  SECTION("nullptr to pitch") {
-    REQUIRE(hipMallocPitch(reinterpret_cast<void**>(&A_d),
-                           nullptr, width, NUM_H) != hipSuccess);
-  }
-#endif
-  SECTION("Width 0 in hipMallocPitch") {
-    REQUIRE(hipMallocPitch(reinterpret_cast<void**>(&A_d),
-                           &pitch_A, 0, NUM_H) == hipSuccess);
-  }
-
-  SECTION("Height 0 in hipMallocPitch") {
-    REQUIRE(hipMallocPitch(reinterpret_cast<void**>(&A_d),
-                           &pitch_A, width, 0) == hipSuccess);
-  }
-
-  SECTION("Max int values") {
-    REQUIRE(hipMallocPitch(reinterpret_cast<void**>(&A_d),
-                           &pitch_A, std::numeric_limits<int>::max(),
-                           std::numeric_limits<int>::max()) != hipSuccess);
-  }
-}
-#endif
 /*
  * This testcase verifies the basic scenario of
  * hipMallocPitch API for different datatypes
  *
  */
-TEMPLATE_TEST_CASE("Unit_hipMallocPitch_Basic",
-    "[hipMallocPitch]", int, unsigned int, float) {
+TEMPLATE_TEST_CASE("Unit_hipMallocPitch_Basic", "[hipMallocPitch]", int, unsigned int, float) {
+  CHECK_IMAGE_SUPPORT
+
   TestType* A_d;
   size_t pitch_A = 0;
   size_t width{NUM_W * sizeof(TestType)};
   REQUIRE(hipMallocPitch(reinterpret_cast<void**>(&A_d),
           &pitch_A, width, NUM_H) == hipSuccess);
+  REQUIRE(width <= pitch_A);
   HIP_CHECK(hipFree(A_d));
 }
 
@@ -415,8 +411,10 @@ TEMPLATE_TEST_CASE("Unit_hipMallocPitch_Basic",
  * This testcase verifies hipMallocPitch API for small
  * and big chunks of data.
  */
-TEMPLATE_TEST_CASE("Unit_hipMallocPitch_SmallandBigChunks",
-    "[hipMallocPitch]", int, unsigned int, float) {
+TEMPLATE_TEST_CASE("Unit_hipMallocPitch_SmallandBigChunks", "[hipMallocPitch]", int, unsigned int,
+                   float) {
+  CHECK_IMAGE_SUPPORT
+
   MemoryAllocDiffSizes<TestType>(0);
 }
 
@@ -424,8 +422,9 @@ TEMPLATE_TEST_CASE("Unit_hipMallocPitch_SmallandBigChunks",
  * This testcase verifies the memory allocated by hipMallocPitch API
  * by performing Memcpy2D on the allocated memory.
  */
-TEMPLATE_TEST_CASE("Unit_hipMallocPitch_Memcpy2D", ""
-                   , int, float, double) {
+TEMPLATE_TEST_CASE("Unit_hipMallocPitch_Memcpy2D", "", int, float, double) {
+  CHECK_IMAGE_SUPPORT
+
   HIP_CHECK(hipSetDevice(0));
   TestType  *A_h{nullptr}, *B_h{nullptr}, *C_h{nullptr}, *A_d{nullptr},
             *B_d{nullptr};
@@ -469,7 +468,6 @@ TEMPLATE_TEST_CASE("Unit_hipMallocPitch_Memcpy2D", ""
 }
 
 
-
 /*
 This testcase verifies the hipMallocPitch API in multithreaded
 scenario by launching threads in parallel on multiple GPUs
@@ -477,6 +475,8 @@ and verifies the hipMallocPitch API with small and big chunks data
 */
 
 TEST_CASE("Unit_hipMallocPitch_MultiThread", "") {
+  CHECK_IMAGE_SUPPORT
+
   std::vector<std::thread> threadlist;
   int devCnt = 0;
 
@@ -497,8 +497,9 @@ TEST_CASE("Unit_hipMallocPitch_MultiThread", "") {
  *     variable to another kernel variable.
  *  3. Validating the result
  */
-TEMPLATE_TEST_CASE("Unit_hipMallocPitch_KernelLaunch", ""
-                   , int, float, double) {
+TEMPLATE_TEST_CASE("Unit_hipMallocPitch_KernelLaunch", "", int, float, double) {
+  CHECK_IMAGE_SUPPORT
+
   HIP_CHECK(hipSetDevice(0));
   TestType  *A_h{nullptr}, *B_h{nullptr}, *C_h{nullptr}, *A_d{nullptr},
             *B_d{nullptr};
@@ -538,4 +539,3 @@ TEMPLATE_TEST_CASE("Unit_hipMallocPitch_KernelLaunch", ""
   HipTest::freeArrays<TestType>(nullptr, nullptr, nullptr,
                                 A_h, B_h, C_h, false);
 }
-

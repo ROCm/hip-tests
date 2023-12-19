@@ -19,7 +19,7 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
-#include <hip_test_defgroups.hh>
+ 
 #include "stream_capture_common.hh" // NOLINT
 
 #pragma clang diagnostic ignored "-Wunused-variable"

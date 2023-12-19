@@ -18,7 +18,7 @@ THE SOFTWARE.
 */
 #include <hip_test_common.hh>
 #include <dlfcn.h>
-#include <hip_test_defgroups.hh>
+ 
 /**
 * @addtogroup hipLaunchKernelGGL hipLaunchCooperativeKernel
 * @{

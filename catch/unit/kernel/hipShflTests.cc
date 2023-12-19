@@ -21,7 +21,7 @@ THE SOFTWARE.
 #include <hip_test_checkers.hh>
 #include <hip_test_common.hh>
 #include <hip/hip_fp16.h>
-#include <hip_test_defgroups.hh>
+ 
 
 #define WIDTH 4
 

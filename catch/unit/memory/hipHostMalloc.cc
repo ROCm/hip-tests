@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2021 Advanced Micro Devices, Inc. All rights reserved.
+   Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the "Software"), to deal
@@ -29,18 +29,29 @@ This testfile verifies the following scenarios of hipHostMalloc API
 5. Allocating memory using hipHostMalloc with default flag
 */
 
-#include<hip_test_checkers.hh>
-#include<kernels.hh>
-#include<hip_test_common.hh>
+#include <hip_test_checkers.hh>
+#include <kernels.hh>
+#include <hip_test_common.hh>
 #include <hip_test_context.hh>
+#include <hip_test_helper.hh>
 
 #define SYNC_EVENT 0
 #define SYNC_STREAM 1
 #define SYNC_DEVICE 2
+#define MEMORY_PERCENT 10
+#define BLOCK_SIZE 512
+#define VALUE 32
 
 std::vector<std::string> syncMsg = {"event", "stream", "device"};
 static constexpr int numElements{1024 * 16};
 static constexpr size_t sizeBytes{numElements * sizeof(int)};
+
+#if HT_AMD
+static __global__ void kerTestMemAccess(char *buf) {
+  int myId = threadIdx.x + blockDim.x * blockIdx.x;
+  buf[myId] = VALUE;
+}
+#endif
 
 void CheckHostPointer(int numElements, int* ptr, unsigned eventFlags,
                       int syncMethod, std::string msg) {
@@ -134,8 +145,8 @@ TEST_CASE("Unit_hipHostMalloc_Basic") {
     dim3 dimGrid(LEN / 512, 1, 1);
     dim3 dimBlock(512, 1, 1);
     HipTest::launchKernel<float>(HipTest::vectorADD<float>, dimGrid, dimBlock,
-                       0, 0, static_cast<const float*>(A_d),
-                       static_cast<const float*>(B_d), C_d, static_cast<size_t>(LEN));
+            0, 0, static_cast<const float*>(A_d),
+            static_cast<const float*>(B_d), C_d, static_cast<size_t>(LEN));
     HIP_CHECK(hipMemcpy(C_h, C_d, LEN*sizeof(float),
                         hipMemcpyDeviceToHost));
     HIP_CHECK(hipDeviceSynchronize());
@@ -229,16 +240,73 @@ TEST_CASE("Unit_hipHostMalloc_Default") {
   CheckHostPointer(numElements, A, 0, SYNC_DEVICE, ptrType);
   CheckHostPointer(numElements, A, 0, SYNC_STREAM, ptrType);
   CheckHostPointer(numElements, A, 0, SYNC_EVENT, ptrType);
-
 }
 
 TEST_CASE("Unit_hipHostGetDevicePointer_NullCheck") {
   int* d_a;
   HIP_CHECK(hipHostMalloc(reinterpret_cast<void**>(&d_a), sizeof(int)));
 
-  auto res = hipHostGetDevicePointer(nullptr,d_a,0);
+  auto res = hipHostGetDevicePointer(nullptr, d_a, 0);
   REQUIRE(res == hipErrorInvalidValue);
 
   HIP_CHECK(hipHostFree(d_a));
 }
 
+/*
+This testcase verifies the hipHostMalloc API by
+1. Allocating more memory than total GPU memory. Should return hipSuccess.
+2. Allocating more memory than the total GPU memory and accessing the memory
+   in a device function.
+*/
+TEST_CASE("Unit_hipHostMalloc_AllocateMoreThanAvailGPUMemory") {
+  char* A = nullptr;
+  size_t maxGpuMem = 0, availableMem = 0;
+  // Get available GPU memory and total GPU memory
+  HIP_CHECK(hipMemGetInfo(&availableMem, &maxGpuMem));
+  #if defined(_WIN32)
+  size_t allocsize = availableMem - (256 * 1024 * 1024);
+  allocsize -= allocsize * (MEMORY_PERCENT / 100.0);
+  #else
+  size_t allocsize = maxGpuMem + ((maxGpuMem * MEMORY_PERCENT) / 100);
+  #endif
+  // Get free host In bytes
+  size_t hostMemFree = HipTest::getMemoryAmount() * 1024 * 1024;
+  // Ensure that allocsize < hostMemFree
+  if (allocsize < hostMemFree) {
+    HIP_CHECK(hipHostMalloc(reinterpret_cast<void**>(&A), allocsize));
+    HIP_CHECK(hipHostFree(A));
+  } else {
+    WARN("Skipping test as CPU memory is less than GPU memory");
+  }
+}
+
+#if HT_AMD
+TEST_CASE("Unit_hipHostMalloc_AllocateUseMoreThanAvailGPUMemory") {
+  char* A = nullptr;
+  size_t maxGpuMem = 0, availableMem = 0;
+  // Get available GPU memory and total GPU memory
+  HIP_CHECK(hipMemGetInfo(&availableMem, &maxGpuMem));
+  #if defined(_WIN32)
+  size_t allocsize = availableMem - (256 * 1024 * 1024);
+  allocsize -= allocsize * (MEMORY_PERCENT / 100.0);
+  #else
+  size_t allocsize = maxGpuMem + ((maxGpuMem * MEMORY_PERCENT) / 100);
+  #endif
+  // Get free host In bytes
+  size_t hostMemFree = HipTest::getMemoryAmount() * 1024 * 1024;
+  // Ensure that allocsize < hostMemFree
+  if (allocsize < hostMemFree) {
+    HIP_CHECK(hipHostMalloc(reinterpret_cast<void**>(&A), allocsize));
+    constexpr int sample_size = 1024;
+    // memset a sample size to 0
+    HIP_CHECK(hipMemset(A, 0, sample_size));
+    unsigned int grid_size = allocsize/BLOCK_SIZE;
+    // Check if the allocated memory can be accessed in kernels
+    kerTestMemAccess<<<grid_size, BLOCK_SIZE>>>(A);
+    HIP_CHECK(hipDeviceSynchronize());
+    HIP_CHECK(hipHostFree(A));
+  } else {
+    WARN("Skipping test as CPU memory is less than GPU memory");
+  }
+}
+#endif

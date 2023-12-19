@@ -16,17 +16,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/*
-Testcase Scenarios :
-Unit_hipMemcpy2DFromArray_Positive_Default - Test basic memcpy between 2D array
-and host/device with hipMemcpy2DFromArray api
-Unit_hipMemcpy2DFromArray_Positive_Synchronization_Behavior - Test
-synchronization behavior for hipMemcpy2DFromArray api
-Unit_hipMemcpy2DFromArray_Positive_ZeroWidthHeight - Test that no data is copied
-when width/height is set to 0 Unit_hipMemcpy2DFromArray_Negative_Parameters -
-Test unsuccessful execution of hipMemcpy2DFromArray api when parameters are
-invalid
-*/
+
 #include "array_memcpy_tests_common.hh"
 
 #include <hip/hip_runtime_api.h>
@@ -35,6 +25,8 @@ invalid
 #include <utils.hh>
 
 TEST_CASE("Unit_hipMemcpyAtoH_Positive_Default") {
+  CHECK_IMAGE_SUPPORT
+
   using namespace std::placeholders;
 
   const auto width = GENERATE(512, 1024, 2048);
@@ -44,6 +36,8 @@ TEST_CASE("Unit_hipMemcpyAtoH_Positive_Default") {
 }
 
 TEST_CASE("Unit_hipMemcpyAtoH_Positive_Synchronization_Behavior") {
+  CHECK_IMAGE_SUPPORT
+
   using namespace std::placeholders;
 
   const auto width = GENERATE(512, 1024, 2048);
@@ -63,6 +57,8 @@ SWDEV-274683
 */
 #if HT_NVIDIA
 TEST_CASE("Unit_hipMemcpyAtoH_Positive_ZeroCount") {
+  CHECK_IMAGE_SUPPORT
+
   const auto width = 1024;
   const auto height = 0;
   const auto allocation_size = width * sizeof(int);
@@ -85,6 +81,8 @@ TEST_CASE("Unit_hipMemcpyAtoH_Positive_ZeroCount") {
 #endif
 
 TEST_CASE("Unit_hipMemcpyAtoH_Negative_Parameters") {
+  CHECK_IMAGE_SUPPORT
+
   using namespace std::placeholders;
 
   const auto width = 1024;

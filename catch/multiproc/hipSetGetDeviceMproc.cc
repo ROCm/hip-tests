@@ -101,7 +101,7 @@ static void testInvalidDevice(int numDevices, bool useRocrEnv,
 
   if (cPid == 0) {  // child
     hipError_t err;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
     setenv("CUDA_VISIBLE_DEVICES", visibleDeviceString, 1);
 #else
     if (true == useRocrEnv) {
@@ -190,7 +190,7 @@ static void testValidDevices(int numDevices, bool useRocrEnv, int *deviceList,
   cPid = fork();
 
   if (cPid == 0) {
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
     unsetenv("CUDA_VISIBLE_DEVICES");
     setenv("CUDA_VISIBLE_DEVICES", visibleDeviceString, 1);
 #else
@@ -420,7 +420,7 @@ TEST_CASE("Unit_hipSetDevice_InvalidVisibleDeviceList") {
   SECTION("Test setting invalid device to HIP_VISIBLE_DEVICES") {
     testInvalidDevice(numDevices, false, numDevices);
   }
-#ifndef __HIP_PLATFORM_NVCC__
+#ifndef __HIP_PLATFORM_NVIDIA__
   SECTION("Test setting -1 to ROCR_VISIBLE_DEVICES") {
     testInvalidDevice(numDevices, true, -1);
   }
@@ -449,7 +449,7 @@ TEST_CASE("Unit_hipSetDevice_ValidVisibleDeviceList") {
   SECTION("Test setting valid hip visible device list") {
     testValidDevices(numDevices, false, deviceList, numDevices);
   }
-#ifndef __HIP_PLATFORM_NVCC__
+#ifndef __HIP_PLATFORM_NVIDIA__
   SECTION("Test setting valid rocr visible device list") {
     testValidDevices(numDevices, true, deviceList, numDevices);
   }
@@ -472,7 +472,7 @@ TEST_CASE("Unit_hipSetDevice_SubsetOfAvailableDevices") {
     deviceList[i] = deviceListLength-1-i;
   }
 
-#ifndef __HIP_PLATFORM_NVCC__
+#ifndef __HIP_PLATFORM_NVIDIA__
   testValidDevices(numDevices, true, deviceList,
         deviceListLength);
 #endif
@@ -480,7 +480,7 @@ TEST_CASE("Unit_hipSetDevice_SubsetOfAvailableDevices") {
         deviceListLength);
 }
 
-#ifndef __HIP_PLATFORM_NVCC__
+#ifndef __HIP_PLATFORM_NVIDIA__
 /* Following tests apply only for AMD Platforms */
 
 /**
@@ -565,6 +565,6 @@ TEST_CASE("Unit_hipSetDevice_RvdCvdDevicesList") {
 
   testRvdCvd(numDevices, deviceList, count);
 }
-#endif  // __HIP_PLATFORM_NVCC__
+#endif  // __HIP_PLATFORM_NVIDIA__
 
 #endif  // __linux__

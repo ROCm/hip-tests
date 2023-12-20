@@ -94,10 +94,15 @@ static void TstCoherency(int* ptr, bool hmmMem) {
 
 /* Test case description: The following test validates if fine grain
    behavior is observed or not with memory allocated using hipHostMalloc()*/
-// The following tests are disabled for Nvidia as they are not consistently
-// passing
-#if HT_AMD
 TEST_CASE("Unit_hipHostMalloc_CoherentTst") {
+  int pcieAtomic = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&pcieAtomic, hipDeviceAttributeHostNativeAtomicSupported, 0));
+  if (!pcieAtomic) {
+    fprintf(stderr, "Device doesn't support pcie atomic, Skipped\n");
+    REQUIRE(true);
+    return;
+  }
+
   int *Ptr = nullptr, SIZE = sizeof(int);
   bool HmmMem = false;
   YES_COHERENT = false;
@@ -117,8 +122,6 @@ TEST_CASE("Unit_hipHostMalloc_CoherentTst") {
   HIP_CHECK(hipHostFree(Ptr));
   REQUIRE(YES_COHERENT);
 }
-#endif
-
 
 /* Test case description: The following test validates if fine grain
    behavior is observed or not with memory allocated using hipMallocManaged()*/

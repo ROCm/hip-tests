@@ -129,7 +129,8 @@ void verify_linked_lists_on_device(hipStream_t stream, Node* pNodes,
   int correct_count = *pNumCorrect;
   if(correct_count != ListLength * numLists)
   {
-    fprintf(stderr,"Failed\n");
+    fprintf(stderr, "Failed: correct_count = %d, ListLength=%u, numLists = %u\n", correct_count,
+            ListLength, numLists);
     REQUIRE(false);
   }
 }
@@ -239,6 +240,7 @@ TEST_CASE("test_svm_shared_address_space_fine_grain_buffers") {
 * Test requirements
 * ------------------------
 *  - Host specific (WINDOWS and LINUX)
+*  - Unified address supported on devices
 *  - System fine grain access supported on devices
 *  - HIP_VERSION >= 5.7
 */

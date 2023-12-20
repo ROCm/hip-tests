@@ -72,14 +72,14 @@ set(TEST_SRC
     hipMemAdviseMmap.cc
     hipMallocManaged.cc
     hipMemRangeGetAttribute.cc
-    hipMemRangeGetAttribute_old.cc)
+    hipMemRangeGetAttribute_old.cc
+    hipMemCoherencyTst.cc)
 
 if(HIP_PLATFORM MATCHES "amd")
   set(TEST_SRC
       ${TEST_SRC}
       hipMemPtrGetInfo.cc
       hipPointerGetAttributes.cc
-      hipMemCoherencyTst.cc
       hipExtMallocWithFlags.cc
       hipMallocMngdMultiThread.cc
       hipMemVmm.cc
@@ -101,6 +101,7 @@ hip_add_exe_to_target(NAME MemoryTest1
 if(HIP_PLATFORM MATCHES "amd")
   set_source_files_properties(hipHostRegister.cc PROPERTIES COMPILE_FLAGS -std=c++17)
   add_executable(hipHostRegisterPerf EXCLUDE_FROM_ALL hipHostRegister_exe.cc)
+  add_dependencies(build_tests hipHostRegisterPerf)
 if(UNIX)
   add_executable(hipMemAdviseTstAlignedAllocMem EXCLUDE_FROM_ALL hipMemAdvise_AlignedAllocMem_Exe.cc)
   add_dependencies(MemoryTest1 hipMemAdviseTstAlignedAllocMem)
@@ -207,17 +208,18 @@ hip_add_exe_to_target(NAME MemoryTest2
   TEST_SRC ${TEST_SRC}
   TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
 
-if(HIP_PLATFORM MATCHES "amd")
-  set(TEST_SRC
-    hipSVMTestByteGranularity.cpp
-    hipSVMTestFineGrainMemoryConsistency.cpp
-    hipSVMTestFineGrainSyncBuffers.cpp
-    hipSVMTestSharedAddressSpaceFineGrain.cpp
-  )
+set(TEST_SRC
+  hipSVMTestByteGranularity.cpp
+  hipSVMTestFineGrainMemoryConsistency.cpp
+  hipSVMTestFineGrainSyncBuffers.cpp
+  hipSVMTestSharedAddressSpaceFineGrain.cpp
+)
 
-  hip_add_exe_to_target(NAME SVMAtomicTest
-    TEST_SRC ${TEST_SRC}
-    TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
+hip_add_exe_to_target(NAME SVMAtomicTest
+  TEST_SRC ${TEST_SRC}
+  TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
 
-  add_dependencies(build_tests hipHostRegisterPerf)
+if(HIP_PLATFORM MATCHES "nvidia")
+  set_target_properties(SVMAtomicTest PROPERTIES COMPILE_FLAGS -arch=sm_70)
+  set_target_properties(MemoryTest1 PROPERTIES COMPILE_FLAGS -arch=sm_70)
 endif()

@@ -74,6 +74,13 @@ __global__ void sum_neighbor_locations(char* a, unsigned int num_devices,
 *  - HIP_VERSION >= 5.7
 */
 TEST_CASE("test_svm_byte_granularity") {
+  int pcieAtomic = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&pcieAtomic, hipDeviceAttributeHostNativeAtomicSupported, 0));
+  if (!pcieAtomic) {
+    fprintf(stderr, "Device doesn't support pcie atomic, Skipped\n");
+    REQUIRE(true);
+    return;
+  }
   const int num_elements = 2048;
   int num_devices = 0;
   HIP_CHECK(hipGetDeviceCount(&num_devices));

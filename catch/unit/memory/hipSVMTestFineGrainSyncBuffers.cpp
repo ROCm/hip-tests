@@ -76,6 +76,13 @@ void spawnAnalysisTask(int location)
 *  - HIP_VERSION >= 5.7
 */
 TEST_CASE("test_svm_fine_grain_sync_buffers") {
+  int pcieAtomic = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&pcieAtomic, hipDeviceAttributeHostNativeAtomicSupported, 0));
+  if (!pcieAtomic) {
+    fprintf(stderr, "Device doesn't support pcie atomic, Skipped\n");
+    REQUIRE(true);
+    return;
+  }
   size_t num_pixels = 1024 * 1024 * 2;
   hipStream_t stream;
   HIP_CHECK(hipSetDevice(0));

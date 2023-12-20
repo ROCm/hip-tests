@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 
 #pragma clang diagnostic ignored "-Wunused-but-set-variable"
+#pragma clang diagnostic ignored "-Wunused-parameter"
 #pragma clang diagnostic ignored "-Wunused-function"
 
 #if defined(_WIN32)

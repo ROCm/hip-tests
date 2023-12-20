@@ -18,5 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+add_subdirectory(stream)
 add_subdirectory(event)
 add_subdirectory(example)

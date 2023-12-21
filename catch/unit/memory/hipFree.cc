@@ -97,7 +97,7 @@ TEMPLATE_TEST_CASE("Unit_hipFreeImplicitSyncArray", "", char, float, float2, flo
     HIP_CHECK(hipStreamQuery(nullptr));
   }
   SECTION("ArrayDestroy") {
-    hiparray cuArrayPtr{};
+    hipArray_t cuArrayPtr{};
 
     HIP_ARRAY_DESCRIPTOR cuDesc;
     cuDesc.Width = width;
@@ -232,7 +232,7 @@ TEST_CASE("Unit_hipFreeDoubleArrayDestroy") {
   size_t height = GENERATE(0, 32, 512, 1024);
   DriverContext ctx{};
 
-  hiparray ArrayPtr{};
+  hipArray_t ArrayPtr{};
   HIP_ARRAY_DESCRIPTOR cuDesc;
   cuDesc.Width = width;
   cuDesc.Height = height;
@@ -328,7 +328,7 @@ TEMPLATE_TEST_CASE("Unit_hipFreeMultiTArray", "", char, int, float2, float4) {
 
 
   SECTION("ArrayDestroy") {
-    std::vector<hiparray> ptrs(numAllocs);
+    std::vector<hipArray_t> ptrs(numAllocs);
     HIP_ARRAY_DESCRIPTOR cuDesc;
     cuDesc.Width = width;
     cuDesc.Height = height;
@@ -401,7 +401,7 @@ TEMPLATE_TEST_CASE("Unit_hipFreeMultiTArray", "", char, int, float2, float4) {
     }
   }
   SECTION("ArrayDestroy") {
-    std::vector<hiparray> cuArrayPtrs(numAllocs);
+    std::vector<hipArray_t> cuArrayPtrs(numAllocs);
 
     HIP_ARRAY_DESCRIPTOR cuDesc;
     cuDesc.Width = extent.width;

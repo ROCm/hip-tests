@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2021-2023 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -16,6 +16,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
+/**
+ * @addtogroup hipMemcpy3DAsync hipMemcpy3DAsync
+ * @{
+ * @ingroup MemoryTest
+ * `hipMemcpy3DAsync(const hipMemcpy3DParms* p, hipStream_t stream)` -
+ * Copies data between 3D objects.
+ */
 
 /*
  * This testfile verifies the following Scenarios of hipMemcpy3DAsync API
@@ -39,7 +47,7 @@ template <typename T>
 class Memcpy3DAsync {
     int width, height, depth;
     unsigned int size;
-    hipArray *arr, *arr1;
+    hipArray_t arr, arr1;
     hipChannelFormatKind formatKind;
     hipMemcpy3DParms myparms;
     T* hData;
@@ -148,7 +156,7 @@ void Memcpy3DAsync<T>::D2H_H2D_DeviceMem_OnDiffDevice() {
     myparms.srcPtr = make_hipPitchedPtr(hData, width * sizeof(T),
         width, height);
     myparms.dstArray = arr;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
     myparms.kind = cudaMemcpyHostToDevice;
 #else
     myparms.kind = hipMemcpyHostToDevice;
@@ -166,7 +174,7 @@ void Memcpy3DAsync<T>::D2H_H2D_DeviceMem_OnDiffDevice() {
         width * sizeof(T),
         width, height);
     myparms.srcArray = arr;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
     myparms.kind = cudaMemcpyDeviceToHost;
 #else
     myparms.kind = hipMemcpyDeviceToHost;
@@ -218,7 +226,7 @@ void Memcpy3DAsync<T>::D2D_DeviceMem_OnDiffDevice() {
                                         width * sizeof(T),
                                         width, height);
     myparms.dstArray = arr;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
     myparms.kind = cudaMemcpyHostToDevice;
 #else
     myparms.kind = hipMemcpyHostToDevice;
@@ -229,7 +237,7 @@ void Memcpy3DAsync<T>::D2D_DeviceMem_OnDiffDevice() {
     // Allocating Mem on GPU device 0 and trigger hipMemcpy3DAsync from GPU 1
     HIP_CHECK(hipSetDevice(1));
     HIP_CHECK(hipStreamCreate(&stream));
-    hipArray *arr2;
+    hipArray_t arr2;
     hipChannelFormatDesc channelDesc1 = hipCreateChannelDesc(sizeof(T)*8,
                                                     0, 0, 0, formatKind);
     HIP_CHECK(hipMalloc3DArray(&arr2, &channelDesc1,
@@ -241,7 +249,7 @@ void Memcpy3DAsync<T>::D2D_DeviceMem_OnDiffDevice() {
     // Device to Device
     myparms.srcArray = arr;
     myparms.dstArray = arr2;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
     myparms.kind = cudaMemcpyDeviceToDevice;
 #else
     myparms.kind = hipMemcpyDeviceToDevice;
@@ -261,7 +269,7 @@ void Memcpy3DAsync<T>::D2D_DeviceMem_OnDiffDevice() {
                                         width * sizeof(T),
                                         width, height);
     myparms.srcArray = arr2;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
     myparms.kind = cudaMemcpyDeviceToHost;
 #else
     myparms.kind = hipMemcpyDeviceToHost;
@@ -294,7 +302,7 @@ void Memcpy3DAsync<T>::NegativeTests() {
   myparms.srcPos = make_hipPos(0, 0, 0);
   myparms.dstPos = make_hipPos(0, 0, 0);
   myparms.extent = make_hipExtent(width , height, depth);
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
   myparms.kind = cudaMemcpyHostToDevice;
 #else
   myparms.kind = hipMemcpyHostToDevice;
@@ -406,7 +414,7 @@ void Memcpy3DAsync<T>::NegativeTests() {
     myparms.srcPos = make_hipPos(width+1, 0, 0);
     myparms.srcArray = arr;
     myparms.dstArray = arr1;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
     myparms.kind = cudaMemcpyDeviceToDevice;
 #else
     myparms.kind = hipMemcpyDeviceToDevice;
@@ -418,7 +426,7 @@ void Memcpy3DAsync<T>::NegativeTests() {
     myparms.srcPos = make_hipPos(0, height+1, 0);
     myparms.srcArray = arr;
     myparms.dstArray = arr1;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
     myparms.kind = cudaMemcpyDeviceToDevice;
 #else
     myparms.kind = hipMemcpyDeviceToDevice;
@@ -430,7 +438,7 @@ void Memcpy3DAsync<T>::NegativeTests() {
     myparms.srcPos = make_hipPos(0, 0, depth+1);
     myparms.srcArray = arr;
     myparms.dstArray = arr1;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
     myparms.kind = cudaMemcpyDeviceToDevice;
 #else
     myparms.kind = hipMemcpyDeviceToDevice;
@@ -439,7 +447,7 @@ void Memcpy3DAsync<T>::NegativeTests() {
   }
 
   SECTION("Passing src array size  > dst array size") {
-    hipArray *arr2;
+    hipArray_t arr2;
     hipChannelFormatDesc channelDesc1 = hipCreateChannelDesc(sizeof(T)*8,
         0, 0, 0, formatKind);
     HIP_CHECK(hipMalloc3DArray(&arr2, &channelDesc1,
@@ -447,7 +455,7 @@ void Memcpy3DAsync<T>::NegativeTests() {
                               , 3), hipArrayDefault));
     myparms.srcArray = arr;
     myparms.dstArray = arr2;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
     myparms.kind = cudaMemcpyDeviceToDevice;
 #else
     myparms.kind = hipMemcpyDeviceToDevice;
@@ -493,7 +501,7 @@ void Memcpy3DAsync<T>::D2D_SameDeviceMem_StreamDiffDevice() {
     // Host to Device
     myparms.srcPtr = make_hipPitchedPtr(hData, width * sizeof(T), width, height);
     myparms.dstArray = arr;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
     myparms.kind = cudaMemcpyHostToDevice;
 #else
     myparms.kind = hipMemcpyHostToDevice;
@@ -506,7 +514,7 @@ void Memcpy3DAsync<T>::D2D_SameDeviceMem_StreamDiffDevice() {
     SetDefaultData();
     myparms.srcArray = arr;
     myparms.dstArray = arr1;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
     myparms.kind = cudaMemcpyDeviceToDevice;
 #else
     myparms.kind = hipMemcpyDeviceToDevice;
@@ -522,7 +530,7 @@ void Memcpy3DAsync<T>::D2D_SameDeviceMem_StreamDiffDevice() {
     myparms.dstPtr = make_hipPitchedPtr(hOutputData,
         width * sizeof(T), width, height);
     myparms.srcArray = arr1;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
     myparms.kind = cudaMemcpyDeviceToHost;
 #else
     myparms.kind = hipMemcpyDeviceToHost;
@@ -555,7 +563,7 @@ void Memcpy3DAsync<T>::Extent_Validation() {
   myparms.dstPos = make_hipPos(0, 0, 0);
   myparms.srcPtr = make_hipPitchedPtr(hData, width * sizeof(T), width, height);
   myparms.dstArray = arr;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
   myparms.kind = cudaMemcpyHostToDevice;
 #else
   myparms.kind = hipMemcpyHostToDevice;
@@ -603,7 +611,7 @@ void Memcpy3DAsync<T>::simple_Memcpy3DAsync() {
   // Host to Device
   myparms.srcPtr = make_hipPitchedPtr(hData, width * sizeof(T), width, height);
   myparms.dstArray = arr;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
   myparms.kind = cudaMemcpyHostToDevice;
 #else
   myparms.kind = hipMemcpyHostToDevice;
@@ -622,7 +630,7 @@ void Memcpy3DAsync<T>::simple_Memcpy3DAsync() {
   SetDefaultData();
   myparms.srcArray = arr;
   myparms.dstArray = arr1;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
   myparms.kind = cudaMemcpyDeviceToDevice;
 #else
   myparms.kind = hipMemcpyDeviceToDevice;
@@ -638,7 +646,7 @@ void Memcpy3DAsync<T>::simple_Memcpy3DAsync() {
   myparms.dstPtr = make_hipPitchedPtr(hOutputData,
       width * sizeof(T), width, height);
   myparms.srcArray = arr1;
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
   myparms.kind = cudaMemcpyDeviceToHost;
 #else
   myparms.kind = hipMemcpyDeviceToHost;
@@ -653,13 +661,23 @@ void Memcpy3DAsync<T>::simple_Memcpy3DAsync() {
   free(hOutputData);
   DeAllocateMemory();
 }
-/*
-This testcase verifies hipMemcpyAsync for different datatypes
-and different sizes
-*/
-TEMPLATE_TEST_CASE("Unit_hipMemcpy3DAsync_Basic", "[hipMemcpy3DAsync]", int, unsigned int, float) {
-  CHECK_IMAGE_SUPPORT
 
+/**
+ * Test Description
+ * ------------------------
+ *  - This testcase verifies hipMemcpyAsync for different datatypes and different sizes
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy3DAsync_old.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+
+TEMPLATE_TEST_CASE("Unit_hipMemcpy3DAsync_Basic",
+                   "[hipMemcpy3DAsync]",
+                   int, unsigned int, float) {
+  CHECK_IMAGE_SUPPORT
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   int device = -1;
@@ -687,25 +705,39 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpy3DAsync_Basic", "[hipMemcpy3DAsync]", int, uns
   }
 }
 
-/*
-This testcase performs the extent validation scenarios of
-hipMemcpy3D API
-*/
+/**
+ * Test Description
+ * ------------------------
+ *  - This testcase performs the extent validation scenarios of hipMemcpy3D API
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy3DAsync_old.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+
 TEST_CASE("Unit_hipMemcpy3DAsync_ExtentValidation") {
   CHECK_IMAGE_SUPPORT
-
   Memcpy3DAsync<int> memcpy3d(width, height, depth,
                               hipChannelFormatKindSigned);
   memcpy3d.Extent_Validation();
 }
 
-/*
-This testcase performs the negative scenarios of
-hipMemcpy3DAsync API
-*/
+/**
+ * Test Description
+ * ------------------------
+ *  - This testcase performs the negative scenarios of hipMemcpy3DAsync API
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy3DAsync_old.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+
 TEST_CASE("Unit_hipMemcpy3DAsync_multiDevice-Negative") {
   CHECK_IMAGE_SUPPORT
-
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {
@@ -717,13 +749,20 @@ TEST_CASE("Unit_hipMemcpy3DAsync_multiDevice-Negative") {
   }
 }
 
-/*
-This testcase performs the D2H,H2D and D2D on peer
-GPU device
-*/
+/**
+ * Test Description
+ * ------------------------
+ *  - This testcase performs the D2H,H2D and D2D on peer GPU device
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy3DAsync_old.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+
 TEST_CASE("Unit_hipMemcpy3DAsync_multiDevice-D2D") {
   CHECK_IMAGE_SUPPORT
-
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {
@@ -743,14 +782,21 @@ TEST_CASE("Unit_hipMemcpy3DAsync_multiDevice-D2D") {
   }
 }
 
-/*
-This testcase checks hipMemcpy3DAsync API by 
-allocating memory in one GPU and creating stream
-in another GPU
-*/
+/**
+ * Test Description
+ * ------------------------
+ *  - This testcase checks hipMemcpy3DAsync API by
+      allocating memory in one GPU and creating stream in another GPU
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy3DAsync_old.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+
 TEST_CASE("Unit_hipMemcpy3DAsync_multiDevice-DiffStream") {
   CHECK_IMAGE_SUPPORT
-
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {
@@ -759,5 +805,33 @@ TEST_CASE("Unit_hipMemcpy3DAsync_multiDevice-DiffStream") {
     memcpy3dAsync.D2D_SameDeviceMem_StreamDiffDevice();
   } else {
     SUCCEED("skipping the testcases as numDevices < 2");
+  }
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - This testcase performs size check on hipMemcpy3DAsync API
+      1. Verify with 128 for all height, width & depth value
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpy3DAsync_old.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+
+TEST_CASE("Unit_hipMemcpy3DAsync_Basic_Size_Test") {
+  CHECK_IMAGE_SUPPORT
+  constexpr int size_128b = 128;
+  int numDevices = 0;
+  HIP_CHECK(hipGetDeviceCount(&numDevices));
+
+  if (numDevices > 1) {
+    SECTION("Verify with 128 for all height, width & depth value") {
+      Memcpy3DAsync<float> memcpy3dAsync(size_128b, size_128b, size_128b,
+                                         hipChannelFormatKindFloat);
+      memcpy3dAsync.D2D_SameDeviceMem_StreamDiffDevice();
+    }
   }
 }

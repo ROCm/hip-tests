@@ -91,6 +91,19 @@ static int HmmAttrPrint() {
 TEST_CASE("Unit_hipMemRangeGetAttribute_TstCountParam") {
   int MangdMem = HmmAttrPrint();
   if (MangdMem == 1) {
+
+    #if HT_AMD
+      int isPageableHMM = 0;
+      HIP_CHECK(hipDeviceGetAttribute(&isPageableHMM,
+                                    hipDeviceAttributePageableMemoryAccess, 0));
+      if (!isPageableHMM) {
+        SUCCEED("Running on a system  where all the memory requested in hipMallocManaged "
+                "is allocated on the host.\nThis can cause instability because of out-of-memory failures.\n"
+                "Hence skipping the test with Pass result.\n");
+        return;
+      }
+    #endif
+
     int MEM_SIZE = 4096, RND_NUM = 9999, FLG_READMOSTLY_ENBLD = 1;
     bool IfTestPassed = true;
     int data = RND_NUM, *devPtr = nullptr;

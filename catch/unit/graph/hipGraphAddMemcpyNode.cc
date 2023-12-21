@@ -69,7 +69,7 @@ TEST_CASE("Unit_hipGraphAddMemcpyNode_Negative") {
   CHECK_IMAGE_SUPPORT
 
   constexpr int width{10}, height{10}, depth{10};
-  hipArray *devArray1;
+  hipArray_t devArray1;
   hipChannelFormatKind formatKind = hipChannelFormatKindSigned;
   hipMemcpy3DParms myparams;
   uint32_t size = width * height * depth * sizeof(int);
@@ -162,7 +162,7 @@ TEST_CASE("Unit_hipGraphAddMemcpyNode_Negative") {
   SECTION("Passing different element size for hipMemcpy3DParms::srcArray"
                    "and hipMemcpy3DParms::dstArray") {
     myparams.srcArray = devArray1;
-    hipArray *devArray2;
+    hipArray_t devArray2;
     HIP_CHECK(hipMalloc3DArray(&devArray2, &channelDesc,
               make_hipExtent(width+1, height+1, depth+1), hipArrayDefault));
     myparams.dstArray = devArray2;
@@ -180,7 +180,7 @@ TEST_CASE("Unit_hipGraphAddMemcpyNode_Negative") {
 
 static void validateMemcpyNode3DArray(bool peerAccess = false) {
   constexpr int width{10}, height{10}, depth{10};
-  hipArray *devArray1, *devArray2;
+  hipArray_t devArray1, devArray2;
   hipChannelFormatKind formatKind = hipChannelFormatKindSigned;
   hipMemcpy3DParms myparams;
   uint32_t size = width * height * depth * sizeof(int);
@@ -285,7 +285,7 @@ static void validateMemcpyNode2DArray(bool peerAccess = false) {
   int harray2D[YSIZE][XSIZE]{};
   int harray2Dres[YSIZE][XSIZE]{};
   constexpr int width{XSIZE}, height{YSIZE};
-  hipArray *devArray1, *devArray2;
+  hipArray_t devArray1, devArray2;
   hipChannelFormatKind formatKind = hipChannelFormatKindSigned;
   hipMemcpy3DParms myparams;
   hipGraph_t graph;
@@ -384,7 +384,7 @@ static void validateMemcpyNode1DArray(bool peerAccess = false) {
   int harray1D[XSIZE]{};
   int harray1Dres[XSIZE]{};
   constexpr int width{XSIZE};
-  hipArray *devArray1, *devArray2;
+  hipArray_t devArray1, devArray2;
   hipChannelFormatKind formatKind = hipChannelFormatKindSigned;
   hipMemcpy3DParms myparams;
   hipGraph_t graph;

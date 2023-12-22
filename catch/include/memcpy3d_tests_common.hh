@@ -23,7 +23,7 @@ THE SOFTWARE.
 #pragma once
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
 #pragma clang diagnostic ignored "-Wunused-lambda-capture"
-
+#pragma clang diagnostic ignored "-Wunused-parameter"
 #include <variant>
 
 #include <hip_test_common.hh>
@@ -44,8 +44,9 @@ static inline hipMemcpyKind ReverseMemcpyDirection(const hipMemcpyKind direction
   }
 };
 
-static hipMemcpy3DParms GetMemcpy3DParms(PtrVariant dst_ptr, hipPos dst_pos, PtrVariant src_ptr,
-                                         hipPos src_pos, hipExtent extent, hipMemcpyKind kind) {
+static inline hipMemcpy3DParms GetMemcpy3DParms(PtrVariant dst_ptr, hipPos dst_pos,
+                                                PtrVariant src_ptr, hipPos src_pos,
+                                                hipExtent extent, hipMemcpyKind kind) {
   hipMemcpy3DParms parms = {0};
   if (std::holds_alternative<hipArray_t>(dst_ptr)) {
     parms.dstArray = std::get<hipArray_t>(dst_ptr);
@@ -185,7 +186,7 @@ void Memcpy3DDeviceToDeviceShell(F memcpy_func, hipStream_t kernel_stream = null
     HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, src_device, dst_device));
     if (!can_access_peer) {
       std::string msg = "Skipped as peer access cannot be enabled between devices " +
-                         std::to_string(src_device) + " " + std::to_string(dst_device);
+          std::to_string(src_device) + " " + std::to_string(dst_device);
       HipTest::HIP_SKIP_TEST(msg.c_str());
       return;
     }
@@ -205,7 +206,8 @@ void Memcpy3DDeviceToDeviceShell(F memcpy_func, hipStream_t kernel_stream = null
   // Using dst_alloc width and height to set only the elements that will be copied over to
   // dst_alloc
   Iota<<<blocks, threads_per_block, 0, kernel_stream>>>(src_alloc.ptr(), src_alloc.pitch(),
-                          dst_alloc.width_logical(),dst_alloc.height(), dst_alloc.depth());
+                                                        dst_alloc.width_logical(),
+                                                        dst_alloc.height(), dst_alloc.depth());
   HIP_CHECK(hipGetLastError());
 
   HIP_CHECK(memcpy_func(dst_alloc.pitched_ptr(), make_hipPos(0, 0, 0), src_alloc.pitched_ptr(),
@@ -626,15 +628,14 @@ constexpr auto MemTypeUnified() {
 
 using DrvPtrVariant = std::variant<hipPitchedPtr, hipArray_t>;
 
-template <bool async = false>
-hipError_t DrvMemcpy3DWrapper(DrvPtrVariant dst_ptr, hipPos dst_pos, DrvPtrVariant src_ptr,
-                              hipPos src_pos, hipExtent extent, hipMemcpyKind kind,
-                              hipStream_t stream = nullptr) {
+static inline HIP_MEMCPY3D GetDrvMemcpy3DParms(DrvPtrVariant dst_ptr, hipPos dst_pos,
+                                               DrvPtrVariant src_ptr, hipPos src_pos,
+                                               hipExtent extent, hipMemcpyKind kind) {
   HIP_MEMCPY3D parms = {0};
 
   if (std::holds_alternative<hipArray_t>(dst_ptr)) {
     parms.dstMemoryType = hipMemoryTypeArray;
-    parms.dstArray = std::get<hipArray_t>(dst_ptr);  
+    parms.dstArray = std::get<hipArray_t>(dst_ptr);
   } else {
     auto ptr = std::get<hipPitchedPtr>(dst_ptr);
     parms.dstPitch = ptr.pitch;
@@ -693,6 +694,81 @@ hipError_t DrvMemcpy3DWrapper(DrvPtrVariant dst_ptr, hipPos dst_pos, DrvPtrVaria
   parms.dstXInBytes = dst_pos.x;
   parms.dstY = dst_pos.y;
   parms.dstZ = dst_pos.z;
+
+  return parms;
+}
+
+static inline bool operator==(const HIP_MEMCPY3D& lhs, const HIP_MEMCPY3D& rhs) {
+  bool pos_eq = lhs.dstXInBytes == rhs.dstXInBytes && lhs.dstY == rhs.dstY &&
+      lhs.dstZ == rhs.dstZ && lhs.srcXInBytes == rhs.srcXInBytes && lhs.srcY == rhs.srcY &&
+      lhs.srcZ == rhs.srcZ;
+  bool extent_eq =
+      lhs.WidthInBytes == rhs.WidthInBytes && lhs.Height == rhs.Height && lhs.Depth == rhs.Depth;
+  bool mem_eq = true;
+  if (lhs.dstArray) {
+    mem_eq = lhs.dstArray == rhs.dstArray && lhs.dstMemoryType == rhs.dstMemoryType;
+  } else {
+    mem_eq = lhs.dstPitch == rhs.dstPitch && lhs.dstMemoryType == rhs.dstMemoryType;
+  }
+  if (lhs.srcArray) {
+    mem_eq = lhs.srcArray == rhs.srcArray && lhs.srcMemoryType == rhs.srcMemoryType;
+  } else {
+    mem_eq = lhs.srcPitch == rhs.srcPitch && lhs.srcMemoryType == rhs.srcMemoryType;
+  }
+  if (lhs.dstDevice) {
+    mem_eq = mem_eq && (lhs.dstDevice == rhs.dstDevice);
+  }
+  if (lhs.dstHost) {
+    mem_eq = mem_eq && (lhs.dstDevice == rhs.dstDevice);
+  }
+  if (lhs.srcDevice) {
+    mem_eq = mem_eq && (lhs.srcDevice == rhs.srcDevice);
+  }
+  if (lhs.srcHost) {
+    mem_eq = mem_eq && (lhs.srcHost == rhs.srcHost);
+  }
+
+  return pos_eq && extent_eq && mem_eq;
+}
+
+template <bool set_params = false>
+hipError_t DrvMemcpy3DGraphWrapper(DrvPtrVariant dst_ptr, hipPos dst_pos, DrvPtrVariant src_ptr,
+                                   hipPos src_pos, hipExtent extent, hipMemcpyKind kind,
+                                   hipCtx_t context, hipStream_t stream = nullptr) {
+  auto parms = GetDrvMemcpy3DParms(dst_ptr, dst_pos, src_ptr, src_pos, extent, kind);
+
+  hipGraph_t g = nullptr;
+  HIP_CHECK(hipGraphCreate(&g, 0));
+  hipGraphNode_t node = nullptr;
+  if constexpr (set_params) {
+    auto reversed_parms = GetDrvMemcpy3DParms(src_ptr, src_pos, dst_ptr, dst_pos, extent,
+                                              ReverseMemcpyDirection(kind));
+    HIP_CHECK(hipDrvGraphAddMemcpyNode(&node, g, nullptr, 0, &reversed_parms, context));
+    HIP_CHECK(hipDrvGraphMemcpyNodeSetParams(node, &parms));
+  } else {
+    HIP_CHECK(hipDrvGraphAddMemcpyNode(&node, g, nullptr, 0, &parms, context));
+  }
+
+  HIP_MEMCPY3D retrieved_params = {0};
+  HIP_CHECK(hipDrvGraphMemcpyNodeGetParams(node, &retrieved_params));
+  REQUIRE(parms == retrieved_params);
+
+  hipGraphExec_t graph_exec = nullptr;
+  HIP_CHECK(hipGraphInstantiate(&graph_exec, g, nullptr, nullptr, 0));
+  HIP_CHECK(hipGraphLaunch(graph_exec, hipStreamPerThread));
+  HIP_CHECK(hipStreamSynchronize(hipStreamPerThread));
+
+  HIP_CHECK(hipGraphExecDestroy(graph_exec));
+  HIP_CHECK(hipGraphDestroy(g));
+
+  return hipSuccess;
+}
+
+template <bool async = false>
+hipError_t DrvMemcpy3DWrapper(DrvPtrVariant dst_ptr, hipPos dst_pos, DrvPtrVariant src_ptr,
+                              hipPos src_pos, hipExtent extent, hipMemcpyKind kind,
+                              hipStream_t stream = nullptr) {
+  auto parms = GetDrvMemcpy3DParms(dst_ptr, dst_pos, src_ptr, src_pos, extent, kind);
 
   if constexpr (async) {
     return hipDrvMemcpy3DAsync(&parms, stream);

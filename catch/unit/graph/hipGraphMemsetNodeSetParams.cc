@@ -99,7 +99,7 @@ TEMPLATE_TEST_CASE("Unit_hipGraphMemsetNodeSetParams_Positive_Basic", "", uint8_
     return hipSuccess;
   };
 
-  GraphMemsetNodeCommonPositive<TestType>(f);
+  GraphMemsetNodeCommonPositive<TestType, hipMemsetParams>(f);
 }
 
 /**

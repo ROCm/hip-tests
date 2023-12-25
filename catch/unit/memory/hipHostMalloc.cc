@@ -38,7 +38,7 @@ This testfile verifies the following scenarios of hipHostMalloc API
 #define SYNC_EVENT 0
 #define SYNC_STREAM 1
 #define SYNC_DEVICE 2
-#define ADDITIONAL_MEMORY_PERCENT 10
+#define MEMORY_PERCENT 10
 #define BLOCK_SIZE 512
 #define VALUE 32
 
@@ -263,8 +263,12 @@ TEST_CASE("Unit_hipHostMalloc_AllocateMoreThanAvailGPUMemory") {
   size_t maxGpuMem = 0, availableMem = 0;
   // Get available GPU memory and total GPU memory
   HIP_CHECK(hipMemGetInfo(&availableMem, &maxGpuMem));
-  size_t allocsize = maxGpuMem +
-                    ((maxGpuMem*ADDITIONAL_MEMORY_PERCENT)/100);
+  #if defined(_WIN32)
+  size_t allocsize = availableMem - (256 * 1024 * 1024);
+  allocsize -= allocsize * (MEMORY_PERCENT / 100.0);
+  #else
+  size_t allocsize = maxGpuMem + ((maxGpuMem * MEMORY_PERCENT) / 100);
+  #endif
   // Get free host In bytes
   size_t hostMemFree = HipTest::getMemoryAmount() * 1024 * 1024;
   // Ensure that allocsize < hostMemFree
@@ -282,8 +286,12 @@ TEST_CASE("Unit_hipHostMalloc_AllocateUseMoreThanAvailGPUMemory") {
   size_t maxGpuMem = 0, availableMem = 0;
   // Get available GPU memory and total GPU memory
   HIP_CHECK(hipMemGetInfo(&availableMem, &maxGpuMem));
-  size_t allocsize = maxGpuMem +
-                    ((maxGpuMem*ADDITIONAL_MEMORY_PERCENT)/100);
+  #if defined(_WIN32)
+  size_t allocsize = availableMem - (256 * 1024 * 1024);
+  allocsize -= allocsize * (MEMORY_PERCENT / 100.0);
+  #else
+  size_t allocsize = maxGpuMem + ((maxGpuMem * MEMORY_PERCENT) / 100);
+  #endif
   // Get free host In bytes
   size_t hostMemFree = HipTest::getMemoryAmount() * 1024 * 1024;
   // Ensure that allocsize < hostMemFree

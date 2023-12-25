@@ -25,6 +25,6 @@ Linux
 
 Build with CMake:
 •       mkdir build; cd build
-•       cmake -DCMAKE_PREFIX_PATH=path\to\rocm -DHIP_CXX_COMPILER=path\to\clang
+•       cmake ..
 •       make
 •       run hipVulkan executable

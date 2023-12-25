@@ -26,14 +26,14 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 #include <utils.hh>
 
-template <typename T, typename F> void GraphMemsetNodeCommonPositive(F f) {
+template <typename T, typename Tp, typename F> void GraphMemsetNodeCommonPositive(F f) {
   const size_t width = GENERATE(1, 64, kPageSize / sizeof(T) + 1);
   const size_t height = GENERATE(1, 2, 1024);
   DYNAMIC_SECTION("Width: " << width << " Height: " << height) {
     LinearAllocGuard2D<T> alloc(width, height);
 
     constexpr T set_value = 42;
-    hipMemsetParams params = {};
+    Tp params = {};
     params.dst = alloc.ptr();
     params.elementSize = sizeof(T);
     params.width = width;
@@ -50,7 +50,7 @@ template <typename T, typename F> void GraphMemsetNodeCommonPositive(F f) {
   }
 }
 
-template <typename F> void MemsetCommonNegative(F f, hipMemsetParams params) {
+template <typename F, typename T> void MemsetCommonNegative(F f, T params) {
   SECTION("pMemsetParams == nullptr") { HIP_CHECK_ERROR(f(nullptr), hipErrorInvalidValue); }
 
   SECTION("pMemsetParams.dst == nullptr") {

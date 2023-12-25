@@ -97,7 +97,6 @@ set(TEST_SRC
     hipMemcpyFromSymbol.cc
     hipPtrGetAttribute.cc
     hipMemPoolApi.cc
-    hipMallocFromPoolAsync.cc
     hipMemcpyPeer.cc
     hipMemcpyPeer_old.cc
     hipMemcpyPeerAsync.cc
@@ -137,8 +136,6 @@ set(TEST_SRC
     hipMemAdvise_old.cc
     hipMemAdvise.cc
     hipMemRangeGetAttributes.cc
-    hipFreeAsync.cc
-    hipMallocAsync.cc
     hipStreamAttachMemAsync.cc
     hipMemRangeGetAttributes_old.cc
     hipMemGetAddressRange.cc)

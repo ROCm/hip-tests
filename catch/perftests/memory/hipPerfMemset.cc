@@ -107,7 +107,7 @@ bool hipPerfMemset::open(int deviceId) {
   }
 
   HIP_CHECK(hipSetDevice(deviceId));
-  hipDeviceProp_t props = {0};
+  hipDeviceProp_t props;
   HIP_CHECK(hipGetDeviceProperties(&props, deviceId));
   INFO("info: running on bus " << "0x" << props.pciBusID << " " << props.name
         << " with " << props.multiProcessorCount << " CUs and device id: "
@@ -325,7 +325,9 @@ void hipPerfMemset::run3D(unsigned int test, T memsetval,
 
   auto end = std::chrono::steady_clock::now();
 
-  hipMemcpy3DParms myparms = {0};
+  hipMemcpy3DParms myparms ;
+  myparms.srcArray = nullptr;
+  myparms.dstArray = nullptr;
   myparms.srcPos = make_hipPos(0, 0, 0);
   myparms.dstPos = make_hipPos(0, 0, 0);
   myparms.dstPtr = make_hipPitchedPtr(A_h, width , numW, numH);

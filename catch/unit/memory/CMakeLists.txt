@@ -79,7 +79,17 @@ if(HIP_PLATFORM MATCHES "amd")
       hipExtMallocWithFlags.cc
       hipMallocMngdMultiThread.cc
       hipArray.cc
-      hipMemVmm.cc)
+      hipMemVmm.cc
+      hipMemCreate.cc
+      hipMemMap.cc
+      hipMemGetAllocationGranularity.cc
+      hipMemSetGetAccess.cc
+      hipMemRetainAllocationHandle.cc
+      hipMemUnmap.cc
+      hipMemAddressFree.cc
+      hipMemAddressReserve.cc
+      hipMemRelease.cc
+      hipMemGetAllocationPropertiesFromHandle.cc)
 else()
   set(TEST_SRC ${TEST_SRC} hipGetSymbolSizeAddress.cc)
 endif()
@@ -180,5 +190,16 @@ hip_add_exe_to_target(NAME MemoryTest2
   TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
 
 if(HIP_PLATFORM MATCHES "amd")
+  set(TEST_SRC
+    hipSVMTestByteGranularity.cpp
+    hipSVMTestFineGrainMemoryConsistency.cpp
+    hipSVMTestFineGrainSyncBuffers.cpp
+    hipSVMTestSharedAddressSpaceFineGrain.cpp
+  )
+
+  hip_add_exe_to_target(NAME SVMAtomicTest
+    TEST_SRC ${TEST_SRC}
+    TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
+
   add_dependencies(build_tests hipHostRegisterPerf)
 endif()

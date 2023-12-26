@@ -46,6 +46,7 @@ add_subdirectory(vector_types)
 add_subdirectory(atomics)
 add_subdirectory(p2p)
 add_subdirectory(gcc)
+add_subdirectory(stream_ordered)
 
 if(HIP_PLATFORM STREQUAL "amd")
 add_subdirectory(callback)

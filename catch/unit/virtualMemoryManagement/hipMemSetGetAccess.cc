@@ -31,7 +31,7 @@ THE SOFTWARE.
  * Set the access flags for each location specified in desc for the given
  * virtual address range.
  */
-#include "hipMallocManagedCommon.hh"
+//#include "hipMallocManagedCommon.hh"
 #include "hip_vmm_common.hh"
 #include <hip_test_kernels.hh>
 #include <hip_test_common.hh>

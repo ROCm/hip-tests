@@ -19,10 +19,11 @@ LIABILITY, WHETHER INN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 /**
  * @addtogroup hipMemMap hipMemMap
  * @{
- * @ingroup MemoryTest
+ * @ingroup VirtualMemoryManagementTest
  * `hipError_t hipMemMap (void* ptr,
  *                        size_t size,
  *                        size_t offset,
@@ -32,6 +33,7 @@ THE SOFTWARE.
  */
 
 #include <hip_test_common.hh>
+
 #include "hip_vmm_common.hh"
 
 constexpr int N = (1 << 13);
@@ -57,24 +59,22 @@ TEST_CASE("Unit_hipMemMap_SameMemoryReuse") {
   int deviceId = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
   HIP_CHECK(
-      hipMemGetAllocationGranularity(&granularity, &prop,
-      hipMemAllocationGranularityMinimum));
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   hipMemGenericAllocationHandle_t handle;
   // Allocate host memory and intialize data
   std::vector<int> A_h(N), B_h(N), C_h(N);
   // Initialize with data
   for (size_t idx = 0; idx < N; idx++) {
     A_h[idx] = idx;
-    C_h[idx] = idx*idx;
+    C_h[idx] = idx * idx;
   }
   // Allocate a physical memory chunk
   HIP_CHECK(hipMemCreate(&handle, size_mem, &prop, 0));
@@ -94,8 +94,7 @@ TEST_CASE("Unit_hipMemMap_SameMemoryReuse") {
     HIP_CHECK(hipMemcpyDtoH(B_h.data(), ptrA, buffer_size));
     REQUIRE(true == std::equal(B_h.begin(), B_h.end(), A_h.data()));
 #if HT_NVIDIA
-    square_kernel <<<dim3(N / threadsPerBlk), dim3(threadsPerBlk), 0, 0>>>(
-                static_cast<int*>(ptrA));
+    square_kernel<<<dim3(N / threadsPerBlk), dim3(threadsPerBlk), 0, 0>>>(static_cast<int*>(ptrA));
     HIP_CHECK(hipMemcpyDtoH(B_h.data(), ptrA, buffer_size));
     HIP_CHECK(hipStreamSynchronize(0));
     REQUIRE(true == std::equal(B_h.begin(), B_h.end(), C_h.data()));
@@ -125,24 +124,22 @@ TEST_CASE("Unit_hipMemMap_PhysicalMemoryReuse_SingleGPU") {
   int deviceId = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
   HIP_CHECK(
-      hipMemGetAllocationGranularity(&granularity, &prop,
-      hipMemAllocationGranularityMinimum));
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   hipMemGenericAllocationHandle_t handle;
   // Allocate host memory and intialize data
   std::vector<int> A_h(N), B_h(N), C_h(N);
   // Initialize with data
   for (size_t idx = 0; idx < N; idx++) {
     A_h[idx] = idx;
-    C_h[idx] = idx*idx;
+    C_h[idx] = idx * idx;
   }
   // Allocate a physical memory chunk
   HIP_CHECK(hipMemCreate(&handle, size_mem, &prop, 0));
@@ -164,8 +161,8 @@ TEST_CASE("Unit_hipMemMap_PhysicalMemoryReuse_SingleGPU") {
     HIP_CHECK(hipMemcpyDtoH(B_h.data(), ptrA[buf], buffer_size));
     REQUIRE(true == std::equal(B_h.begin(), B_h.end(), A_h.data()));
 #if HT_NVIDIA
-    square_kernel <<<dim3(N / threadsPerBlk), dim3(threadsPerBlk), 0, 0>>>(
-                static_cast<int*>(ptrA[buf]));
+    square_kernel<<<dim3(N / threadsPerBlk), dim3(threadsPerBlk), 0, 0>>>(
+        static_cast<int*>(ptrA[buf]));
     HIP_CHECK(hipMemcpyDtoH(B_h.data(), ptrA[buf], buffer_size));
     HIP_CHECK(hipStreamSynchronize(0));
     REQUIRE(true == std::equal(B_h.begin(), B_h.end(), C_h.data()));
@@ -197,17 +194,15 @@ TEST_CASE("Unit_hipMemMap_PhysicalMemory_Map2MultVMMs") {
   int deviceId = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
   HIP_CHECK(
-      hipMemGetAllocationGranularity(&granularity, &prop,
-      hipMemAllocationGranularityMinimum));
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   hipMemGenericAllocationHandle_t handle;
   // Allocate host memory and intialize data
   std::vector<int> A_h(N), B_h(N);
@@ -270,17 +265,15 @@ TEST_CASE("Unit_hipMemMap_PhysicalMemoryReuse_MultiDev") {
   for (int devX = 0; devX < devicecount; devX++) {
     hipDevice_t device;
     HIP_CHECK(hipDeviceGet(&device, devX));
-    checkVMMSupported(device)
+    checkVMMSupported(device);
     hipMemAllocationProp prop{};
     prop.type = hipMemAllocationTypePinned;
     prop.location.type = hipMemLocationTypeDevice;
     prop.location.id = device;  // Current Devices
     HIP_CHECK(
-      hipMemGetAllocationGranularity(&granularity, &prop,
-      hipMemAllocationGranularityMinimum));
+        hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
     REQUIRE(granularity > 0);
-    size_t size_mem =
-    ((granularity + buffer_size - 1) / granularity) * granularity;
+    size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
     hipMemGenericAllocationHandle_t handle;
     // Allocate host memory and intialize data
     std::vector<int> A_h(N), B_h(N);
@@ -339,24 +332,22 @@ TEST_CASE("Unit_hipMemMap_VMMMemoryReuse_SingleGPU") {
   int deviceId = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
   HIP_CHECK(
-      hipMemGetAllocationGranularity(&granularity, &prop,
-      hipMemAllocationGranularityMinimum));
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   hipMemGenericAllocationHandle_t handle[num_buf];
   // Allocate host memory and intialize data
   std::vector<int> A_h(N), B_h(N), C_h(N);
   // Initialize with data
   for (size_t idx = 0; idx < N; idx++) {
     A_h[idx] = idx;
-    C_h[idx] = idx*idx;
+    C_h[idx] = idx * idx;
   }
   // Allocate a physical memory chunk
   for (int buf = 0; buf < num_buf; buf++) {
@@ -379,8 +370,7 @@ TEST_CASE("Unit_hipMemMap_VMMMemoryReuse_SingleGPU") {
     HIP_CHECK(hipMemcpyDtoH(B_h.data(), ptrA, buffer_size));
     REQUIRE(true == std::equal(B_h.begin(), B_h.end(), A_h.data()));
 #if HT_NVIDIA
-    square_kernel <<<dim3(N / threadsPerBlk), dim3(threadsPerBlk), 0, 0>>>(
-                static_cast<int*>(ptrA));
+    square_kernel<<<dim3(N / threadsPerBlk), dim3(threadsPerBlk), 0, 0>>>(static_cast<int*>(ptrA));
     HIP_CHECK(hipMemcpyDtoH(B_h.data(), ptrA, buffer_size));
     HIP_CHECK(hipStreamSynchronize(0));
     REQUIRE(true == std::equal(B_h.begin(), B_h.end(), C_h.data()));
@@ -417,17 +407,15 @@ TEST_CASE("Unit_hipMemMap_VMMMemoryReuse_MultiGPU") {
   size_t buffer_size = N * sizeof(int);
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
   HIP_CHECK(
-      hipMemGetAllocationGranularity(&granularity, &prop,
-      hipMemAllocationGranularityMinimum));
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   std::vector<hipMemGenericAllocationHandle_t> handle(devicecount);
   // Allocate host memory and intialize data
   std::vector<int> A_h(N), B_h(N);
@@ -504,17 +492,15 @@ TEST_CASE("Unit_hipMemMap_MapPartialPhysicalMem") {
   size_t buffer_size = N * sizeof(int);
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
   HIP_CHECK(
-      hipMemGetAllocationGranularity(&granularity, &prop,
-      hipMemAllocationGranularityMinimum));
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   hipMemGenericAllocationHandle_t handle;
   // Allocate host memory and intialize data
   std::vector<int> A_h(N), B_h(N);
@@ -523,7 +509,7 @@ TEST_CASE("Unit_hipMemMap_MapPartialPhysicalMem") {
     A_h[idx] = idx;
   }
   // Allocate a bigger physical memory chunk of twice size_mem
-  HIP_CHECK(hipMemCreate(&handle, 2*size_mem, &prop, 0));
+  HIP_CHECK(hipMemCreate(&handle, 2 * size_mem, &prop, 0));
   // Allocate virtual address range of size size_mem
   hipDeviceptr_t ptrA;
   HIP_CHECK(hipMemAddressReserve(&ptrA, size_mem, 0, 0, 0));
@@ -560,17 +546,15 @@ TEST_CASE("Unit_hipMemMap_MapPartialVMMMem") {
   size_t buffer_size = N * sizeof(int);
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
   HIP_CHECK(
-      hipMemGetAllocationGranularity(&granularity, &prop,
-      hipMemAllocationGranularityMinimum));
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   hipMemGenericAllocationHandle_t handle;
   // Allocate host memory and intialize data
   std::vector<int> A_h(N), B_h(N);
@@ -582,13 +566,13 @@ TEST_CASE("Unit_hipMemMap_MapPartialVMMMem") {
   HIP_CHECK(hipMemCreate(&handle, size_mem, &prop, 0));
   // Allocate virtual address range of size twice size_mem
   hipDeviceptr_t ptrA;
-  HIP_CHECK(hipMemAddressReserve(&ptrA, 2*size_mem, 0, 0, 0));
+  HIP_CHECK(hipMemAddressReserve(&ptrA, 2 * size_mem, 0, 0, 0));
   hipMemAccessDesc accessDesc = {};
   accessDesc.location.type = hipMemLocationTypeDevice;
   accessDesc.location.id = device;
   accessDesc.flags = hipMemAccessFlagsProtReadWrite;
   std::fill(B_h.begin(), B_h.end(), initializer);
-  HIP_CHECK(hipMemMap(ptrA , size_mem, 0, handle, 0));
+  HIP_CHECK(hipMemMap(ptrA, size_mem, 0, handle, 0));
   HIP_CHECK(hipMemSetAccess(ptrA, size_mem, &accessDesc, 1));
   HIP_CHECK(hipMemcpyHtoD(ptrA, A_h.data(), buffer_size));
   HIP_CHECK(hipMemcpyDtoH(B_h.data(), ptrA, buffer_size));
@@ -596,7 +580,7 @@ TEST_CASE("Unit_hipMemMap_MapPartialVMMMem") {
   HIP_CHECK(hipMemUnmap(ptrA, size_mem));
   // Release resources
   HIP_CHECK(hipMemRelease(handle));
-  HIP_CHECK(hipMemAddressFree(ptrA, 2*size_mem));
+  HIP_CHECK(hipMemAddressFree(ptrA, 2 * size_mem));
 }
 
 /**
@@ -615,16 +599,15 @@ TEST_CASE("Unit_hipMemMap_negative") {
   int deviceId = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
-  HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &prop,
-  hipMemAllocationGranularityMinimum));
+  HIP_CHECK(
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   hipMemGenericAllocationHandle_t handle;
   hipDeviceptr_t ptrA;
   // Allocate physical memory
@@ -633,8 +616,7 @@ TEST_CASE("Unit_hipMemMap_negative") {
   HIP_CHECK(hipMemAddressReserve(&ptrA, size_mem, 0, 0, 0));
 
   SECTION("nullptr to ptrA") {
-    REQUIRE(hipMemMap(nullptr, size_mem, 0, handle, 0) ==
-            hipErrorInvalidValue);
+    REQUIRE(hipMemMap(nullptr, size_mem, 0, handle, 0) == hipErrorInvalidValue);
   }
 
   SECTION("pass zero to size") {
@@ -642,9 +624,9 @@ TEST_CASE("Unit_hipMemMap_negative") {
   }
 
   SECTION("pass negative to offset") {
-    REQUIRE(hipMemMap(&ptrA, size_mem, -1, handle, 0) ==
-            hipErrorInvalidValue);
+    REQUIRE(hipMemMap(&ptrA, size_mem, -1, handle, 0) == hipErrorInvalidValue);
   }
+
   HIP_CHECK(hipMemRelease(handle));
   HIP_CHECK(hipMemAddressFree(ptrA, size_mem));
 }

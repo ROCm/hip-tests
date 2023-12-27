@@ -24,28 +24,26 @@ THE SOFTWARE.
 
 #include "hip_test_context.hh"
 
-#define checkVMMSupported(device) {\
-  int value = 0;\
-  hipDeviceAttribute_t\
-  attr = hipDeviceAttributeVirtualMemoryManagementSupported;\
-  HIP_CHECK(\
-      hipDeviceGetAttribute(&value, attr, device));\
-  if (value == 0) {\
-    HipTest::HIP_SKIP_TEST("Machine does not support VMM. Skipping Test..");\
-    return;\
-  }\
-}
+#define checkVMMSupported(device)                                                                  \
+  {                                                                                                \
+    int value = 0;                                                                                 \
+    hipDeviceAttribute_t attr = hipDeviceAttributeVirtualMemoryManagementSupported;                \
+    HIP_CHECK(hipDeviceGetAttribute(&value, attr, device));                                        \
+    if (value == 0) {                                                                              \
+      HipTest::HIP_SKIP_TEST("Machine does not support VMM. Skipping Test..");                     \
+      return;                                                                                      \
+    }                                                                                              \
+  }
 
-#define checkVMMSupportedRetVal(device) {\
-  int value = 0;\
-  hipDeviceAttribute_t\
-  attr = hipDeviceAttributeVirtualMemoryManagementSupported;\
-  HIP_CHECK(\
-      hipDeviceGetAttribute(&value, attr, device));\
-  if (value == 0) {\
-    HipTest::HIP_SKIP_TEST("Machine does not support VMM. Skipping Test..");\
-    return true;\
-  }\
-}
+#define checkVMMSupportedRetVal(device)                                                            \
+  {                                                                                                \
+    int value = 0;                                                                                 \
+    hipDeviceAttribute_t attr = hipDeviceAttributeVirtualMemoryManagementSupported;                \
+    HIP_CHECK(hipDeviceGetAttribute(&value, attr, device));                                        \
+    if (value == 0) {                                                                              \
+      HipTest::HIP_SKIP_TEST("Machine does not support VMM. Skipping Test..");                     \
+      return true;                                                                                 \
+    }                                                                                              \
+  }
 
 constexpr int threadsPerBlk = 64;

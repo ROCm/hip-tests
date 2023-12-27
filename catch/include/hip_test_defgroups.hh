@@ -96,11 +96,11 @@ THE SOFTWARE.
  */
 
 /**
-* @defgroup KernelTest Kernel Functions Management
-* @{
-* This section describes the various kernel functions invocation.
-* @}
-*/
+ * @defgroup KernelTest Kernel Functions Management
+ * @{
+ * This section describes the various kernel functions invocation.
+ * @}
+ */
 
 /**
  * @defgroup AtomicsTest Device Atomics
@@ -119,7 +119,8 @@ THE SOFTWARE.
 /**
  * @defgroup PeerToPeerTest PeerToPeer Device Memory Access
  * @{
- * This section describes tests for the PeerToPeer device memory access functions of HIP runtime API.
+ * This section describes tests for the PeerToPeer device memory access functions of HIP runtime
+ * API.
  * @warning PeerToPeer support is experimental.
  * @}
  */
@@ -169,5 +170,12 @@ THE SOFTWARE.
  * @defgroup PrintfTest Printf API Management
  * @{
  * This section describes the various Printf use case Scenarios.
+ * @}
+ */
+
+/**
+ * @defgroup VirtualMemoryManagementTest Virtual Memory Management APIs
+ * @{
+ * This section describes the virtual memory management types & functions of HIP runtime API.
  * @}
  */

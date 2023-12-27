@@ -23,12 +23,13 @@ THE SOFTWARE.
 /**
  * @addtogroup hipMemAddressFree hipMemAddressFree
  * @{
- * @ingroup MemoryTest
+ * @ingroup VirtualMemoryManagementTest
  * `hipError_t hipMemAddressFree (void* devPtr, size_t size)` -
  * Frees an address range reservation made via hipMemAddressReserve.
  */
 
 #include <hip_test_common.hh>
+
 #include "hip_vmm_common.hh"
 
 #define DATA_SIZE (1 << 13)
@@ -50,16 +51,15 @@ TEST_CASE("Unit_hipMemAddressFree_negative") {
   int deviceId = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
-  HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &prop,
-  hipMemAllocationGranularityMinimum));
+  HIP_CHECK(
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   // Allocate virtual address range
   hipDeviceptr_t ptrA;
   HIP_CHECK(hipMemAddressReserve(&ptrA, size_mem, 0, 0, 0));
@@ -68,9 +68,7 @@ TEST_CASE("Unit_hipMemAddressFree_negative") {
     REQUIRE(hipMemAddressFree(nullptr, size_mem) == hipErrorInvalidValue);
   }
 
-  SECTION("pass zero to size") {
-    REQUIRE(hipMemAddressFree(ptrA, 0) == hipErrorInvalidValue);
-  }
+  SECTION("pass zero to size") { REQUIRE(hipMemAddressFree(ptrA, 0) == hipErrorInvalidValue); }
 
   HIP_CHECK(hipMemAddressFree(ptrA, size_mem));
 }

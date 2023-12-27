@@ -23,7 +23,7 @@ THE SOFTWARE.
 /**
  * @addtogroup hipMemGetAllocationGranularity hipMemGetAllocationGranularity
  * @{
- * @ingroup MemoryTest
+ * @ingroup VirtualMemoryManagementTest
  * `hipError_t hipMemGetAllocationGranularity (size_t* granularity,
  *                                             const hipMemAllocationProp* prop,
  *                                             hipMemAllocationGranularity_flags option)` -
@@ -33,14 +33,13 @@ THE SOFTWARE.
 #include <hip_test_checkers.hh>
 #include <hip_test_kernels.hh>
 #include <hip_test_common.hh>
+
 #include "hip_vmm_common.hh"
 
 /**
  local function to invoke hipMemGetAllocationGranularity.
  */
-void getGranularity(size_t *granularity,
-                    hipMemAllocationGranularity_flags option,
-                    int device) {
+void getGranularity(size_t* granularity, hipMemAllocationGranularity_flags option, int device) {
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
@@ -63,7 +62,7 @@ TEST_CASE("Unit_hipMemGetAllocationGranularity_MinGranularity") {
   size_t granularity = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, 0));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   getGranularity(&granularity, hipMemAllocationGranularityMinimum, 0);
   REQUIRE(granularity > 0);
 }
@@ -83,7 +82,7 @@ TEST_CASE("Unit_hipMemGetAllocationGranularity_RecommendedGranularity") {
   size_t granularity = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, 0));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   getGranularity(&granularity, hipMemAllocationGranularityRecommended, 0);
   REQUIRE(granularity > 0);
 }
@@ -106,9 +105,8 @@ TEST_CASE("Unit_hipMemGetAllocationGranularity_AllGPUs") {
     size_t granularity = 0;
     hipDevice_t device;
     HIP_CHECK(hipDeviceGet(&device, dev));
-    checkVMMSupported(device)
-    getGranularity(&granularity, hipMemAllocationGranularityRecommended,
-                   dev);
+    checkVMMSupported(device);
+    getGranularity(&granularity, hipMemAllocationGranularityRecommended, dev);
     REQUIRE(granularity > 0);
   }
 }
@@ -127,7 +125,7 @@ TEST_CASE("Unit_hipMemGetAllocationGranularity_NegativeTests") {
   size_t granularity = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, 0));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
@@ -135,45 +133,44 @@ TEST_CASE("Unit_hipMemGetAllocationGranularity_NegativeTests") {
 
   SECTION("Granularity is nullptr") {
     REQUIRE(hipErrorInvalidValue ==
-    hipMemGetAllocationGranularity(nullptr, &prop,
-    hipMemAllocationGranularityMinimum));
+            hipMemGetAllocationGranularity(nullptr, &prop, hipMemAllocationGranularityMinimum));
   }
   SECTION("Prop is nullptr") {
-    REQUIRE(hipErrorInvalidValue ==
-    hipMemGetAllocationGranularity(&granularity, nullptr,
-    hipMemAllocationGranularityMinimum));
+    REQUIRE(
+        hipErrorInvalidValue ==
+        hipMemGetAllocationGranularity(&granularity, nullptr, hipMemAllocationGranularityMinimum));
   }
 #if HT_NVIDIA
   SECTION("flag is invalid") {
     REQUIRE(hipErrorInvalidValue ==
-    hipMemGetAllocationGranularity(&granularity, &prop,
-    (hipMemAllocationGranularity_flags)0xff));
+            hipMemGetAllocationGranularity(&granularity, &prop,
+                                           (hipMemAllocationGranularity_flags)0xff));
   }
 #endif
   SECTION("device id > highest device id") {
     int numDevices = 0;
     HIP_CHECK(hipGetDeviceCount(&numDevices));
     prop.location.id = numDevices;  // set to non existing device
-    REQUIRE(hipErrorInvalidValue ==
-    hipMemGetAllocationGranularity(&granularity, &prop,
-    hipMemAllocationGranularityMinimum));
+    REQUIRE(
+        hipErrorInvalidValue ==
+        hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   }
   SECTION("device id < lowest device id") {
     prop.location.id = -1;  // set to non existing device
-    REQUIRE(hipErrorInvalidValue ==
-    hipMemGetAllocationGranularity(&granularity, &prop,
-    hipMemAllocationGranularityMinimum));
+    REQUIRE(
+        hipErrorInvalidValue ==
+        hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   }
   SECTION("allocation type as invalid") {
     prop.type = hipMemAllocationTypeInvalid;
-    REQUIRE(hipErrorInvalidValue ==
-    hipMemGetAllocationGranularity(&granularity, &prop,
-    hipMemAllocationGranularityMinimum));
+    REQUIRE(
+        hipErrorInvalidValue ==
+        hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   }
   SECTION("location type as invalid") {
     prop.location.type = hipMemLocationTypeInvalid;
-    REQUIRE(hipErrorInvalidValue ==
-    hipMemGetAllocationGranularity(&granularity, &prop,
-    hipMemAllocationGranularityMinimum));
+    REQUIRE(
+        hipErrorInvalidValue ==
+        hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   }
 }

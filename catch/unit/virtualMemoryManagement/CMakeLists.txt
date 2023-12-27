@@ -23,10 +23,12 @@ set(TEST_SRC
     hipMemRetainAllocationHandle.cc)
 
 if(UNIX)
+if(HIP_PLATFORM MATCHES "nvidia")
   set(TEST_SRC
       ${TEST_SRC}
       hipMemExportToShareableHandle.cc
       hipMemImportFromShareableHandle.cc)
+endif()
 endif()
 
 if(HIP_PLATFORM MATCHES "amd")

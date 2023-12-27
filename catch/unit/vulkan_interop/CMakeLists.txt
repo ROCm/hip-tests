@@ -8,6 +8,10 @@ set(TEST_SRC
     hipSignalExternalSemaphoresAsync.cc
     hipImportExternalSemaphore.cc
     hipDestroyExternalSemaphore.cc
+    hipGraphAddExternalSemaphoresSignalNode.cc
+    hipGraphExternalSemaphoresSignalNodeSetParams.cc
+    hipGraphExternalSemaphoresSignalNodeGetParams.cc
+    hipGraphExecExternalSemaphoresSignalNodeSetParams.cc
    )
 
 if(WIN32)

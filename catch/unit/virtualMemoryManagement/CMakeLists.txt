@@ -18,21 +18,31 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+set(TEST_SRC
+    hipMemGetAllocationGranularity.cc
+    hipMemRetainAllocationHandle.cc)
+
+if(UNIX)
+  set(TEST_SRC
+      ${TEST_SRC}
+      hipMemExportToShareableHandle.cc
+      hipMemImportFromShareableHandle.cc)
+endif()
+
 if(HIP_PLATFORM MATCHES "amd")
   set(TEST_SRC
+      ${TEST_SRC}
       hipMemAddressFree.cc
       hipMemAddressReserve.cc
       hipMemCreate.cc
       hipMemSetGetAccess.cc
-      hipMemGetAllocationGranularity.cc
       hipMemGetAllocationPropertiesFromHandle.cc
       hipMemMap.cc
       hipMemRelease.cc
-      hipMemRetainAllocationHandle.cc
       hipMemUnmap.cc
       hipMemVmm_old.cc)
-
-  hip_add_exe_to_target(NAME VirtualMemoryManagementTest
-    TEST_SRC ${TEST_SRC}
-    TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
 endif()
+
+hip_add_exe_to_target(NAME VirtualMemoryManagementTest
+  TEST_SRC ${TEST_SRC}
+  TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})

@@ -39,7 +39,7 @@ THE SOFTWARE.
  * ------------------------
  *    - Negative Tests
  * ------------------------
- *    - catch\unit\memory\hipMemAddressFree.cc
+ *    - unit/virtualMemoryManagement/hipMemAddressFree.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1

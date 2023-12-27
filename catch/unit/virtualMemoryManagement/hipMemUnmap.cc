@@ -40,7 +40,7 @@ constexpr int N = (1 << 13);
  * ------------------------
  *    - Negative Tests
  * ------------------------
- *    - catch\unit\memory\hipMemUnmap.cc
+ *    - unit/virtualMemoryManagement/hipMemUnmap.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1

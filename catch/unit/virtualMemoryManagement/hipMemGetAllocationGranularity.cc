@@ -53,12 +53,13 @@ void getGranularity(size_t* granularity, hipMemAllocationGranularity_flags optio
  *    - Functional Test to get granularity size for
  * hipMemAllocationGranularityMinimum option.
  * ------------------------
- *    - catch\unit\memory\hipMemGetAllocationGranularity.cc
+ *    - unit/virtualMemoryManagement/hipMemGetAllocationGranularity.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
  */
 TEST_CASE("Unit_hipMemGetAllocationGranularity_MinGranularity") {
+  HIP_CHECK(hipFree(0));
   size_t granularity = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, 0));
@@ -73,12 +74,13 @@ TEST_CASE("Unit_hipMemGetAllocationGranularity_MinGranularity") {
  *    - Functional Test to get granularity size for
  * hipMemAllocationGranularityRecommended option.
  * ------------------------
- *    - catch\unit\memory\hipMemGetAllocationGranularity.cc
+ *    - unit/virtualMemoryManagement/hipMemGetAllocationGranularity.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
  */
 TEST_CASE("Unit_hipMemGetAllocationGranularity_RecommendedGranularity") {
+  HIP_CHECK(hipFree(0));
   size_t granularity = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, 0));
@@ -93,12 +95,13 @@ TEST_CASE("Unit_hipMemGetAllocationGranularity_RecommendedGranularity") {
  *    - Functional Test to get granularity size for
  * hipMemAllocationGranularityMinimum option for all GPUs.
  * ------------------------
- *    - catch\unit\memory\hipMemGetAllocationGranularity.cc
+ *    - unit/virtualMemoryManagement/hipMemGetAllocationGranularity.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
  */
 TEST_CASE("Unit_hipMemGetAllocationGranularity_AllGPUs") {
+  HIP_CHECK(hipFree(0));
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   for (int dev = 0; dev < numDevices; dev++) {
@@ -116,12 +119,13 @@ TEST_CASE("Unit_hipMemGetAllocationGranularity_AllGPUs") {
  * ------------------------
  *    - Negative Tests
  * ------------------------
- *    - catch\unit\memory\hipMemGetAllocationGranularity.cc
+ *    - unit/virtualMemoryManagement/hipMemGetAllocationGranularity.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
  */
 TEST_CASE("Unit_hipMemGetAllocationGranularity_NegativeTests") {
+  HIP_CHECK(hipFree(0));
   size_t granularity = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, 0));
@@ -135,11 +139,13 @@ TEST_CASE("Unit_hipMemGetAllocationGranularity_NegativeTests") {
     REQUIRE(hipErrorInvalidValue ==
             hipMemGetAllocationGranularity(nullptr, &prop, hipMemAllocationGranularityMinimum));
   }
+#if HT_AMD  // segfaults on NVIDIA
   SECTION("Prop is nullptr") {
     REQUIRE(
         hipErrorInvalidValue ==
         hipMemGetAllocationGranularity(&granularity, nullptr, hipMemAllocationGranularityMinimum));
   }
+#endif
 #if HT_NVIDIA
   SECTION("flag is invalid") {
     REQUIRE(hipErrorInvalidValue ==
@@ -147,6 +153,7 @@ TEST_CASE("Unit_hipMemGetAllocationGranularity_NegativeTests") {
                                            (hipMemAllocationGranularity_flags)0xff));
   }
 #endif
+#if HT_AMD  // succeeds on NVIDIA
   SECTION("device id > highest device id") {
     int numDevices = 0;
     HIP_CHECK(hipGetDeviceCount(&numDevices));
@@ -173,4 +180,5 @@ TEST_CASE("Unit_hipMemGetAllocationGranularity_NegativeTests") {
         hipErrorInvalidValue ==
         hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   }
+#endif
 }

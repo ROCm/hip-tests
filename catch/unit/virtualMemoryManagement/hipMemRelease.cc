@@ -36,7 +36,7 @@ THE SOFTWARE.
  * ------------------------
  *    - Negative Tests
  * ------------------------
- *    - catch\unit\memory\hipMemRelease.cc
+ *    - unit/virtualMemoryManagement/hipMemRelease.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1

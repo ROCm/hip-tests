@@ -68,7 +68,7 @@ static __global__ void square_kernel(int* Buff) {
  * Validate that flags = hipMemAccessFlagsProtNone is returned by
  * hipMemGetAccess() when location is set to device 1.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -135,7 +135,7 @@ TEST_CASE("Unit_hipMemSetAccess_SetGet") {
  * flags = hipMemAccessFlagsProtReadWrite is returned by hipMemGetAccess()
  * when location is set to device 1.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -205,7 +205,7 @@ TEST_CASE("Unit_hipMemSetAccess_MultDevSetGet") {
  * to device 0. Validate that flags = 3 is returned by hipMemGetAccess()
  * for entire virtual address range when location is set to device 0.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -261,7 +261,7 @@ TEST_CASE("Unit_hipMemSetAccess_EntireVMMRangeSetGet") {
  * ------------------------
  *    - Negative Tests
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -323,7 +323,7 @@ TEST_CASE("Unit_hipMemGetAccess_NegTst") {
  * address range, launch a kernel to perform operation on the data and
  * validate the result.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -384,7 +384,7 @@ TEST_CASE("Unit_hipMemSetAccess_FuncTstOnMultDev") {
  * Access (Read/Write) the virtual pointer directly on host.
  * Ensure this behavior for all devices on host.
  * ------------------------
- *    - catch\unit\memory\hipMemMap.cc
+ *    - unit/virtualMemoryManagement/hipMemMap.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -446,7 +446,7 @@ TEST_CASE("Unit_hipMemSetAccess_AccessDirectlyFromHost") {
  * the property of the range to read only. Check if the memory
  * range can be read.
  * ------------------------
- *    - catch\unit\memory\hipMemMap.cc
+ *    - unit/virtualMemoryManagement/hipMemMap.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -538,7 +538,7 @@ TEST_CASE("Unit_hipMemSetAccess_ChangeAccessProp") {
  * a Virtual Memory chunk and a Unified Memory chunk. Test if data can
  * be exchanged between these chunks.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -611,7 +611,7 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2UnifiedMemCpy") {
  * Memory chunk and a Device Memory chunk. Test if data can be exchanged
  * between these chunks.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -668,7 +668,7 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2DevMemCpy") {
  * Peer Device Memory chunk. Test if data can be exchanged between
  * these chunks using hipMemcpyDtoD.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -747,7 +747,7 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2PeerDevMemCpy") {
  * a Peer Device Memory chunk. Test if data can be exchanged between
  * these chunks using hipMemcpyPeer.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -828,7 +828,7 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2PeerPeerMemCpy") {
  * address space in device 0(PtrB). Check if data can be copied from
  * PtrA -> PtrB using hipMemcpy.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -891,7 +891,7 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2VMMMemCpy") {
  * address space in device 1(PtrB). Check if data can be copied from
  * PtrA -> PtrB using hipMemcpyPeer.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -991,7 +991,7 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2VMMInterDevMemCpy") {
  * chunk of memory and map it to device1. Check if these 2 distinct memory
  * chunks can be mapped to a single address space.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -1182,7 +1182,7 @@ class vmm_resize_class {
  * offset (PtrA + size of old chunk). Validate both the old data and new
  * data after copying back to host.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -1280,7 +1280,7 @@ void test_thread(hipDevice_t device) {
  * multiple threads. Transfer data to these chunks from host and execute
  * kernel function on these data. Validate the results.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -1382,7 +1382,7 @@ bool test_mprocess() {
  * multiple processes. Transfer data to these chunks from host and
  * execute kernel function on these data. Validate the results.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -1396,7 +1396,7 @@ TEST_CASE("Unit_hipMemSetAccess_MultiProc") { REQUIRE(true == test_mprocess()); 
  * ------------------------
  *    - Negative Tests for hipMemSetAccess()
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1

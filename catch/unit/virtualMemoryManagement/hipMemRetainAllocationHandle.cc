@@ -42,12 +42,13 @@ THE SOFTWARE.
  *    - Create a VM mapped to physical memory. Input addr to
  * hipMemRetainAllocationHandle and validate the handle.
  * ------------------------
- *    - catch\unit\memory\hipMemRetainAllocationHandle.cc
+ *    - unit/virtualMemoryManagement/hipMemRetainAllocationHandle.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
  */
 TEST_CASE("Unit_hipMemRetainAllocationHandle_SetGet") {
+  HIP_CHECK(hipFree(0));
   size_t granularity = 0;
   constexpr int N = DATA_SIZE;
   size_t buffer_size = N * sizeof(int);
@@ -85,12 +86,13 @@ TEST_CASE("Unit_hipMemRetainAllocationHandle_SetGet") {
  * ------------------------
  *    - Negative Tests
  * ------------------------
- *    - catch\unit\memory\hipMemRetainAllocationHandle.cc
+ *    - unit/virtualMemoryManagement/hipMemRetainAllocationHandle.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
  */
 TEST_CASE("Unit_hipMemRetainAllocationHandle_NegTst") {
+  HIP_CHECK(hipFree(0));
   size_t granularity = 0;
   constexpr int N = DATA_SIZE;
   size_t buffer_size = N * sizeof(int);

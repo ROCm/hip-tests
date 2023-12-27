@@ -47,7 +47,7 @@ constexpr int initializer = 0;
  * vmm address range repeatedly. This test validates physical memory
  * euse using same vmm range.
  * ------------------------
- *    - catch\unit\memory\hipMemMap.cc
+ *    - unit/virtualMemoryManagement/hipMemMap.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -113,7 +113,7 @@ TEST_CASE("Unit_hipMemMap_SameMemoryReuse") {
  * vmm addresses. This test validates physical memory reuse using
  * different vmm ranges.
  * ------------------------
- *    - catch\unit\memory\hipMemMap.cc
+ *    - unit/virtualMemoryManagement/hipMemMap.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -183,7 +183,7 @@ TEST_CASE("Unit_hipMemMap_PhysicalMemoryReuse_SingleGPU") {
  * vmm addresses at the same time and check data values integrity
  * between different VMMs.
  * ------------------------
- *    - catch\unit\memory\hipMemMap.cc
+ *    - unit/virtualMemoryManagement/hipMemMap.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -248,7 +248,7 @@ TEST_CASE("Unit_hipMemMap_PhysicalMemory_Map2MultVMMs") {
  * multiple vmm addresses. This test validates physical memory
  * reuse using different vmm ranges on multiple devices.
  * ------------------------
- *    - catch\unit\memory\hipMemMap.cc
+ *    - unit/virtualMemoryManagement/hipMemMap.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -321,7 +321,7 @@ TEST_CASE("Unit_hipMemMap_PhysicalMemoryReuse_MultiDev") {
  * for single vmm address. This test validates VMM memory reuse
  * using different physical ranges.
  * ------------------------
- *    - catch\unit\memory\hipMemMap.cc
+ *    - unit/virtualMemoryManagement/hipMemMap.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -391,7 +391,7 @@ TEST_CASE("Unit_hipMemMap_VMMMemoryReuse_SingleGPU") {
  * can be mapped/unmapped to single vmm address. This test validates VMM
  * memory reuse using different physical ranges.
  * ------------------------
- *    - catch\unit\memory\hipMemMap.cc
+ *    - unit/virtualMemoryManagement/hipMemMap.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -481,7 +481,7 @@ TEST_CASE("Unit_hipMemMap_VMMMemoryReuse_MultiGPU") {
  *    - Check if a partial part of a physical chunk can be mapped/unmapped
  * to a smaller vmm address.
  * ------------------------
- *    - catch\unit\memory\hipMemMap.cc
+ *    - unit/virtualMemoryManagement/hipMemMap.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -535,7 +535,7 @@ TEST_CASE("Unit_hipMemMap_MapPartialPhysicalMem") {
  *    - Check if a partial part of a VMM range can be mapped/unmapped
  * to a physical address.
  * ------------------------
- *    - catch\unit\memory\hipMemMap.cc
+ *    - unit/virtualMemoryManagement/hipMemMap.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -588,7 +588,7 @@ TEST_CASE("Unit_hipMemMap_MapPartialVMMMem") {
  * ------------------------
  *    - Negative Argument Tests
  * ------------------------
- *    - catch\unit\memory\hipMemMap.cc
+ *    - unit/virtualMemoryManagement/hipMemMap.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1

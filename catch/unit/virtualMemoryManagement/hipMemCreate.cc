@@ -55,7 +55,7 @@ static __global__ void square_kernel(int* Buff) {
  *    - Allocate physical memories for different multiples of
  * granularity and deallocate them.
  * ------------------------
- *    - catch\unit\memory\hipMemCreate.cc
+ *    - unit/virtualMemoryManagement/hipMemCreate.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -89,7 +89,7 @@ TEST_CASE("Unit_hipMemCreate_BasicAllocateDeAlloc_MultGranularity") {
  * and back to host. Verify the result. Release handle at end after
  * unmapping VMM range.
  * ------------------------
- *    - catch\unit\memory\hipMemCreate.cc
+ *    - unit/virtualMemoryManagement/hipMemCreate.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -146,7 +146,7 @@ TEST_CASE("Unit_hipMemCreate_ChkDev2HstMemcpy_ReleaseHdlPostUnmap") {
  * to VMM memory and back to host. Verify the result. Release
  * handle before the VMM range is used.
  * ------------------------
- *    - catch\unit\memory\hipMemCreate.cc
+ *    - unit/virtualMemoryManagement/hipMemCreate.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -203,7 +203,7 @@ TEST_CASE("Unit_hipMemCreate_ChkDev2HstMemcpy_ReleaseHdlPreUse") {
  * to device, launch kernel to square the data, copy data back
  * to host. Verify the result.
  * ------------------------
- *    - catch\unit\memory\hipMemCreate.cc
+ *    - unit/virtualMemoryManagement/hipMemCreate.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -264,7 +264,7 @@ TEST_CASE("Unit_hipMemCreate_ChkWithKerLaunch") {
  * device permission, copy data from host to device, launch kernel
  * to square the data, copy data back to host. Verify the result.
  * ------------------------
- *    - catch\unit\memory\hipMemCreate.cc
+ *    - unit/virtualMemoryManagement/hipMemCreate.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -336,7 +336,7 @@ TEST_CASE("Unit_hipMemCreate_MapNonContiguousChunks") {
  * to the VMM address range. Memset the VMM address range with initial
  * value. Validate.
  * ------------------------
- *    - catch\unit\memory\hipMemCreate.cc
+ *    - unit/virtualMemoryManagement/hipMemCreate.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -388,7 +388,7 @@ TEST_CASE("Unit_hipMemCreate_ChkWithMemset") {
  * ------------------------
  *    - Negative Tests
  * ------------------------
- *    - catch\unit\memory\hipMemCreate.cc
+ *    - unit/virtualMemoryManagement/hipMemCreate.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1

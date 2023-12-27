@@ -44,7 +44,7 @@ THE SOFTWARE.
  *    - Verify if reserved address returned by hipMemAddressReserve
  * for different alignment values are correctly aligned.
  * ------------------------
- *    - catch\unit\memory\hipMemAddressReserve.cc
+ *    - unit/virtualMemoryManagement/hipMemAddressReserve.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -106,7 +106,7 @@ TEST_CASE("Unit_hipMemAddressReserve_AlignmentTest") {
  * ------------------------
  *    - Negative Tests
  * ------------------------
- *    - catch\unit\memory\hipMemAddressReserve.cc
+ *    - unit/virtualMemoryManagement/hipMemAddressReserve.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1

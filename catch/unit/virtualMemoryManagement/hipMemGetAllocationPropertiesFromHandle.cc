@@ -40,7 +40,7 @@ THE SOFTWARE.
  * ------------------------
  *    - Functional test to verify the values of hipMemAllocationProp properties.
  * ------------------------
- *    - catch\unit\memory\hipMemGetAllocationPropertiesFromHandle.cc
+ *    - unit/virtualMemoryManagement/hipMemGetAllocationPropertiesFromHandle.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -78,7 +78,7 @@ TEST_CASE("Unit_hipMemGetAllocationPropertiesFromHandle_functional") {
  * ------------------------
  *    - Negative Tests.
  * ------------------------
- *    - catch\unit\memory\hipMemGetAllocationPropertiesFromHandle.cc
+ *    - unit/virtualMemoryManagement/hipMemGetAllocationPropertiesFromHandle.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1

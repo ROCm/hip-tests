@@ -127,6 +127,7 @@
         "Unit_deviceAllocation_InOneThread_AccessInAllThreads",
         "=== Patch which removes the typetraits implementation from std namespace in hiprtc is reverted ===",
         "Unit_hiprtc_stdheaders",
+        "Unit_hipGraphAddMemcpyNode_Negative_Parameters",
         "Unit_hipMemAddressFree_negative",
         "Unit_hipMemAddressReserve_AlignmentTest",
         "Unit_hipMemAddressReserve_Negative",

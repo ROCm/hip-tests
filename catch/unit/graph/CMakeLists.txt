@@ -32,6 +32,7 @@ set(TEST_SRC
   hipGraph.cc
   hipSimpleGraphWithKernel.cc
   hipGraphAddMemcpyNode.cc
+  hipGraphAddMemcpyNode_old.cc
   hipGraphClone.cc
   hipGraphInstantiateWithFlags.cc
   hipGraphAddHostNode.cc
@@ -72,6 +73,7 @@ set(TEST_SRC
   hipGraphEventRecordNodeSetEvent.cc
   hipGraphEventWaitNodeGetEvent.cc
   hipGraphExecMemcpyNodeSetParams.cc
+  hipGraphExecMemcpyNodeSetParams_old.cc
   hipStreamBeginCapture.cc
   hipGraphAddMemcpyNode1D_old.cc
   hipGraphAddMemcpyNode1D.cc
@@ -101,7 +103,9 @@ set(TEST_SRC
   hipGraphAddMemsetNode.cc
   hipGraphAddKernelNode.cc
   hipGraphMemcpyNodeGetParams.cc
+  hipGraphMemcpyNodeGetParams_old.cc
   hipGraphMemcpyNodeSetParams.cc
+  hipGraphMemcpyNodeSetParams_old.cc
   hipGraphKernelNodeGetParams.cc
   hipGraphKernelNodeSetParams.cc
   hipGraphExecKernelNodeSetParams.cc

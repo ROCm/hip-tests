@@ -23,6 +23,7 @@ THE SOFTWARE.
 #pragma once
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
 #pragma clang diagnostic ignored "-Wunused-lambda-capture"
+
 #include <variant>
 
 #include <hip_test_common.hh>

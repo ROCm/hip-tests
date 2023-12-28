@@ -36,6 +36,7 @@ add_subdirectory(compiler)
 add_subdirectory(errorHandling)
 add_subdirectory(cooperativeGrps)
 add_subdirectory(context)
+add_subdirectory(warp)
 add_subdirectory(dynamicLoading)
 add_subdirectory(g++)
 add_subdirectory(module)
@@ -51,4 +52,5 @@ add_subdirectory(callback)
 add_subdirectory(clock)
 # Vulkan interop APIs currently undefined for Nvidia
 add_subdirectory(vulkan_interop)
+add_subdirectory(gl_interop) # Disabled on NVIDIA due to defect - EXSWHTEC-246
 endif()

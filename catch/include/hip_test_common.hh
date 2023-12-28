@@ -21,15 +21,19 @@ THE SOFTWARE.
 */
 
 #pragma once
+#pragma clang diagnostic ignored "-Wsign-compare"
 #include "hip_test_context.hh"
+
 #include <catch.hpp>
 #include <atomic>
 #include <chrono>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdlib>
 #include <iostream>
 #include <iomanip>
 #include <mutex>
 #include <cstdlib>
+#include <thread>
 
 #define HIP_PRINT_STATUS(status) INFO(hipGetErrorName(status) << " at line: " << __LINE__);
 
@@ -98,6 +102,19 @@ THE SOFTWARE.
     }                                                                                              \
   }
 
+// Check that an expression, errorExpr, evaluates to the expected error_t, expectedError.
+#define HIPRTC_CHECK_ERROR(errorExpr, expectedError)                                               \
+  {                                                                                                \
+    auto localError = errorExpr;                                                                   \
+    INFO("Matching Errors: "                                                                       \
+         << "\n    Expected Error: " << hiprtcGetErrorString(expectedError)                        \
+         << "\n    Expected Code: " << expectedError << '\n'                                       \
+         << "                  Actual Error:   " << hiprtcGetErrorString(localError)               \
+         << "\n    Actual Code:   " << localError << "\nStr: " << #errorExpr                       \
+         << "\n    In File: " << __FILE__ << "\n    At line: " << __LINE__);                       \
+    REQUIRE(localError == expectedError);                                                          \
+  }
+
 // Although its assert, it will be evaluated at runtime
 #define HIP_ASSERT(x)                                                                              \
   { REQUIRE((x)); }
@@ -125,7 +142,7 @@ THE SOFTWARE.
 #define CTX_DESTROY() HIPCHECK(hipCtxDestroy(context));
 #define ARRAY_DESTROY(array) HIPCHECK(hipArrayDestroy(array));
 #define HIP_TEX_REFERENCE hipTexRef
-#define HIP_ARRAY hiparray
+#define HIP_ARRAY hipArray_t
 static void initHipCtx(hipCtx_t* pcontext) {
   HIPCHECK(hipInit(0));
   hipDevice_t device;
@@ -137,28 +154,24 @@ static void initHipCtx(hipCtx_t* pcontext) {
 #define CTX_DESTROY()
 #define ARRAY_DESTROY(array) HIPCHECK(hipFreeArray(array));
 #define HIP_TEX_REFERENCE textureReference*
-#define HIP_ARRAY hipArray*
+#define HIP_ARRAY hipArray_t
 #endif
 
 static inline bool IsGfx11() {
-#if defined(HT_NVIDIA)
+#if HT_NVIDIA
   return false;
-#elif defined(HT_AMD)
+#elif HT_AMD
   int device = -1;
   hipDeviceProp_t props{};
   HIP_CHECK(hipGetDevice(&device));
   HIP_CHECK(hipGetDeviceProperties(&props, device));
-
    // Get GCN Arch Name and compare to check if it is gfx11
   std::string arch = std::string(props.gcnArchName);
-  auto pos = arch.find(":");
+  auto pos = arch.find("gfx11");
   if (pos != std::string::npos)
-    arch = arch.substr(0, pos);
-
-  if(arch.size() >= 5)
-    arch = arch.substr(0,5);
-
-  return (arch == std::string("gfx11")) ? true : false;
+    return true;
+  else
+    return false;
 #else
   std::cout<<"Have to be either Nvidia or AMD platform, asserting"<<std::endl;
   assert(false);
@@ -352,87 +365,52 @@ template <> struct MemTraits<MemcpyAsync> {
   }
 };
 
+class BlockingContext {
+  std::atomic_bool blocked{true};
+  hipStream_t stream;
 
-namespace {
-static __global__ void waitKernel(clock_t offset) {
-  auto start = clock();
-  while ((clock() - start) < offset) {
-  }
-}
+ public:
+  BlockingContext(hipStream_t s) : blocked(true), stream(s) {}
 
-static __global__ void waitKernel_gfx11(clock_t offset) {
-#if HT_AMD
-  auto start = wall_clock64();
-  while ((wall_clock64() - start) < offset) {
-  }
-#endif
-}
-
-// helper function used to set the device frequency variable
-// estimates the number of clock ticks in 1 second
-static size_t findTicksPerSecond() {
-  // first read the reported clockRate as a starting point
-  hipDeviceProp_t prop;
-  int device;
-  HIP_CHECK(hipGetDevice(&device));
-  HIP_CHECK(hipGetDeviceProperties(&prop, device));
-  clock_t devFreq = static_cast<clock_t>(prop.clockRate);  // in kHz
-  clock_t clockTicksPerSecond = devFreq * 1000;
-
-  // init
-  hipEvent_t start, stop;
-  HIP_CHECK(hipEventCreate(&start));
-  HIP_CHECK(hipEventCreate(&stop));
-  auto waitKernel_used = IsGfx11() ? waitKernel_gfx11 : waitKernel;
-  // Warmup
-  hipLaunchKernelGGL(waitKernel_used, dim3(1), dim3(1), 0, 0, clockTicksPerSecond);
-  HIP_CHECK(hipGetLastError());
-  HIP_CHECK(hipDeviceSynchronize());
-
-  // try 10 times to find device frequency
-  // after 10 attempts the result is likely good enough so just accept it
-  for (int attempts = 10; attempts > 0; --attempts) {
-    HIP_CHECK(hipEventRecord(start));
-    hipLaunchKernelGGL(waitKernel_used, dim3(1), dim3(1), 0, 0, clockTicksPerSecond);
-    HIP_CHECK(hipEventRecord(stop));
-    HIP_CHECK(hipGetLastError());
-    HIP_CHECK(hipEventSynchronize(stop));
-
-    float executionTimeMs = 0;
-    HIP_CHECK(hipEventElapsedTime(&executionTimeMs, start, stop));
-
-    constexpr float tolerance = 20;
-    if (fabs(executionTimeMs - 1000) <= tolerance) {
-      // Timing is within accepted tolerance, break here
-      break;
-    } else {
-      clockTicksPerSecond = (clockTicksPerSecond * 1000) / executionTimeMs;
-      --attempts;
-    }
+  BlockingContext(const BlockingContext& in) {
+    blocked = in.blocked_val();
+    stream = in.stream_val();
   }
 
-  // deinit
-  HIP_CHECK(hipEventDestroy(start));
-  HIP_CHECK(hipEventDestroy(stop));
-  return clockTicksPerSecond;
-}
-}  // namespace
+  BlockingContext(const BlockingContext&& in) {
+    blocked = in.blocked_val();
+    stream = in.stream_val();
+  }
 
-// Launches a kernel which runs for specified amount of time
-// Note: The current implementation uses HIP_CHECK which is not thread safe!
-// Note: the function assumes execution on a single device and caches the number of clock ticks per
-// second
-static inline void runKernelForDuration(std::chrono::milliseconds duration,
-                                        hipStream_t stream = nullptr) {
-  // number of clocks the device is running at (device frequency)
-  // each translation unit will have a copy of ticksPerSecond but this function isn't designed for
-  // precision so that's acceptable.
-  static size_t ticksPerSecond = findTicksPerSecond();
-  const auto millis = duration.count();
-  auto waitKernel_used = IsGfx11() ? waitKernel_gfx11 : waitKernel;
-  hipLaunchKernelGGL(waitKernel_used, dim3(1), dim3(1), 0, stream, ticksPerSecond * millis / 1000);
-}
+  void reset() { blocked = true; }
 
+  BlockingContext& operator=(const BlockingContext& in) {
+    blocked = in.blocked_val();
+    stream = in.stream_val();
+    return *this;
+  }
+
+  void block_stream() {
+    blocked = true;
+    auto blocking_callback = [](hipStream_t, hipError_t, void* data) {
+      auto blocked = reinterpret_cast<std::atomic_bool*>(data);
+      while (blocked->load()) {
+        // Yield this thread till we are waiting
+        std::this_thread::yield();
+      }
+    };
+    HIP_CHECK(hipStreamAddCallback(stream, blocking_callback, (void*)&blocked, 0));
+  }
+
+  void unblock_stream() {
+    blocked = false;
+  }
+
+  bool is_blocked() const { return hipStreamQuery(stream) == hipErrorNotReady; }
+
+  bool blocked_val() const { return blocked.load(); }
+  hipStream_t stream_val() const { return stream; }
+};
 }  // namespace HipTest
 
 // This must be called in the beginning of image test app's main() to indicate whether image

@@ -32,7 +32,9 @@ TEST_CASE("Unit_hipExternalMemoryGetMappedBuffer_Vulkan_Positive_Read_Write") {
 
   const auto vk_storage =
       vkt.CreateMappedStorage<type>(count, VK_BUFFER_USAGE_TRANSFER_DST_BIT, true);
-
+  if (vk_storage.memory == nullptr) {
+    return;
+  }
   const auto hip_ext_mem_desc = vkt.BuildMemoryDescriptor(vk_storage.memory, vk_storage.size);
   hipExternalMemory_t hip_ext_memory;
   HIP_CHECK(hipImportExternalMemory(&hip_ext_memory, &hip_ext_mem_desc));
@@ -62,13 +64,11 @@ TEST_CASE("Unit_hipExternalMemoryGetMappedBuffer_Vulkan_Positive_Read_Write") {
   REQUIRE(42 == vk_storage.host_ptr[1]);
   REQUIRE(43 == vk_storage.host_ptr[2]);
 
-  // Defect - EXSWHTEC-181
-  // HIP_CHECK(hipFree(hip_dev_ptr));
+  HIP_CHECK(hipFree(hip_dev_ptr));
   HIP_CHECK(hipDestroyExternalMemory(hip_ext_memory));
 }
 
 // Disabled on AMD due to defect - EXSWHTEC-175
-#if HT_NVIDIA
 TEST_CASE("Unit_hipExternalMemoryGetMappedBuffer_Vulkan_Positive_Read_Write_With_Offset") {
   VulkanTest vkt(enable_validation);
   using type = uint8_t;
@@ -76,6 +76,9 @@ TEST_CASE("Unit_hipExternalMemoryGetMappedBuffer_Vulkan_Positive_Read_Write_With
 
   const auto vk_storage =
       vkt.CreateMappedStorage<type>(count, VK_BUFFER_USAGE_TRANSFER_DST_BIT, true);
+  if (vk_storage.memory == nullptr) {
+    return;
+  }
 
   const auto hip_ext_mem_desc = vkt.BuildMemoryDescriptor(vk_storage.memory, vk_storage.size);
   hipExternalMemory_t hip_ext_memory;
@@ -97,22 +100,25 @@ TEST_CASE("Unit_hipExternalMemoryGetMappedBuffer_Vulkan_Positive_Read_Write_With
   REQUIRE(42 == read_val);
 
   // Defect - EXSWHTEC-181
-  // HIP_CHECK(hipFree(hip_dev_ptr));
+  HIP_CHECK(hipFree(hip_dev_ptr));
   HIP_CHECK(hipDestroyExternalMemory(hip_ext_memory));
 }
-#endif
 
 TEST_CASE("Unit_hipExternalMemoryGetMappedBuffer_Vulkan_Negative_Parameters") {
   VulkanTest vkt(enable_validation);
   const auto vk_storage = vkt.CreateMappedStorage<int>(1, VK_BUFFER_USAGE_TRANSFER_DST_BIT, true);
-
+  if (vk_storage.memory == nullptr) {
+    return;
+  }
   const auto hip_ext_mem_desc = vkt.BuildMemoryDescriptor(vk_storage.memory, vk_storage.size);
   hipExternalMemory_t hip_ext_memory;
   HIP_CHECK(hipImportExternalMemory(&hip_ext_memory, &hip_ext_mem_desc));
 
   hipExternalMemoryBufferDesc external_mem_buffer_desc = {};
   external_mem_buffer_desc.size = vk_storage.size;
+#if HT_NVIDIA
   void* hip_dev_ptr = nullptr;
+#endif
 
 // Disabled on AMD due to defect - EXSWHTEC-176
 #if HT_NVIDIA

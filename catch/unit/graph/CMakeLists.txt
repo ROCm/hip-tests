@@ -18,10 +18,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# Common Tests - Test independent of all platforms
+# FIXME: cjatin
+# This is a temp hack to pass it on windows since it has a char limit for
+# command line. Eventually we need to use rsp files with ninja on windows.
+# But this exposes several problems with hipcc and build system on windows.
+# While those are fixed, this hack should allow us to pass windows CI.
 set(TEST_SRC
   hipGraphAddEmptyNode.cc
   hipGraphAddDependencies.cc
+  hipGraphAddDependencies_old.cc
   hipGraphAddEventRecordNode.cc
   hipGraphAddEventWaitNode.cc
   hipGraph.cc
@@ -30,38 +35,64 @@ set(TEST_SRC
   hipGraphClone.cc
   hipGraphInstantiateWithFlags.cc
   hipGraphAddHostNode.cc
+  hipGraphAddMemcpyNodeFromSymbol_old.cc
   hipGraphAddMemcpyNodeFromSymbol.cc
   hipGraphChildGraphNodeGetGraph.cc
   hipGraphNodeFindInClone.cc
   hipGraphExecHostNodeSetParams.cc
+  hipGraphAddMemcpyNodeToSymbol_old.cc
   hipGraphAddMemcpyNodeToSymbol.cc
   hipGraphExecMemsetNodeSetParams.cc
+  hipGraphMemcpyNodeSetParamsToSymbol_old.cc
   hipGraphMemcpyNodeSetParamsToSymbol.cc
   hipGraphDestroyNode.cc
   hipGraphGetNodes.cc
+  hipGraphGetNodes_old.cc
   hipGraphGetRootNodes.cc
+  hipGraphGetRootNodes_old.cc
   hipGraphHostNodeSetParams.cc
   hipGraphAddMemcpyNode1D.cc
   hipGraphAddChildGraphNode.cc
   hipGraphNodeGetType.cc
   hipGraphExecMemcpyNodeSetParams1D.cc
   hipGraphGetEdges.cc
+  hipGraphGetEdges_old.cc
   hipGraphRemoveDependencies.cc
+  hipGraphRemoveDependencies_old.cc
   hipGraphInstantiate.cc
   hipGraphExecUpdate.cc
   hipGraphExecEventRecordNodeSetEvent.cc
   hipGraphEventWaitNodeSetEvent.cc
   hipGraphMemsetNodeGetParams.cc
   hipGraphMemsetNodeSetParams.cc
+  hipGraphExecMemcpyNodeSetParamsFromSymbol_old.cc
   hipGraphExecMemcpyNodeSetParamsFromSymbol.cc
   hipGraphEventRecordNodeGetEvent.cc
   hipGraphEventRecordNodeSetEvent.cc
   hipGraphEventWaitNodeGetEvent.cc
   hipGraphExecMemcpyNodeSetParams.cc
   hipStreamBeginCapture.cc
+  hipStreamBeginCapture_old.cc
   hipStreamIsCapturing.cc
+  hipStreamIsCapturing_old.cc)
+
+if(HIP_PLATFORM MATCHES "amd")
+  set(AMD_SRC
+    hipStreamCaptureExtModuleLaunchKernel.cc
+  )
+  set(TEST_SRC ${TEST_SRC} ${AMD_SRC})
+endif()
+
+hip_add_exe_to_target(NAME GraphsTest1
+                      TEST_SRC ${TEST_SRC}
+                      TEST_TARGET_NAME build_tests)
+
+set(TEST_SRC
   hipStreamGetCaptureInfo.cc
+  hipStreamGetCaptureInfo_old.cc
   hipStreamEndCapture.cc
+  hipStreamEndCapture_old.cc
+  hipGraphMemcpyNodeSetParamsFromSymbol_old.cc
   hipGraphMemcpyNodeSetParamsFromSymbol.cc
   hipGraphExecEventWaitNodeSetEvent.cc
   hipGraphAddMemsetNode.cc
@@ -72,22 +103,54 @@ set(TEST_SRC
   hipGraphKernelNodeSetParams.cc
   hipGraphExecKernelNodeSetParams.cc
   hipGraphLaunch.cc
+  hipGraphLaunch_old.cc
   hipGraphMemcpyNodeSetParams1D.cc
+  hipGraphExecMemcpyNodeSetParamsToSymbol_old.cc
   hipGraphExecMemcpyNodeSetParamsToSymbol.cc
   hipGraphNodeGetDependentNodes.cc
+  hipGraphNodeGetDependentNodes_old.cc
   hipGraphNodeGetDependencies.cc
+  hipGraphNodeGetDependencies_old.cc
   hipGraphHostNodeGetParams.cc
   hipGraphExecChildGraphNodeSetParams.cc
   hipStreamGetCaptureInfo_v2.cc
+  hipGraphCreate.cc
+  hipGraphDestroy.cc
+  hipStreamUpdateCaptureDependencies.cc
+  hipThreadExchangeStreamCaptureMode.cc
+  hipLaunchHostFunc.cc
+  hipStreamGetCaptureInfo_v2_old.cc
   hipUserObjectCreate.cc
+  hipUserObjectRelease.cc
+  hipUserObjectRetain.cc
+  hipGraphReleaseUserObject.cc
+  hipGraphRetainUserObject.cc
   hipGraphDebugDotPrint.cc
   hipGraphCloneComplx.cc
+  hipGraphNodeSetEnabled.cc
+  hipGraphNodeGetEnabled.cc
   hipGraphCreate.cc
   hipGraphDestroy.cc
   hipGraphExecDestroy.cc
   hipGraphUpload.cc
+  hipGraphKernelNodeCopyAttributes.cc
+  hipGraphAddNodeBeginCapture.cc
+  hipGraphCycle.cc
+  hipGraphPerf.cc
+  hipGraphKernelNodeGetAttribute.cc
+  hipGraphKernelNodeSetAttribute.cc
+  hipGraphMemAllocNodeGetParams.cc
 )
 
-hip_add_exe_to_target(NAME GraphsTest
+add_custom_target(add_Kernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/add_Kernel.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../graph/add_Kernel.code -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
+
+hip_add_exe_to_target(NAME GraphsTest2
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests)
+
+if(HIP_PLATFORM MATCHES "amd")
+  add_custom_target(hipMatMul COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/hipMatMul.cc -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/graph/hipMatMul.code -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
+  add_dependencies(build_tests hipMatMul)
+endif()
+
+add_dependencies(build_tests add_Kernel.code)

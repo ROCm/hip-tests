@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -48,10 +48,15 @@ Testcase Scenarios : Functional
    Memcpy nodes are added and assigned to Peer device.
 4) Perform memcpy operation for 1D, 2D and 3D arrays on Peer device and
    verify the results.
+5) Create two host pointers, copy the data between them by the api
+   hipGraphAddMemcpyNode with data transfer kind hipMemcpyHostToHost.
+   Validate the output.
 */
 
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
+#include <vector>
+#include <numeric>
 
 #define ZSIZE 32
 #define YSIZE 32
@@ -61,8 +66,10 @@ Testcase Scenarios : Functional
  */
 
 TEST_CASE("Unit_hipGraphAddMemcpyNode_Negative") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr int width{10}, height{10}, depth{10};
-  hipArray *devArray1;
+  hipArray_t devArray1;
   hipChannelFormatKind formatKind = hipChannelFormatKindSigned;
   hipMemcpy3DParms myparams;
   uint32_t size = width * height * depth * sizeof(int);
@@ -155,7 +162,7 @@ TEST_CASE("Unit_hipGraphAddMemcpyNode_Negative") {
   SECTION("Passing different element size for hipMemcpy3DParms::srcArray"
                    "and hipMemcpy3DParms::dstArray") {
     myparams.srcArray = devArray1;
-    hipArray *devArray2;
+    hipArray_t devArray2;
     HIP_CHECK(hipMalloc3DArray(&devArray2, &channelDesc,
               make_hipExtent(width+1, height+1, depth+1), hipArrayDefault));
     myparams.dstArray = devArray2;
@@ -173,7 +180,7 @@ TEST_CASE("Unit_hipGraphAddMemcpyNode_Negative") {
 
 static void validateMemcpyNode3DArray(bool peerAccess = false) {
   constexpr int width{10}, height{10}, depth{10};
-  hipArray *devArray1, *devArray2;
+  hipArray_t devArray1, devArray2;
   hipChannelFormatKind formatKind = hipChannelFormatKindSigned;
   hipMemcpy3DParms myparams;
   uint32_t size = width * height * depth * sizeof(int);
@@ -278,7 +285,7 @@ static void validateMemcpyNode2DArray(bool peerAccess = false) {
   int harray2D[YSIZE][XSIZE]{};
   int harray2Dres[YSIZE][XSIZE]{};
   constexpr int width{XSIZE}, height{YSIZE};
-  hipArray *devArray1, *devArray2;
+  hipArray_t devArray1, devArray2;
   hipChannelFormatKind formatKind = hipChannelFormatKindSigned;
   hipMemcpy3DParms myparams;
   hipGraph_t graph;
@@ -377,7 +384,7 @@ static void validateMemcpyNode1DArray(bool peerAccess = false) {
   int harray1D[XSIZE]{};
   int harray1Dres[XSIZE]{};
   constexpr int width{XSIZE};
-  hipArray *devArray1, *devArray2;
+  hipArray_t devArray1, devArray2;
   hipChannelFormatKind formatKind = hipChannelFormatKindSigned;
   hipMemcpy3DParms myparams;
   hipGraph_t graph;
@@ -474,6 +481,8 @@ static void validateMemcpyNode1DArray(bool peerAccess = false) {
  * Tests also verify memcpy node addition with 1D, 2D and 3D objects.
  */
 TEST_CASE("Unit_hipGraphAddMemcpyNode_BasicFunctional") {
+  CHECK_IMAGE_SUPPORT
+
   SECTION("Memcpy with 3D array on default device") {
     validateMemcpyNode3DArray();
   }
@@ -494,6 +503,8 @@ TEST_CASE("Unit_hipGraphAddMemcpyNode_BasicFunctional") {
  * Tests also verify memcpy node addition with 1D, 2D and 3D objects.
  */
 TEST_CASE("Unit_hipGraphAddMemcpyNode_PeerAccessFunctional") {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices{}, peerAccess{};
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {
@@ -517,4 +528,49 @@ TEST_CASE("Unit_hipGraphAddMemcpyNode_PeerAccessFunctional") {
     validateMemcpyNode1DArray(true);
   }
 }
+/*
+* Create two host pointers, copy the data between them by the api
+* hipGraphAddMemcpyNode with data transfer kind hipMemcpyHostToHost.
+* Validate the output.
+*/
+TEST_CASE("Unit_hipGraphAddMemcpyNode_HostToHost") {
+  constexpr size_t size = 1024;
+  size_t numW = size * sizeof(int);
+  // Host Vectors
+  std::vector<int> A_h(numW);
+  std::vector<int> B_h(numW);
+  // Initialization
+  std::iota(A_h.begin(), A_h.end(), 0);
+  std::fill_n(B_h.begin(), size, 0);
 
+  hipGraph_t graph;
+  hipStream_t streamForGraph;
+  hipGraphExec_t graphExec;
+  hipGraphNode_t memcpyH2H;
+  HIP_CHECK(hipGraphCreate(&graph, 0));
+  HIP_CHECK(hipStreamCreate(&streamForGraph));
+
+  hipMemcpy3DParms myparms{};
+  myparms.srcPos = make_hipPos(0, 0, 0);
+  myparms.dstPos = make_hipPos(0, 0, 0);
+  myparms.srcPtr = make_hipPitchedPtr(A_h.data(), numW, numW, 1);
+  myparms.dstPtr = make_hipPitchedPtr(B_h.data(), numW, numW, 1);
+  myparms.extent = make_hipExtent(numW, 1, 1);
+  myparms.kind = hipMemcpyHostToHost;
+
+  // Host to Host
+  HIP_CHECK(hipGraphAddMemcpyNode(&memcpyH2H, graph, nullptr,
+                                            0, &myparms));
+
+  // Instantiate and launch the graph
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+  HIP_CHECK(hipGraphLaunch(graphExec, streamForGraph));
+  HIP_CHECK(hipStreamSynchronize(streamForGraph));
+
+  HIP_CHECK(hipGraphExecDestroy(graphExec));
+  HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipStreamDestroy(streamForGraph));
+
+  // Validation
+  REQUIRE(memcmp(A_h.data(), B_h.data(), numW) == 0);
+}

@@ -1,33 +1,42 @@
 Build procedure
 
-We provide Makefile and CMakeLists.txt to build the samples seperately.
+The CMakeLists.txt at hip-tests/samples folder can be used for building and packaging samples.
 
-1.Makefile supports shared lib of hip-rocclr runtime and nvcc.
+CMakeLists.txt can support shared and static libs of hip-rocclr runtime.
+The same steps can be followed for both.
 
-To build a sample, just type in sample folder,
+1. To build a specific sample (e.g. 0_Intro/bit_extract) run ..
 
-make
+cd samples/0_Intro/bit_extract
 
+mkdir -p build && cd build
 
+cmake ..
 
-2.CMakeLists.txt can support shared and static libs of hip-rocclr runtime.
+make all
 
-To build a sample, run in the sample folder,
+2. To build all samples together run ..
+
+cd hip-tests
 
 mkdir -p build && cd build
 
 rm -rf * (to clear up)
 
-a. to build with shared libs, run
+cmake ../samples
 
-cmake ..
+make build_samples
 
-b. to build with static libs, run
+In order to build specific samples (Intro, Utils or Cookbook) run ..
 
-cmake -DCMAKE_PREFIX_PATH="<ROCM_PATH>/llvm/lib/cmake" ..
-
-Then run,
-
-make
+make build_intro
+make build_utils
+make build_cookbook
 
 Note that if you want debug version, add "-DCMAKE_BUILD_TYPE=Debug" in cmake cmd.
+
+3. To package samples and generate packages. From hip-tests/build
+
+cmake ../samples
+
+make package_samples

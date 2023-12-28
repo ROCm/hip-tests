@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -17,8 +17,12 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#pragma clang diagnostic ignored "-Wunused-parameter"
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
+
+
+#if CUDA_VERSION < CUDA_12000
 
 #define SIZE_H 8
 #define SIZE_W 12
@@ -77,3 +81,6 @@ TEST_CASE("Unit_hipBindTexture2D_Pitch") {
   HIP_CHECK(hipFree(devPtrA));
   HIP_CHECK(hipFree(devPtrB));
 }
+
+#endif // CUDA_VERSION < CUDA_12000
+

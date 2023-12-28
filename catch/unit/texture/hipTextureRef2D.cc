@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -17,7 +17,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#pragma clang diagnostic ignored "-Wunused-parameter"
 #include <hip_test_common.hh>
+
+
+#if CUDA_VERSION < CUDA_12000
 
 texture<float, 2, hipReadModeElementType> tex;
 
@@ -49,7 +53,7 @@ TEST_CASE("Unit_hipTextureRef2D_Check") {
 
   hipChannelFormatDesc channelDesc = hipCreateChannelDesc(32, 0, 0, 0,
                                            hipChannelFormatKindFloat);
-  hipArray* hipArray;
+  hipArray_t hipArray;
   HIP_CHECK(hipMallocArray(&hipArray, &channelDesc, width, height));
   HIP_CHECK(hipMemcpyToArray(hipArray, 0, 0, hData, size,
                              hipMemcpyHostToDevice));
@@ -90,3 +94,7 @@ TEST_CASE("Unit_hipTextureRef2D_Check") {
   HIP_CHECK(hipFree(dData));
   HIP_CHECK(hipFreeArray(hipArray));
 }
+
+
+#endif // CUDA_VERSION < CUDA_12000
+

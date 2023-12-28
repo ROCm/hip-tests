@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -161,8 +161,17 @@ TEST_CASE("Unit_hipGraphUpload_Functional_multidevice_test") {
     SECTION("Pass a common stream for all device") {
       hipStream_t stream;
       HIP_CHECK(hipStreamCreate(&stream));
-
+      int currDevice = -1;
+      HIP_CHECK(hipGetDevice(&currDevice));
       for (int i = 0; i < numDevices; i++) {
+        if (i != currDevice) {
+          int can_access_peer = 0;
+          HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, currDevice, i));
+          if (!can_access_peer) {
+            INFO("Peer access cannot be enabled between devices " << currDevice << " " << i);
+            continue;
+          }
+        }
         HIP_CHECK(hipSetDevice(i));
         hipGraphUploadFunctional_with_hipStreamBeginCapture(stream);
         hipGraphUploadFunctional_with_stream(stream);
@@ -201,13 +210,61 @@ TEST_CASE("Unit_hipGraphUpload_Functional_multidevice_test") {
 }
 
 /**
+ * Functional Test for API - hipGraphUpload
+ - Make graph by using hipStreamBeginCapture with a low priority stream.
+   Upload the graph into high priority stream and execute the graph and verify.
+ */
+
+TEST_CASE("Unit_hipGraphUpload_Functional_With_Priority_Stream") {
+  constexpr size_t N = 1024;
+  constexpr size_t Nbytes = N * sizeof(int);
+  hipGraph_t graph;
+  hipGraphExec_t graphExec;
+
+  int *A_d, *B_d, *C_d, *A_h, *B_h, *C_h;
+  HipTest::initArrays(&A_d, &B_d, &C_d, &A_h, &B_h, &C_h, N, false);
+
+  hipStream_t stream1, stream2;
+  int minPriority = 0, maxPriority = 0;
+  HIP_CHECK(hipDeviceGetStreamPriorityRange(&minPriority, &maxPriority));
+  HIP_CHECK(hipStreamCreateWithPriority(&stream1, hipStreamDefault,
+                                        minPriority));
+  HIP_CHECK(hipStreamCreateWithPriority(&stream2, hipStreamDefault,
+                                        maxPriority));
+
+  HIP_CHECK(hipStreamBeginCapture(stream1, hipStreamCaptureModeGlobal));
+  HIP_CHECK(hipMemcpyAsync(A_d, A_h, Nbytes, hipMemcpyHostToDevice, stream1));
+  HIP_CHECK(hipMemcpyAsync(B_d, B_h, Nbytes, hipMemcpyHostToDevice, stream1));
+  HipTest::vectorADD<int><<<1, 1, 0, stream1>>>(A_d, B_d, C_d, N);
+  HIP_CHECK(hipMemcpyAsync(C_h, C_d, Nbytes, hipMemcpyDeviceToHost, stream1));
+  HIP_CHECK(hipStreamEndCapture(stream1, &graph));
+
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+
+  HIP_CHECK(hipGraphUpload(graphExec, stream2));
+
+  HIP_CHECK(hipGraphLaunch(graphExec, stream2));
+  HIP_CHECK(hipStreamSynchronize(stream2));
+
+  // Verify graph execution result
+  HipTest::checkVectorADD(A_h, B_h, C_h, N);
+
+  HipTest::freeArrays(A_d, B_d, C_d, A_h, B_h, C_h, false);
+  HIP_CHECK(hipGraphExecDestroy(graphExec));
+  HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipStreamDestroy(stream1));
+  HIP_CHECK(hipStreamDestroy(stream2));
+}
+
+/**
 * Negative Test for API - hipGraphUpload Argument Check
 1) Pass graphExec node as nullptr.
 2) Pass graphExec node as uninitialize object
 3) Pass stream as uninitialize object
+4) Graphexec is destroyed before upload
 */
 
-TEST_CASE("Unit_hipGraphUpload_Negative_Argument_Check") {
+TEST_CASE("Unit_hipGraphUpload_Negative_Parameters") {
   hipGraphExec_t graphExec{};
   hipError_t ret;
 
@@ -215,22 +272,30 @@ TEST_CASE("Unit_hipGraphUpload_Negative_Argument_Check") {
   HIP_CHECK(hipStreamCreate(&stream));
 
   SECTION("Pass graphExec node as nullptr") {
-    ret = hipGraphUpload(nullptr, stream);
-    REQUIRE(hipErrorInvalidValue == ret);
+    HIP_CHECK_ERROR(hipGraphUpload(nullptr, stream), hipErrorInvalidValue);
   }
   SECTION("Pass graphExec node as uninitialize object") {
-    ret = hipGraphUpload(graphExec, stream);
-    REQUIRE(hipErrorInvalidValue == ret);
+    HIP_CHECK_ERROR(hipGraphUpload(graphExec, stream), hipErrorInvalidValue);
   }
   SECTION("Pass stream as uninitialize object") {
     hipStream_t stream1{};
     hipGraph_t graph;
     HIP_CHECK(hipGraphCreate(&graph, 0));
-    HIP_CHECK(hipGraphInstantiate(&graphExec, graph, NULL, NULL, 0));
+    HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
 
     ret = hipGraphUpload(graphExec, stream1);
     REQUIRE(hipSuccess == ret);
   }
+  SECTION("graphExec is destroyed"){
+    hipGraphExec_t graph_exec;
+    hipGraph_t graph;
+
+    HIP_CHECK(hipGraphCreate(&graph, 0));
+    HIP_CHECK(hipGraphInstantiate(&graph_exec, graph, nullptr, nullptr, 0));
+    
+    HIP_CHECK(hipGraphUpload(graph_exec, hipStreamPerThread));
+    HIP_CHECK(hipGraphExecDestroy(graph_exec));
+    HIP_CHECK_ERROR(hipGraphUpload(graph_exec, hipStreamPerThread), hipErrorInvalidValue);
+  }
   HIP_CHECK(hipStreamDestroy(stream));
 }
-

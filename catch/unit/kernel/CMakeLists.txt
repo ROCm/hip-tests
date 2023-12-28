@@ -22,7 +22,32 @@
 set(TEST_SRC
     hipMemFaultStackAllocation.cc
     hipLaunchBounds.cc
+    hipShflTests.cc
+    hipDynamicShared.cc
+    hipDynamicShared2.cc
+    hipEmptyKernel.cc
+    hipGridLaunch.cc
+    hipLanguageExtensions.cc
+    hipLaunchParm.cc
+    hipLaunchParmFunctor.cc
+    hipTestConstant.cc
+    hipTestGlobalVariable.cc
+    hipTestMemKernel.cc
+    launch_bounds.cc
 )
+if(UNIX)
+  set(TEST_SRC ${TEST_SRC}
+      hipPrintfKernel.cc)
+endif()
+
+# only for AMD
+if(HIP_PLATFORM MATCHES "amd")
+  set(AMD_SRC
+      hipShflUpDownTest.cc
+      hipExtLaunchKernelGGL.cc
+  )
+  set(TEST_SRC ${TEST_SRC} ${AMD_SRC})
+endif()
 
 hip_add_exe_to_target(NAME KernelTest
                       TEST_SRC ${TEST_SRC}

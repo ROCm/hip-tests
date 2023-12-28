@@ -60,6 +60,9 @@ set(TEST_SRC
     tex1DLayeredGrad.cc
     tex1DLayeredLod.cc
     tex1DLod.cc
+    tex3D.cc
+    tex3DLod.cc
+    tex3DGrad.cc
 )
 
 if(WIN32)

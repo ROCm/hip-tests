@@ -211,6 +211,15 @@
         "Unit_hipHostMalloc_AllocateUseMoreThanAvailGPUMemory",
         "=== SWDEV-432250:Below tests failed in stress test on 10/11/23 ===",
         "Unit_hipVectorTypes_test_on_device",
+<<<<<<< HEAD
+=======
+        "Unit_Layered1DTexture_Check_DeviceBufferToFromLayered1DArray - ushort4",
+        "Unit_Layered2DTexture_Check_DeviceBufferToFromLayered2DArray - float4",
+        "Unit_tex3DLod_Positive_ReadModeElementType",
+        "Unit_tex3DLod_Positive_ReadModeNormalizedFloat",
+        "Unit_tex3DGrad_Positive_ReadModeElementType",
+        "Unit_tex3DGrad_Positive_ReadModeNormalizedFloat",
+>>>>>>> 5cdc6efc (Merge branch 'develop' into tex3D_tests)
         "=== Patch which removes the typetraits implementation from std namespace in hiprtc is reverted ===",
         "Unit_hiprtc_stdheaders",
         "NOTE: The following test is disabled due to defect - EXSWHTEC-241",

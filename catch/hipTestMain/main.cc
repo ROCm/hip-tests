@@ -33,9 +33,6 @@ int main(int argc, char** argv) {
     | Opt(cmd_options.cg_iterations, "cg_iterations")
         ["-E"]["--cg-iterations"]
         ("Number of iterations used for cooperative groups sync tests (default: 5)")
-    | Opt(cmd_options.extended_run)
-        ["-E"]["--extended-run"]
-        ("TODO: Description goes here")
   ;
   // clang-format on
 

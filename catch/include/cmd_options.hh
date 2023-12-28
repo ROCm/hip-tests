@@ -23,12 +23,11 @@ THE SOFTWARE.
 #pragma once
 
 struct CmdOptions {
-  int iterations = 1000;
+  int iterations = 10;
   int warmups = 100;
   int cg_iterations = 5;
   bool no_display = false;
   bool progress = false;
-  bool extended_run = false;
 };
 
 extern CmdOptions cmd_options;

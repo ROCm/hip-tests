@@ -35,31 +35,99 @@ std::string TestContext::substringFound(std::vector<std::string> list, std::stri
   return match;
 }
 
-
-std::string TestContext::getMatchingConfigFile(std::string config_dir) {
-  std::string configFileToUse;
-  for (auto& p : fs::recursive_directory_iterator(config_dir)) {
-    fs::path filename = p.path();
-    std::string cur_arch = "TODO";
-    std::string arch = substringFound(amd_arch_list_, filename.filename().string());
-    std::string platform = substringFound(platform_list_, filename.filename().string());
-    std::string os = substringFound(os_list_, filename.filename().string());
-    std::string common_arch = "common";
-    std::vector<std::string> default_arch_vec {common_arch};
-    std::string common = substringFound(default_arch_vec, filename.filename().string());
-    // if arch found then use that exit from loop
-    if (arch == cur_arch) {
-      configFileToUse = filename.string();
-      break;
-      // match the platform/os and continue to look
-    } else if ((platform == config_.platform) && (os == config_.os || os == "all") &&
-                common == common_arch) { // ensures only common file is returned
-      configFileToUse = filename.string();
-    }
+std::string TestContext::getCurrentArch() {
+#if HT_LINUX
+  const char* cmd = "/opt/rocm/bin/rocm_agent_enumerator | sort -u | xargs | sed -e 's/ /;/g'";
+  std::array<char, 1024> buffer;
+  std::string result;
+  std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+  if (!pipe) {
+    printf("popen() failed!");
+    return "";
   }
-  return configFileToUse;
+  while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+    std::string res = buffer.data();
+    result = res;
+  }
+
+  result.erase(std::remove(result.begin(), result.end(), '\n'), result.end());
+  size_t pos = result.find("gfx000");
+  if (pos != std::string::npos) {
+    result.erase(pos, 7);
+  }
+
+  std::string s_visible_devices = TestContext::getEnvVar("HIP_VISIBLE_DEVICES");
+
+  auto parser = [](std::string input, char c) -> std::vector<std::string> {
+    std::vector<std::string> ret;
+    auto loc = input.find(c);
+    while (loc != std::string::npos) {
+      auto t_str = input.substr(0, loc);
+      ret.push_back(t_str);
+      input.erase(0, loc + 1);
+      loc = input.find(c);
+    }
+    if (input.size() > 0) {
+      ret.push_back(input);
+    }
+    return ret;
+  };
+
+  std::vector<std::string> archs = parser(result, ';');
+  std::vector<std::string> v_visible_devices = parser(s_visible_devices, ',');
+  std::vector<int> visible_devices;
+  std::for_each(v_visible_devices.begin(), v_visible_devices.end(),
+                [&](const std::string& in) { visible_devices.push_back(std::stoi(in)); });
+
+  if (archs.size() == 0) {
+    return "";  // rocm_agent_enum gave us garbage
+  }
+
+  auto first_arch = archs[0];
+  if (!std::all_of(archs.begin(), archs.end(),
+                   [&](const std::string& in) { return in == first_arch; })) {
+    // We have multiple archs in rocm_agent_enum
+    // Check if they are same or not by applying HIP_VISIBLE_DEVICES filter
+    std::vector<std::string> filtered_archs;
+    if (visible_devices.size() > 0) {
+      for (size_t i = 0; i < visible_devices.size(); i++) {
+        filtered_archs.push_back(archs[visible_devices[i]]);
+      }
+    } else {
+      filtered_archs = archs;
+    }
+    auto first_filtered_arch = filtered_archs[0];
+    if (!std::all_of(filtered_archs.begin(), filtered_archs.end(),
+                     [&](const std::string& in) { return in == first_filtered_arch; })) {
+      LogPrintf("%s",
+                "[ERROR] Cannot run tests on Hetrogenous Architecture. Please set "
+                "HIP_VISIBLE_DEVICES with devices of same arch");
+      std::abort();
+    }
+    return first_filtered_arch;
+  }
+  return first_arch;
+#else
+  return "";
+#endif
 }
 
+std::string TestContext::getMatchingConfigFile(std::string config_dir) {
+  std::string configFileToUse = "";
+  if (isLinux() && isAmd()) {
+    std::string cur_arch = getCurrentArch();
+    LogPrintf("The arch present: %s", cur_arch.c_str());
+    configFileToUse = config_dir + "/config_" + getConfig().platform + "_" + getConfig().os + "_" +
+        cur_arch + ".json";
+  } else {
+    configFileToUse =
+        config_dir + "/config_" + getConfig().platform + "_" + getConfig().os + ".json";
+  }
+  if (fs::exists(configFileToUse)) {
+    return configFileToUse;
+  }
+  return "";
+}
 
 std::string& TestContext::getCommonJsonFile() {
   fs::path config_dir = exe_path;
@@ -102,15 +170,18 @@ void TestContext::getConfigFiles() {
 
   std::string env_config = TestContext::getEnvVar("HIP_CATCH_EXCLUDE_FILE");
   LogPrintf("Env Config file: %s",
-            (!env_config.empty()) ? env_config.c_str() : "Not found, using common config");
+            (!env_config.empty()) ? env_config.c_str() : "Not found");
   // HIP_CATCH_EXCLUDE_FILE is set for custom file path
   if (!env_config.empty()) {
     if(fs::exists(env_config)) {
       config_.json_files.push_back(env_config);
     }
   } else {
+    std::string jsonFile = getCommonJsonFile();
     // get common json file
-    config_.json_files.push_back(getCommonJsonFile());
+    if (jsonFile != "") {
+      config_.json_files.push_back(getCommonJsonFile());
+    }
   }
 
   for (const auto& fl : config_.json_files) {

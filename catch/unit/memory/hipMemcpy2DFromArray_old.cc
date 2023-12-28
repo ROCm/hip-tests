@@ -41,8 +41,10 @@ static constexpr auto NUM_H{10};
  *         and verifying A_h with Phi
  */
 TEST_CASE("Unit_hipMemcpy2DFromArray_Basic") {
+  CHECK_IMAGE_SUPPORT
+
   HIP_CHECK(hipSetDevice(0));
-  hipArray *A_d{nullptr};
+  hipArray_t A_d{nullptr};
   size_t width{sizeof(float)*NUM_W};
   float *A_h{nullptr}, *hData{nullptr};
   // Initialization of variables
@@ -73,8 +75,10 @@ TEST_CASE("Unit_hipMemcpy2DFromArray_Basic") {
  * of hipMemcpy2DFromArray API
  */
 TEST_CASE("Unit_hipMemcpy2DFromArray_ExtentValidation") {
+  CHECK_IMAGE_SUPPORT
+
   HIP_CHECK(hipSetDevice(0));
-  hipArray *A_d{nullptr};
+  hipArray_t A_d{nullptr};
   size_t width{sizeof(float)*NUM_W};
   float *A_h{nullptr}, *hData{nullptr}, *valData{nullptr};
   // Initialization of variables
@@ -143,8 +147,10 @@ TEST_CASE("Unit_hipMemcpy2DFromArray_ExtentValidation") {
  *         and verifying A_h with PinnedMem[0](i.e., 10)
  */
 TEST_CASE("Unit_hipMemcpy2DFromArray_PinnedMemSameGPU") {
+  CHECK_IMAGE_SUPPORT
+
   HIP_CHECK(hipSetDevice(0));
-  hipArray *A_d{nullptr};
+  hipArray_t A_d{nullptr};
   constexpr auto def_val{10};
   size_t width{sizeof(float)*NUM_W};
   float *A_h{nullptr}, *PinnMem{nullptr};
@@ -185,6 +191,8 @@ TEST_CASE("Unit_hipMemcpy2DFromArray_PinnedMemSameGPU") {
  *         and verifying A_h with E_h
  */
 TEST_CASE("Unit_hipMemcpy2DFromArray_multiDevicePinnedMemPeerGpu") {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices = 0;
   constexpr auto def_val{10};
   HIP_CHECK(hipGetDeviceCount(&numDevices));
@@ -193,7 +201,7 @@ TEST_CASE("Unit_hipMemcpy2DFromArray_multiDevicePinnedMemPeerGpu") {
     HIP_CHECK(hipDeviceCanAccessPeer(&canAccessPeer, 0, 1));
     if (canAccessPeer) {
       HIP_CHECK(hipSetDevice(0));
-      hipArray *A_d{nullptr};
+      hipArray_t A_d{nullptr};
       size_t width{sizeof(float)*NUM_W};
       float *A_h{nullptr}, *E_h{nullptr};
 
@@ -242,6 +250,8 @@ TEST_CASE("Unit_hipMemcpy2DFromArray_multiDevicePinnedMemPeerGpu") {
  *         and verifying A_h with Phi
  * */
 TEST_CASE("Unit_hipMemcpy2DFromArray_multiDeviceContextChange") {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices > 1) {
@@ -249,7 +259,7 @@ TEST_CASE("Unit_hipMemcpy2DFromArray_multiDeviceContextChange") {
     HIP_CHECK(hipDeviceCanAccessPeer(&canAccessPeer, 0, 1));
     if (canAccessPeer) {
       HIP_CHECK(hipSetDevice(0));
-      hipArray *A_d{nullptr};
+      hipArray_t A_d{nullptr};
       size_t width{sizeof(float)*NUM_W};
       float *A_h{nullptr}, *hData{nullptr};
 
@@ -286,8 +296,10 @@ TEST_CASE("Unit_hipMemcpy2DFromArray_multiDeviceContextChange") {
  * hipMemcpy2DFromArray API
  */
 TEST_CASE("Unit_hipMemcpy2DFromArray_Negative") {
+  CHECK_IMAGE_SUPPORT
+
   HIP_CHECK(hipSetDevice(0));
-  hipArray *A_d{nullptr};
+  hipArray_t A_d{nullptr};
   size_t width{sizeof(float)*NUM_W};
   float *A_h{nullptr}, *hData{nullptr};
 

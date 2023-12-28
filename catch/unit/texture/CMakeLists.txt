@@ -42,6 +42,8 @@ set(TEST_SRC
     hipTextureObj3DCheckModes.cc
     hipTextureObj1DCheckSRGBModes.cc
     hipTextureObj2DCheckSRGBModes.cc
+    tex2D.cc
+    tex2DLayered.cc
     hipTexObjectTests.cc
     hipTextureObjectTests.cc
     hipBindTextureToMipmappedArray.cc

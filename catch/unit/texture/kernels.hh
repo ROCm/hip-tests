@@ -174,6 +174,69 @@ __global__ void tex3DGradKernel(TexelType* const out, size_t N_x, size_t N_y, si
 }
 
 template <typename TexelType>
+__global__ void texCubemapKernel(TexelType* const out, size_t N_x, size_t N_y, size_t N_z,
+                                 hipTextureObject_t tex_obj, size_t width, size_t height,
+                                 size_t depth, size_t num_subdivisions, bool normalized_coords) {
+  const auto tid_x = blockIdx.x * blockDim.x + threadIdx.x;
+  if (tid_x >= N_x) return;
+
+  const auto tid_y = blockIdx.y * blockDim.y + threadIdx.y;
+  if (tid_y >= N_y) return;
+
+  const auto tid_z = blockIdx.z * blockDim.z + threadIdx.z;
+  if (tid_z >= N_z) return;
+
+  float x = GetCoordinate(tid_x, N_x, width, num_subdivisions, normalized_coords);
+  float y = GetCoordinate(tid_y, N_y, height, num_subdivisions, normalized_coords);
+  float z = GetCoordinate(tid_z, N_z, depth, num_subdivisions, normalized_coords);
+
+  out[tid_z * N_x * N_y + tid_y * N_x + tid_x] = texCubemap<TexelType>(tex_obj, x, y, z);
+}
+
+template <typename TexelType>
+__global__ void texCubemapLodKernel(TexelType* const out, size_t N_x, size_t N_y, size_t N_z,
+                                    hipTextureObject_t tex_obj, size_t width, size_t height,
+                                    size_t depth, size_t num_subdivisions, bool normalized_coords,
+                                    float level) {
+  const auto tid_x = blockIdx.x * blockDim.x + threadIdx.x;
+  if (tid_x >= N_x) return;
+
+  const auto tid_y = blockIdx.y * blockDim.y + threadIdx.y;
+  if (tid_y >= N_y) return;
+
+  const auto tid_z = blockIdx.z * blockDim.z + threadIdx.z;
+  if (tid_z >= N_z) return;
+
+  float x = GetCoordinate(tid_x, N_x, width, num_subdivisions, normalized_coords);
+  float y = GetCoordinate(tid_y, N_y, height, num_subdivisions, normalized_coords);
+  float z = GetCoordinate(tid_z, N_z, depth, num_subdivisions, normalized_coords);
+
+  out[tid_z * N_x * N_y + tid_y * N_x + tid_x] = texCubemapLod<TexelType>(tex_obj, x, y, z, level);
+}
+
+template <typename TexelType>
+__global__ void texCubemapGradKernel(TexelType* const out, size_t N_x, size_t N_y, size_t N_z,
+                                     hipTextureObject_t tex_obj, size_t width, size_t height,
+                                     size_t depth, size_t num_subdivisions, bool normalized_coords,
+                                     float4 dx, float4 dy) {
+  const auto tid_x = blockIdx.x * blockDim.x + threadIdx.x;
+  if (tid_x >= N_x) return;
+
+  const auto tid_y = blockIdx.y * blockDim.y + threadIdx.y;
+  if (tid_y >= N_y) return;
+
+  const auto tid_z = blockIdx.z * blockDim.z + threadIdx.z;
+  if (tid_z >= N_z) return;
+
+  float x = GetCoordinate(tid_x, N_x, width, num_subdivisions, normalized_coords);
+  float y = GetCoordinate(tid_y, N_y, height, num_subdivisions, normalized_coords);
+  float z = GetCoordinate(tid_z, N_z, depth, num_subdivisions, normalized_coords);
+
+  out[tid_z * N_x * N_y + tid_y * N_x + tid_x] =
+      texCubemapGrad<TexelType>(tex_obj, x, y, z, dx, dy);
+}
+
+template <typename TexelType>
 __global__ void tex1DLayeredKernel(TexelType* const out, size_t N, hipTextureObject_t tex_obj,
                                    size_t width, size_t num_subdivisions, bool normalized_coords,
                                    size_t layer) {
@@ -198,4 +261,71 @@ __global__ void tex2DLayeredKernel(TexelType* const out, size_t N_x, size_t N_y,
   float y = GetCoordinate(tid_y, N_y, height, num_subdivisions, normalized_coords);
 
   out[tid_y * N_x + tid_x] = tex2DLayered<TexelType>(tex_obj, x, y, layer);
+}
+
+template <typename TexelType>
+__global__ void texCubemapLayeredKernel(TexelType* const out, size_t N_x, size_t N_y, size_t N_z,
+                                        hipTextureObject_t tex_obj, size_t width, size_t height,
+                                        size_t depth, size_t num_subdivisions,
+                                        bool normalized_coords, size_t layer) {
+  const auto tid_x = blockIdx.x * blockDim.x + threadIdx.x;
+  if (tid_x >= N_x) return;
+
+  const auto tid_y = blockIdx.y * blockDim.y + threadIdx.y;
+  if (tid_y >= N_y) return;
+
+  const auto tid_z = blockIdx.z * blockDim.z + threadIdx.z;
+  if (tid_z >= N_z) return;
+
+  float x = GetCoordinate(tid_x, N_x, width, num_subdivisions, normalized_coords);
+  float y = GetCoordinate(tid_y, N_y, height, num_subdivisions, normalized_coords);
+  float z = GetCoordinate(tid_z, N_z, depth, num_subdivisions, normalized_coords);
+
+  out[tid_z * N_x * N_y + tid_y * N_x + tid_x] =
+      texCubemapLayered<TexelType>(tex_obj, x, y, z, layer);
+}
+
+template <typename TexelType>
+__global__ void texCubemapLayeredLodKernel(TexelType* const out, size_t N_x, size_t N_y, size_t N_z,
+                                           hipTextureObject_t tex_obj, size_t width, size_t height,
+                                           size_t depth, size_t num_subdivisions,
+                                           bool normalized_coords, size_t layer, float level) {
+  const auto tid_x = blockIdx.x * blockDim.x + threadIdx.x;
+  if (tid_x >= N_x) return;
+
+  const auto tid_y = blockIdx.y * blockDim.y + threadIdx.y;
+  if (tid_y >= N_y) return;
+
+  const auto tid_z = blockIdx.z * blockDim.z + threadIdx.z;
+  if (tid_z >= N_z) return;
+
+  float x = GetCoordinate(tid_x, N_x, width, num_subdivisions, normalized_coords);
+  float y = GetCoordinate(tid_y, N_y, height, num_subdivisions, normalized_coords);
+  float z = GetCoordinate(tid_z, N_z, depth, num_subdivisions, normalized_coords);
+
+  out[tid_z * N_x * N_y + tid_y * N_x + tid_x] =
+      texCubemapLayeredLod<TexelType>(tex_obj, x, y, z, layer, level);
+}
+
+template <typename TexelType>
+__global__ void texCubemapLayeredGradKernel(TexelType* const out, size_t N_x, size_t N_y,
+                                            size_t N_z, hipTextureObject_t tex_obj, size_t width,
+                                            size_t height, size_t depth, size_t num_subdivisions,
+                                            bool normalized_coords, size_t layer, float4 dx,
+                                            float4 dy) {
+  const auto tid_x = blockIdx.x * blockDim.x + threadIdx.x;
+  if (tid_x >= N_x) return;
+
+  const auto tid_y = blockIdx.y * blockDim.y + threadIdx.y;
+  if (tid_y >= N_y) return;
+
+  const auto tid_z = blockIdx.z * blockDim.z + threadIdx.z;
+  if (tid_z >= N_z) return;
+
+  float x = GetCoordinate(tid_x, N_x, width, num_subdivisions, normalized_coords);
+  float y = GetCoordinate(tid_y, N_y, height, num_subdivisions, normalized_coords);
+  float z = GetCoordinate(tid_z, N_z, depth, num_subdivisions, normalized_coords);
+
+  out[tid_z * N_x * N_y + tid_y * N_x + tid_x] =
+      texCubemapLayeredGrad<TexelType>(tex_obj, x, y, z, layer, dx, dy);
 }

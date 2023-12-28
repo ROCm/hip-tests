@@ -34,6 +34,7 @@ template <typename TestType> struct TextureTestParams {
   size_t layers;
   size_t num_subdivisions;
   hipTextureDesc tex_desc;
+  bool cubemap;
 
   size_t Size() const {
     return extent.width * (extent.height ?: 1) * (extent.depth ?: 1) * (layers ?: 1);
@@ -52,6 +53,10 @@ template <typename TestType> struct TextureTestParams {
   size_t Height() const { return extent.height; }
 
   size_t Depth() const { return extent.depth; }
+
+  unsigned int Flags() const {
+    return (Layered() ? hipArrayLayered : 0u) | (cubemap ? hipArrayCubemap : 0u);
+  }
 
   hipExtent LayeredExtent() const {
     return Layered() ? make_hipExtent(Width(), Height(), layers) : extent;
@@ -115,7 +120,7 @@ template <typename TestType, bool normalized_read = false> struct TextureTestFix
       : params{p},
         host_alloc{LinearAllocs::hipHostMalloc, sizeof(VecType) * params.Size()},
         tex_h{host_alloc.ptr(), params.extent, params.layers},
-        tex_alloc_d{params.LayeredExtent(), params.Layered() ? hipArrayLayered : 0u},
+        tex_alloc_d{params.LayeredExtent(), params.Flags()},
         tex{ResDesc(), &params.tex_desc},
         out_alloc_d{LinearAllocs::hipMalloc, sizeof(OutType) * params.NumIters()},
         out_alloc_h(params.NumIters()) {}

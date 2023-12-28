@@ -52,6 +52,64 @@ template <typename TexelType> class TextureReference {
     }
   }
 
+  TexelType TexCubemap(float x, float y, float z, const hipTextureDesc& tex_desc) const {
+    x = tex_desc.normalizedCoords ? x * extent_.width : x;
+    y = tex_desc.normalizedCoords ? y * extent_.height : y;
+    z = tex_desc.normalizedCoords ? z * extent_.depth : z;
+
+    int face;
+    float m, s, t;
+
+    if (std::abs(x) > std::abs(y) && std::abs(x) > std::abs(z)) {
+      if (x >= 0) {
+        face = 0;
+        m = x;
+        s = -z;
+        t = -y;
+      } else {
+        face = 1;
+        m = -x;
+        s = z;
+        t = -y;
+      }
+    } else if (std::abs(y) >= std::abs(x) && std::abs(y) > std::abs(z)) {
+      if (y >= 0) {
+        face = 2;
+        m = y;
+        s = x;
+        t = z;
+      } else {
+        face = 3;
+        m = -y;
+        s = x;
+        t = -z;
+      }
+    } else {
+      if (z >= 0) {
+        face = 4;
+        m = z;
+        s = x;
+        t = -y;
+      } else {
+        face = 5;
+        m = -z;
+        s = -x;
+        t = -y;
+      }
+    }
+
+    float coord1 = (s / m + 1) / 2;
+    float coord2 = (t / m + 1) / 2;
+
+    if (tex_desc.filterMode == hipFilterModePoint) {
+      return Sample(roundf(coord1), roundf(coord2), face, tex_desc.addressMode);
+    } else if (tex_desc.filterMode == hipFilterModeLinear) {
+      return LinearFiltering(coord1, coord2, face, tex_desc.addressMode);
+    } else {
+      throw std::invalid_argument("Invalid hipFilterMode value");
+    }
+  }
+
   TexelType Tex1DLayered(float x, int layer, const hipTextureDesc& tex_desc) const {
     x = tex_desc.normalizedCoords ? x * extent_.width : x;
     if (tex_desc.filterMode == hipFilterModePoint) {
@@ -236,10 +294,17 @@ template <typename TexelType> class TextureReference {
     return coord;
   }
 
+  template <size_t N> float FloatToNBitFractional(float x) const {
+    constexpr size_t mult = 1 << N;
+    const auto x_trunc = std::trunc(x);
+    const auto x_frac = std::round((x - x_trunc) * mult) / mult;
+    return x_trunc + x_frac;
+  }
+
   std::tuple<float, float> GetLinearFilteringParams(float coord) const {
-    const auto coordB = coord - 0.5f;
+    const auto coordB = FloatToNBitFractional<8>(coord - 0.5f);
     const auto index = floorf(coordB);
-    const FixedPoint<8> coeff = coordB - index;
+    const auto coeff = coordB - index;
 
     return {index, coeff};
   }

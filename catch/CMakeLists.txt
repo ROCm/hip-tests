@@ -6,6 +6,8 @@ set(CMAKE_CXX_COMPILER_WORKS 1)
 
 project(hiptests)
 
+option(ASAN_BUILD "Option to enable ASAN build" OFF)
+
 # flag to generate standalone exe per src file.
 message(STATUS "STANDALONE_TESTS : ${STANDALONE_TESTS}")
 
@@ -19,15 +21,15 @@ if(WIN32)
 endif()
 
 if(HIP_PLATFORM STREQUAL "amd")
-   if(UNIX AND DEFINED ROCM_PATH)
-      # Read -DROCM_PATH and set CXX_FLAGS for amd platform only
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --rocm-path=${ROCM_PATH}")
-   endif()
+    if(UNIX AND DEFINED ROCM_PATH)
+        # Read -DROCM_PATH and set CXX_FLAGS for amd platform only
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --rocm-path=${ROCM_PATH}")
+    endif()
 
-   if(DEFINED HIP_PATH)
-      # Read -DHIP_PATH and set CXX_FLAGS for amd platform only
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --hip-path=${HIP_PATH}")
-   endif()
+    if(DEFINED HIP_PATH)
+        # Read -DHIP_PATH and set CXX_FLAGS for amd platform only
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --hip-path=${HIP_PATH}")
+    endif()
 endif()
 
 # Read -DHIP_PATH
@@ -64,6 +66,14 @@ execute_process(COMMAND ${HIPCONFIG_EXECUTABLE} --version
 
 # enforce c++17
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++17")
+
+# Address sanitizer options
+if(ASAN_BUILD)
+    message(STATUS "Building catch tests with Address Sanitizer options")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -shared-libasan -g -gz")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -shared-libasan -g -gz")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-new-dtags -fuse-ld=lld -fsanitize=address -shared-libasan -g -gz -Wl,--build-id=sha1 -L${ROCM_PATH}/lib/asan")
+endif()
 
 string(REPLACE "." ";" VERSION_LIST ${HIP_VERSION})
 list(GET VERSION_LIST 0 HIP_VERSION_MAJOR)

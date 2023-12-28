@@ -36,6 +36,8 @@ set(TEST_SRC
     __hip_atomic_fetch_min.cc
     __hip_atomic_fetch_max.cc
     atomic_builtins.cc
+    acquire_release.cc
+    sequential_consistency.cc
     atomicExch.cc
     atomicExch_system.cc
     __hip_atomic_fetch_and.cc

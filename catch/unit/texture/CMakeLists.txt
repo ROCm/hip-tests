@@ -51,6 +51,13 @@ set(TEST_SRC
     hipMipmappedArrayCreate.cc
     hipMipmappedArrayDestroy.cc
     hipMipmappedArrayGetLevel.cc
+    tex1Dfetch.cc
+    tex1D.cc
+    tex1DLayered.cc
+    tex1DGrad.cc
+    tex1DLayeredGrad.cc
+    tex1DLayeredLod.cc
+    tex1DLod.cc
 )
 
 if(WIN32)

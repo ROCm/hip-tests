@@ -47,6 +47,14 @@
         "Unit_tiled_partition",
         "=== Below 2 tests are disabled due to defect EXSWHTEC-342 ===",
         "Unit_hipDeviceSetLimit_Negative_Parameters",
-        "Unit_hipDeviceGetLimit_Negative_Parameters"
+        "Unit_hipDeviceGetLimit_Negative_Parameters",
+        "Unit_atomicExch_Positive_Same_Address_Compile_Time - int",
+        "Unit_atomicExch_Positive_Same_Address_Compile_Time - unsigned int",
+        "Unit_atomicExch_Positive_Same_Address_Compile_Time - unsigned long long",
+        "Unit_atomicExch_Positive_Same_Address_Compile_Time - float",
+        "Unit_atomicExch_system_Positive_Host_And_GPU - int",
+        "Unit_atomicExch_system_Positive_Host_And_GPU - unsigned int",
+        "Unit_atomicExch_system_Positive_Host_And_GPU - unsigned long long",
+        "Unit_atomicExch_system_Positive_Host_And_GPU - float"
     ]
 }

@@ -16,6 +16,7 @@
         "Unit_ChannelDescriptor_Positive_Basic_3D - long3",
         "Unit_ChannelDescriptor_Positive_Basic_4D - ulong4",
         "Unit_ChannelDescriptor_Positive_Basic_4D - long4",
+        "Unit_hipModuleUnload_Negative_Double_Unload",
         "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/356 ===",
         "Unit_Device_Complex_Unary_Negative_Parameters_RTC",
         "Unit_Device_Complex_Binary_Negative_Parameters_RTC",

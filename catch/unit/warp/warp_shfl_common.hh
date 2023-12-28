@@ -74,7 +74,7 @@ template <typename Derived, typename T> class WarpShflTest {
   void generate_input(T* input, bool random) {
     if (random) {
       std::generate(active_masks_.begin(), active_masks_.end(), [] {
-        return GenerateRandomInteger(0ul, std::numeric_limits<uint64_t>().max());
+        return GenerateRandomInteger<unsigned long long>(0ul, std::numeric_limits<uint64_t>().max());
       });
 
       if constexpr (std::is_same_v<float, T> || std::is_same_v<double, T>) {

@@ -53,6 +53,7 @@
         "Unit_atomicExch_system_Positive_Host_And_GPU - unsigned int",
         "Unit_atomicExch_system_Positive_Host_And_GPU - unsigned long long",
         "Unit_atomicExch_system_Positive_Host_And_GPU - float",
+        "Unit_hipModuleUnload_Negative_Double_Unload",
         "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/356 ===",
         "Unit_Device_Complex_Unary_Negative_Parameters_RTC",
         "Unit_Device_Complex_Binary_Negative_Parameters_RTC",

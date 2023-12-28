@@ -40,6 +40,28 @@ operator<<(std::ostream& os, const std::pair<T, U>& p) {
             << std::setprecision(default_prec);
 }
 
+// This class represents a generic numerical accuracy math test. Template parameter T is the output
+// type of the function being tested, and template parameter pack Ts represents the input types. The
+// constructor takes a kernel with the signature void(T*, const size_t, Ts*...). The first kernel
+// parameter is the output array, the second parameter is the number of outputs, and the rest of the
+// parameters are arrays containing input values. The number of input arrays depends on the arity of
+// the function being tested e.g. one input array for unary functions, two input arrays for binary
+// functions, etc. The kernel threads take one element from each input array at the index
+// corresponding to that thread, feed the input elements to the testee function, and store the
+// result in the output array at the corresponding index.
+//
+// E.g. for a binary function the kernel would have the following signature:
+//   void kernel(float* y, const size_t n, float* x1, float* x2)
+//
+// The outputs would be calculated in parallel the following way:
+//   y[0] = testee(x1[0], x2[0])
+//   y[1] = testee(x1[1], x2[1])
+//   y[2] = testee(x1[2], x2[2])
+//   ...
+//
+// The constructor also takes max_num_args, which represents the maximum number of input values used
+// for one kernel launch. The device memory for the input and output arrays is allocated based on
+// that number.
 template <typename T, typename... Ts> class MathTest {
  public:
   MathTest(void (*kernel)(T*, const size_t, Ts*...), const size_t max_num_args)
@@ -48,7 +70,14 @@ template <typename T, typename... Ts> class MathTest {
         y_dev_{LinearAllocs::hipMalloc, max_num_args * sizeof(T)},
         y_{LinearAllocs::hipHostMalloc, max_num_args * sizeof(T)} {}
 
-
+  // This method runs the test with the following steps:
+  // 1. Copy the values from the input arrays provided in the parameter pack xss to device memory
+  // 2. Launch the kernel using the configuration provided in grid_dims and block_dims
+  // 3. Copy the outputs back to host memory
+  // 4. Generate the reference values using ref_func and compare against the outputs using the
+  // validator provided by validator_builder
+  // 5. If non-type template parameter parallel is true, then step 4 is broken up into chunks of
+  // work that are done in parallel on the host.
   template <bool parallel = true, typename RT, typename ValidatorBuilder, typename... RTs>
   void Run(const ValidatorBuilder& validator_builder, const size_t grid_dims,
            const size_t block_dims, RT (*const ref_func)(RTs...), const size_t num_args,

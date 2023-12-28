@@ -21,7 +21,6 @@ THE SOFTWARE.
 
 #include <functional>
 
-#include <hip_test_defgroups.hh>
 #include <hip_test_common.hh>
 
 #include "graph_memset_node_test_common.hh"
@@ -44,7 +43,7 @@ THE SOFTWARE.
  * The parameters are also verified via hipGraphMemsetNodeGetParams, which also constitutes a test
  * for said API.
  * The test is repeated for all valid element sizes(1, 2, 4), and several allocations of different
- * height and width both on host and device 
+ * height and width both on host and device
  * Test source
  * ------------------------
  *    - unit/graph/hipGraphMemsetNodeSetParams.cc

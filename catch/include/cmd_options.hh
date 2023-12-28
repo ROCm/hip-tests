@@ -22,6 +22,9 @@ THE SOFTWARE.
 
 #pragma once
 
+#include <cstdint>
+#include <limits>
+
 struct CmdOptions {
   int iterations = 10;
   int warmups = 100;
@@ -29,6 +32,8 @@ struct CmdOptions {
   int cg_iterations = 5;
   bool no_display = false;
   bool progress = false;
+  uint64_t accuracy_iterations = std::numeric_limits<uint32_t>::max() + 1ull;
+  int accuracy_max_memory = 80;
 };
 
 extern CmdOptions cmd_options;

@@ -43,8 +43,6 @@ if (WIN32 AND HIPINFO_INTERNAL_BUILD)
      set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --rocm-path=${CMAKE_PREFIX_PATH}")
 endif()
 
-
-
 # Find hip
 find_package(hip REQUIRED)
 if (WIN32)
@@ -96,3 +94,6 @@ else (WIN32)
   target_link_libraries(hipVulkan hip::host vulkan glfw)
 endif (WIN32)
 
+if(TARGET build_cookbook)
+add_dependencies(build_cookbook hipVulkan)
+endif()

@@ -42,6 +42,8 @@ set(TEST_SRC
     atomicAdd_system.cc
     unsafeAtomicAdd.cc
     safeAtomicAdd.cc
+    atomicSub.cc
+    atomicSub_system.cc
     atomicExch.cc
     atomicExch_system.cc
     __hip_atomic_fetch_and.cc
@@ -52,6 +54,7 @@ set(TEST_SRC
 
 if(HIP_PLATFORM MATCHES "nvidia")
     set_source_files_properties(atomicAdd_system.cc PROPERTIES COMPILE_FLAGS "-gencode arch=compute_60,code=sm_60 -gencode arch=compute_70,code=sm_70 -gencode arch=compute_80,code=sm_80")
+    set_source_files_properties(atomicSub_system.cc PROPERTIES COMPILE_FLAGS "-gencode arch=compute_60,code=sm_60 -gencode arch=compute_70,code=sm_70 -gencode arch=compute_80,code=sm_80")
     set_source_files_properties(atomicExch_system.cc PROPERTIES COMPILE_FLAGS "-gencode arch=compute_60,code=sm_60 -gencode arch=compute_70,code=sm_70 -gencode arch=compute_80,code=sm_80")
     set_source_files_properties(atomicAnd_system.cc PROPERTIES COMPILE_FLAGS "-gencode arch=compute_60,code=sm_60 -gencode arch=compute_70,code=sm_70 -gencode arch=compute_80,code=sm_80")
     set_source_files_properties(atomicOr_system.cc PROPERTIES COMPILE_FLAGS "-gencode arch=compute_60,code=sm_60 -gencode arch=compute_70,code=sm_70 -gencode arch=compute_80,code=sm_80")
@@ -104,6 +107,10 @@ add_test(NAME Unit_atomicAdd_Negative_Parameters
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
          ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
          atomicAdd_negative_kernels.cc 48)
+add_test(NAME Unit_atomicSub_Negative_Parameters
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+         atomicSub_negative_kernels.cc 48)
 
 # SWDEV-435667: Below 2 tests failed in stress test on 01/12/23
 #add_test(NAME Unit_atomicExch_Negative_Parameters

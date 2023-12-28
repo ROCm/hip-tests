@@ -128,6 +128,8 @@
         "Unit_hipEventIpc",
         "=== SWDEV-427101:Below test fails randomly in PSDB ===",
         "Unit_deviceAllocation_InOneThread_AccessInAllThreads",
+        "=== Below test is disabled due to defect EXSWHTEC-347 ===",
+        "Unit_hipPointerSetAttribute_Positive_SyncMemops",
         "=== Patch which removes the typetraits implementation from std namespace in hiprtc is reverted ===",
         "Unit_hiprtc_stdheaders",
         "Unit_hipGraphAddMemcpyNode_Negative_Parameters",

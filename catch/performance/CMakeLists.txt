@@ -19,5 +19,6 @@
 # THE SOFTWARE.
 
 add_subdirectory(memset)
+add_subdirectory(stream)
 add_subdirectory(event)
 add_subdirectory(example)

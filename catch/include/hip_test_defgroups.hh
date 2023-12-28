@@ -388,4 +388,7 @@ TEST_CASE("Unit_Kernel_Launch_bounds_Negative_Parameters_ParseError") {}
 /**
  * End doxygen group DeviceLanguageTest.
  * @}
+ * @defgroup VectorTypeTest Vector types
+ * @{
+ * This section describes tests for the Vector type functions and operators.
  */

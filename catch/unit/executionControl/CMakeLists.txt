@@ -3,6 +3,9 @@ set(TEST_SRC
     hipFuncSetCacheConfig.cc
     hipFuncSetSharedMemConfig.cc
     hipFuncSetAttribute.cc
+    hipFuncGetAttributes.cc
+    hipLaunchCooperativeKernel.cc
+    hipLaunchCooperativeKernelMultiDevice.cc
 )
 
 if(HIP_PLATFORM MATCHES "amd")

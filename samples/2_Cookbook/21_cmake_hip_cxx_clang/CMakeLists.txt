@@ -32,13 +32,24 @@ if(UNIX)
   list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
 endif()
 
+set(CMAKE_CXX_COMPILER "${ROCM_PATH}/llvm/bin/clang++")
+
 # Find HIP
 find_package(hip REQUIRED)
 
 # Create the excutable
-add_executable(square square.cpp)
+if(TARGET build_cookbook)
+set(EXCLUDE_OPTION EXCLUDE_FROM_ALL)
+else()
+set(EXCLUDE_OPTION )
+endif()
+add_executable(square1 ${EXCLUDE_OPTION} square.cpp)
 
-target_include_directories(square PRIVATE ../../common)
+target_include_directories(square1 PRIVATE ../../common)
 
 # Link with HIP
-target_link_libraries(square hip::device)
+target_link_libraries(square1 hip::device)
+
+if(TARGET build_cookbook)
+add_dependencies(build_cookbook square1)
+endif()

@@ -33,7 +33,8 @@ if(UNIX)
 endif()
 
 # create square.cpp
-execute_process(COMMAND sh -c "${CMAKE_PREFIX_PATH}/bin/hipify-perl ../square.cu > ../square.cpp")
+execute_process(COMMAND sh -c "${CMAKE_PREFIX_PATH}/bin/hipify-perl \
+         ${CMAKE_CURRENT_SOURCE_DIR}/square.cu > ${CMAKE_CURRENT_BINARY_DIR}/square.cpp")
 
 # Find hip
 find_package(hip)
@@ -43,7 +44,16 @@ set(CMAKE_CXX_COMPILER ${HIP_HIPCC_EXECUTABLE})
 set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
 
 # Create the excutable
-add_executable(square square.cpp)
+if(TARGET build_intro)
+set(EXCLUDE_OPTION EXCLUDE_FROM_ALL)
+else()
+set(EXCLUDE_OPTION )
+endif()
+add_executable(square ${EXCLUDE_OPTION} ${CMAKE_CURRENT_BINARY_DIR}/square.cpp)
 
 # Link with HIP
 target_link_libraries(square hip::host)
+
+if(TARGET build_intro)
+add_dependencies(build_intro square)
+endif()

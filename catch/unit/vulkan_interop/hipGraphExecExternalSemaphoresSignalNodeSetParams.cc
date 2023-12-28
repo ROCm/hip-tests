@@ -22,6 +22,16 @@ THE SOFTWARE.
 #include "vulkan_test.hh"
 #include "signal_semaphore_common.hh"
 
+/**
+ * @addtogroup hipGraphExecExternalSemaphoresSignalNodeSetParams
+ * hipGraphExecExternalSemaphoresSignalNodeSetParams
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphExecExternalSemaphoresSignalNodeSetParams(hipGraphExec_t hGraphExec, hipGraphNode_t
+ * hNode, const hipExternalSemaphoreSignalNodeParams* nodeParams)` - Updates node parameters in the
+ * external semaphore signal node in the given graphExec.
+ */
+
 static hipError_t GraphExecSemaphoreSetParamsSignalWrapper(
     hipExternalSemaphore_t* extSemArray, hipExternalSemaphoreSignalParams* paramsArray,
     unsigned int numExtSems, hipStream_t stream) {
@@ -34,7 +44,8 @@ static hipError_t GraphExecSemaphoreSetParamsSignalWrapper(
   node_params.paramsArray = paramsArray;
   node_params.numExtSems = numExtSems;
 
-  hipExternalSemaphoreSignalParams signal_params[numExtSems];
+  hipExternalSemaphoreSignalParams* signal_params =
+      new hipExternalSemaphoreSignalParams[numExtSems];
   for (unsigned int i = 0; i < numExtSems; i++) {
     signal_params[i].params.fence.value = 10 + i;
   }
@@ -60,29 +71,87 @@ static hipError_t GraphExecSemaphoreSetParamsSignalWrapper(
 
   HIP_CHECK(hipGraphExecDestroy(graph_exec));
   HIP_CHECK(hipGraphDestroy(graph));
+  delete[] signal_params;
 
   return hipSuccess;
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify that node parameters get updated correctly by creating a node with valid but
+ * incorrect parameters, and then setting them to the correct values in the executable graph. The
+ * graph is run and it is verified that the graph node signals the external binary semaphore and
+ * operation finishes successfully.
+ * Test source
+ * ------------------------
+ *    - unit/vulkan_interop/hipGraphExecExternalSemaphoresSignalNodeSetParams.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipGraphExecExternalSemaphoresSignalNodeSetParams_Positive_Basic") {
   SignalExternalSemaphoreCommon(GraphExecSemaphoreSetParamsSignalWrapper);
 }
 
 // Timeline semaphores unsupported on AMD
 #if HT_NVIDIA
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify that node parameters get updated correctly by creating a node with valid but
+ * incorrect parameters, and then setting them to the correct values in the executable graph. The
+ * graph is run and it is verified that the graph node signals the external timeline semaphore and
+ * operation finishes successfully.
+ * Test source
+ * ------------------------
+ *    - unit/vulkan_interop/hipGraphExecExternalSemaphoresSignalNodeSetParams.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 6.0
+ */
 TEST_CASE(
     "Unit_hipGraphExecExternalSemaphoresSignalNodeSetParams_Vulkan_Positive_Timeline_Semaphore") {
   SignalExternalTimelineSemaphoreCommon(GraphExecSemaphoreSetParamsSignalWrapper);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify that node parameters get updated correctly by creating a node with valid but
+ * incorrect parameters, and then setting them to the correct values in the executable graph. The
+ * graph is run and it is verified that the graph node signals the external binary semaphores and
+ * operation finishes successfully.
+ * Test source
+ * ------------------------
+ *    - unit/vulkan_interop/hipGraphExecExternalSemaphoresSignalNodeSetParams.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 6.0
+ */
 TEST_CASE(
     "Unit_hipGraphExecExternalSemaphoresSignalNodeSetParams_Vulkan_Positive_Multiple_Semaphores") {
   SignalExternalMultipleSemaphoresCommon(GraphExecSemaphoreSetParamsSignalWrapper);
 }
 #endif
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipGraphExecExternalSemaphoresSignalNodeSetParams behavior with invalid
+ * arguments:
+ *    -# Nullptr graphexec
+ *    -# Nullptr graph node
+ *    -# Nullptr params
+ * Test source
+ * ------------------------
+ *  - /unit/vulkan_interop/hipGraphExecExternalSemaphoresSignalNodeSetParams.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipGraphExecExternalSemaphoresSignalNodeSetParams_Vulkan_Negative_Parameters") {
-  using namespace std::placeholders;
   hipGraph_t graph = nullptr;
   HIP_CHECK(hipGraphCreate(&graph, 0));
 

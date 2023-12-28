@@ -22,6 +22,36 @@ THE SOFTWARE.
 #include "vulkan_test.hh"
 #include "signal_semaphore_common.hh"
 
+/**
+ * @addtogroup hipGraphExternalSemaphoresSignalNodeGetParams
+ * hipGraphExternalSemaphoresSignalNodeGetParams
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphExternalSemaphoresSignalNodeGetParams(hipGraphNode_t hNode,
+ * hipExternalSemaphoreSignalNodeParams* params_out)` - Returns external semaphore signal node
+ * params.
+ * ________________________
+ * Test cases from other APIs:
+ *  - @ref Unit_hipGraphExternalSemaphoresSignalNodeSetParams_Positive_Basic
+ *  - @ref Unit_hipGraphExternalSemaphoresSignalNodeSetParams_Vulkan_Positive_Timeline_Semaphore
+ *  - @ref Unit_hipGraphExternalSemaphoresSignalNodeSetParams_Vulkan_Positive_Multiple_Semaphores
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipGraphExternalSemaphoresSignalNodeGetParams behavior with invalid
+ * arguments:
+ *    -# Nullptr graph node
+ *    -# Nullptr params
+ *    -# Node is destroyed
+ * Test source
+ * ------------------------
+ *  - /unit/vulkan_interop/hipGraphExternalSemaphoresSignalNodeGetParams.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipGraphExternalSemaphoresSignalNodeGetParams_Negative_Parameters") {
   hipGraph_t graph = nullptr;
   HIP_CHECK(hipGraphCreate(&graph, 0));

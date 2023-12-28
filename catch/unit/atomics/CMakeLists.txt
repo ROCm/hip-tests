@@ -44,6 +44,8 @@ set(TEST_SRC
     safeAtomicAdd.cc
     atomicSub.cc
     atomicSub_system.cc
+    atomicInc.cc
+    atomicDec.cc
     atomicExch.cc
     atomicExch_system.cc
     __hip_atomic_fetch_and.cc
@@ -111,6 +113,15 @@ add_test(NAME Unit_atomicSub_Negative_Parameters
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
          ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
          atomicSub_negative_kernels.cc 48)
+add_test(NAME Unit_atomicInc_Negative_Parameters
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+         atomicInc_negative_kernels.cc 8)
+
+add_test(NAME Unit_atomicDec_Negative_Parameters
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+         atomicDec_negative_kernels.cc 8)
 
 # SWDEV-435667: Below 2 tests failed in stress test on 01/12/23
 #add_test(NAME Unit_atomicExch_Negative_Parameters

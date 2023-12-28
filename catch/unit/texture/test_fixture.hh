@@ -99,19 +99,25 @@ template <typename TestType> struct TextureTestParams {
     tex_desc.addressMode[0] = address_mode_x;
     if (extent.height) tex_desc.addressMode[1] = address_mode_y;
     if (extent.depth) tex_desc.addressMode[2] = address_mode_z;
+
+    tex_desc.mipmapFilterMode = tex_desc.filterMode;
   }
 };
 
-template <typename TestType, bool normalized_read = false> struct TextureTestFixture {
+template <typename TestType, bool normalized_read = false, bool mipmap = false>
+struct TextureTestFixture {
   using VecType = vec4<TestType>;
   using OutType = std::conditional_t<normalized_read, vec4<float>, VecType>;
+  template <typename T>
+  using ArrayAllocGuardType =
+      std::conditional_t<mipmap, MipmappedArrayAllocGuard<T>, ArrayAllocGuard<T>>;
 
   TextureTestParams<TestType> params;
   hipResourceDesc res_desc;
 
   LinearAllocGuard<VecType> host_alloc;
   TextureReference<VecType> tex_h;
-  ArrayAllocGuard<VecType> tex_alloc_d;
+  ArrayAllocGuardType<VecType> tex_alloc_d;
   TextureGuard tex;
   LinearAllocGuard<OutType> out_alloc_d;
   std::vector<OutType> out_alloc_h;
@@ -131,9 +137,13 @@ template <typename TestType, bool normalized_read = false> struct TextureTestFix
       SetVec4<TestType>(host_alloc.ptr()[i], i + test_value_offset);
     }
 
-    hipMemcpy3DParms memcpy_params;
+    hipMemcpy3DParms memcpy_params = {};
     memset(&memcpy_params, 0 sizeof(hipMemcpy3DParms));
-    memcpy_params.dstArray = tex_alloc_d.ptr();
+    if constexpr (mipmap) {
+      memcpy_params.dstArray = tex_alloc_d.GetLevel(0);
+    } else {
+      memcpy_params.dstArray = tex_alloc_d.ptr();
+    }
     memcpy_params.extent = params.LayeredExtent();
     memcpy_params.extent.height = memcpy_params.extent.height ?: 1;
     memcpy_params.extent.depth = memcpy_params.extent.depth ?: 1;
@@ -143,8 +153,13 @@ template <typename TestType, bool normalized_read = false> struct TextureTestFix
     HIP_CHECK(hipMemcpy3D(&memcpy_params));
 
     memset(&res_desc, 0, sizeof(res_desc));
-    res_desc.resType = hipResourceTypeArray;
-    res_desc.res.array.array = tex_alloc_d.ptr();
+    if constexpr (mipmap) {
+      res_desc.resType = hipResourceTypeMipmappedArray;
+      res_desc.res.mipmap.mipmap = tex_alloc_d.ptr();
+    } else {
+      res_desc.resType = hipResourceTypeArray;
+      res_desc.res.array.array = tex_alloc_d.ptr();
+    }
     return &res_desc;
   }
 

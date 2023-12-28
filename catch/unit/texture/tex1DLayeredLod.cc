@@ -46,7 +46,7 @@ THE SOFTWARE.
  *    - unit/texture/tex1DLayeredLod.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.7
  */
 TEMPLATE_TEST_CASE("Unit_tex1DLayeredLod_Positive_ReadModeElementType", "", char, unsigned char,
                    short, unsigned short, int, unsigned int, float) {
@@ -54,33 +54,38 @@ TEMPLATE_TEST_CASE("Unit_tex1DLayeredLod_Positive_ReadModeElementType", "", char
 
   TextureTestParams<TestType> params = {};
   params.extent = make_hipExtent(1024, 0, 0);
+  params.layers = 2;
   params.num_subdivisions = 4;
   params.GenerateTextureDesc();
 
-  TextureTestFixture<TestType> fixture{params};
+  TextureTestFixture<TestType, false, true> fixture{params};
 
   const auto [num_threads, num_blocks] = GetLaunchConfig(1024, params.NumItersX());
-  tex1DLayeredLodKernel<vec4<TestType>><<<num_blocks, num_threads>>>(
-      fixture.out_alloc_d.ptr(), params.NumItersX(), fixture.tex.object(), params.Width(),
-      params.num_subdivisions, params.tex_desc.normalizedCoords, 0, 0);
 
-  fixture.LoadOutput();
+  for (auto layer = 0u; layer < params.layers; ++layer) {
+    tex1DLayeredLodKernel<vec4<TestType>><<<num_blocks, num_threads>>>(
+        fixture.out_alloc_d.ptr(), params.NumItersX(), fixture.tex.object(), params.Width(),
+        params.num_subdivisions, params.tex_desc.normalizedCoords, layer, 0);
 
-  for (auto i = 0u; i < params.NumItersX(); ++i) {
-    float x = GetCoordinate(i, params.NumItersX(), params.Width(), params.num_subdivisions,
-                            params.tex_desc.normalizedCoords);
+    fixture.LoadOutput();
 
-    INFO("Index: " << i);
-    INFO("Filtering mode: " << FilteringModeToString(params.tex_desc.filterMode));
-    INFO("Normalized coordinates: " << std::boolalpha << params.tex_desc.normalizedCoords);
-    INFO("Address mode: " << AddressModeToString(params.tex_desc.addressMode[0]));
-    INFO("x: " << std::fixed << std::setprecision(16) << x);
+    for (auto i = 0u; i < params.NumItersX(); ++i) {
+      float x = GetCoordinate(i, params.NumItersX(), params.Width(), params.num_subdivisions,
+                              params.tex_desc.normalizedCoords);
 
-    auto ref_val = fixture.tex_h.Tex1D(x, params.tex_desc);
-    REQUIRE(ref_val.x == fixture.out_alloc_h[i].x);
-    REQUIRE(ref_val.y == fixture.out_alloc_h[i].y);
-    REQUIRE(ref_val.z == fixture.out_alloc_h[i].z);
-    REQUIRE(ref_val.w == fixture.out_alloc_h[i].w);
+      INFO("Layer: " << layer);
+      INFO("Index: " << i);
+      INFO("Filtering mode: " << FilteringModeToString(params.tex_desc.filterMode));
+      INFO("Normalized coordinates: " << std::boolalpha << params.tex_desc.normalizedCoords);
+      INFO("Address mode: " << AddressModeToString(params.tex_desc.addressMode[0]));
+      INFO("x: " << std::fixed << std::setprecision(16) << x);
+
+      auto ref_val = fixture.tex_h.Tex1DLayered(x, layer, params.tex_desc);
+      REQUIRE(ref_val.x == fixture.out_alloc_h[i].x);
+      REQUIRE(ref_val.y == fixture.out_alloc_h[i].y);
+      REQUIRE(ref_val.z == fixture.out_alloc_h[i].z);
+      REQUIRE(ref_val.w == fixture.out_alloc_h[i].w);
+    }
   }
 }
 
@@ -99,7 +104,7 @@ TEMPLATE_TEST_CASE("Unit_tex1DLayeredLod_Positive_ReadModeElementType", "", char
  *    - unit/texture/tex1DLayeredLod.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.7
  */
 TEMPLATE_TEST_CASE("Unit_tex1DLayeredLod_Positive_ReadModeNormalizedFloat", "", char, unsigned char,
                    short, unsigned short) {
@@ -107,34 +112,38 @@ TEMPLATE_TEST_CASE("Unit_tex1DLayeredLod_Positive_ReadModeNormalizedFloat", "", 
 
   TextureTestParams<TestType> params = {};
   params.extent = make_hipExtent(1024, 0, 0);
+  params.layers = 2;
   params.num_subdivisions = 4;
   params.GenerateTextureDesc(hipReadModeNormalizedFloat);
 
-  TextureTestFixture<TestType, true> fixture{params};
+  TextureTestFixture<TestType, true, true> fixture{params};
 
   const auto [num_threads, num_blocks] = GetLaunchConfig(1024, params.NumItersX());
-  tex1DLayeredLodKernel<vec4<float>><<<num_blocks, num_threads>>>(
-      fixture.out_alloc_d.ptr(), params.NumItersX(), fixture.tex.object(), params.Width(),
-      params.num_subdivisions, params.tex_desc.normalizedCoords, 0, 0);
 
-  fixture.LoadOutput();
+  for (auto layer = 0u; layer < params.layers; ++layer) {
+    tex1DLayeredLodKernel<vec4<float>><<<num_blocks, num_threads>>>(
+        fixture.out_alloc_d.ptr(), params.NumItersX(), fixture.tex.object(), params.Width(),
+        params.num_subdivisions, params.tex_desc.normalizedCoords, layer, 0);
 
-  for (auto i = 0u; i < params.NumItersX(); ++i) {
-    float x = GetCoordinate(i, params.NumItersX(), params.Width(), params.num_subdivisions,
-                            params.tex_desc.normalizedCoords);
+    fixture.LoadOutput();
 
-    INFO("i: " << i);
-    INFO("Filtering mode: " << FilteringModeToString(params.tex_desc.filterMode));
-    INFO("Normalized coordinates: " << std::boolalpha << params.tex_desc.normalizedCoords);
-    INFO("Address mode: " << AddressModeToString(params.tex_desc.addressMode[0]));
-    INFO("Filter mode: " << FilteringModeToString(params.tex_desc.filterMode));
-    INFO("x: " << std::fixed << std::setprecision(16) << x);
+    for (auto i = 0u; i < params.NumItersX(); ++i) {
+      float x = GetCoordinate(i, params.NumItersX(), params.Width(), params.num_subdivisions,
+                              params.tex_desc.normalizedCoords);
 
-    auto ref_val =
-        Vec4Map<TestType>(fixture.tex_h.Tex1D(x, params.tex_desc), NormalizeInteger<TestType>);
-    REQUIRE(ref_val.x == fixture.out_alloc_h[i].x);
-    REQUIRE(ref_val.y == fixture.out_alloc_h[i].y);
-    REQUIRE(ref_val.z == fixture.out_alloc_h[i].z);
-    REQUIRE(ref_val.w == fixture.out_alloc_h[i].w);
+      INFO("Layer: " << layer);
+      INFO("i: " << i);
+      INFO("Filtering mode: " << FilteringModeToString(params.tex_desc.filterMode));
+      INFO("Normalized coordinates: " << std::boolalpha << params.tex_desc.normalizedCoords);
+      INFO("Address mode: " << AddressModeToString(params.tex_desc.addressMode[0]));
+      INFO("x: " << std::fixed << std::setprecision(16) << x);
+
+      auto ref_val = Vec4Map<TestType>(fixture.tex_h.Tex1DLayered(x, layer, params.tex_desc),
+                                       NormalizeInteger<TestType>);
+      REQUIRE(ref_val.x == fixture.out_alloc_h[i].x);
+      REQUIRE(ref_val.y == fixture.out_alloc_h[i].y);
+      REQUIRE(ref_val.z == fixture.out_alloc_h[i].z);
+      REQUIRE(ref_val.w == fixture.out_alloc_h[i].w);
+    }
   }
 }

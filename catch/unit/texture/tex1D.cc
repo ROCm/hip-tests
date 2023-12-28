@@ -127,7 +127,6 @@ TEMPLATE_TEST_CASE("Unit_tex1D_Positive_ReadModeNormalizedFloat", "", char, unsi
     INFO("Filtering mode: " << FilteringModeToString(params.tex_desc.filterMode));
     INFO("Normalized coordinates: " << std::boolalpha << params.tex_desc.normalizedCoords);
     INFO("Address mode: " << AddressModeToString(params.tex_desc.addressMode[0]));
-    INFO("Filter mode: " << FilteringModeToString(params.tex_desc.filterMode));
     INFO("x: " << std::fixed << std::setprecision(16) << x);
 
     auto ref_val =

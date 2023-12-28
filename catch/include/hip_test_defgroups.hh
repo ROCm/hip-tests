@@ -174,6 +174,13 @@ THE SOFTWARE.
  */
 
 /**
+ * @defgroup PerformanceTest Performance tests
+ * @{
+ * This section describes performance tests for the target API groups and use-cases.
+ * @}
+ */
+
+/**
  * @defgroup TextureTest Texture Management
  * @{
  * This section describes tests for the texture management functions of HIP runtime API.

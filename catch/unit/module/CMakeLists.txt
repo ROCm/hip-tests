@@ -21,11 +21,17 @@
 # Common Tests - Test independent of all platforms
 set(TEST_SRC
     hip_module_common.cc
-    hipModuleLoad.cc 
-    hipModuleLoadData.cc 
-    hipModuleLoadDataEx.cc 
-    hipModuleUnload.cc 
+    hipModuleLoad.cc
+    hipModuleLoadData.cc
+    hipModuleLoadDataEx.cc
+    hipModuleUnload.cc
+    hipModuleGetFunction.cc
 )
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code
+                   COMMAND ${CMAKE_CXX_COMPILER} --genco --std=c++17 ${CMAKE_CURRENT_SOURCE_DIR}/get_function_module.cc -o get_function_module.code
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/get_function_module.cc)   
+add_custom_target(get_function_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code)
 
 add_custom_target(empty_module.code
                   COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
@@ -129,6 +135,7 @@ hip_add_exe_to_target(NAME ModuleTest
   COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
 
 add_dependencies(build_tests empty_module.code)
+add_dependencies(ModuleTest get_function_module)
 
 if(HIP_PLATFORM MATCHES "amd")
 add_dependencies(build_tests copyKernel.code copyKernel.s)

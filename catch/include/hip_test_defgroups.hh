@@ -173,6 +173,121 @@ THE SOFTWARE.
  */
 
 /**
+ * @defgroup AtomicsTest Device Atomics
+ * @{
+ * This section describes tests for the Device Atomic APIs.
+ */
+
+/**
+ * @addtogroup atomicAdd atomicAdd
+ * @{
+ * @ingroup AtomicsTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Compiles atomicAdd with invalid parameters.
+ *  - Compiles the source with specialized Python tool.
+ *    -# Utilizes sub-process to invoke compilation of faulty source.
+ *    -# Performs post-processing of compiler output and counts errors.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_atomicAdd_Negative_Parameters") {}
+/**
+ * End doxygen group atomicAdd.
+ * @}
+ */
+
+/**
+ * @addtogroup atomicSub atomicSub
+ * @{
+ * @ingroup AtomicsTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Compiles atomicSub with invalid parameters.
+ *  - Compiles the source with specialized Python tool.
+ *    -# Utilizes sub-process to invoke compilation of faulty source.
+ *    -# Performs post-processing of compiler output and counts errors.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_atomicSub_Negative_Parameters") {}
+/**
+ * End doxygen group atomicSub.
+ * @}
+ */
+
+/**
+ * @addtogroup atomicInc atomicInc
+ * @{
+ * @ingroup AtomicsTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Compiles atomicInc with invalid parameters.
+ *  - Compiles the source with specialized Python tool.
+ *    -# Utilizes sub-process to invoke compilation of faulty source.
+ *    -# Performs post-processing of compiler output and counts errors.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_atomicInc_Negative_Parameters") {}
+/**
+ * End doxygen group atomicInc.
+ * @}
+ */
+
+/**
+ * @addtogroup atomicDec atomicDec
+ * @{
+ * @ingroup AtomicsTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Compiles atomicDec with invalid parameters.
+ *  - Compiles the source with specialized Python tool.
+ *    -# Utilizes sub-process to invoke compilation of faulty source.
+ *    -# Performs post-processing of compiler output and counts errors.
+ * Test source
+ * ------------------------
+ *  - unit/atomics/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_atomicDec_Negative_Parameters") {}
+/**
+ * End doxygen group atomicDec.
+ * @}
+ */
+
+/**
+ * End doxygen group AtomicsTest.
+ * @}
+ */
+
+/**
  * @defgroup PrintfTest Printf API Management
  * @{
  * This section describes the various Printf use case Scenarios.

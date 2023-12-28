@@ -34,7 +34,7 @@ TEST_CASE("Unit_hipWaitExternalSemaphoresAsync_Vulkan_Positive_Timeline_Semaphor
 #endif
 
 TEST_CASE("Unit_hipWaitExternalSemaphoresAsync_Vulkan_Positive_Multiple_Semaphores") {
-  WaitExternalTimelineSemaphoreCommon(hipWaitExternalSemaphoresAsync);
+  WaitExternalMultipleSemaphoresCommon(hipWaitExternalSemaphoresAsync);
 }
 
 TEST_CASE("Unit_hipWaitExternalSemaphoresAsync_Vulkan_Negative_Parameters") {

@@ -33,6 +33,8 @@ set(TEST_SRC
     unsafeAtomicMin.cc
     safeAtomicMax.cc
     unsafeAtomicMax.cc
+    __hip_atomic_fetch_min.cc
+    __hip_atomic_fetch_max.cc
     atomicExch.cc
     atomicExch_system.cc
     __hip_atomic_fetch_and.cc

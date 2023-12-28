@@ -39,6 +39,9 @@ enum class AtomicOperation {
   kUnsafeMin,
   kSafeMax,
   kUnsafeMax
+  kUnsafeMax,
+  kBuiltinMin,
+  kBuiltinMax
 };
 
 constexpr auto kIntegerTestValue = 5;
@@ -58,7 +61,7 @@ __host__ __device__ TestType GetTestValue() {
   return test_value + 2;
 }
 
-template <typename TestType, AtomicOperation operation>
+template <typename TestType, AtomicOperation operation, int memory_scope = __HIP_MEMORY_SCOPE_AGENT>
 __device__ TestType PerformAtomicOperation(TestType* const mem) {
   const auto val = GetTestValue<TestType, operation>();
 
@@ -78,10 +81,15 @@ __device__ TestType PerformAtomicOperation(TestType* const mem) {
     return unsafeAtomicMax(mem, val);
   } else if constexpr (operation == AtomicOperation::kSafeMax) {
     return safeAtomicMax(mem, val);
+  } else if constexpr (operation == AtomicOperation::kBuiltinMin) {
+    return __hip_atomic_fetch_min(mem, val, __ATOMIC_RELAXED, memory_scope);
+  } else if constexpr (operation == AtomicOperation::kBuiltinMax) {
+    return __hip_atomic_fetch_max(mem, val, __ATOMIC_RELAXED, memory_scope);
   }
 }
 
-template <typename TestType, AtomicOperation operation, bool use_shared_mem>
+template <typename TestType, AtomicOperation operation, bool use_shared_mem,
+          int memory_scope = __HIP_MEMORY_SCOPE_AGENT>
 __global__ void TestKernel(TestType* const global_mem, TestType* const old_vals) {
   __shared__ TestType shared_mem;
 
@@ -94,7 +102,7 @@ __global__ void TestKernel(TestType* const global_mem, TestType* const old_vals)
     __syncthreads();
   }
 
-  old_vals[tid] = PerformAtomicOperation<TestType, operation>(mem);
+  old_vals[tid] = PerformAtomicOperation<TestType, operation, memory_scope>(mem);
 
   if constexpr (use_shared_mem) {
     __syncthreads();
@@ -109,7 +117,16 @@ __host__ __device__ TestType* PitchedOffset(TestType* const ptr, const unsigned 
   return reinterpret_cast<TestType*>(byte_ptr + idx * pitch);
 }
 
-template <typename TestType, AtomicOperation operation, bool use_shared_mem>
+__device__ void GenerateMemoryTraffic(uint8_t* const begin_addr, uint8_t* const end_addr) {
+  for (volatile uint8_t* addr = begin_addr; addr != end_addr; ++addr) {
+    uint8_t val = *addr;
+    val ^= 0xAB;
+    *addr = val;
+  }
+}
+
+template <typename TestType, AtomicOperation operation, bool use_shared_mem,
+          int memory_scope = __HIP_MEMORY_SCOPE_AGENT>
 __global__ void TestKernel(TestType* const global_mem, TestType* const old_vals,
                            const unsigned int width, const unsigned pitch) {
   extern __shared__ uint8_t shared_mem[];
@@ -126,8 +143,18 @@ __global__ void TestKernel(TestType* const global_mem, TestType* const old_vals,
     __syncthreads();
   }
 
-  old_vals[tid] =
-      PerformAtomicOperation<TestType, operation>(PitchedOffset(mem, pitch, tid % width));
+  const auto n = cooperative_groups::this_grid().size() - width;
+
+  TestType* atomic_addr = PitchedOffset(mem, pitch, tid % width);
+
+  if (tid < n) {
+    old_vals[tid] = PerformAtomicOperation<TestType, operation, memory_scope>(
+        PitchedOffset(mem, pitch, tid % width));
+  } else {
+    uint8_t* const begin_addr = reinterpret_cast<uint8_t*>(atomic_addr + 1);
+    uint8_t* const end_addr = reinterpret_cast<uint8_t*>(atomic_addr) + pitch;
+    GenerateMemoryTraffic(begin_addr, end_addr);
+  }
 
   if constexpr (use_shared_mem) {
     __syncthreads();
@@ -172,12 +199,14 @@ std::tuple<std::vector<TestType>, std::vector<TestType>> TestKernelHostRef(const
 
     if constexpr (operation == AtomicOperation::kMin || operation == AtomicOperation::kMinSystem ||
                   operation == AtomicOperation::kUnsafeMin ||
-                  operation == AtomicOperation::kSafeMin) {
+                  operation == AtomicOperation::kSafeMin ||
+                  operation == AtomicOperation::kBuiltinMin) {
       res = std::min(res, val);
     } else if constexpr (operation == AtomicOperation::kMax ||
                          operation == AtomicOperation::kMaxSystem ||
                          operation == AtomicOperation::kUnsafeMax ||
-                         operation == AtomicOperation::kSafeMax) {
+                         operation == AtomicOperation::kSafeMax ||
+                         operation == AtomicOperation::kBuiltinMax) {
       res = std::max(res, val);
     }
   }
@@ -202,19 +231,21 @@ void Verify(const TestParams& p, std::vector<TestType>& res_vals, std::vector<Te
   }
 }
 
-template <typename TestType, AtomicOperation operation, bool use_shared_mem>
+template <typename TestType, AtomicOperation operation, bool use_shared_mem,
+          int memory_scope = __HIP_MEMORY_SCOPE_AGENT>
 void LaunchKernel(const TestParams& p, hipStream_t stream, TestType* const mem_ptr,
                   TestType* const old_vals) {
   const auto shared_mem_size = use_shared_mem ? p.width * p.pitch : 0u;
   if (p.width == 1 && p.pitch == sizeof(TestType))
-    TestKernel<TestType, operation, use_shared_mem>
+    TestKernel<TestType, operation, use_shared_mem, memory_scope>
         <<<p.blocks, p.threads, shared_mem_size, stream>>>(mem_ptr, old_vals);
   else
-    TestKernel<TestType, operation, use_shared_mem>
+    TestKernel<TestType, operation, use_shared_mem, memory_scope>
         <<<p.blocks, p.threads, shared_mem_size, stream>>>(mem_ptr, old_vals, p.width, p.pitch);
 }
 
-template <typename TestType, AtomicOperation operation, bool use_shared_mem>
+template <typename TestType, AtomicOperation operation, bool use_shared_mem,
+          int memory_scope = __HIP_MEMORY_SCOPE_AGENT>
 void TestCore(const TestParams& p) {
   const auto old_vals_alloc_size = p.kernel_count * p.ThreadCount() * sizeof(TestType);
   std::vector<LinearAllocGuard<TestType>> old_vals_devs;
@@ -247,7 +278,8 @@ void TestCore(const TestParams& p) {
     for (auto j = 0u; j < p.kernel_count; ++j) {
       const auto& stream = streams[i * p.kernel_count + j].stream();
       const auto old_vals = old_vals_devs[i].ptr() + j * p.ThreadCount();
-      LaunchKernel<TestType, operation, use_shared_mem>(p, stream, mem_dev.ptr(), old_vals);
+      LaunchKernel<TestType, operation, use_shared_mem, memory_scope>(p, stream, mem_dev.ptr(),
+                                                                      old_vals);
     }
   }
 
@@ -262,17 +294,45 @@ void TestCore(const TestParams& p) {
   Verify<TestType, operation>(p, res_vals, old_vals);
 }
 
-template <typename TestType, AtomicOperation operation>
+inline dim3 GenerateThreadDimensions() { return GENERATE(dim3(16), dim3(1024)); }
+
+inline dim3 GenerateBlockDimensions() {
+  int sm_count = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&sm_count, hipDeviceAttributeMultiprocessorCount, 0));
+  return GENERATE_COPY(dim3(sm_count), dim3(sm_count + sm_count / 2));
+}
+
+template <typename TestType, AtomicOperation operation, int memory_scope = __HIP_MEMORY_SCOPE_AGENT>
 void SingleDeviceSingleKernelTest(const unsigned int width, const unsigned int pitch) {
   TestParams params;
   params.num_devices = 1;
   params.kernel_count = 1;
-  params.threads = GENERATE(dim3(1023));
+  if constexpr ((operation == AtomicOperation::kBuiltinMin ||
+                 operation == AtomicOperation::kBuiltinMax) &&
+                memory_scope == __HIP_MEMORY_SCOPE_SINGLETHREAD) {
+    params.threads = 1;
+  } else if constexpr ((operation == AtomicOperation::kBuiltinMin ||
+                        operation == AtomicOperation::kBuiltinMax) &&
+                       memory_scope == __HIP_MEMORY_SCOPE_WAVEFRONT) {
+    int warp_size = 0;
+    HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
+    params.threads = dim3(warp_size);
+  } else {
+    params.threads = GenerateThreadDimensions();
+  }
   params.width = width;
   params.pitch = pitch;
 
   SECTION("Global memory") {
-    params.blocks = GENERATE(dim3(3));
+    if constexpr ((operation == AtomicOperation::kBuiltinMin ||
+                   operation == AtomicOperation::kBuiltinMax) &&
+                  (memory_scope == __HIP_MEMORY_SCOPE_SINGLETHREAD ||
+                   memory_scope == __HIP_MEMORY_SCOPE_WAVEFRONT ||
+                   memory_scope == __HIP_MEMORY_SCOPE_WORKGROUP)) {
+      params.blocks = dim3(1);
+    } else {
+      params.blocks = GenerateBlockDimensions();
+    }
     using LA = LinearAllocs;
     for (const auto alloc_type :
          {LA::hipMalloc, LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister}) {
@@ -303,8 +363,8 @@ void SingleDeviceMultipleKernelTest(const unsigned int kernel_count, const unsig
   TestParams params;
   params.num_devices = 1;
   params.kernel_count = kernel_count;
-  params.blocks = GENERATE(dim3(3));
-  params.threads = GENERATE(dim3(1023));
+  params.blocks = GenerateThreadDimensions();
+  params.threads = GenerateBlockDimensions();
   params.width = width;
   params.pitch = pitch;
 
@@ -344,8 +404,8 @@ void MultipleDeviceMultipleKernelTest(const unsigned int num_devices,
   TestParams params;
   params.num_devices = num_devices;
   params.kernel_count = kernel_count;
-  params.blocks = GENERATE(dim3(3));
-  params.threads = GENERATE(dim3(1023));
+  params.blocks = GenerateThreadDimensions();
+  params.threads = GenerateBlockDimensions();
   params.width = width;
   params.pitch = pitch;
 
@@ -353,8 +413,9 @@ void MultipleDeviceMultipleKernelTest(const unsigned int num_devices,
   for (const auto alloc_type : {LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister}) {
     params.alloc_type = alloc_type;
     DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
-      TestCore<TestType, operation, false>(params);
+      TestCore<TestType, operation, false, __HIP_MEMORY_SCOPE_SYSTEM>(params);
     }
   }
 }
+
 }  // namespace MinMax

@@ -21,6 +21,16 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 #include <hip/hip_cooperative_groups.h>
+#include <hip/hip_fp16.h>
+
+static bool operator==(__half x, __half y) {
+  // __heq doesn't have a __host__ version
+  return static_cast<__half_raw>(x).data == static_cast<__half_raw>(y).data;
+}
+static bool operator!=(__half x, __half y) { return !(x == y); }
+
+static bool operator==(__half2 x, __half2 y) { return __hbeq2(x, y); }
+static bool operator!=(__half2 x, __half2 y) { return !(x == y); }
 
 static __device__ bool deactivate_thread(const uint64_t* const active_masks) {
   const auto warp =

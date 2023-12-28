@@ -35,6 +35,9 @@ set(TEST_SRC
     unsafeAtomicMax.cc
     atomicExch.cc
     atomicExch_system.cc
+    __hip_atomic_fetch_and.cc
+    __hip_atomic_fetch_or.cc
+    __hip_atomic_fetch_xor.cc
 )
 
 if(HIP_PLATFORM MATCHES "nvidia")

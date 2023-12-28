@@ -17,15 +17,16 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
- * hipDeviceTotalMem tests
- * Scenario: Validate behavior of hipDeviceTotalMem for masked devices.
- */
-
 #include <hip_test_common.hh>
 #ifdef __linux__
 #include <unistd.h>
 #include <sys/wait.h>
+
+/**
+ * @addtogroup hipDeviceTotalMem hipDeviceTotalMem
+ * @{
+ * @ingroup DriverTest
+ */
 
 #define MAX_SIZE 30
 #define VISIBLE_DEVICE 0
@@ -41,7 +42,7 @@ static void getDeviceCount(int *pdevCnt) {
   pipe(fd);
 
   // disable visible_devices env from shell
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
   unsetenv("CUDA_VISIBLE_DEVICES");
 #else
   unsetenv("ROCR_VISIBLE_DEVICES");
@@ -97,7 +98,7 @@ static bool getTotalMemoryOfMaskedDevices(int actualNumGPUs) {
     snprintf(visibleDeviceString, MAX_SIZE, "%d", VISIBLE_DEVICE);
 
     // disable visible_devices env from shell
-#ifdef __HIP_PLATFORM_NVCC__
+#ifdef __HIP_PLATFORM_NVIDIA__
     unsetenv("CUDA_VISIBLE_DEVICES");
     setenv("CUDA_VISIBLE_DEVICES", visibleDeviceString, 1);
     HIP_CHECK(hipInit(0));
@@ -141,7 +142,17 @@ static bool getTotalMemoryOfMaskedDevices(int actualNumGPUs) {
 
 
 /**
- * Scenario: Validate behavior of hipDeviceTotalMem for masked devices.
+ * Test Description
+ * ------------------------
+ *  - Check that total memory is returned correctly when
+ *    the devices are masked.
+ * Test source
+ * ------------------------
+ *  - unit/multiproc/hipDeviceTotalMemMproc.cc
+ * Test requirements
+ * ------------------------
+ *  - Multi-device test
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipDeviceTotalMem_MaskedDevices") {
   int count = -1;

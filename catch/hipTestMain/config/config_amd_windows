@@ -237,7 +237,6 @@
         "Unit_Layered2DTexture_Check_DeviceBufferToFromLayered2DArray - float4",
         "=== Patch which removes the typetraits implementation from std namespace in hiprtc is reverted ===",
         "Unit_hiprtc_stdheaders",
-        "Unit_hipDeviceSetSharedMemConfig_Negative_Parameters",
         "Unit_hipMemAddressFree_negative",
         "Unit_hipMemAddressReserve_AlignmentTest",
         "Unit_hipMemAddressReserve_Negative",

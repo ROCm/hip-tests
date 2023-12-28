@@ -236,17 +236,10 @@ template <typename TexelType> class TextureReference {
     return coord;
   }
 
-  template <size_t N> float FloatToNBitFractional(float x) const {
-    constexpr size_t mult = 1 << N;
-    const auto x_trunc = std::trunc(x);
-    const auto x_frac = std::round((x - x_trunc) * mult) / mult;
-    return x_trunc + x_frac;
-  }
-
   std::tuple<float, float> GetLinearFilteringParams(float coord) const {
-    const auto coordB = FloatToNBitFractional<8>(coord - 0.5f);
+    const auto coordB = coord - 0.5f;
     const auto index = floorf(coordB);
-    const auto coeff = coordB - index;
+    const FixedPoint<8> coeff = coordB - index;
 
     return {index, coeff};
   }

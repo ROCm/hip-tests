@@ -95,6 +95,7 @@ TEMPLATE_TEST_CASE("Unit_texCubemap_Positive_ReadModeElementType", "", char, uns
         INFO("i: " << i);
         INFO("j: " << j);
         INFO("k: " << k);
+        INFO("Filtering mode: " << FilteringModeToString(params.tex_desc.filterMode));
         INFO("Normalized coordinates: " << std::boolalpha << params.tex_desc.normalizedCoords);
         INFO("Address mode X: " << AddressModeToString(params.tex_desc.addressMode[0]));
         INFO("Address mode Y: " << AddressModeToString(params.tex_desc.addressMode[1]));
@@ -179,6 +180,7 @@ TEMPLATE_TEST_CASE("Unit_texCubemap_Positive_ReadModeNormalizedFloat", "", char,
         INFO("i: " << i);
         INFO("j: " << j);
         INFO("k: " << k);
+        INFO("Filtering mode: " << FilteringModeToString(params.tex_desc.filterMode));
         INFO("Normalized coordinates: " << std::boolalpha << params.tex_desc.normalizedCoords);
         INFO("Address mode X: " << AddressModeToString(params.tex_desc.addressMode[0]));
         INFO("Address mode Y: " << AddressModeToString(params.tex_desc.addressMode[1]));

@@ -307,3 +307,61 @@ TEST_CASE("Unit_atomicDec_Negative_Parameters") {}
  * This section describes tests for the Complex type functions.
  * @}
  */
+
+/**
+ * @defgroup DeviceLanguageTest Device Language
+ * @{
+ * This section describes tests for the Device Language API.
+ */
+
+/**
+ * @addtogroup launch_bounds launch_bounds
+ * @{
+ * @ingroup DeviceLanguageTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# Compiles kernels that are not created appropriately:
+ *      - Maximum number of threads is 0
+ *      - Maximum number of threads is not integer value
+ *      - Mimimum number of warps is not integer value
+ *    -# Expected output: compiler error
+ * Test source
+ * ------------------------
+ *  - unit/launch_bounds/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_Kernel_Launch_bounds_Negative_Parameters_CompilerError") {}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# Compiles kernels that are not created appropriately:
+ *      - Maximum number of threads is negative
+ *      - Mimimum number of warps is negative
+ *  - Validates handling of invalid arguments:
+ *    -# Expected output: parse error
+ * Test source
+ * ------------------------
+ *  - unit/launch_bounds/CMakeLists.txt
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_Kernel_Launch_bounds_Negative_Parameters_ParseError") {}
+
+/**
+ * End doxygen group launch_bounds.
+ * @}
+ */
+
+/**
+ * End doxygen group DeviceLanguageTest.
+ * @}
+ */

@@ -161,7 +161,7 @@ void Memcpy3DDeviceToHostShell(F memcpy_func, const hipStream_t kernel_stream = 
 }
 
 template <bool should_synchronize, bool enable_peer_access, typename F>
-void Memcpy3DDeviceToDeviceShell(F memcpy_func, const hipStream_t kernel_stream = nullptr) {
+void Memcpy3DDeviceToDeviceShell(F memcpy_func, hipStream_t kernel_stream = nullptr) {
   const auto kind = GENERATE(hipMemcpyDeviceToDevice, hipMemcpyDefault);
 
   constexpr hipExtent extent{127 * sizeof(int), 128, 8};
@@ -173,6 +173,9 @@ void Memcpy3DDeviceToDeviceShell(F memcpy_func, const hipStream_t kernel_stream 
   INFO("Src device: " << src_device << ", Dst device: " << dst_device);
 
   HIP_CHECK(hipSetDevice(src_device));
+  if (device_count > 0 && kernel_stream != nullptr && kernel_stream != hipStreamPerThread) {
+    HIP_CHECK(hipStreamCreate(&kernel_stream));
+  }
   if constexpr (enable_peer_access) {
     if (src_device == dst_device) {
       return;
@@ -200,8 +203,8 @@ void Memcpy3DDeviceToDeviceShell(F memcpy_func, const hipStream_t kernel_stream 
                     dst_alloc.height() / threads_per_block.y + 1, dst_alloc.depth());
   // Using dst_alloc width and height to set only the elements that will be copied over to
   // dst_alloc
-  Iota<<<blocks, threads_per_block>>>(src_alloc.ptr(), src_alloc.pitch(), dst_alloc.width_logical(),
-                                      dst_alloc.height(), dst_alloc.depth());
+  Iota<<<blocks, threads_per_block, 0, kernel_stream>>>(src_alloc.ptr(), src_alloc.pitch(),
+                          dst_alloc.width_logical(),dst_alloc.height(), dst_alloc.depth());
   HIP_CHECK(hipGetLastError());
 
   HIP_CHECK(memcpy_func(dst_alloc.pitched_ptr(), make_hipPos(0, 0, 0), src_alloc.pitched_ptr(),
@@ -209,7 +212,9 @@ void Memcpy3DDeviceToDeviceShell(F memcpy_func, const hipStream_t kernel_stream 
   if constexpr (should_synchronize) {
     HIP_CHECK(hipStreamSynchronize(kernel_stream));
   }
-
+  if (device_count > 0 && kernel_stream != nullptr && kernel_stream != hipStreamPerThread) {
+    HIP_CHECK(hipStreamDestroy(kernel_stream));
+  }
   HIP_CHECK(Memcpy3DWrapper(make_hipPitchedPtr(host_alloc.ptr(), dst_alloc.width(),
                                                dst_alloc.width(), dst_alloc.height()),
                             make_hipPos(0, 0, 0), dst_alloc.pitched_ptr(), make_hipPos(0, 0, 0),

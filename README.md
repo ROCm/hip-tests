@@ -57,3 +57,6 @@ hipcc $HIP_TESTS_DIR/catch/unit/memory/hipPointerGetAttributes.cc -I ./catch/inc
 ./hipPointerGetAttributes
 ```
 
+### Building with address sanitizer
+
+To build catch tests with Address Sanitizer options, use the cmake option `-DASAN_BUILD=ON`

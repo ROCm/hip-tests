@@ -180,6 +180,13 @@ THE SOFTWARE.
  */
 
 /**
+ * @defgroup ModuleTest Module Management
+ * @{
+ * This section describes the module management types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
  * @defgroup TextureTest Texture Management
  * @{
  * This section describes tests for the texture management functions of HIP runtime API.

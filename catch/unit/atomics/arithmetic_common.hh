@@ -38,7 +38,9 @@ enum class AtomicOperation {
   kInc,
   kDec,
   kUnsafeAdd,
-  kSafeAdd
+  kSafeAdd,
+  kCASAdd,
+  kCASAddSystem
 };
 
 // Constants that are passed as operands to the atomic operations
@@ -57,6 +59,31 @@ __host__ __device__ TestType GetTestValue() {
   }
 
   return std::is_floating_point_v<TestType> ? kFloatingPointTestValue : kIntegerTestValue;
+}
+
+// Implements an atomic addition via atomicCAS
+template <typename TestType> __device__ TestType CASAtomicAdd(TestType* address, TestType val) {
+  TestType old = *address, assumed;
+
+  do {
+    assumed = old;
+    old = atomicCAS(address, assumed, val + assumed);
+  } while (assumed != old);
+
+  return old;
+}
+
+// Implements an atomic addition via atomicCAS_system
+template <typename TestType>
+__device__ TestType CASAtomicAddSystem(TestType* address, TestType val) {
+  TestType old = *address, assumed;
+
+  do {
+    assumed = old;
+    old = atomicCAS_system(address, assumed, val + assumed);
+  } while (assumed != old);
+
+  return old;
 }
 
 // Performs an atomic operation on parameter `mem` based on the `operation` enumerator.
@@ -80,6 +107,10 @@ __device__ TestType PerformAtomicOperation(TestType* const mem) {
     return unsafeAtomicAdd(mem, val);
   } else if constexpr (operation == AtomicOperation::kSafeAdd) {
     return safeAtomicAdd(mem, val);
+  } else if constexpr (operation == AtomicOperation::kCASAdd) {
+    return CASAtomicAdd(mem, val);
+  } else if constexpr (operation == AtomicOperation::kCASAddSystem) {
+    return CASAtomicAddSystem(mem, val);
   }
 }
 
@@ -202,7 +233,8 @@ std::tuple<std::vector<TestType>, std::vector<TestType>> TestKernelHostRef(const
 
     if constexpr (operation == AtomicOperation::kAdd || operation == AtomicOperation::kAddSystem ||
                   operation == AtomicOperation::kUnsafeAdd ||
-                  operation == AtomicOperation::kSafeAdd) {
+                  operation == AtomicOperation::kSafeAdd || operation == AtomicOperation::kCASAdd ||
+                  operation == AtomicOperation::kCASAddSystem) {
       res = res + val;
     } else if constexpr (operation == AtomicOperation::kSub ||
                          operation == AtomicOperation::kSubSystem) {
@@ -270,7 +302,8 @@ void HostAtomicOperation(const unsigned int iterations, TestType* mem, TestType*
   const auto val = GetTestValue<TestType, operation>();
 
   for (auto i = 0u; i < iterations; ++i) {
-    if constexpr (operation == AtomicOperation::kAddSystem) {
+    if constexpr (operation == AtomicOperation::kAddSystem ||
+                  operation == AtomicOperation::kCASAddSystem) {
       old_vals[i] = __atomic_fetch_add(PitchedOffset(mem, pitch, i % width), val, __ATOMIC_RELAXED);
     } else if constexpr (operation == AtomicOperation::kSubSystem) {
       old_vals[i] = __atomic_fetch_sub(PitchedOffset(mem, pitch, i % width), val, __ATOMIC_RELAXED);

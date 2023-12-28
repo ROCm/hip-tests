@@ -40,7 +40,8 @@ enum class AtomicOperation {
   kUnsafeAdd,
   kSafeAdd,
   kCASAdd,
-  kCASAddSystem
+  kCASAddSystem,
+  kBuiltinAdd
 };
 
 // Constants that are passed as operands to the atomic operations
@@ -88,6 +89,9 @@ __device__ TestType CASAtomicAddSystem(TestType* address, TestType val) {
 
 // Performs an atomic operation on parameter `mem` based on the `operation` enumerator.
 template <typename TestType, AtomicOperation operation>
+// Performs an atomic operation on parameter `mem` based on the `operation` enumerator.
+// `memory_scope` is forwarded to the builtin operations and is by default device-wide.
+template <typename TestType, AtomicOperation operation, int memory_scope = __HIP_MEMORY_SCOPE_AGENT>
 __device__ TestType PerformAtomicOperation(TestType* const mem) {
   const auto val = GetTestValue<TestType, operation>();
 
@@ -111,6 +115,8 @@ __device__ TestType PerformAtomicOperation(TestType* const mem) {
     return CASAtomicAdd(mem, val);
   } else if constexpr (operation == AtomicOperation::kCASAddSystem) {
     return CASAtomicAddSystem(mem, val);
+  } else if constexpr (operation == AtomicOperation::kBuiltinAdd) {
+    return __hip_atomic_fetch_add(mem, val, __ATOMIC_RELAXED, memory_scope);
   }
 }
 
@@ -119,7 +125,8 @@ __device__ TestType PerformAtomicOperation(TestType* const mem) {
 // same memory location `global_mem`.
 // If `use_shared_mem` is true, `global_mem` is copied to shared memory first, the atomic
 // operations are executed on shared memory, and the result is copied back to `global_mem`.
-template <typename TestType, AtomicOperation operation, bool use_shared_mem>
+template <typename TestType, AtomicOperation operation, bool use_shared_mem,
+          int memory_scope = __HIP_MEMORY_SCOPE_AGENT>
 __global__ void TestKernel(TestType* const global_mem, TestType* const old_vals) {
   __shared__ TestType shared_mem;
 
@@ -132,7 +139,7 @@ __global__ void TestKernel(TestType* const global_mem, TestType* const old_vals)
     __syncthreads();
   }
 
-  old_vals[tid] = PerformAtomicOperation<TestType, operation>(mem);
+  old_vals[tid] = PerformAtomicOperation<TestType, operation, memory_scope>(mem);
 
   if constexpr (use_shared_mem) {
     __syncthreads();
@@ -148,6 +155,15 @@ __host__ __device__ TestType* PitchedOffset(TestType* const ptr, const unsigned 
   return reinterpret_cast<TestType*>(byte_ptr + idx * pitch);
 }
 
+// Executes arbitrary load-store operations on the range specified by `begin_addr` and `end_addr`
+__device__ void GenerateMemoryTraffic(uint8_t* const begin_addr, uint8_t* const end_addr) {
+  for (volatile uint8_t* addr = begin_addr; addr != end_addr; ++addr) {
+    uint8_t val = *addr;
+    val ^= 0xAB;
+    *addr = val;
+  }
+}
+
 // This kernel executes the atomic operation specified by the enumerator `operation`. Results of the
 // atomic operations are stored in `old_vals`. `global_mem` is an array with `width` number of
 // elements. Each thread performs the atomic operation on the element that corresponds to its thread
@@ -157,6 +173,9 @@ __host__ __device__ TestType* PitchedOffset(TestType* const ptr, const unsigned 
 // that are scattered over different cache lines.
 // If `use_shared_mem` is true, `global_mem` is copied to shared memory first, the atomic operations
 // are executed on shared memory, and the result is copied back to `global_mem`.
+// If `pitch` is greater than sizeof(TestType), random memory operations are performed in the empty
+// space between consecutive atomic operations so that we can test that the atomic operations
+// behaves correctly even with some interference.
 //
 // For example, given that sizeof(TestType) is 1, `width` is 3, and `pitch` is 4:
 //
@@ -165,10 +184,12 @@ __host__ __device__ TestType* PitchedOffset(TestType* const ptr, const unsigned 
 //               |         pitch         |         pitch         |          pitch          |
 //
 // In this scenario, the atomic operations will target the elements denoted with `x` (addresses 0,
-// 4, 8).
-template <typename TestType, AtomicOperation operation, bool use_shared_mem>
+// 4, 8). Random memory traffic will be generated on the addresses in between (1, 2, 3, 5, 6, 7, 9,
+// 10, 11)
+template <typename TestType, AtomicOperation operation, bool use_shared_mem,
+          int memory_scope = __HIP_MEMORY_SCOPE_AGENT>
 __global__ void TestKernel(TestType* const global_mem, TestType* const old_vals,
-                           const unsigned int width, const unsigned pitch) {
+                           const unsigned int width, const unsigned int pitch) {
   extern __shared__ uint8_t shared_mem[];
 
   const auto tid = cg::this_grid().thread_rank();
@@ -183,8 +204,18 @@ __global__ void TestKernel(TestType* const global_mem, TestType* const old_vals,
     __syncthreads();
   }
 
-  old_vals[tid] =
-      PerformAtomicOperation<TestType, operation>(PitchedOffset(mem, pitch, tid % width));
+  const auto n = cooperative_groups::this_grid().size() - width;
+
+  TestType* atomic_addr = PitchedOffset(mem, pitch, tid % width);
+
+  if (tid < n) {
+    old_vals[tid] = PerformAtomicOperation<TestType, operation, memory_scope>(
+        PitchedOffset(mem, pitch, tid % width));
+  } else {
+    uint8_t* const begin_addr = reinterpret_cast<uint8_t*>(atomic_addr + 1);
+    uint8_t* const end_addr = reinterpret_cast<uint8_t*>(atomic_addr) + pitch;
+    GenerateMemoryTraffic(begin_addr, end_addr);
+  }
 
   if constexpr (use_shared_mem) {
     __syncthreads();
@@ -201,7 +232,7 @@ struct TestParams {
     return blocks.x * blocks.y * blocks.z * threads.x * threads.y * threads.z;
   }
 
-  auto HostIterationsPerThread() const {
+  auto HostIterationsPerThread() const {  // number of iterations per host thread
     return std::max(num_devices * kernel_count * ThreadCount() / 20, width);
   }
 
@@ -234,7 +265,8 @@ std::tuple<std::vector<TestType>, std::vector<TestType>> TestKernelHostRef(const
     if constexpr (operation == AtomicOperation::kAdd || operation == AtomicOperation::kAddSystem ||
                   operation == AtomicOperation::kUnsafeAdd ||
                   operation == AtomicOperation::kSafeAdd || operation == AtomicOperation::kCASAdd ||
-                  operation == AtomicOperation::kCASAddSystem) {
+                  operation == AtomicOperation::kCASAddSystem ||
+                  operation == AtomicOperation::kBuiltinAdd) {
       res = res + val;
     } else if constexpr (operation == AtomicOperation::kSub ||
                          operation == AtomicOperation::kSubSystem) {
@@ -248,7 +280,7 @@ std::tuple<std::vector<TestType>, std::vector<TestType>> TestKernelHostRef(const
 
   for (auto i = 0u; i < p.num_devices; ++i) {
     for (auto j = 0u; j < p.kernel_count; ++j) {
-      for (auto tid = 0u; tid < p.ThreadCount(); ++tid) {
+      for (auto tid = 0u; tid < p.ThreadCount() - p.width; ++tid) {
         perform_op(tid);
       }
     }
@@ -283,15 +315,16 @@ void Verify(const TestParams& p, std::vector<TestType>& res_vals, std::vector<Te
 }
 
 // Launches the test kernel
-template <typename TestType, AtomicOperation operation, bool use_shared_mem>
+template <typename TestType, AtomicOperation operation, bool use_shared_mem,
+          int memory_scope = __HIP_MEMORY_SCOPE_AGENT>
 void LaunchKernel(const TestParams& p, hipStream_t stream, TestType* const mem_ptr,
                   TestType* const old_vals) {
   const auto shared_mem_size = use_shared_mem ? p.width * p.pitch : 0u;
   if (p.width == 1 && p.pitch == sizeof(TestType))
-    TestKernel<TestType, operation, use_shared_mem>
+    TestKernel<TestType, operation, use_shared_mem, memory_scope>
         <<<p.blocks, p.threads, shared_mem_size, stream>>>(mem_ptr, old_vals);
   else
-    TestKernel<TestType, operation, use_shared_mem>
+    TestKernel<TestType, operation, use_shared_mem, memory_scope>
         <<<p.blocks, p.threads, shared_mem_size, stream>>>(mem_ptr, old_vals, p.width, p.pitch);
 }
 
@@ -303,7 +336,8 @@ void HostAtomicOperation(const unsigned int iterations, TestType* mem, TestType*
 
   for (auto i = 0u; i < iterations; ++i) {
     if constexpr (operation == AtomicOperation::kAddSystem ||
-                  operation == AtomicOperation::kCASAddSystem) {
+                  operation == AtomicOperation::kCASAddSystem ||
+                  operation == AtomicOperation::kBuiltinAdd) {
       old_vals[i] = __atomic_fetch_add(PitchedOffset(mem, pitch, i % width), val, __ATOMIC_RELAXED);
     } else if constexpr (operation == AtomicOperation::kSubSystem) {
       old_vals[i] = __atomic_fetch_sub(PitchedOffset(mem, pitch, i % width), val, __ATOMIC_RELAXED);
@@ -339,7 +373,8 @@ void PerformHostAtomicOperation(const TestParams& p, TestType* mem, TestType* co
 // 2. Launch kernels based on TestParams::num_devices and TestParams::kernel_count
 // 3. Launch host threads based on TestParams::host_thread_count
 // 4. Verify the results
-template <typename TestType, AtomicOperation operation, bool use_shared_mem>
+template <typename TestType, AtomicOperation operation, bool use_shared_mem,
+          int memory_scope = __HIP_MEMORY_SCOPE_AGENT>
 void TestCore(const TestParams& p) {
   const unsigned int flags =
       p.alloc_type == LinearAllocs::mallocAndRegister ? hipHostRegisterMapped : 0u;
@@ -371,7 +406,8 @@ void TestCore(const TestParams& p) {
     for (auto j = 0u; j < p.kernel_count; ++j) {
       const auto& stream = streams[i * p.kernel_count + j].stream();
       const auto old_vals = old_vals_devs[i].ptr() + j * p.ThreadCount();
-      LaunchKernel<TestType, operation, use_shared_mem>(p, stream, mem_dev.ptr(), old_vals);
+      LaunchKernel<TestType, operation, use_shared_mem, memory_scope>(p, stream, mem_dev.ptr(),
+                                                                      old_vals);
     }
   }
 
@@ -397,23 +433,40 @@ inline dim3 GenerateBlockDimensions() {
 }
 
 // Configures and creates the TestCore for a single device, and a single kernel launch
-template <typename TestType, AtomicOperation operation>
+template <typename TestType, AtomicOperation operation, int memory_scope = __HIP_MEMORY_SCOPE_AGENT>
 void SingleDeviceSingleKernelTest(const unsigned int width, const unsigned int pitch) {
   TestParams params;
   params.num_devices = 1;
   params.kernel_count = 1;
-  params.threads = GenerateThreadDimensions();
+  if constexpr (operation == AtomicOperation::kBuiltinAdd &&
+                memory_scope == __HIP_MEMORY_SCOPE_SINGLETHREAD) {
+    params.threads = 1;
+  } else if constexpr (operation == AtomicOperation::kBuiltinAdd &&
+                       memory_scope == __HIP_MEMORY_SCOPE_WAVEFRONT) {
+    int warp_size = 0;
+    HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
+    params.threads = dim3(warp_size);
+  } else {
+    params.threads = GenerateThreadDimensions();
+  }
   params.width = width;
   params.pitch = pitch;
 
   SECTION("Global memory") {
-    params.blocks = GenerateBlockDimensions();
+    if constexpr (operation == AtomicOperation::kBuiltinAdd &&
+                  (memory_scope == __HIP_MEMORY_SCOPE_SINGLETHREAD ||
+                   memory_scope == __HIP_MEMORY_SCOPE_WAVEFRONT ||
+                   memory_scope == __HIP_MEMORY_SCOPE_WORKGROUP)) {
+      params.blocks = dim3(1);
+    } else {
+      params.blocks = GenerateBlockDimensions();
+    }
     using LA = LinearAllocs;
     for (const auto alloc_type :
          {LA::hipMalloc, LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister}) {
       params.alloc_type = alloc_type;
       DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
-        TestCore<TestType, operation, false>(params);
+        TestCore<TestType, operation, false, memory_scope>(params);
       }
     }
   }
@@ -421,7 +474,7 @@ void SingleDeviceSingleKernelTest(const unsigned int width, const unsigned int p
   SECTION("Shared memory") {
     params.blocks = dim3(1);
     params.alloc_type = LinearAllocs::hipMalloc;
-    TestCore<TestType, operation, true>(params);
+    TestCore<TestType, operation, true, memory_scope>(params);
   }
 }
 
@@ -493,7 +546,7 @@ void MultipleDeviceMultipleKernelAndHostTest(const unsigned int num_devices,
   for (const auto alloc_type : {LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister}) {
     params.alloc_type = alloc_type;
     DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
-      TestCore<TestType, operation, false>(params);
+      TestCore<TestType, operation, false, __HIP_MEMORY_SCOPE_SYSTEM>(params);
     }
   }
 }

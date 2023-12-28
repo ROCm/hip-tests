@@ -26,7 +26,7 @@ THE SOFTWARE.
 #include <limits>
 
 struct CmdOptions {
-  int iterations = 1000;
+  int iterations = 10;
   int warmups = 100;
   int cg_iterations = 5;
   bool no_display = false;

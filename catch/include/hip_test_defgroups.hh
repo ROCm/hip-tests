@@ -20,6 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#include <hip_test_common.hh>
+
 // Test groups are named based on the group names from hip_api_runtime.h, with adding "Test" suffix
 
 /**
@@ -95,8 +97,15 @@ THE SOFTWARE.
 
 /**
 * @defgroup KernelTest Kernel Functions Management
+* @{
+* This section describes the various kernel functions invocation.
+* @}
+*/
+
+/**
+ * @defgroup AtomicsTest Device Atomics
  * @{
- * This section describes the various kernel functions invocation.
+ * This section describes tests for the Device Atomic APIs.
  * @}
  */
 
@@ -115,7 +124,14 @@ THE SOFTWARE.
  * @}
  */
 
- /**
+/**
+ * @defgroup PerformanceTest Performance tests
+ * @{
+ * This section describes performance tests for the target API groups and use-cases.
+ * @}
+ */
+
+/**
  * @defgroup ShflTest warp shuffle function Management
  * @{
  * This section describes the warp shuffle types & functions of HIP runtime API.
@@ -150,15 +166,15 @@ THE SOFTWARE.
  */
 
 /**
- * @defgroup PrintfTest Printf API Management
+ * @defgroup MathTest Math Device Functions
  * @{
- * This section describes the various Printf use case Scenarios.
+ * This section describes tests for device math functions of HIP runtime API.
  * @}
  */
 
 /**
- * @defgroup MathTest Math Device Functions
+ * @defgroup PrintfTest Printf API Management
  * @{
- * This section describes tests for device math functions of HIP runtime API.
+ * This section describes the various Printf use case Scenarios.
  * @}
  */

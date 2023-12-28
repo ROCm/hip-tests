@@ -15,6 +15,7 @@
         "Unit_ChannelDescriptor_Positive_Basic_3D - ulong3",
         "Unit_ChannelDescriptor_Positive_Basic_3D - long3",
         "Unit_ChannelDescriptor_Positive_Basic_4D - ulong4",
-        "Unit_ChannelDescriptor_Positive_Basic_4D - long4"
+        "Unit_ChannelDescriptor_Positive_Basic_4D - long4",
+        "Unit_hipMemMapArrayAsync_Positive_Basic"
     ]
 }

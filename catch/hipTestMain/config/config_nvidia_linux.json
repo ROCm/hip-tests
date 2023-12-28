@@ -52,6 +52,8 @@
         "Unit_atomicExch_system_Positive_Host_And_GPU - int",
         "Unit_atomicExch_system_Positive_Host_And_GPU - unsigned int",
         "Unit_atomicExch_system_Positive_Host_And_GPU - unsigned long long",
-        "Unit_atomicExch_system_Positive_Host_And_GPU - float"
+        "Unit_atomicExch_system_Positive_Host_And_GPU - float",
+        "Unit_hipMemImportFromShareableHandle_Positive_MultiProc",
+        "Unit_hipMemMapArrayAsync_Positive_Basic"
     ]
 }

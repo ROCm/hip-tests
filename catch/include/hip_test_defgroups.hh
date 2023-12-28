@@ -110,6 +110,13 @@ THE SOFTWARE.
  */
 
 /**
+ * @defgroup SyncthreadsTest Synchronization Functions
+ * @{
+ * This section describes tests for Synchronization Functions.
+ * @}
+ */
+
+/**
  * @defgroup MemoryTest memory Management APIs
  * @{
  * This section describes the memory management types & functions of HIP runtime API.

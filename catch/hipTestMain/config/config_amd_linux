@@ -128,8 +128,19 @@
         "Unit_hipEventIpc",
         "=== SWDEV-427101:Below test fails randomly in PSDB ===",
         "Unit_deviceAllocation_InOneThread_AccessInAllThreads",
+<<<<<<< HEAD
         "=== Below test is disabled due to defect EXSWHTEC-347 ===",
         "Unit_hipPointerSetAttribute_Positive_SyncMemops",
+=======
+        "Unit_tex2DLod_Positive_ReadModeElementType",
+        "Unit_tex2DLod_Positive_ReadModeNormalizedFloat",
+        "Unit_tex2DLayeredLod_Positive_ReadModeElementType",
+        "Unit_tex2DLayeredLod_Positive_ReadModeNormalizedFloat",
+        "Unit_tex2DGrad_Positive_ReadModeElementType",
+        "Unit_tex2DGrad_Positive_ReadModeNormalizedFloat",
+        "Unit_tex2DLayeredGrad_Positive_ReadModeElementType",
+        "Unit_tex2DLayeredGrad_Positive_ReadModeNormalizedFloat",
+>>>>>>> ab1704d9 (Merge branch 'develop' into tex2D_mipmap_tests)
         "=== Patch which removes the typetraits implementation from std namespace in hiprtc is reverted ===",
         "Unit_hiprtc_stdheaders",
         "Unit_hipGraphAddMemcpyNode_Negative_Parameters",

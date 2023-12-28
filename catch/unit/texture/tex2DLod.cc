@@ -26,7 +26,7 @@ THE SOFTWARE.
 #include "test_fixture.hh"
 
 /**
- * @addtogroup tex2D tex2D
+ * @addtogroup tex2DLod tex2DLod
  * @{
  * @ingroup TextureTest
  */
@@ -34,7 +34,7 @@ THE SOFTWARE.
 /**
  * Test Description
  * ------------------------
- *    - Test texture fetching with `tex2D` and read mode set to `hipReadModeElementType`. The
+ *    - Test texture fetching with `tex2DLod` and read mode set to `hipReadModeElementType`. The
  * test is performed with:
  *      - normalized coordinates
  *      - non-normalized coordinates
@@ -43,12 +43,12 @@ THE SOFTWARE.
  *      - All combinations of different addressing modes.
  * Test source
  * ------------------------
- *    - unit/texture/tex2D.cc
+ *    - unit/texture/tex2DLod.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.7
  */
-TEMPLATE_TEST_CASE("Unit_tex2D_Positive_ReadModeElementType", "", char, unsigned char, short,
+TEMPLATE_TEST_CASE("Unit_tex2DLod_Positive_ReadModeElementType", "", char, unsigned char, short,
                    unsigned short, int, unsigned int, float) {
   CHECK_IMAGE_SUPPORT;
 
@@ -57,7 +57,7 @@ TEMPLATE_TEST_CASE("Unit_tex2D_Positive_ReadModeElementType", "", char, unsigned
   params.num_subdivisions = 4;
   params.GenerateTextureDesc();
 
-  TextureTestFixture<TestType> fixture{params};
+  TextureTestFixture<TestType, false, true> fixture{params};
 
   const auto [num_threads_x, num_blocks_x] = GetLaunchConfig(32, params.NumItersX());
   const auto [num_threads_y, num_blocks_y] = GetLaunchConfig(32, params.NumItersY());
@@ -70,9 +70,10 @@ TEMPLATE_TEST_CASE("Unit_tex2D_Positive_ReadModeElementType", "", char, unsigned
   dim_block.x = num_threads_x;
   dim_block.y = num_threads_y;
 
-  tex2DKernel<vec4<TestType>><<<dim_grid, dim_block>>>(
-      fixture.out_alloc_d.ptr(), params.NumItersX(), params.NumItersY(), fixture.tex.object(),
-      params.Width(), params.Height(), params.num_subdivisions, params.tex_desc.normalizedCoords);
+  tex2DLodKernel<vec4<TestType>>
+      <<<dim_grid, dim_block>>>(fixture.out_alloc_d.ptr(), params.NumItersX(), params.NumItersY(),
+                                fixture.tex.object(), params.Width(), params.Height(),
+                                params.num_subdivisions, params.tex_desc.normalizedCoords, 0);
   HIP_CHECK(hipGetLastError());
 
   fixture.LoadOutput();
@@ -104,8 +105,8 @@ TEMPLATE_TEST_CASE("Unit_tex2D_Positive_ReadModeElementType", "", char, unsigned
 /**
  * Test Description
  * ------------------------
- *    - Test texture fetching with `tex2D` and read mode set to `hipReadModeNormalizedFloat`. The
- * test is performed with:
+ *    - Test texture fetching with `tex2DLod` and read mode set to `hipReadModeNormalizedFloat`.
+ * The test is performed with:
  *      - normalized coordinates
  *      - non-normalized coordinates
  *      - Nearest-point sampling
@@ -113,12 +114,12 @@ TEMPLATE_TEST_CASE("Unit_tex2D_Positive_ReadModeElementType", "", char, unsigned
  *      - All combinations of different addressing modes.
  * Test source
  * ------------------------
- *    - unit/texture/tex2D.cc
+ *    - unit/texture/tex2DLod.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.7
  */
-TEMPLATE_TEST_CASE("Unit_tex2D_Positive_ReadModeNormalizedFloat", "", char, unsigned char, short,
+TEMPLATE_TEST_CASE("Unit_tex2DLod_Positive_ReadModeNormalizedFloat", "", char, unsigned char, short,
                    unsigned short) {
   CHECK_IMAGE_SUPPORT;
 
@@ -127,7 +128,7 @@ TEMPLATE_TEST_CASE("Unit_tex2D_Positive_ReadModeNormalizedFloat", "", char, unsi
   params.num_subdivisions = 4;
   params.GenerateTextureDesc(hipReadModeNormalizedFloat);
 
-  TextureTestFixture<TestType, true> fixture{params};
+  TextureTestFixture<TestType, true, true> fixture{params};
 
   const auto [num_threads_x, num_blocks_x] = GetLaunchConfig(32, params.NumItersX());
   const auto [num_threads_y, num_blocks_y] = GetLaunchConfig(32, params.NumItersY());
@@ -140,16 +141,17 @@ TEMPLATE_TEST_CASE("Unit_tex2D_Positive_ReadModeNormalizedFloat", "", char, unsi
   dim_block.x = num_threads_x;
   dim_block.y = num_threads_y;
 
-  tex2DKernel<vec4<float>><<<dim_grid, dim_block>>>(
-      fixture.out_alloc_d.ptr(), params.NumItersX(), params.NumItersY(), fixture.tex.object(),
-      params.Width(), params.Height(), params.num_subdivisions, params.tex_desc.normalizedCoords);
+  tex2DLodKernel<vec4<float>>
+      <<<dim_grid, dim_block>>>(fixture.out_alloc_d.ptr(), params.NumItersX(), params.NumItersY(),
+                                fixture.tex.object(), params.Width(), params.Height(),
+                                params.num_subdivisions, params.tex_desc.normalizedCoords, 0);
   HIP_CHECK(hipGetLastError());
 
   fixture.LoadOutput();
 
   for (auto i = 0u; i < params.NumItersX() * params.NumItersY(); ++i) {
     float x = i % params.NumItersX();
-    float y = i / params.NumItersY();
+    float y = i / params.NumItersX();
 
     x = GetCoordinate(x, params.NumItersX(), params.Width(), params.num_subdivisions,
                       params.tex_desc.normalizedCoords);

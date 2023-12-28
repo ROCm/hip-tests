@@ -26,7 +26,7 @@ THE SOFTWARE.
 #include "test_fixture.hh"
 
 /**
- * @addtogroup tex2D tex2D
+ * @addtogroup tex2Dgather tex2Dgather
  * @{
  * @ingroup TextureTest
  */
@@ -34,7 +34,7 @@ THE SOFTWARE.
 /**
  * Test Description
  * ------------------------
- *    - Test texture fetching with `tex2D` and read mode set to `hipReadModeElementType`. The
+ *    - Test texture fetching with `tex2Dgather` and read mode set to `hipReadModeElementType`. The
  * test is performed with:
  *      - normalized coordinates
  *      - non-normalized coordinates
@@ -43,12 +43,12 @@ THE SOFTWARE.
  *      - All combinations of different addressing modes.
  * Test source
  * ------------------------
- *    - unit/texture/tex2D.cc
+ *    - unit/texture/tex2Dgather.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 5.2
  */
-TEMPLATE_TEST_CASE("Unit_tex2D_Positive_ReadModeElementType", "", char, unsigned char, short,
+TEMPLATE_TEST_CASE("Unit_tex2Dgather_Positive_ReadModeElementType", "", char, unsigned char, short,
                    unsigned short, int, unsigned int, float) {
   CHECK_IMAGE_SUPPORT;
 
@@ -70,8 +70,10 @@ TEMPLATE_TEST_CASE("Unit_tex2D_Positive_ReadModeElementType", "", char, unsigned
   dim_block.x = num_threads_x;
   dim_block.y = num_threads_y;
 
-  tex2DKernel<vec4<TestType>><<<dim_grid, dim_block>>>(
-      fixture.out_alloc_d.ptr(), params.NumItersX(), params.NumItersY(), fixture.tex.object(),
+  const int comp = GENERATE(0, 1, 2, 3);
+
+  tex2DgatherKernel<vec4<TestType>><<<dim_grid, dim_block>>>(
+      fixture.out_alloc_d.ptr(), comp, params.NumItersX(), params.NumItersY(), fixture.tex.object(),
       params.Width(), params.Height(), params.num_subdivisions, params.tex_desc.normalizedCoords);
   HIP_CHECK(hipGetLastError());
 
@@ -93,78 +95,7 @@ TEMPLATE_TEST_CASE("Unit_tex2D_Positive_ReadModeElementType", "", char, unsigned
     INFO("x: " << std::fixed << std::setprecision(16) << x);
     INFO("y: " << std::fixed << std::setprecision(16) << y);
 
-    const auto ref_val = fixture.tex_h.Tex2D(x, y, params.tex_desc);
-    REQUIRE(ref_val.x == fixture.out_alloc_h[i].x);
-    REQUIRE(ref_val.y == fixture.out_alloc_h[i].y);
-    REQUIRE(ref_val.z == fixture.out_alloc_h[i].z);
-    REQUIRE(ref_val.w == fixture.out_alloc_h[i].w);
-  }
-}
-
-/**
- * Test Description
- * ------------------------
- *    - Test texture fetching with `tex2D` and read mode set to `hipReadModeNormalizedFloat`. The
- * test is performed with:
- *      - normalized coordinates
- *      - non-normalized coordinates
- *      - Nearest-point sampling
- *      - Linear filtering
- *      - All combinations of different addressing modes.
- * Test source
- * ------------------------
- *    - unit/texture/tex2D.cc
- * Test requirements
- * ------------------------
- *    - HIP_VERSION >= 5.2
- */
-TEMPLATE_TEST_CASE("Unit_tex2D_Positive_ReadModeNormalizedFloat", "", char, unsigned char, short,
-                   unsigned short) {
-  CHECK_IMAGE_SUPPORT;
-
-  TextureTestParams<TestType> params = {};
-  params.extent = make_hipExtent(16, 4, 0);
-  params.num_subdivisions = 4;
-  params.GenerateTextureDesc(hipReadModeNormalizedFloat);
-
-  TextureTestFixture<TestType, true> fixture{params};
-
-  const auto [num_threads_x, num_blocks_x] = GetLaunchConfig(32, params.NumItersX());
-  const auto [num_threads_y, num_blocks_y] = GetLaunchConfig(32, params.NumItersY());
-
-  dim3 dim_grid;
-  dim_grid.x = num_blocks_x;
-  dim_grid.y = num_blocks_y;
-
-  dim3 dim_block;
-  dim_block.x = num_threads_x;
-  dim_block.y = num_threads_y;
-
-  tex2DKernel<vec4<float>><<<dim_grid, dim_block>>>(
-      fixture.out_alloc_d.ptr(), params.NumItersX(), params.NumItersY(), fixture.tex.object(),
-      params.Width(), params.Height(), params.num_subdivisions, params.tex_desc.normalizedCoords);
-  HIP_CHECK(hipGetLastError());
-
-  fixture.LoadOutput();
-
-  for (auto i = 0u; i < params.NumItersX() * params.NumItersY(); ++i) {
-    float x = i % params.NumItersX();
-    float y = i / params.NumItersY();
-
-    x = GetCoordinate(x, params.NumItersX(), params.Width(), params.num_subdivisions,
-                      params.tex_desc.normalizedCoords);
-    y = GetCoordinate(y, params.NumItersY(), params.Height(), params.num_subdivisions,
-                      params.tex_desc.normalizedCoords);
-
-    INFO("Filtering mode: " << FilteringModeToString(params.tex_desc.filterMode));
-    INFO("Normalized coordinates: " << std::boolalpha << params.tex_desc.normalizedCoords);
-    INFO("Address mode X: " << AddressModeToString(params.tex_desc.addressMode[0]));
-    INFO("Address mode Y: " << AddressModeToString(params.tex_desc.addressMode[1]));
-    INFO("x: " << std::fixed << std::setprecision(16) << x);
-    INFO("y: " << std::fixed << std::setprecision(16) << y);
-
-    auto ref_val =
-        Vec4Map<TestType>(fixture.tex_h.Tex2D(x, y, params.tex_desc), NormalizeInteger<TestType>);
+    const auto ref_val = fixture.tex_h.Tex2DGather(x, y, comp, params.tex_desc);
     REQUIRE(ref_val.x == fixture.out_alloc_h[i].x);
     REQUIRE(ref_val.y == fixture.out_alloc_h[i].y);
     REQUIRE(ref_val.z == fixture.out_alloc_h[i].z);

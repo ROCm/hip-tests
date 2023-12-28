@@ -26,7 +26,7 @@ THE SOFTWARE.
 #include "test_fixture.hh"
 
 /**
- * @addtogroup tex2DLayered tex2DLayered
+ * @addtogroup tex2DLayeredGrad tex2DLayeredGrad
  * @{
  * @ingroup TextureTest
  */
@@ -34,8 +34,8 @@ THE SOFTWARE.
 /**
  * Test Description
  * ------------------------
- *    - Test texture fetching with `tex2DLayered` and read mode set to `hipReadModeElementType`. The
- * test is performed with:
+ *    - Test texture fetching with `tex2DLayeredGrad` and read mode set to `hipReadModeElementType`.
+ * The test is performed with:
  *      - normalized coordinates
  *      - non-normalized coordinates
  *      - Nearest-point sampling
@@ -43,13 +43,13 @@ THE SOFTWARE.
  *      - All combinations of different addressing modes.
  * Test source
  * ------------------------
- *    - unit/texture/tex2DLayered.cc
+ *    - unit/texture/tex2DLayeredGrad.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.7
  */
-TEMPLATE_TEST_CASE("Unit_tex2DLayered_Positive_ReadModeElementType", "", char, unsigned char, short,
-                   unsigned short, int, unsigned int, float) {
+TEMPLATE_TEST_CASE("Unit_tex2DLayeredGrad_Positive_ReadModeElementType", "", char, unsigned char,
+                   short, unsigned short, int, unsigned int, float) {
   CHECK_IMAGE_SUPPORT;
 
   TextureTestParams<TestType> params = {};
@@ -58,7 +58,7 @@ TEMPLATE_TEST_CASE("Unit_tex2DLayered_Positive_ReadModeElementType", "", char, u
   params.num_subdivisions = 4;
   params.GenerateTextureDesc();
 
-  TextureTestFixture<TestType> fixture{params};
+  TextureTestFixture<TestType, false, true> fixture{params};
 
   const auto [num_threads_x, num_blocks_x] = GetLaunchConfig(32, params.NumItersX());
   const auto [num_threads_y, num_blocks_y] = GetLaunchConfig(32, params.NumItersY());
@@ -72,10 +72,10 @@ TEMPLATE_TEST_CASE("Unit_tex2DLayered_Positive_ReadModeElementType", "", char, u
   dim_block.y = num_threads_y;
 
   for (auto layer = 0u; layer < params.layers; ++layer) {
-    tex2DLayeredKernel<vec4<TestType>>
-        <<<dim_grid, dim_block>>>(fixture.out_alloc_d.ptr(), params.NumItersX(), params.NumItersY(),
-                                  fixture.tex.object(), params.Width(), params.Height(),
-                                  params.num_subdivisions, params.tex_desc.normalizedCoords, layer);
+    tex2DLayeredGradKernel<vec4<TestType>><<<dim_grid, dim_block>>>(
+        fixture.out_alloc_d.ptr(), params.NumItersX(), params.NumItersY(), fixture.tex.object(),
+        params.Width(), params.Height(), params.num_subdivisions, params.tex_desc.normalizedCoords,
+        layer, float2{0.5f, 0.5f}, float2{0.5f, 0.5f});
     HIP_CHECK(hipGetLastError());
 
     fixture.LoadOutput();
@@ -109,8 +109,8 @@ TEMPLATE_TEST_CASE("Unit_tex2DLayered_Positive_ReadModeElementType", "", char, u
 /**
  * Test Description
  * ------------------------
- *    - Test texture fetching with `tex2DLayered` and read mode set to `hipReadModeNormalizedFloat`.
- * The test is performed with:
+ *    - Test texture fetching with `tex2DLayeredGrad` and read mode set to
+ * `hipReadModeNormalizedFloat`. The test is performed with:
  *      - normalized coordinates
  *      - non-normalized coordinates
  *      - Nearest-point sampling
@@ -118,13 +118,13 @@ TEMPLATE_TEST_CASE("Unit_tex2DLayered_Positive_ReadModeElementType", "", char, u
  *      - All combinations of different addressing modes.
  * Test source
  * ------------------------
- *    - unit/texture/tex2DLayered.cc
+ *    - unit/texture/tex2DLayeredGrad.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.7
  */
-TEMPLATE_TEST_CASE("Unit_tex2DLayered_Positive_ReadModeNormalizedFloat", "", char, unsigned char,
-                   short, unsigned short) {
+TEMPLATE_TEST_CASE("Unit_tex2DLayeredGrad_Positive_ReadModeNormalizedFloat", "", char,
+                   unsigned char, short, unsigned short) {
   CHECK_IMAGE_SUPPORT;
 
   TextureTestParams<TestType> params = {};
@@ -133,7 +133,7 @@ TEMPLATE_TEST_CASE("Unit_tex2DLayered_Positive_ReadModeNormalizedFloat", "", cha
   params.num_subdivisions = 4;
   params.GenerateTextureDesc(hipReadModeNormalizedFloat);
 
-  TextureTestFixture<TestType, true> fixture{params};
+  TextureTestFixture<TestType, true, true> fixture{params};
 
   const auto [num_threads_x, num_blocks_x] = GetLaunchConfig(32, params.NumItersX());
   const auto [num_threads_y, num_blocks_y] = GetLaunchConfig(32, params.NumItersY());
@@ -147,10 +147,10 @@ TEMPLATE_TEST_CASE("Unit_tex2DLayered_Positive_ReadModeNormalizedFloat", "", cha
   dim_block.y = num_threads_y;
 
   for (auto layer = 0u; layer < params.layers; ++layer) {
-    tex2DLayeredKernel<vec4<float>>
-        <<<dim_grid, dim_block>>>(fixture.out_alloc_d.ptr(), params.NumItersX(), params.NumItersY(),
-                                  fixture.tex.object(), params.Width(), params.Height(),
-                                  params.num_subdivisions, params.tex_desc.normalizedCoords, layer);
+    tex2DLayeredGradKernel<vec4<float>><<<dim_grid, dim_block>>>(
+        fixture.out_alloc_d.ptr(), params.NumItersX(), params.NumItersY(), fixture.tex.object(),
+        params.Width(), params.Height(), params.num_subdivisions, params.tex_desc.normalizedCoords,
+        layer, float2{0.5f, 0.5f}, float2{0.5f, 0.5f});
     HIP_CHECK(hipGetLastError());
 
     fixture.LoadOutput();

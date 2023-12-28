@@ -35,6 +35,42 @@ template <typename TexelType> class TextureReference {
     return Tex1DLayered(x, 0, tex_desc);
   }
 
+  TexelType Tex2DGather(float x, float y, int comp, const hipTextureDesc& tex_desc) const {
+    x = tex_desc.normalizedCoords ? x * extent_.width : x;
+    y = tex_desc.normalizedCoords ? y * extent_.height : y;
+
+    const auto [i, alpha] = GetLinearFilteringParams(x);
+    const auto [j, beta] = GetLinearFilteringParams(y);
+
+    const auto T_i0j0 = Sample(i, j, 0, tex_desc.addressMode);
+    const auto T_i1j0 = Sample(i + 1.0f, j, 0, tex_desc.addressMode);
+    const auto T_i0j1 = Sample(i, j + 1.0f, 0, tex_desc.addressMode);
+    const auto T_i1j1 = Sample(i + 1.0f, j + 1.0f, 0, tex_desc.addressMode);
+
+    const auto IndexVec4 = [](auto vec, int comp) {
+      switch (comp) {
+        case 0:
+          return vec.x;
+        case 1:
+          return vec.y;
+        case 2:
+          return vec.z;
+        case 3:
+          return vec.w;
+        default:
+          throw std::invalid_argument("Invalid gather comp");
+      }
+    };
+
+    TexelType texel;
+    texel.x = IndexVec4(T_i0j1, comp);
+    texel.y = IndexVec4(T_i1j1, comp);
+    texel.z = IndexVec4(T_i1j0, comp);
+    texel.w = IndexVec4(T_i0j0, comp);
+
+    return texel;
+  }
+
   TexelType Tex2D(float x, float y, const hipTextureDesc& tex_desc) const {
     return Tex2DLayered(x, y, 0, tex_desc);
   }

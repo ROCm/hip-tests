@@ -49,6 +49,7 @@ set(TEST_SRC
     atomicCAS.cc
     atomicCAS_system.cc
     __hip_atomic_fetch_add.cc
+    __hip_atomic_compare_exchange_strong.cc
     atomicExch.cc
     atomicExch_system.cc
     __hip_atomic_fetch_and.cc

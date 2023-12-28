@@ -284,6 +284,9 @@ TEST_CASE("Unit_atomicDec_Negative_Parameters") {}
 
 /**
  * End doxygen group AtomicsTest.
+ * @defgroup MathTest Math Device Functions
+ * @{
+ * This section describes tests for device math functions of HIP runtime API.
  * @}
  */
 

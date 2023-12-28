@@ -63,6 +63,12 @@ set(TEST_SRC
     tex3D.cc
     tex3DLod.cc
     tex3DGrad.cc
+    texCubemap.cc
+    texCubemapLod.cc
+    texCubemapGrad.cc
+    texCubemapLayered.cc
+    texCubemapLayeredLod.cc
+    texCubemapLayeredGrad.cc
 )
 
 if(WIN32)

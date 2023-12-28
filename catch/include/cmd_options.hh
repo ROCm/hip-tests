@@ -26,14 +26,14 @@ THE SOFTWARE.
 #include <limits>
 
 struct CmdOptions {
-  int iterations = 1000;
+  int iterations = 10;
   int warmups = 100;
   int cg_iterations = 5;
   bool no_display = false;
   bool progress = false;
   uint64_t accuracy_iterations = std::numeric_limits<uint32_t>::max() + 1ull;
   int accuracy_max_memory = 80;
-  bool extended_run = false;
 };
 
 extern CmdOptions cmd_options;
+

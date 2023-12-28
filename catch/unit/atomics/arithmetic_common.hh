@@ -41,7 +41,8 @@ enum class AtomicOperation {
   kSafeAdd,
   kCASAdd,
   kCASAddSystem,
-  kBuiltinAdd
+  kBuiltinAdd,
+  kBuiltinCAS
 };
 
 // Constants that are passed as operands to the atomic operations
@@ -117,6 +118,8 @@ __device__ TestType PerformAtomicOperation(TestType* const mem) {
     return CASAtomicAddSystem(mem, val);
   } else if constexpr (operation == AtomicOperation::kBuiltinAdd) {
     return __hip_atomic_fetch_add(mem, val, __ATOMIC_RELAXED, memory_scope);
+  } else if constexpr (operation == AtomicOperation::kBuiltinCAS) {
+    return BuiltinCASAtomicAdd<TestType, memory_scope>(mem, val);
   }
 }
 
@@ -266,7 +269,8 @@ std::tuple<std::vector<TestType>, std::vector<TestType>> TestKernelHostRef(const
                   operation == AtomicOperation::kUnsafeAdd ||
                   operation == AtomicOperation::kSafeAdd || operation == AtomicOperation::kCASAdd ||
                   operation == AtomicOperation::kCASAddSystem ||
-                  operation == AtomicOperation::kBuiltinAdd) {
+                  operation == AtomicOperation::kBuiltinAdd ||
+                  operation == AtomicOperation::kBuiltinCAS) {
       res = res + val;
     } else if constexpr (operation == AtomicOperation::kSub ||
                          operation == AtomicOperation::kSubSystem) {
@@ -337,7 +341,8 @@ void HostAtomicOperation(const unsigned int iterations, TestType* mem, TestType*
   for (auto i = 0u; i < iterations; ++i) {
     if constexpr (operation == AtomicOperation::kAddSystem ||
                   operation == AtomicOperation::kCASAddSystem ||
-                  operation == AtomicOperation::kBuiltinAdd) {
+                  operation == AtomicOperation::kBuiltinAdd ||
+                  operation == AtomicOperation::kBuiltinCAS) {
       old_vals[i] = __atomic_fetch_add(PitchedOffset(mem, pitch, i % width), val, __ATOMIC_RELAXED);
     } else if constexpr (operation == AtomicOperation::kSubSystem) {
       old_vals[i] = __atomic_fetch_sub(PitchedOffset(mem, pitch, i % width), val, __ATOMIC_RELAXED);
@@ -438,10 +443,12 @@ void SingleDeviceSingleKernelTest(const unsigned int width, const unsigned int p
   TestParams params;
   params.num_devices = 1;
   params.kernel_count = 1;
-  if constexpr (operation == AtomicOperation::kBuiltinAdd &&
+  if constexpr ((operation == AtomicOperation::kBuiltinAdd ||
+                 operation == AtomicOperation::kBuiltinCAS) &&
                 memory_scope == __HIP_MEMORY_SCOPE_SINGLETHREAD) {
     params.threads = 1;
-  } else if constexpr (operation == AtomicOperation::kBuiltinAdd &&
+  } else if constexpr ((operation == AtomicOperation::kBuiltinAdd ||
+                        operation == AtomicOperation::kBuiltinCAS) &&
                        memory_scope == __HIP_MEMORY_SCOPE_WAVEFRONT) {
     int warp_size = 0;
     HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
@@ -453,7 +460,8 @@ void SingleDeviceSingleKernelTest(const unsigned int width, const unsigned int p
   params.pitch = pitch;
 
   SECTION("Global memory") {
-    if constexpr (operation == AtomicOperation::kBuiltinAdd &&
+    if constexpr ((operation == AtomicOperation::kBuiltinAdd ||
+                   operation == AtomicOperation::kBuiltinCAS) &&
                   (memory_scope == __HIP_MEMORY_SCOPE_SINGLETHREAD ||
                    memory_scope == __HIP_MEMORY_SCOPE_WAVEFRONT ||
                    memory_scope == __HIP_MEMORY_SCOPE_WORKGROUP)) {

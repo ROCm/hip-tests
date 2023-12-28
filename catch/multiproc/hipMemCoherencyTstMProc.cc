@@ -32,6 +32,7 @@
    exhibits fine grain behavior when HIP_HOST_COHERENT is set to 1
    */
 
+#ifdef __linux__
 #include <hip_test_common.hh>
 #include <hip_test_features.hh>
 #include <unistd.h>
@@ -581,4 +582,5 @@ TEST_CASE("Unit_hipHostMalloc_WthEnv1Flg3") {
     }
   }
 }
+#endif
 #endif

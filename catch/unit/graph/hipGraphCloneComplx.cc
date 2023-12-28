@@ -1995,8 +1995,6 @@ TEST_CASE("Unit_hipGraphClone_hipUserObject_hipGraphUserObject_Negative") {
  Oroginal graph and releasing it for other graph) */
 
 TEST_CASE("Unit_hipGraphChild_hipUserObject_hipGraphUserObject") {
-  HipTest::HIP_SKIP_TEST("Test times out in Nvidia but passes in AMD. Need to understand more.");
-  return;
   constexpr size_t Nbytes = N * sizeof(int);
   constexpr auto blocksPerCU = 6;  // to hide latency
   constexpr auto threadsPerBlock = 256;

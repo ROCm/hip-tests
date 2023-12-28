@@ -18,9 +18,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-add_subdirectory(memset)
-add_subdirectory(memcpy)
-add_subdirectory(kernelLaunch)
-add_subdirectory(stream)
-add_subdirectory(event)
-add_subdirectory(example)
+set(TEST_SRC
+    kernel_launch_common.cc
+    triple_chevron.cc
+    hipLaunchKernel.cc
+    hipLaunchCooperativeKernel.cc
+)
+
+if(HIP_PLATFORM MATCHES "amd")
+    set(TEST_SRC ${TEST_SRC}
+        hipExtLaunchKernel.cc
+    )
+endif()
+
+hip_add_exe_to_target(NAME KernelLaunchPerformance
+                      TEST_SRC ${TEST_SRC}
+                      TEST_TARGET_NAME build_tests
+                      COMPILE_OPTIONS -std=c++17)

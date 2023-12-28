@@ -26,12 +26,18 @@ set(TEST_SRC
     hipModuleLoadDataEx.cc
     hipModuleUnload.cc
     hipModuleGetFunction.cc
+    hipModuleLaunchKernel.cc
 )
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code
                    COMMAND ${CMAKE_CXX_COMPILER} --genco --std=c++17 ${CMAKE_CURRENT_SOURCE_DIR}/get_function_module.cc -o get_function_module.code
-                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/get_function_module.cc)   
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/get_function_module.cc)
 add_custom_target(get_function_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code)
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/launch_kernel_module.code
+                   COMMAND ${CMAKE_CXX_COMPILER} --genco --std=c++17 ${CMAKE_CURRENT_SOURCE_DIR}/launch_kernel_module.cc -o launch_kernel_module.code
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/launch_kernel_module.cc)
+add_custom_target(launch_kernel_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/launch_kernel_module.code)
 
 add_custom_target(empty_module.code
                   COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
@@ -136,6 +142,7 @@ hip_add_exe_to_target(NAME ModuleTest
 
 add_dependencies(build_tests empty_module.code)
 add_dependencies(ModuleTest get_function_module)
+add_dependencies(ModuleTest launch_kernel_module)
 
 if(HIP_PLATFORM MATCHES "amd")
 add_dependencies(build_tests copyKernel.code copyKernel.s)

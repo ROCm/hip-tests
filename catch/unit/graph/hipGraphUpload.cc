@@ -261,9 +261,10 @@ TEST_CASE("Unit_hipGraphUpload_Functional_With_Priority_Stream") {
 1) Pass graphExec node as nullptr.
 2) Pass graphExec node as uninitialize object
 3) Pass stream as uninitialize object
+4) Graphexec is destroyed before upload
 */
 
-TEST_CASE("Unit_hipGraphUpload_Negative_Argument_Check") {
+TEST_CASE("Unit_hipGraphUpload_Negative_Parameters") {
   hipGraphExec_t graphExec{};
   hipError_t ret;
 
@@ -271,21 +272,30 @@ TEST_CASE("Unit_hipGraphUpload_Negative_Argument_Check") {
   HIP_CHECK(hipStreamCreate(&stream));
 
   SECTION("Pass graphExec node as nullptr") {
-    ret = hipGraphUpload(nullptr, stream);
-    REQUIRE(hipErrorInvalidValue == ret);
+    HIP_CHECK_ERROR(hipGraphUpload(nullptr, stream), hipErrorInvalidValue);
   }
   SECTION("Pass graphExec node as uninitialize object") {
-    ret = hipGraphUpload(graphExec, stream);
-    REQUIRE(hipErrorInvalidValue == ret);
+    HIP_CHECK_ERROR(hipGraphUpload(graphExec, stream), hipErrorInvalidValue);
   }
   SECTION("Pass stream as uninitialize object") {
     hipStream_t stream1{};
     hipGraph_t graph;
     HIP_CHECK(hipGraphCreate(&graph, 0));
-    HIP_CHECK(hipGraphInstantiate(&graphExec, graph, NULL, NULL, 0));
+    HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
 
     ret = hipGraphUpload(graphExec, stream1);
     REQUIRE(hipSuccess == ret);
+  }
+  SECTION("graphExec is destroyed"){
+    hipGraphExec_t graph_exec;
+    hipGraph_t graph;
+
+    HIP_CHECK(hipGraphCreate(&graph, 0));
+    HIP_CHECK(hipGraphInstantiate(&graph_exec, graph, nullptr, nullptr, 0));
+    
+    HIP_CHECK(hipGraphUpload(graph_exec, hipStreamPerThread));
+    HIP_CHECK(hipGraphExecDestroy(graph_exec));
+    HIP_CHECK_ERROR(hipGraphUpload(graph_exec, hipStreamPerThread), hipErrorInvalidValue);
   }
   HIP_CHECK(hipStreamDestroy(stream));
 }

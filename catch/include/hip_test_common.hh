@@ -129,6 +129,19 @@ THE SOFTWARE.
     }                                                                                              \
   }
 
+// Check that an expression, errorExpr, evaluates to the expected error_t, expectedError.
+#define HIPRTC_CHECK_ERROR(errorExpr, expectedError)                                               \
+  {                                                                                                \
+    auto localError = errorExpr;                                                                   \
+    INFO("Matching Errors: "                                                                       \
+         << "\n    Expected Error: " << hiprtcGetErrorString(expectedError)                        \
+         << "\n    Expected Code: " << expectedError << '\n'                                       \
+         << "                  Actual Error:   " << hiprtcGetErrorString(localError)               \
+         << "\n    Actual Code:   " << localError << "\nStr: " << #errorExpr                       \
+         << "\n    In File: " << __FILE__ << "\n    At line: " << __LINE__);                       \
+    REQUIRE(localError == expectedError);                                                          \
+  }
+
 #define HIPASSERT(condition)                                                                       \
   if (!(condition)) {                                                                              \
     printf("assertion %s at %s:%d \n", #condition, __FILE__, __LINE__);                            \

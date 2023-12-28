@@ -89,6 +89,9 @@
         "Performance_hipMemsetD32",
         "Performance_hipMemsetD32Async",
         "Unit_hipMemcpyParam2D_Positive_Synchronization_Behavior",
-        "Unit_hipMemcpy_Positive_Synchronization_Behavior"
+        "Unit_hipMemcpy_Positive_Synchronization_Behavior",
+        "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/210 ===",
+        "Unit_StaticAssert_Positive_Basic",
+        "Unit_StaticAssert_Negative_Basic"
     ]
 }

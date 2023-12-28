@@ -466,6 +466,11 @@
         "Unit_Device___hbgtu2_Accuracy_Positive",
         "Unit_Device___hbleu2_Accuracy_Positive",
         "Unit_Device___hbltu2_Accuracy_Positive",
+        "=== Below 4 tests are disable due to defect EXSWHTEC-355 ===",
+        "Unit_Device___hadd_Sanity_Positive",
+        "Unit_Device___uhadd_Sanity_Positive",
+        "Unit_Device___rhadd_Sanity_Positive",
+        "Unit_Device___urhadd_Sanity_Positive",
     #endif
         "End of json"
     ]

@@ -110,13 +110,6 @@ THE SOFTWARE.
  */
 
 /**
- * @defgroup MathTest Math Device Functions
- * @{
- * This section describes tests for device math functions of HIP runtime API.
- * @}
- */
-
-/**
  * @defgroup MemoryTest memory Management APIs
  * @{
  * This section describes the memory management types & functions of HIP runtime API.

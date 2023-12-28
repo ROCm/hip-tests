@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -18,8 +18,12 @@ THE SOFTWARE.
 */
 
 #include <hip_test_common.hh>
+#include <hip_array_common.hh>
 #include <vector>
 #include <iostream>
+
+#pragma clang diagnostic ignored "-Wunused-variable"
+#pragma clang diagnostic ignored "-Wunused-parameter"
 
 template <typename T>
 __global__ void tex1dKernelFetch(T *val, hipTextureObject_t obj, int N) {
@@ -29,47 +33,6 @@ __global__ void tex1dKernelFetch(T *val, hipTextureObject_t obj, int N) {
     val[k] = tex1Dfetch<T>(obj, k);
   }
 #endif
-}
-
-template <typename T>
-static inline __host__ __device__ constexpr int rank() {
-  return sizeof(T) / sizeof(decltype(T::x));
-}
-
-template<typename T>
-static inline T getRandom() {
-  double r = 0;
-  if (std::is_signed < T > ::value) {
-    r = (std::rand() - RAND_MAX / 2.0) / (RAND_MAX / 2.0 + 1.);
-  } else {
-    r = std::rand() / (RAND_MAX + 1.);
-  }
-  return static_cast<T>(std::numeric_limits < T > ::max() * r);
-}
-
-template<
-  typename T,
-  typename std::enable_if<rank<T>() == 1>::type* = nullptr>
-static inline void initVal(T &val) {
-  val.x = getRandom<decltype(T::x)>();
-}
-
-template<
-  typename T,
-  typename std::enable_if<rank<T>() == 2>::type* = nullptr>
-static inline void initVal(T &val) {
-  val.x = getRandom<decltype(T::x)>();
-  val.y = getRandom<decltype(T::x)>();
-}
-
-template<
-  typename T,
-  typename std::enable_if<rank<T>() == 4>::type* = nullptr>
-static inline void initVal(T &val) {
-  val.x = getRandom<decltype(T::x)>();
-  val.y = getRandom<decltype(T::x)>();
-  val.z = getRandom<decltype(T::x)>();
-  val.w = getRandom<decltype(T::x)>();
 }
 
 template<
@@ -112,31 +75,6 @@ static inline void printVector(T &val) {
   std::cout << ")";
 }
 
-template<
-  typename T,
-  typename std::enable_if<rank<T>() == 1>::type* = nullptr>
-static inline bool isEqual(const T &val0, const T &val1) {
-  return val0.x == val1.x;
-}
-
-template<
-  typename T,
-  typename std::enable_if<rank<T>() == 2>::type* = nullptr>
-static inline bool isEqual(const T &val0, const T &val1) {
-  return val0.x == val1.x &&
-         val0.y == val1.y;
-}
-
-template<
-  typename T,
-  typename std::enable_if<rank<T>() == 4>::type* = nullptr>
-static inline bool isEqual(const T &val0, const T &val1) {
-  return val0.x == val1.x &&
-         val0.y == val1.y &&
-         val0.z == val1.z &&
-         val0.w == val1.w;
-}
-
 template<typename T>
 bool runTest() {
   const int N = 1024;
@@ -144,7 +82,7 @@ bool runTest() {
   // Allocating the required buffer on gpu device
   T *texBuf, *texBufOut;
   T val[N], output[N];
-
+  auto err = hipGetLastError(); // Clear err due to negative tests
   memset(output, 0, sizeof(output));
   std::srand(std::time(nullptr)); // use current time as seed for random generator
 

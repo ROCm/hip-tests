@@ -32,9 +32,17 @@ THE SOFTWARE.
  */
 
 /**
- * @defgroup GraphTest Graph Management
+ * @defgroup ContextTest Context Management
  * @{
- * This section describes tests for the graph management types & functions of HIP runtime API.
+ * This section describes tests for the context management functions of HIP runtime API.
+ * @warning All Context Management APIs are **deprecated** and shall not be implemented.
+ * @}
+ */
+
+/**
+ * @defgroup DeviceLanguageTest Device Language
+ * @{
+ * This section describes tests for the Device Language API.
  * @}
  */
 
@@ -46,9 +54,16 @@ THE SOFTWARE.
  */
 
 /**
- * @defgroup EventTest Event Management
+ * @defgroup DriverTest Initialization and Version
  * @{
- * This section describes tests for the event management functions of HIP runtime API.
+ * This section describes tests for the initialization and version functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup DynamicLoadingTest Kernel Loading Management
+ * @{
+ * This section describes the different kernel launch approaches.
  * @}
  */
 
@@ -60,25 +75,9 @@ THE SOFTWARE.
  */
 
 /**
- * @defgroup PeerToPeerTest PeerToPeer Device Memory Access
+ * @defgroup EventTest Event Management
  * @{
- * This section describes tests for the PeerToPeer device memory access functions of HIP runtime
- * API.
- * @warning PeerToPeer support is experimental.
- * @}
- */
-
-/**
- * @defgroup DriverTest Initialization and Version
- * @{
- * This section describes tests for the initialization and version functions of HIP runtime API.
- * @}
- */
-
-/**
- * @defgroup DeviceLanguageTest Device Language
- * @{
- * This section describes tests for the Device Language API.
+ * This section describes tests for the event management functions of HIP runtime API.
  * @}
  */
 
@@ -90,80 +89,23 @@ THE SOFTWARE.
  */
 
 /**
- * @defgroup ShflTest warp shuffle function Management
+ * @defgroup GraphTest Graph Management
  * @{
- * This section describes the warp shuffle types & functions of HIP runtime API.
+ * This section describes tests for the graph management types & functions of HIP runtime API.
  * @}
  */
 
 /**
- * @defgroup ContextTest Context Management
+* @defgroup KernelTest Kernel Functions Management
+* @{
+* This section describes the various kernel functions invocation.
+* @}
+*/
+
+/**
+ * @defgroup AtomicsTest Device Atomics
  * @{
- * This section describes tests for the context management functions of HIP runtime API.
- * @warning All Context Management APIs are **deprecated** and shall not be implemented.
- * @}
- */
-
-/**
- * @defgroup StreamTest Stream Management
- * @{
- * This section describes the stream management types & functions of HIP runtime API.
- * @}
- */
-
-/**
- * @defgroup DeviceLanguageTest Device Language
- * @{
- * This section describes tests for the Device Language API.
- */
-
-/**
- * @addtogroup static_assert static_assert
- * @{
- * @ingroup DeviceLanguageTest
- */
-
-/**
- * Test Description
- * ------------------------
- *  - Compiles kernels with static_assert calls:
- *    -# Expected that static_assert passes and compilation is successful.
- *    -# Expected that static_assert fails and compilation has errors.
- * Test source
- * ------------------------
- *  - unit/assertion/CMakeLists.txt
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_StaticAssert_Positive_Basic") {}
-
-/**
- * Test Description
- * ------------------------
- *  - Passes invalidly formed expressions to static_assert calls.
- *  - Uses expressions that are not constexpr and values that are not known during compilation.
- * Test source
- * ------------------------
- *  - unit/assertion/CMakeLists.txt
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_StaticAssert_Negative_Basic") {}
-
-/**
- * End doxygen group static_assert.
- */
-
-/**
- * End doxygen group DeviceLanguageTest.
- */
-
-/**
- * @defgroup DynamicLoadingTest Kernel Loading Management
- * @{
- * This section describes the different kernel launch approaches.
+ * This section describes tests for the Device Atomic APIs.
  * @}
  */
 
@@ -175,8 +117,57 @@ TEST_CASE("Unit_StaticAssert_Negative_Basic") {}
  */
 
 /**
- * @defgroup KernelTest Kernel Functions Management
+ * @defgroup PeerToPeerTest PeerToPeer Device Memory Access
  * @{
- * This section describes the various kernel functions invocation.
+ * This section describes tests for the PeerToPeer device memory access functions of HIP runtime API.
+ * @warning PeerToPeer support is experimental.
+ * @}
+ */
+
+/**
+ * @defgroup PerformanceTest Performance tests
+ * @{
+ * This section describes performance tests for the target API groups and use-cases.
+ * @}
+ */
+
+/**
+ * @defgroup ShflTest warp shuffle function Management
+ * @{
+ * This section describes the warp shuffle types & functions of HIP runtime API.
+ */
+
+/**
+ * @defgroup p2pTest P2P Management
+ * @{
+ * This section describes the P2P management types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup StreamTest Stream Management
+ * @{
+ * This section describes the stream management types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup TextureTest Texture Management
+ * @{
+ * This section describes tests for the texture management functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup VectorTypeTest Vector types
+ * @{
+ * This section describes tests for the Vector type functions and operators.
+ * @}
+ */
+
+/**
+ * @defgroup PrintfTest Printf API Management
+ * @{
+ * This section describes the various Printf use case Scenarios.
  * @}
  */

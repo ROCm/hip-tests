@@ -55,6 +55,8 @@ static char memSetVal = 'a';
  *    - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_hipGraphAddMemsetNode_Positive_Basic", "", uint8_t, uint16_t, uint32_t) {
+  CHECK_IMAGE_SUPPORT
+
   const auto f = [](hipMemsetParams* params) {
     hipGraph_t graph = nullptr;
     HIP_CHECK(hipGraphCreate(&graph, 0));
@@ -128,8 +130,11 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_Negative_Parameters") {
  * hipGraphAddMemcpyNode. Verify the results.
  */
 TEST_CASE("Unit_hipGraphAddMemsetNode_hipMallocPitch_2D") {
-  size_t width = SIZE * sizeof(char), numW{SIZE}, numH{SIZE}, pitch_A;
-  char* A_d;
+  CHECK_IMAGE_SUPPORT
+
+  size_t width = SIZE * sizeof(char), numW{SIZE},
+         numH{SIZE}, pitch_A;
+  char *A_d;
 
   hipGraph_t graph;
   std::vector<hipGraphNode_t> nodeDependencies;
@@ -193,6 +198,8 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_hipMallocPitch_2D") {
  * hipGraphAddMemcpyNode. Verify the results.
  */
 TEST_CASE("Unit_hipGraphAddMemsetNode_hipMallocPitch_1D") {
+  CHECK_IMAGE_SUPPORT
+
   size_t width = SIZE * sizeof(char), numW{SIZE}, pitch_A;
   char* A_d;
 
@@ -252,6 +259,8 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_hipMallocPitch_1D") {
  * hipGraphAddMemcpyNode. Verify the results.
  */
 TEST_CASE("Unit_hipGraphAddMemsetNode_hipMalloc3D_2D") {
+  CHECK_IMAGE_SUPPORT
+
   size_t width = SIZE * sizeof(char);
   size_t numW = SIZE, numH = SIZE;
 
@@ -327,6 +336,8 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_hipMalloc3D_2D") {
  * memory to host using hipGraphAddMemcpyNode. Verify the results.
  */
 TEST_CASE("Unit_hipGraphAddMemsetNode_hipMalloc3D_1D") {
+  CHECK_IMAGE_SUPPORT
+
   size_t width = SIZE * sizeof(char);
   size_t numW = SIZE;
 

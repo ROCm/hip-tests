@@ -22,16 +22,7 @@ THE SOFTWARE.
 
 #include <stdio.h>
 #include <hip/hip_runtime.h>
-
-#define CHECK(cmd) \
-{\
-    hipError_t error  = cmd;\
-    if (error != hipSuccess) { \
-        fprintf(stderr, "error: '%s'(%d) at %s:%d\n", hipGetErrorString(error), error,__FILE__, __LINE__); \
-        exit(EXIT_FAILURE);\
-	  }\
-}
-
+#include "hip_helper.h"
 
 /*
  * Square each element in the array A and write to array C.
@@ -57,14 +48,14 @@ int main(int argc, char *argv[])
     size_t Nbytes = N * sizeof(float);
 
     hipDeviceProp_t props;
-    CHECK(hipGetDeviceProperties(&props, 0/*deviceID*/));
+    checkHipErrors(hipGetDeviceProperties(&props, 0/*deviceID*/));
     printf ("info: running on device %s\n", props.name);
 
     printf ("info: allocate host mem (%6.2f MB)\n", 2*Nbytes/1024.0/1024.0);
     A_h = (float*)malloc(Nbytes);
-    CHECK(A_h == 0 ? hipErrorOutOfMemory : hipSuccess );
+    checkHipErrors(A_h == 0 ? hipErrorOutOfMemory : hipSuccess );
     C_h = (float*)malloc(Nbytes);
-    CHECK(C_h == 0 ? hipErrorOutOfMemory : hipSuccess );
+    checkHipErrors(C_h == 0 ? hipErrorOutOfMemory : hipSuccess );
     // Fill with Phi + i
     for (size_t i=0; i<N; i++)
     {
@@ -72,12 +63,12 @@ int main(int argc, char *argv[])
     }
 
     printf ("info: allocate device mem (%6.2f MB)\n", 2*Nbytes/1024.0/1024.0);
-    CHECK(hipMalloc(&A_d, Nbytes));
-    CHECK(hipMalloc(&C_d, Nbytes));
+    checkHipErrors(hipMalloc(&A_d, Nbytes));
+    checkHipErrors(hipMalloc(&C_d, Nbytes));
 
 
     printf ("info: copy Host2Device\n");
-    CHECK ( hipMemcpy(A_d, A_h, Nbytes, hipMemcpyHostToDevice));
+    checkHipErrors ( hipMemcpy(A_d, A_h, Nbytes, hipMemcpyHostToDevice));
 
     const unsigned blocks = 512;
     const unsigned threadsPerBlock = 256;
@@ -86,12 +77,12 @@ int main(int argc, char *argv[])
     hipLaunchKernelGGL(vector_square, dim3(blocks), dim3(threadsPerBlock), 0, 0, C_d, A_d, N);
 
     printf ("info: copy Device2Host\n");
-    CHECK ( hipMemcpy(C_h, C_d, Nbytes, hipMemcpyDeviceToHost));
+    checkHipErrors ( hipMemcpy(C_h, C_d, Nbytes, hipMemcpyDeviceToHost));
 
-    printf ("info: check result\n");
+    printf ("info: checkHipErrors result\n");
     for (size_t i=0; i<N; i++)  {
         if (C_h[i] != A_h[i] * A_h[i]) {
-            CHECK(hipErrorUnknown);
+            checkHipErrors(hipErrorUnknown);
         }
     }
     printf ("PASSED!\n");

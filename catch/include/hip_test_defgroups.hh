@@ -40,6 +40,13 @@ THE SOFTWARE.
  */
 
 /**
+ * @defgroup AtomicsTest Device Atomics
+ * @{
+ * This section describes tests for the Device Atomic APIs.
+ * @}
+ */
+
+/**
  * @defgroup DeviceLanguageTest Device Language
  * @{
  * This section describes tests for the Device Language API.

@@ -178,10 +178,3 @@ THE SOFTWARE.
  * This section describes the various Printf use case Scenarios.
  * @}
  */
-
-/**
- * @defgroup MathTest Math Device Functions
- * @{
- * This section describes tests for device math functions of HIP runtime API.
- * @}
- */

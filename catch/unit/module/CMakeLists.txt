@@ -29,6 +29,8 @@ set(TEST_SRC
     hipModuleLaunchKernel.cc
     hipModuleGetGlobal.cc
     hipModuleGetTexRef.cc
+    hipModuleLaunchCooperativeKernel.cc
+    hipModuleLaunchCooperativeKernelMultiDevice.cc
 )
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code

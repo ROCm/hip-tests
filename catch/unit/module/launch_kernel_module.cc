@@ -20,6 +20,7 @@ THE SOFTWARE.
 */
 
 #include <hip/hip_runtime.h>
+#include <hip/hip_cooperative_groups.h>
 
 extern "C" {
 __global__ void NOPKernel() {}
@@ -33,5 +34,10 @@ __global__ void Delay(uint32_t interval, const uint32_t ticks_per_ms) {
     while (clock() - start < ticks_per_ms) {
     }
   }
+}
+
+__global__ void CoopKernel() {
+  cooperative_groups::grid_group grid = cooperative_groups::this_grid();
+  grid.sync();
 }
 }

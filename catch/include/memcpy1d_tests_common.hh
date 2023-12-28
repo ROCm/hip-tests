@@ -24,10 +24,10 @@ THE SOFTWARE.
 
 #include <functional>
 
-#include <hip_test_common.hh>
 #include <hip/hip_runtime_api.h>
-#include <utils.hh>
+#include <hip_test_common.hh>
 #include <resource_guards.hh>
+#include <utils.hh>
 
 static inline unsigned int GenerateLinearAllocationFlagCombinations(
     const LinearAllocs allocation_type) {
@@ -141,7 +141,6 @@ void MemcpyDeviceToDeviceShell(F memcpy_func, const hipStream_t kernel_stream = 
     int can_access_peer = 0;
     HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, src_device, dst_device));
     if (!can_access_peer) {
-      INFO("Peer access cannot be enabled between devices " << src_device << " " << dst_device);
       return;
     }
     HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));

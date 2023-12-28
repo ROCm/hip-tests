@@ -107,6 +107,7 @@ set(TEST_SRC
   hipGraphKernelNodeSetParams.cc
   hipGraphExecKernelNodeSetParams.cc
   hipGraphLaunch.cc
+  hipGraphLaunch_old.cc
   hipGraphMemcpyNodeSetParams1D.cc
   hipGraphExecMemcpyNodeSetParamsToSymbol_old.cc
   hipGraphExecMemcpyNodeSetParamsToSymbol.cc

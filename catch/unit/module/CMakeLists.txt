@@ -124,7 +124,7 @@ hip_add_exe_to_target(NAME ModuleTest
   LINKER_LIBS ${RTCLIB}
   COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
 
-add_dependencies(MemoryTest get_global_test_module)
+add_dependencies(ModuleTest get_global_test_module)
 
 if(HIP_PLATFORM MATCHES "amd")
 add_dependencies(build_tests copyKernel.code copyKernel.s)

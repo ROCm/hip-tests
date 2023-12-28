@@ -31,6 +31,7 @@ set(TEST_SRC
     hipModuleGetTexRef.cc
     hipModuleLaunchCooperativeKernel.cc
     hipModuleLaunchCooperativeKernelMultiDevice.cc
+    hipFuncGetAttribute.cc
 )
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code
@@ -63,6 +64,9 @@ add_custom_target(get_tex_ref_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/get
 
 # Note to pass arch use format like -DOFFLOAD_ARCH_STR="--offload-arch=gfx900  --offload-arch=gfx906"
 # having space at the start/end of OFFLOAD_ARCH_STR can cause build failures
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code
+                   COMMAND ${CMAKE_CXX_COMPILER} --genco --std=c++17 ${CMAKE_CURRENT_SOURCE_DIR}/get_function_module.cc -o get_function_module.code
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/get_function_module.cc)
 
 if(HIP_PLATFORM MATCHES "amd")
 set(TEST_SRC

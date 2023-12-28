@@ -87,7 +87,7 @@ __global__ void tex1DGradKernel(TexelType* const out, size_t N, hipTextureObject
 template <typename TexelType>
 __global__ void tex1DLayeredGradKernel(TexelType* const out, size_t N, hipTextureObject_t tex_obj,
                                        size_t width, size_t num_subdivisions,
-                                       bool normalized_coords, float dx, float dy, int layer) {
+                                       bool normalized_coords, int layer, float dx, float dy) {
   const auto tid = cg::this_grid().thread_rank();
   if (tid >= N) return;
 

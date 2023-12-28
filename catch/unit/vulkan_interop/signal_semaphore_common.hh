@@ -189,7 +189,8 @@ hipError_t GraphExtSemaphoreSignalWrapper(hipExternalSemaphore_t* extSemArray,
   hipGraph_t graph = nullptr;
   HIP_CHECK(hipGraphCreate(&graph, 0));
   hipGraphNode_t node = nullptr;
-  hipExternalSemaphoreSignalNodeParams retrieved_params = {0};
+  hipExternalSemaphoreSignalNodeParams retrieved_params = {};
+  memset(&retrieved_params, 0, sizeof(retrieved_params));
 
   hipExternalSemaphoreSignalNodeParams node_params = {};
   node_params.extSemArray = extSemArray;
@@ -197,7 +198,8 @@ hipError_t GraphExtSemaphoreSignalWrapper(hipExternalSemaphore_t* extSemArray,
   node_params.numExtSems = numExtSems;
 
   if constexpr (set_params) {
-    hipExternalSemaphoreSignalParams signal_params[numExtSems];
+    hipExternalSemaphoreSignalParams* signal_params =
+        new hipExternalSemaphoreSignalParams[numExtSems];
     for (unsigned int i = 0; i < numExtSems; i++) {
       signal_params[i].params.fence.value = 10 + i;
     }
@@ -212,6 +214,8 @@ hipError_t GraphExtSemaphoreSignalWrapper(hipExternalSemaphore_t* extSemArray,
     HIP_CHECK(hipGraphExternalSemaphoresSignalNodeGetParams(node, &retrieved_params));
     REQUIRE(initial_params == retrieved_params);
     HIP_CHECK(hipGraphExternalSemaphoresSignalNodeSetParams(node, &node_params));
+
+    delete[] signal_params;
   } else {
     HIP_CHECK(hipGraphAddExternalSemaphoresSignalNode(&node, graph, nullptr, 0, &node_params));
   }

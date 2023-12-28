@@ -49,6 +49,7 @@ add_subdirectory(atomics)
 add_subdirectory(complex)
 add_subdirectory(p2p)
 add_subdirectory(gcc)
+add_subdirectory(syncthreads)
 
 if(HIP_PLATFORM STREQUAL "amd")
 add_subdirectory(callback)

@@ -34,6 +34,14 @@ __host__ __device__ inline float GetCoordinate(size_t iteration, size_t N, size_
 }
 
 template <typename TexelType>
+__global__ void tex1DfetchKernel(TexelType* const out, size_t N, hipTextureObject_t tex_obj) {
+  const auto tid = cg::this_grid().thread_rank();
+  if (tid >= N) return;
+
+  out[tid] = tex1D<TexelType>(tex_obj, tid);
+}
+
+template <typename TexelType>
 __global__ void tex1DKernel(TexelType* const out, size_t N, hipTextureObject_t tex_obj,
                             size_t width, size_t num_subdivisions, bool normalized_coords) {
   const auto tid = cg::this_grid().thread_rank();
@@ -41,6 +49,50 @@ __global__ void tex1DKernel(TexelType* const out, size_t N, hipTextureObject_t t
 
   float x = GetCoordinate(tid, N, width, num_subdivisions, normalized_coords);
   out[tid] = tex1D<TexelType>(tex_obj, x);
+}
+
+template <typename TexelType>
+__global__ void tex1DLodKernel(TexelType* const out, size_t N, hipTextureObject_t tex_obj,
+                               size_t width, size_t num_subdivisions, bool normalized_coords,
+                               float level_of_detail) {
+  const auto tid = cg::this_grid().thread_rank();
+  if (tid >= N) return;
+
+  float x = GetCoordinate(tid, N, width, num_subdivisions, normalized_coords);
+  out[tid] = tex1DLod<TexelType>(tex_obj, x, level_of_detail);
+}
+
+template <typename TexelType>
+__global__ void tex1DLayeredLodKernel(TexelType* const out, size_t N, hipTextureObject_t tex_obj,
+                                      size_t width, size_t num_subdivisions, bool normalized_coords,
+                                      int layer, float level_of_detail) {
+  const auto tid = cg::this_grid().thread_rank();
+  if (tid >= N) return;
+
+  float x = GetCoordinate(tid, N, width, num_subdivisions, normalized_coords);
+  out[tid] = tex1DLayeredLod<TexelType>(tex_obj, x, layer, level_of_detail);
+}
+
+template <typename TexelType>
+__global__ void tex1DGradKernel(TexelType* const out, size_t N, hipTextureObject_t tex_obj,
+                                size_t width, size_t num_subdivisions, bool normalized_coords,
+                                float dx, float dy) {
+  const auto tid = cg::this_grid().thread_rank();
+  if (tid >= N) return;
+
+  float x = GetCoordinate(tid, N, width, num_subdivisions, normalized_coords);
+  out[tid] = tex1DGrad<TexelType>(tex_obj, x, dx, dy);
+}
+
+template <typename TexelType>
+__global__ void tex1DLayeredGradKernel(TexelType* const out, size_t N, hipTextureObject_t tex_obj,
+                                       size_t width, size_t num_subdivisions,
+                                       bool normalized_coords, float dx, float dy, int layer) {
+  const auto tid = cg::this_grid().thread_rank();
+  if (tid >= N) return;
+
+  float x = GetCoordinate(tid, N, width, num_subdivisions, normalized_coords);
+  out[tid] = tex1DLayeredGrad<TexelType>(tex_obj, x, layer, dx, dy);
 }
 
 template <typename TexelType>

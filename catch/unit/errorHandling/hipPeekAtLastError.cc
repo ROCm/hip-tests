@@ -21,7 +21,6 @@ THE SOFTWARE.
 */
 
 #include <hip_test_common.hh>
-#include <hip/hip_runtime_api.h>
 #include <threaded_zig_zag_test.hh>
 
 /**
@@ -56,7 +55,8 @@ TEST_CASE("Unit_hipPeekAtLastError_Positive_Basic") {
  * Test Description
  * ------------------------
  *  - Validate that appropriate error is returned when working with multiple threads.
- *  - Validate that appropriate error is returned for getting the last erro when working with multiple threads.
+ *  - Validate that appropriate error is returned for getting the last error when working with
+ * multiple threads.
  *  - Cause error on purpose within one of the threads.
  * Test source
  * ------------------------

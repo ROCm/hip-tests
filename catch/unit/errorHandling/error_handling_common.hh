@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@ constexpr hipError_t kErrorEnumerators[] = {hipSuccess,
                                             hipErrorProfilerNotInitialized,
                                             hipErrorProfilerAlreadyStarted,
                                             hipErrorProfilerAlreadyStopped,
-                                            #if HT_AMD
+#if HT_AMD
                                             hipErrorInvalidConfiguration,
                                             hipErrorInvalidPitchValue,
                                             hipErrorInvalidSymbol,
@@ -43,7 +43,7 @@ constexpr hipError_t kErrorEnumerators[] = {hipSuccess,
                                             hipErrorMissingConfiguration,
                                             hipErrorPriorLaunchFailure,
                                             hipErrorInvalidDeviceFunction,
-                                            #endif
+#endif
                                             hipErrorNoDevice,
                                             hipErrorInvalidDevice,
                                             hipErrorInvalidImage,
@@ -97,8 +97,12 @@ constexpr hipError_t kErrorEnumerators[] = {hipSuccess,
                                             hipErrorStreamCaptureWrongThread,
                                             hipErrorGraphExecUpdateFailure,
                                             hipErrorUnknown,
-                                            #if HT_AMD
+#if HT_AMD
                                             hipErrorRuntimeMemory,
                                             hipErrorRuntimeOther
-                                            #endif
-                                            };
+#endif
+};
+
+const char* ErrorName(hipError_t enumerator);
+
+const char* ErrorString(hipError_t enumerator);

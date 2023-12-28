@@ -35,8 +35,8 @@ TEST_CASE("Unit_hipFuncGetAttributes_Positive_Basic") {
 
   SECTION("binaryVersion") {
 #if HT_NVIDIA
-    const auto major = GetDeviceAttribute(hipDeviceAttributeComputeCapabilityMajor, 0);
-    const auto minor = GetDeviceAttribute(hipDeviceAttributeComputeCapabilityMinor, 0);
+    const auto major = GetDeviceAttribute(0, hipDeviceAttributeComputeCapabilityMajor);
+    const auto minor = GetDeviceAttribute(0, hipDeviceAttributeComputeCapabilityMinor);
     REQUIRE(attr.binaryVersion == major * 10 + minor);
 #elif HT_AMD
     REQUIRE(attr.binaryVersion > 0);
@@ -48,7 +48,7 @@ TEST_CASE("Unit_hipFuncGetAttributes_Positive_Basic") {
   SECTION("constSizeBytes") { REQUIRE(attr.constSizeBytes == kConstSizeBytes); }
 
   SECTION("maxThreadsPerBlock") {
-    REQUIRE(attr.maxThreadsPerBlock == GetDeviceAttribute(hipDeviceAttributeMaxThreadsPerBlock, 0));
+    REQUIRE(attr.maxThreadsPerBlock == GetDeviceAttribute(0, hipDeviceAttributeMaxThreadsPerBlock));
   }
 
   SECTION("numRegs") { REQUIRE(attr.numRegs >= 0); }
@@ -57,7 +57,7 @@ TEST_CASE("Unit_hipFuncGetAttributes_Positive_Basic") {
 
   SECTION("sharedSizeBytes") {
     REQUIRE(attr.sharedSizeBytes <=
-            GetDeviceAttribute(hipDeviceAttributeMaxSharedMemoryPerBlock, 0));
+            GetDeviceAttribute(0, hipDeviceAttributeMaxSharedMemoryPerBlock));
   }
 }
 

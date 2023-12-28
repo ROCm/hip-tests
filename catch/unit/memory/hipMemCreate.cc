@@ -38,6 +38,15 @@ THE SOFTWARE.
 #define DATA_SIZE (1 << 13)
 
 /**
+ Kernel to perform Square of input data.
+ */
+static __global__ void square_kernel(int* Buff) {
+  int i = threadIdx.x + blockDim.x * blockIdx.x;
+  int temp = Buff[i] * Buff[i];
+  Buff[i] = temp;
+}
+
+/**
  * Test Description
  * ------------------------
  *    - Allocate physical memories for different multiples of
@@ -201,9 +210,7 @@ TEST_CASE("Unit_hipMemCreate_ChkDev2HstMemcpy_ReleaseHdlPreUse") {
  * ------------------------
  *    - HIP_VERSION >= 6.1
  */
-#if HT_NVIDIA
-// This test is disabled. Will be enabled once VMM feature is fully
-// available
+
 TEST_CASE("Unit_hipMemCreate_ChkWithKerLaunch") {
   size_t granularity = 0;
   constexpr int N = DATA_SIZE;
@@ -253,7 +260,6 @@ TEST_CASE("Unit_hipMemCreate_ChkWithKerLaunch") {
   HIP_CHECK(hipMemUnmap(ptrA, size_mem));
   HIP_CHECK(hipMemAddressFree(ptrA, size_mem));
 }
-#endif
 
 /**
  * Test Description
@@ -268,9 +274,6 @@ TEST_CASE("Unit_hipMemCreate_ChkWithKerLaunch") {
  * ------------------------
  *    - HIP_VERSION >= 6.1
  */
-#if HT_NVIDIA
-// This test is disabled. Will be enabled once VMM feature is fully
-// available
 TEST_CASE("Unit_hipMemCreate_MapNonContiguousChunks") {
   size_t granularity = 0;
   constexpr int numOfBuffers = NUM_OF_BUFFERS;
@@ -333,7 +336,6 @@ TEST_CASE("Unit_hipMemCreate_MapNonContiguousChunks") {
   }
   HIP_CHECK(hipMemAddressFree(ptrA, (numOfBuffers * size_mem)));
 }
-#endif
 
 /**
  * Test Description

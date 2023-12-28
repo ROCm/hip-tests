@@ -18,7 +18,29 @@ THE SOFTWARE.
 */
 
 #include <hip_test_common.hh>
+#include <utils.hh>
+/**
+ * @addtogroup hipEventQuery hipEventQuery
+ * @{
+ * @ingroup EventTest
+ * `hipEventQuery(hipEvent_t event)` -
+ * Query the status of the specified event.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipEventIpc
+ */
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Query events with a single and with multiple devices.
+ * Test source
+ * ------------------------
+ *  - unit/event/Unit_hipEventQuery.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipEventQuery_DifferentDevice") {
   hipEvent_t event1{}, event2{};
   HIP_CHECK(hipEventCreate(&event1));
@@ -30,15 +52,10 @@ TEST_CASE("Unit_hipEventQuery_DifferentDevice") {
   HIP_CHECK(hipStreamCreate(&stream));
   REQUIRE(stream != nullptr);
 
-  HipTest::BlockingContext b_context1{stream};  // og context
-  // Block stream
   {
     HIP_CHECK(hipSetDevice(0));
     HIP_CHECK(hipEventRecord(event1, stream));
-
-    b_context1.block_stream();  // blocked stream
-    REQUIRE(b_context1.is_blocked());
-
+    LaunchDelayKernel(std::chrono::milliseconds(3000), stream);
     HIP_CHECK(hipEventRecord(event2, stream));
 
     HIP_CHECK(hipEventSynchronize(event1));
@@ -57,8 +74,6 @@ TEST_CASE("Unit_hipEventQuery_DifferentDevice") {
   {
     HIP_CHECK(hipEventQuery(event1));
     HIP_CHECK_ERROR(hipEventQuery(event2), hipErrorNotReady);
-
-    b_context1.unblock_stream();
 
     HIP_CHECK(hipEventSynchronize(event2));
 

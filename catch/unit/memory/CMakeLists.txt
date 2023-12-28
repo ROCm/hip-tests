@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2023 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,9 +18,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+# Common Tests - Test independent of all platforms
 set(COMMON_SHARED_SRC DriverContext.cc)
 
-# Common Tests - Test independent of all platforms
+# FIXME: cjatin
+# This is a temp hack to pass it on windows since it has a char limit for
+# command line. Eventually we need to use rsp files with ninja on windows.
+# But this exposes several problems with hipcc and build system on windows.
+# While those are fixed, this hack should allow us to pass windows CI.
 set(TEST_SRC
     memset.cc
     malloc.cc
@@ -63,7 +68,42 @@ set(TEST_SRC
     hipMemAdviseMmap.cc
     hipMallocManaged.cc
     hipMemRangeGetAttribute.cc
-    hipMemRangeGetAttribute_old.cc
+    hipMemRangeGetAttribute_old.cc)
+
+if(HIP_PLATFORM MATCHES "amd")
+  set(TEST_SRC
+      ${TEST_SRC}
+      hipMemPtrGetInfo.cc
+      hipPointerGetAttributes.cc
+      hipMemCoherencyTst.cc
+      hipExtMallocWithFlags.cc
+      hipMallocMngdMultiThread.cc
+      hipArray.cc
+      hipMemVmm.cc
+      hipMemCreate.cc
+      hipMemMap.cc
+      hipMemGetAllocationGranularity.cc
+      hipMemSetGetAccess.cc
+      hipMemRetainAllocationHandle.cc
+      hipMemUnmap.cc
+      hipMemAddressFree.cc
+      hipMemAddressReserve.cc
+      hipMemRelease.cc
+      hipMemGetAllocationPropertiesFromHandle.cc)
+else()
+  set(TEST_SRC ${TEST_SRC} hipGetSymbolSizeAddress.cc)
+endif()
+
+hip_add_exe_to_target(NAME MemoryTest1
+  TEST_SRC ${TEST_SRC}
+  TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
+
+if(HIP_PLATFORM MATCHES "amd")
+  set_source_files_properties(hipHostRegister.cc PROPERTIES COMPILE_FLAGS -std=c++17)
+  add_executable(hipHostRegisterPerf EXCLUDE_FROM_ALL hipHostRegister_exe.cc)
+endif()
+
+set(TEST_SRC
     hipMemcpyFromSymbol.cc
     hipPtrGetAttribute.cc
     hipMemPoolApi.cc
@@ -83,13 +123,13 @@ set(TEST_SRC
     hipMemcpy_old.cc
     hipMemcpy_derivatives.cc
     hipMemcpyAsync.cc
+    hipMemcpyAsync_old.cc
+    hipMemcpyAsync_derivatives.cc
     hipMemsetFunctional.cc
     hipMalloc.cc
     hipMallocPitch.cc
-    hipMallocArray.cc
     hipMalloc3D.cc
     hipMalloc3DArray.cc
-    hipArrayCreate.cc
     hipArray3DCreate.cc
     hipDrvMemcpy3D.cc
     hipDrvMemcpy3D_old.cc
@@ -106,24 +146,58 @@ set(TEST_SRC
     hipMemAdvise_old.cc
     hipMemAdvise.cc
     hipMemRangeGetAttributes.cc
+    hipFreeAsync.cc
+    hipMallocAsync.cc
     hipStreamAttachMemAsync.cc
     hipMemRangeGetAttributes_old.cc
     hipMemGetAddressRange.cc)
 
+set(NOT_FOR_MI200_AND_ABOVE_TEST hipMallocArray.cc hipArrayCreate.cc) # tests not for MI200+
+set(MI200_AND_ABOVE_TARGETS gfx90a gfx940 gfx941 gfx942)
+function(CheckRejectedArchs OFFLOAD_ARCH_STR_LOCAL)
+  set(ARCH_CHECK -1 PARENT_SCOPE)
+  string(REGEX MATCHALL "--offload-arch=gfx[0-9a-z]+" OFFLOAD_ARCH_LIST ${OFFLOAD_ARCH_STR_LOCAL})
+  foreach(OFFLOAD_ARCH IN LISTS OFFLOAD_ARCH_LIST)
+    string(REGEX MATCHALL "--offload-arch=(gfx[0-9a-z]+)" matches ${OFFLOAD_ARCH})
+    if (CMAKE_MATCH_COUNT EQUAL 1)
+      if (CMAKE_MATCH_1 IN_LIST MI200_AND_ABOVE_TARGETS)
+        set(ARCH_CHECK 1 PARENT_SCOPE)
+      endif()         # CMAKE_MATCH_1
+    endif()        # CMAKE_MATCH_COUNT
+  endforeach()   # OFFLOAD_ARCH_LIST
+endfunction()  # CheckAcceptedArchs
+
 if(HIP_PLATFORM MATCHES "amd")
-  set(TEST_SRC
-      ${TEST_SRC}
-      hipMemPtrGetInfo.cc
-      hipPointerGetAttributes.cc
-      hipMemCoherencyTst.cc
-      hipExtMallocWithFlags.cc
-      hipMallocMngdMultiThread.cc
-      hipArray.cc
-      hipMemVmm.cc)
+  if (DEFINED OFFLOAD_ARCH_STR)
+    CheckRejectedArchs(${OFFLOAD_ARCH_STR})
+  elseif(DEFINED $ENV{HCC_AMDGPU_TARGET})
+    CheckRejectedArchs($ENV{HCC_AMDGPU_TARGET})
+  else()
+    set(ARCH_CHECK -1)
+  endif()
+  if(${ARCH_CHECK} EQUAL -1)
+    message(STATUS "Adding test: ${NOT_FOR_MI200_AND_ABOVE_TEST}")
+    set(TEST_SRC ${TEST_SRC} ${NOT_FOR_MI200_AND_ABOVE_TEST})
+  endif()
 else()
-  set(TEST_SRC ${TEST_SRC} hipGetSymbolSizeAddress.cc)
+  set(TEST_SRC ${TEST_SRC} ${NOT_FOR_MI200_AND_ABOVE_TEST})
 endif()
 
-hip_add_exe_to_target(NAME MemoryTest
+hip_add_exe_to_target(NAME MemoryTest2
   TEST_SRC ${TEST_SRC}
   TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
+
+if(HIP_PLATFORM MATCHES "amd")
+  set(TEST_SRC
+    hipSVMTestByteGranularity.cpp
+    hipSVMTestFineGrainMemoryConsistency.cpp
+    hipSVMTestFineGrainSyncBuffers.cpp
+    hipSVMTestSharedAddressSpaceFineGrain.cpp
+  )
+
+  hip_add_exe_to_target(NAME SVMAtomicTest
+    TEST_SRC ${TEST_SRC}
+    TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
+
+  add_dependencies(build_tests hipHostRegisterPerf)
+endif()

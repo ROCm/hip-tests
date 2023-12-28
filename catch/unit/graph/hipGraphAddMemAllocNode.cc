@@ -72,6 +72,7 @@ TEST_CASE("Unit_hipGraphAddMemAllocNode_Negative_Params") {
   hipGraphNode_t alloc_node;
   std::vector<hipGraphNode_t> dependencies;
 
+  HIP_CHECK(hipDeviceGraphMemTrim(0));
   HIP_CHECK(hipGraphCreate(&graph, 0));
 
   int num_dev = 0;
@@ -158,6 +159,7 @@ TEST_CASE("Unit_hipGraphAddMemAllocNode_Negative_Params") {
 #endif
 
   HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipDeviceGraphMemTrim(0));
 }
 
 /**
@@ -180,6 +182,7 @@ TEST_CASE("Unit_hipGraphAddMemAllocNode_Negative_NotSupported") {
   hipGraph_t graph;
   hipGraphNode_t alloc_node;
 
+  HIP_CHECK(hipDeviceGraphMemTrim(0));
   HIP_CHECK(hipGraphCreate(&graph, 0));
 
   hipMemAllocNodeParams alloc_param;
@@ -223,6 +226,7 @@ TEST_CASE("Unit_hipGraphAddMemAllocNode_Negative_NotSupported") {
 #endif
 
   HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipDeviceGraphMemTrim(0));
 }
 
 /* Create graph with memory nodes that copies memset data to host array */
@@ -286,6 +290,25 @@ static void createFreeGraph(hipGraphExec_t* graph_exec, int* device_alloc) {
   HIP_CHECK(hipGraphDestroy(graph));
 }
 
+static void checkGraphMemAttribute(size_t used_mem, size_t high_mem) {
+  size_t read_mem;
+  hipGraphMemAttributeType attr = hipGraphMemAttrUsedMemCurrent;
+  HIP_CHECK(hipDeviceGetGraphMemAttribute(0, attr, reinterpret_cast<void*>(&read_mem)));
+  REQUIRE(read_mem == used_mem);
+
+  attr = hipGraphMemAttrReservedMemCurrent;
+  HIP_CHECK(hipDeviceGetGraphMemAttribute(0, attr, reinterpret_cast<void*>(&read_mem)));
+  REQUIRE(read_mem == used_mem);
+
+  attr = hipGraphMemAttrUsedMemHigh;
+  HIP_CHECK(hipDeviceGetGraphMemAttribute(0, attr, reinterpret_cast<void*>(&read_mem)));
+  REQUIRE(read_mem == high_mem);
+
+  attr = hipGraphMemAttrReservedMemHigh;
+  HIP_CHECK(hipDeviceGetGraphMemAttribute(0, attr, reinterpret_cast<void*>(&read_mem)));
+  REQUIRE(read_mem == high_mem);
+}
+
 /**
  * Test Description
  * ------------------------
@@ -314,7 +337,11 @@ TEST_CASE("Unit_hipGraphAddMemAllocNode_Positive_FreeInGraph") {
 
   ArrayFindIfNot(host_alloc.host_ptr(), fill_value, element_count);
 
+  checkGraphMemAttribute(element_count * sizeof(int), element_count * sizeof(int));
+
   HIP_CHECK(hipGraphExecDestroy(graph_exec));
+  HIP_CHECK(hipDeviceGraphMemTrim(0));
+  checkGraphMemAttribute(0, element_count * sizeof(int));
 }
 
 /**
@@ -361,7 +388,11 @@ TEST_CASE("Unit_hipGraphAddMemAllocNode_Positive_FreeOutsideStream") {
   REQUIRE(mismatch_count_h.host_ptr()[0] == 0);
   ArrayFindIfNot(host_alloc.host_ptr(), fill_value, element_count);
 
+  checkGraphMemAttribute(element_count * sizeof(int), element_count * sizeof(int));
+
   HIP_CHECK(hipGraphExecDestroy(graph_exec));
+  HIP_CHECK(hipDeviceGraphMemTrim(0));
+  checkGraphMemAttribute(0, element_count * sizeof(int));
 }
 
 /**
@@ -406,7 +437,11 @@ TEST_CASE("Unit_hipGraphAddMemAllocNode_Positive_FreeOutsideGraph") {
   REQUIRE(mismatch_count_h.host_ptr()[0] == 0);
   ArrayFindIfNot(host_alloc.host_ptr(), fill_value, element_count);
 
+  checkGraphMemAttribute(element_count * sizeof(int), element_count * sizeof(int));
+
   HIP_CHECK(hipGraphExecDestroy(graph_exec));
+  HIP_CHECK(hipDeviceGraphMemTrim(0));
+  checkGraphMemAttribute(0, element_count * sizeof(int));
 }
 
 /**
@@ -453,6 +488,10 @@ TEST_CASE("Unit_hipGraphAddMemAllocNode_Positive_FreeSeparateGraph") {
   REQUIRE(mismatch_count_h.host_ptr()[0] == 0);
   ArrayFindIfNot(host_alloc.host_ptr(), fill_value, element_count);
 
+  checkGraphMemAttribute(element_count * sizeof(int), element_count * sizeof(int));
+
   HIP_CHECK(hipGraphExecDestroy(graph_exec1));
   HIP_CHECK(hipGraphExecDestroy(graph_exec2));
+  HIP_CHECK(hipDeviceGraphMemTrim(0));
+  checkGraphMemAttribute(0, element_count * sizeof(int));
 }

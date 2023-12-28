@@ -91,6 +91,10 @@ add_test(NAME Unit_atomicMax_Negative_Parameters
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
          ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
          atomicMax_negative_kernels.cc ${EXPECTED_ERRORS})
+add_test(NAME Unit_AtomicBuiltins_Negative_Parameters
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+         atomic_builtins_kernels.cc 60 27) # Should be 35 warnings, see EXSWHTEC-309
 
 # SWDEV-435667: Below 2 tests failed in stress test on 01/12/23
 #add_test(NAME Unit_atomicExch_Negative_Parameters

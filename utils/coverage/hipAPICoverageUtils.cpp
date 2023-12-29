@@ -201,6 +201,7 @@ std::vector<HipAPI> extractHipAPIs(std::string& hip_api_header_file,
   of code shall not be considered.
   */
   std::string hip_api_prefix{"hip"};
+  std::string hip_api_prefix_builtin{"__hip"};
   std::string group_definition{"@defgroup"};
   std::string add_group_definition{"@addtogroup"};
   std::string start_of_api_groups{"HIP API"};
@@ -291,7 +292,11 @@ std::vector<HipAPI> extractHipAPIs(std::string& hip_api_header_file,
       Remove all spaces if they exist in the parsed string, e.g.,
       hipError_t hipDeviceSetLimit ( enum hipLimit_t limit, size_t value );.
       */
-      std::string api_name{api_name_no_brackets.substr(api_name_no_brackets.rfind(hip_api_prefix))};
+      auto api_name_pos = api_name_no_brackets.rfind(hip_api_prefix_builtin);
+      if (api_name_pos == std::string::npos) {
+        api_name_pos = api_name_no_brackets.rfind(hip_api_prefix);
+      }
+      std::string api_name{api_name_no_brackets.substr(api_name_pos)};
       api_name.erase(std::remove(api_name.begin(), api_name.end(), ' '), api_name.end());
 
       if (!api_group_names_tracker.empty()) {

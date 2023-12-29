@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -68,6 +68,8 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 #include <hip_test_features.hh>
+#include <hip_test_process.hh>
+
 #if __linux__
 #include <unistd.h>
 #include <sys/mman.h>
@@ -373,9 +375,8 @@ TEST_CASE("Unit_hipMemAdvise_ReadMostly") {
     // hipMemAdvise should succeed for SetReadMostly and UnsetReadMostly
     // irrespective of the device
     HIP_CHECK(hipMemAdvise(Hmm, MEM_SIZE, hipMemAdviseSetReadMostly, 99));
-
     HIP_CHECK(hipMemAdvise(Hmm, MEM_SIZE, hipMemAdviseUnsetReadMostly, -12));
-     
+
     HIP_CHECK(hipFree(Hmm));
     REQUIRE(IfTestPassed);
   } else {
@@ -670,7 +671,8 @@ TEST_CASE("Unit_hipMemAdvise_TstAlignedAllocMem") {
     HIP_CHECK(hipDeviceGetAttribute(&pageMemAccess,
               hipDeviceAttributePageableMemoryAccess, 0));
     WARN("hipDeviceAttributePageableMemoryAccess:" << pageMemAccess);
-    HIP_CHECK(hipDeviceGetAttribute(&managedMem, hipDeviceAttributeManagedMemory, 0));
+    HIP_CHECK(hipDeviceGetAttribute(&managedMem,
+                                    hipDeviceAttributeManagedMemory, 0));
     WARN("hipDeviceAttributeManagedMemory: " << managedMem);
     if ((managedMem == 1) && (pageMemAccess == 1)) {
       int *Mllc = nullptr, MemSz = 4096 * 4, NumElms = 4096, InitVal = 123;
@@ -685,20 +687,41 @@ TEST_CASE("Unit_hipMemAdvise_TstAlignedAllocMem") {
       // The following hipMemAdvise() call is made to know if advise on
       // aligned_alloc() is causing any issue
       HIP_CHECK(hipMemAdvise(Mllc, MemSz, hipMemAdviseSetPreferredLocation, 0));
-      HIP_CHECK_ERROR(hipMemPrefetchAsync(Mllc, MemSz, 0, strm), hipErrorInvalidValue);
+      HIP_CHECK_ERROR(hipMemPrefetchAsync(Mllc, MemSz, 0, strm),
+                      hipErrorInvalidValue);
       HIP_CHECK(hipStreamSynchronize(strm));
       MemAdvise2<<<(NumElms/32), 32, 0, strm>>>(Mllc, NumElms);
       HIP_CHECK(hipStreamSynchronize(strm));
-        for (int i = 0; i < NumElms; ++i) {
-          if (Mllc[i] != (InitVal + 10)) {
-            DataMismatch++;
-          }
+      for (int i = 0; i < NumElms; ++i) {
+        if (Mllc[i] != (InitVal + 10)) {
+          DataMismatch++;
         }
-      REQUIRE(DataMismatch == 0);
       }
-  } else {
-      HipTest::HIP_SKIP_TEST("GPU is not xnack enabled hence skipping the test...\n");
+      REQUIRE(DataMismatch == 0);
     }
+  } else {
+    HipTest::HIP_SKIP_TEST("GPU is not xnack enabled hence skipping the test");
+  }
+}
+
+TEST_CASE("Unit_hipMemAdvise_TstAlignedAllocMem_XNACK") {
+  if (setenv("HSA_XNACK", "1", 1) != 0) {
+    HipTest::HIP_SKIP_TEST("Unable to set xnack on environment variable.");
+    return;
+  }
+
+  hipDeviceProp_t prop;
+  int device;
+  HIP_CHECK(hipGetDevice(&device));
+  HIP_CHECK(hipGetDeviceProperties(&prop, device));
+  std::string gfxName(prop.gcnArchName);
+
+  if (gfxName.find("xnack+") != std::string::npos) {
+    hip::SpawnProc proc("hipMemAdviseTstAlignedAllocMem", true);
+    REQUIRE(proc.run() == 0);
+  } else {
+    HipTest::HIP_SKIP_TEST("GPU is not xnack enabled hence skipping the test");
+  }
 }
 #endif
 
@@ -902,4 +925,3 @@ TEST_CASE("Unit_hipMemAdvise_TstSetUnsetPrfrdLoc") {
            "attribute. Hence skipping the testing with Pass result.\n");
   }
 }
-

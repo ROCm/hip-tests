@@ -111,6 +111,10 @@ hip_add_exe_to_target(NAME MemoryTest1
 if(HIP_PLATFORM MATCHES "amd")
   set_source_files_properties(hipHostRegister.cc PROPERTIES COMPILE_FLAGS -std=c++17)
   add_executable(hipHostRegisterPerf EXCLUDE_FROM_ALL hipHostRegister_exe.cc)
+if(UNIX)
+  add_executable(hipMemAdviseTstAlignedAllocMem EXCLUDE_FROM_ALL hipMemAdvise_AlignedAllocMem_Exe.cc)
+  add_dependencies(MemoryTest1 hipMemAdviseTstAlignedAllocMem)
+endif()
 endif()
 
 set(TEST_SRC

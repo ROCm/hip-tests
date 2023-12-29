@@ -20,7 +20,7 @@ THE SOFTWARE.
 #include <hip_test_kernels.hh>
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
-#include <hip_test_defgroups.hh>
+ 
 #define NUMBER_OF_THREADS 10
 static bool thread_results[NUMBER_OF_THREADS];
 

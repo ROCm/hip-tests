@@ -30,7 +30,7 @@ Following scenarios are verified for hipPointerGetAttributes API
 */
 #include <inttypes.h>
 #include <hip_test_common.hh>
-#include <hip_test_defgroups.hh>
+ 
 #ifdef __linux__
 #include <sys/mman.h>
 #endif

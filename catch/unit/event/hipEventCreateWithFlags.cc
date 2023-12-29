@@ -22,7 +22,7 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
-#include <hip_test_defgroups.hh>
+ 
 #include <stdlib.h>
 
 constexpr size_t buffer_size = (1024*1024);

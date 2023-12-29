@@ -23,7 +23,7 @@ THE SOFTWARE.
 #include <functional>
 #include <vector>
 
-#include <hip_test_defgroups.hh>
+ 
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 

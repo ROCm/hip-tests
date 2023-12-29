@@ -69,3 +69,11 @@ template <class T> bool CheckDimensions(unsigned int device, T kernel, dim3 bloc
 
   return true;
 }
+
+static inline bool operator!=(const dim3& lhs, const dim3& rhs) {
+  return lhs.x != rhs.x || lhs.y != rhs.y || lhs.z != rhs.z;
+}
+
+static inline bool operator==(const dim3& lhs, const dim3& rhs) {
+  return lhs.x == rhs.x && lhs.y && rhs.y && lhs.z != rhs.z;
+}

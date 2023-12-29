@@ -152,7 +152,8 @@ TEST_CASE("Unit_hipDrvGraphAddMemsetNode_Negative_Parameters") {
  * ------------------------
  *    - Allocate a 2D array using hipMallocPitch. Initialize the allocated memory using
  * hipDrvGraphAddMemsetNode. Copy the values in device memory to host using
- * hipDrvGraphAddMemcpyNode. Verify the results. Test source
+ * hipDrvGraphAddMemcpyNode. Verify the results.
+ * Test source
  * ------------------------
  *    - unit/graph/hipDrvGraphAddMemsetNode.cc
  * Test requirements
@@ -238,7 +239,8 @@ TEST_CASE("Unit_hipDrvGraphAddMemsetNode_hipMallocPitch_2D") {
  * ------------------------
  *    - Allocate a 1D array using hipMallocPitch. Initialize the allocated memory using
  * hipDrvGraphAddMemsetNode. Copy the values in device memory to host using
- * hipDrvGraphAddMemcpyNode. Verify the results. Test source
+ * hipDrvGraphAddMemcpyNode. Verify the results.
+ * Test source
  * ------------------------
  *    - unit/graph/hipDrvGraphAddMemsetNode.cc
  * Test requirements
@@ -318,7 +320,8 @@ TEST_CASE("Unit_hipDrvGraphAddMemsetNode_hipMallocPitch_1D") {
  * ------------------------
  *    - Allocate a 2D array using hipMalloc3D. Initialize the allocated memory using
  * hipDrvGraphAddMemsetNode. Copy the values in device memory to host using
- * hipDrvGraphAddMemcpyNode. Verify the results. Test source
+ * hipDrvGraphAddMemcpyNode. Verify the results.
+ * Test source
  * ------------------------
  *    - unit/graph/hipDrvGraphAddMemsetNode.cc
  * Test requirements
@@ -411,7 +414,8 @@ TEST_CASE("Unit_hipDrvGraphAddMemsetNode_hipMalloc3D_2D") {
  * ------------------------
  *    - Allocate a 1D array using hipMalloc3D. Initialize the allocated memory using
  * hipDrvGraphAddMemsetNode. Copy the values in device memory to host using
- * hipDrvGraphAddMemcpyNode. Verify the results. Test source
+ * hipDrvGraphAddMemcpyNode. Verify the results.
+ * Test source
  * ------------------------
  *    - unit/graph/hipDrvGraphAddMemsetNode.cc
  * Test requirements
@@ -497,7 +501,8 @@ TEST_CASE("Unit_hipDrvGraphAddMemsetNode_hipMalloc3D_1D") {
  * ------------------------
  *    - Allocate a 1D array using hipMalloc. Initialize the allocated memory using
  * hipDrvGraphAddMemsetNode. Copy the values in device memory to host using
- * hipDrvGraphAddMemcpyNode. Verify the results. Test source
+ * hipDrvGraphAddMemcpyNode. Verify the results.
+ * Test source
  * ------------------------
  *    - unit/graph/hipDrvGraphAddMemsetNode.cc
  * Test requirements
@@ -579,7 +584,8 @@ TEST_CASE("Unit_hipDrvGraphAddMemsetNode_hipMalloc_1D") {
  * ------------------------
  *    - Allocate a 1D array using hipMallocManaged. Initialize the allocated memory using
  * hipDrvGraphAddMemsetNode. Copy the values in device memory to host using
- * hipDrvGraphAddMemcpyNode. Verify the results. Test source
+ * hipDrvGraphAddMemcpyNode. Verify the results.
+ * Test source
  * ------------------------
  *    - unit/graph/hipDrvGraphAddMemsetNode.cc
  * Test requirements

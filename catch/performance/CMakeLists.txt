@@ -19,7 +19,6 @@
 # THE SOFTWARE.
 
 add_subdirectory(memset)
-add_subdirectory(memcpy)
 add_subdirectory(kernelLaunch)
 add_subdirectory(stream)
 add_subdirectory(event)

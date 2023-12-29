@@ -18,7 +18,6 @@ THE SOFTWARE.
 */
 
 #include "cooperative_groups_common.hh"
-#include "cpu_grid.h"
 
 #include <bitset>
 #include <optional>
@@ -26,6 +25,7 @@ THE SOFTWARE.
 #include <utils.hh>
 
 #include <cmd_options.hh>
+#include <cpu_grid.h>
 #include <hip_test_common.hh>
 #include <hip/hip_cooperative_groups.h>
 
@@ -40,8 +40,10 @@ namespace cg = cooperative_groups;
 
 namespace {
 #if HT_AMD
+constexpr auto kMaskMin = std::numeric_limits<uint64_t>().min();
 constexpr auto kMaskLimit = std::numeric_limits<uint64_t>().max();
 #else
+constexpr auto kMaskMin = std::numeric_limits<uint32_t>().min();
 constexpr auto kMaskLimit = std::numeric_limits<uint32_t>().max();
 #endif
 }  // namespace
@@ -79,7 +81,8 @@ template <size_t warp_size> static auto coalesce_threads(const uint64_t mask) {
 }
 
 template <size_t warp_size> __device__ bool deactivate_thread(uint64_t* active_masks) {
-  const auto warp = cg::tiled_partition<warp_size>(cg::this_thread_block());
+  const cg::thread_block_tile<warp_size> warp =
+      cg::tiled_partition<warp_size>(cg::this_thread_block());
   const auto block = cg::this_thread_block();
   const auto warps_per_block = (block.size() + warp_size - 1) / warp_size;
   const auto block_rank = (blockIdx.z * gridDim.y + blockIdx.y) * gridDim.x + blockIdx.x;
@@ -230,7 +233,8 @@ __global__ void coalesced_group_tiled_partition_shfl_up(uint64_t* active_masks, 
   if (deactivate_thread<warp_size>(active_masks)) {
     return;
   }
-  const auto warp = cg::tiled_partition<warp_size>(cg::this_thread_block());
+  const cg::thread_block_tile<warp_size> warp =
+      cg::tiled_partition<warp_size>(cg::this_thread_block());
   T var = static_cast<T>(warp.thread_rank());
 
   const auto tile = cg::tiled_partition(cg::coalesced_threads(), tile_size);
@@ -261,7 +265,7 @@ template <typename T> static void CoalescedGroupTiledPartitonShflUpTestImpl() {
                                           warps_in_grid * sizeof(uint64_t));
 
   std::generate(active_masks.ptr(), active_masks.ptr() + warps_in_grid,
-                [] { return GenerateRandomInteger(0u, kMaskLimit); });
+                [] { return GenerateRandomInteger(kMaskMin, kMaskLimit); });
   HIP_CHECK(hipMemcpy(active_masks_dev.ptr(), active_masks.ptr(), warps_in_grid * sizeof(uint64_t),
                       hipMemcpyHostToDevice));
   HIP_CHECK(hipMemsetAsync(uint_arr_dev.ptr(), 0, alloc_size));
@@ -329,7 +333,8 @@ __global__ void coalesced_group_tiled_partition_shfl_down(uint64_t* active_masks
   if (deactivate_thread<warp_size>(active_masks)) {
     return;
   }
-  const auto warp = cg::tiled_partition<warp_size>(cg::this_thread_block());
+  const cg::thread_block_tile<warp_size> warp =
+      cg::tiled_partition<warp_size>(cg::this_thread_block());
   T var = static_cast<T>(warp.thread_rank());
 
   const auto tile = cg::tiled_partition(cg::coalesced_threads(), tile_size);
@@ -360,7 +365,7 @@ template <typename T> static void CoalescedGroupTiledPartitonShflDownTestImpl() 
                                           warps_in_grid * sizeof(uint64_t));
 
   std::generate(active_masks.ptr(), active_masks.ptr() + warps_in_grid,
-                [] { return GenerateRandomInteger(0u, kMaskLimit); });
+                [] { return GenerateRandomInteger(kMaskMin, kMaskLimit); });
   HIP_CHECK(hipMemcpy(active_masks_dev.ptr(), active_masks.ptr(), warps_in_grid * sizeof(uint64_t),
                       hipMemcpyHostToDevice));
   HIP_CHECK(hipMemsetAsync(uint_arr_dev.ptr(), 0, alloc_size));
@@ -431,7 +436,8 @@ __global__ void coalesced_group_tiled_partition_shfl(uint64_t* active_masks, uin
   if (deactivate_thread<warp_size>(active_masks)) {
     return;
   }
-  const auto warp = cg::tiled_partition<warp_size>(cg::this_thread_block());
+  const cg::thread_block_tile<warp_size> warp =
+      cg::tiled_partition<warp_size>(cg::this_thread_block());
   T var = static_cast<T>(warp.thread_rank());
 
   const auto tile = cg::tiled_partition(cg::coalesced_threads(), tile_size);
@@ -445,7 +451,6 @@ template <typename T> static void CoalescedGroupTiledPartitonShflTestImpl() {
   auto threads = GenerateThreadDimensionsForShuffle();
   INFO("Grid dimensions: x " << blocks.x << ", y " << blocks.y << ", z " << blocks.z);
   INFO("Block dimensions: x " << threads.x << ", y " << threads.y << ", z " << threads.z);
-  auto run_repetitions = GENERATE(range(0, 10));
   CPUGrid grid(blocks, threads);
 
   const auto alloc_size = grid.thread_count_ * sizeof(T);
@@ -464,7 +469,7 @@ template <typename T> static void CoalescedGroupTiledPartitonShflTestImpl() {
   std::generate(target_lanes.ptr(), target_lanes.ptr() + tile_size,
                 [tile_size] { return GenerateRandomInteger(0, static_cast<int>(2 * tile_size)); });
   std::generate(active_masks.ptr(), active_masks.ptr() + warps_in_grid,
-                [] { return GenerateRandomInteger(0u, kMaskLimit); });
+                [] { return GenerateRandomInteger(kMaskMin, kMaskLimit); });
   HIP_CHECK(hipMemcpy(active_masks_dev.ptr(), active_masks.ptr(), warps_in_grid * sizeof(uint64_t),
                       hipMemcpyHostToDevice));
   HIP_CHECK(hipMemcpy(target_lanes_dev.ptr(), target_lanes.ptr(), tile_size * sizeof(uint8_t),
@@ -617,7 +622,7 @@ template <bool global_memory, typename T> void CoalescedGroupTiledPartitionSyncT
     std::fill_n(wait_modifiers.ptr(), grid.thread_count_, 0u);
   }
   std::generate(active_masks.ptr(), active_masks.ptr() + warps_in_grid,
-                [] { return GenerateRandomInteger(0u, kMaskLimit); });
+                [] { return GenerateRandomInteger(kMaskMin, kMaskLimit); });
 
   HIP_CHECK(hipMemcpy(active_masks_dev.ptr(), active_masks.ptr(), warps_in_grid * sizeof(uint64_t),
                       hipMemcpyHostToDevice));

@@ -32,6 +32,8 @@ int main(int argc, char** argv) {
         ("Show progress bar when running performance tests")
     | Opt(cmd_options.cg_iterations, "cg_iterations")
         ["-E"]["--cg-iterations"]
+    | Opt(cmd_options.cg_extended_run, "cg_extened_run")
+        ["-E"]["--cg-extended-run"]
         ("Number of iterations used for cooperative groups sync tests (default: 5)")
   ;
   // clang-format on

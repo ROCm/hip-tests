@@ -32,6 +32,13 @@ constexpr size_t kWarpSize = 64;
 
 constexpr int MaxGPUs = 8;
 
+
+inline bool operator==(const dim3& l, const dim3& r) {
+  return l.x == r.x && l.y == r.y && l.z == r.z;
+}
+
+inline bool operator!=(const dim3& l, const dim3& r) { return !(l == r); }
+
 __device__ inline unsigned int thread_rank_in_grid() {
   const auto block_size = blockDim.x * blockDim.y * blockDim.z;
   const auto block_rank_in_grid = (blockIdx.z * gridDim.y + blockIdx.y) * gridDim.x + blockIdx.x;
@@ -68,12 +75,4 @@ template <class T> bool CheckDimensions(unsigned int device, T kernel, dim3 bloc
   }
 
   return true;
-}
-
-static inline bool operator!=(const dim3& lhs, const dim3& rhs) {
-  return lhs.x != rhs.x || lhs.y != rhs.y || lhs.z != rhs.z;
-}
-
-static inline bool operator==(const dim3& lhs, const dim3& rhs) {
-  return lhs.x == rhs.x && lhs.y && rhs.y && lhs.z != rhs.z;
 }

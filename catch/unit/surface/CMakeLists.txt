@@ -20,11 +20,15 @@
 
 # Common Tests - Test independent of all platforms
 set(TEST_SRC
-    hipSurfaceObj1D.cc
-    hipSurfaceObj2D.cc
-    hipSurfaceObj3D.cc
     hipCreateSurfaceObject.cc
     hipDestroySurfaceObject.cc
+    surf1D.cc
+    surf1DLayered.cc
+    surf2D.cc
+    surf2DLayered.cc
+    surf3D.cc
+    surfCubemap.cc
+    surfCubemapLayered.cc
 )
 
 hip_add_exe_to_target(NAME SurfaceTest

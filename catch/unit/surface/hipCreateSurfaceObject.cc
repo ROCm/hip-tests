@@ -34,7 +34,7 @@ THE SOFTWARE.
  *    - Negative parameters test for `hipCreateSurfaceObject`.
  * Test source
  * ------------------------
- *    - unit/texture/hipCreateSurfaceObject.cc
+ *    - unit/surface/hipCreateSurfaceObject.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 5.7

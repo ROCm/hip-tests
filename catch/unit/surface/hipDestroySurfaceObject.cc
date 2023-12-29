@@ -34,7 +34,7 @@ THE SOFTWARE.
  *    - Negative parameters test for `hipDestroySurfaceObject`.
  * Test source
  * ------------------------
- *    - unit/texture/hipDestroySurfaceObject.cc
+ *    - unit/surface/hipDestroySurfaceObject.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 5.7

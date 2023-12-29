@@ -157,6 +157,7 @@ set(TEST_SRC
   hipDeviceSetGraphMemAttribute.cc
   hipDeviceGetGraphMemAttribute.cc
   hipDeviceGraphMemTrim.cc
+  hipGraphAddNode.cc
 )
 
 add_custom_target(add_Kernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/add_Kernel.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../graph/add_Kernel.code -I${HIP_PATH}/include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})

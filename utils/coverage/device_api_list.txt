@@ -512,9 +512,6 @@ Device vector types [
 ]
 
 Device surface functions [
-  __hipGetPixelAddr
-  __hipMapToNativeFloat4
-  __hipMapFromNativeFloat4
   surf1Dread
   surf1Dwrite
   surf2Dread
@@ -672,7 +669,6 @@ Device float16 functions [
   __hbgeu2
   __hbltu2
   __hbgtu2
-  __clamp_01
   __hadd
   __habs
   __hsub
@@ -730,4 +726,10 @@ Device float16 functions [
   __hisinf2
   __hisnan2
   __hneg2
+]
+
+OpenGL Interop [
+  hipGLGetDevices
+  hipGraphicsGLRegisterBuffer
+  hipGraphicsGLRegisterImage
 ]

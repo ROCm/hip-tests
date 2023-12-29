@@ -22,8 +22,8 @@
 set(COMMON_SHARED_SRC helper_multiprocess.cc)
 
 set(TEST_SRC
-    hipMemPoolImportExport.cc
-    hipMemPoolImportExportIPC.cc)
+    hipMemPoolExportImport.cc
+    hipMemPoolExportImportIPC.cc)
 
 hip_add_exe_to_target(NAME StreamOrderedTest
   TEST_SRC ${TEST_SRC}

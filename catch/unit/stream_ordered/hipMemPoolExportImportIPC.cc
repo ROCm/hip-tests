@@ -24,6 +24,15 @@
 #include <utils.hh>
 #include <resource_guards.hh>
 
+/**
+ * @addtogroup hipMemPoolExportToShareableHandle hipMemPoolExportToShareableHandle
+ * @{
+ * @ingroup StreamOTest
+ * `hipMemPoolExportToShareableHandle(void* shared_handle, hipMemPool_t mem_pool,
+ * hipMemAllocationHandleType handle_type, unsigned int flags)` - Exports a memory pool to the
+ * requested handle type.
+ */
+
 #ifdef __linux__
 
 static const char shm_name[] = "mempool_test_shm";
@@ -316,7 +325,19 @@ static void parent_process(int dev_count) {
   sharedMemoryClose(&info);
 }
 
-TEST_CASE("Unit_hipMemPoolImportExport_IPC_Functional") {
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify exporting/importing a shareable handle on a single device between parent and
+ * child process using IPC mechanisms - shared memory and sockets.
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMemPoolExportImportIPC.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+TEST_CASE("Unit_hipMemPoolExportImport_IPC_Functional") {
   ipcDevices_t* shm_devices;
   shm_devices = reinterpret_cast<ipcDevices_t*>(
       mmap(NULL, sizeof(*shm_devices), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, 0, 0));
@@ -347,7 +368,19 @@ TEST_CASE("Unit_hipMemPoolImportExport_IPC_Functional") {
   }
 }
 
-TEST_CASE("Unit_hipMemPoolImportExport_MultipleDevices_IPC_Functional") {
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify exporting/importing a shareable handle on multiple devices between parent and
+ * child processes using IPC mechanisms - shared memory and sockets.
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMemPoolExportImportIPC.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+TEST_CASE("Unit_hipMemPoolExportImport_MultipleDevices_IPC_Functional") {
   ipcDevices_t* shm_devices;
   shm_devices = reinterpret_cast<ipcDevices_t*>(
       mmap(NULL, sizeof(*shm_devices), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, 0, 0));

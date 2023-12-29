@@ -27,7 +27,7 @@ set(TEST_SRC
     ${TEST_SRC}
     hipMemMapArrayAsync.cc)
 
-if(UNIX)
+if(UNIX) # Disabled on AMD due to defect EXSWHTEC-375
   set(TEST_SRC
       ${TEST_SRC}
       hipMemExportToShareableHandle.cc

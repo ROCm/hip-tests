@@ -7,13 +7,13 @@ set(TEST_SRC
     hipLaunchKernel.cc
     hipLaunchCooperativeKernel.cc
     hipLaunchCooperativeKernelMultiDevice.cc
-    launch_api.cc
 )
 
 if(HIP_PLATFORM MATCHES "amd")
     set(TEST_SRC ${TEST_SRC}
         hipExtLaunchKernel.cc
         hipExtLaunchMultiKernelMultiDevice.cc
+        launch_api.cc
     )
 endif()
 

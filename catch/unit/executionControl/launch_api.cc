@@ -23,15 +23,47 @@ THE SOFTWARE.
 #include "execution_control_common.hh"
 
 #include <hip_test_common.hh>
-#include <hip/hip_runtime_api.h>
 #include <resource_guards.hh>
 
 TEST_CASE("Unit_hipLaunchByPtr_Positive_Basic") {
   LinearAllocGuard<int> alloc(LinearAllocs::hipMallocManaged, 4);
 
-  HIP_CHECK(hipConfigureCall(dim3{1}, dim3{1}, 0, nullptr));
-  HIP_CHECK(hipSetupArgument(&alloc.ptr(), sizeof(int*), 0));
-  HIP_CHECK(hipLaunchByPtr(kernel_42));
+  SECTION("hipConfigureCall") { HIP_CHECK(hipConfigureCall(dim3{1}, dim3{1}, 0, nullptr)); }
+
+  SECTION("__hipPushCallConfiguration") {
+    HIP_CHECK(__hipPushCallConfiguration(dim3{1}, dim3{1}, 0, nullptr));
+  }
+
+  int* arg = alloc.ptr();
+  HIP_CHECK(hipSetupArgument(&arg, sizeof(int*), 0));
+
+  HIP_CHECK(hipLaunchByPtr(reinterpret_cast<void*>(kernel_42)));
   HIP_CHECK(hipDeviceSynchronize());
+
   REQUIRE(alloc.ptr()[0] == 42);
+}
+
+TEST_CASE("Unit_hipLaunchByPtr_Negative_Parameters") {
+  HIP_CHECK(hipConfigureCall(dim3{1}, dim3{1}, 0, nullptr));
+  HIP_CHECK_ERROR(hipLaunchByPtr(nullptr), hipErrorInvalidDeviceFunction);
+}
+
+TEST_CASE("Unit___hipPushCallConfiguration_Positive_Basic") {
+  StreamGuard stream_guard(Streams::created);
+  HIP_CHECK(__hipPushCallConfiguration(dim3{1, 2, 3}, dim3{3, 2, 1}, 1024, stream_guard.stream()));
+
+  dim3 grid;
+  dim3 block;
+  size_t shmem;
+  hipStream_t stream;
+  HIP_CHECK(__hipPopCallConfiguration(&grid, &block, &shmem, &stream));
+
+  REQUIRE(grid.x == 1);
+  REQUIRE(grid.y == 2);
+  REQUIRE(grid.z == 3);
+  REQUIRE(block.x == 3);
+  REQUIRE(block.y == 2);
+  REQUIRE(block.z == 1);
+  REQUIRE(shmem == 1024);
+  REQUIRE(stream == stream_guard.stream());
 }

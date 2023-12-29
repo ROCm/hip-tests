@@ -22,6 +22,36 @@ THE SOFTWARE.
 #include "vulkan_test.hh"
 #include "wait_semaphore_common.hh"
 
+/**
+ * @addtogroup hipGraphExternalSemaphoresWaitNodeGetParams
+ * hipGraphExternalSemaphoresWaitNodeGetParams
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphExternalSemaphoresWaitNodeGetParams(hipGraphNode_t hNode,
+ * hipExternalSemaphoreWaitNodeParams* params_out)` - Returns external semaphore wait node params.
+ * ________________________
+ * Test cases from other APIs:
+ *  - @ref Unit_hipGraphExternalSemaphoresWaitNodeSetParams_Positive_Basic
+ *  - @ref Unit_hipGraphExternalSemaphoresWaitNodeSetParams_Vulkan_Positive_Timeline_Semaphore
+ *  - @ref Unit_hipGraphExternalSemaphoresWaitNodeSetParams_Vulkan_Positive_Multiple_Semaphores
+ */
+
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipGraphExternalSemaphoresWaitNodeGetParams behavior with invalid
+ * arguments:
+ *    -# Nullptr graph node
+ *    -# Nullptr params
+ *    -# Node is destroyed
+ * Test source
+ * ------------------------
+ *  - /unit/vulkan_interop/hipGraphExternalSemaphoresWaitNodeGetParams.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipGraphExternalSemaphoresWaitNodeGetParams_Negative_Parameters") {
   hipGraph_t graph = nullptr;
   HIP_CHECK(hipGraphCreate(&graph, 0));

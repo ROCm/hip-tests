@@ -22,6 +22,16 @@ THE SOFTWARE.
 #include "vulkan_test.hh"
 #include "wait_semaphore_common.hh"
 
+/**
+ * @addtogroup hipGraphExecExternalSemaphoresWaitNodeSetParams
+ * hipGraphExecExternalSemaphoresWaitNodeSetParams
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphExecExternalSemaphoresWaitNodeSetParams(hipGraphExec_t hGraphExec, hipGraphNode_t hNode,
+ * const hipExternalSemaphoreWaitNodeParams* nodeParams)` - Updates node parameters in the external
+ * semaphore wait node in the given graphExec.
+ */
+
 static hipError_t GraphExecSemaphoreSetParamsWaitWrapper(
     hipExternalSemaphore_t* extSemArray, hipExternalSemaphoreWaitParams* paramsArray,
     unsigned int numExtSems, hipStream_t stream) {
@@ -65,23 +75,81 @@ static hipError_t GraphExecSemaphoreSetParamsWaitWrapper(
   return hipSuccess;
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify that node parameters get updated correctly by creating a node with valid but
+ * incorrect parameters, and then setting them to the correct values in the executable graph. The
+ * graph is run and it is verified that the graph node waits for the external binary semaphore and
+ * operation finishes successfully.
+ * Test source
+ * ------------------------
+ *    - unit/vulkan_interop/hipGraphExecExternalSemaphoresWaitNodeSetParams.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipGraphExecExternalSemaphoresWaitNodeSetParams_Positive_Basic") {
   WaitExternalSemaphoreCommon(GraphExecSemaphoreSetParamsWaitWrapper);
 }
 
 // Timeline semaphores unsupported on AMD
 #if HT_NVIDIA
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify that node parameters get updated correctly by creating a node with valid but
+ * incorrect parameters, and then setting them to the correct values in the executable graph. The
+ * graph is run and it is verified that the graph node waits for the external timeline semaphore and
+ * operation finishes successfully.
+ * Test source
+ * ------------------------
+ *    - unit/vulkan_interop/hipGraphExecExternalSemaphoresWaitNodeSetParams.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 6.0
+ */
 TEST_CASE(
     "Unit_hipGraphExecExternalSemaphoresWaitNodeSetParams_Vulkan_Positive_Timeline_Semaphore") {
   WaitExternalTimelineSemaphoreCommon(GraphExecSemaphoreSetParamsWaitWrapper);
 }
 #endif
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Verify that node parameters get updated correctly by creating a node with valid but
+ * incorrect parameters, and then setting them to the correct values in the executable graph. The
+ * graph is run and it is verified that the graph node waits for the external binary semaphores and
+ * operation finishes successfully.
+ * Test source
+ * ------------------------
+ *    - unit/vulkan_interop/hipGraphExecExternalSemaphoresWaitNodeSetParams.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 6.0
+ */
 TEST_CASE(
     "Unit_hipGraphExecExternalSemaphoresWaitNodeSetParams_Vulkan_Positive_Multiple_Semaphores") {
   WaitExternalMultipleSemaphoresCommon(GraphExecSemaphoreSetParamsWaitWrapper);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipGraphExecExternalSemaphoresWaitNodeSetParams behavior with invalid
+ * arguments:
+ *    -# Nullptr graphexec
+ *    -# Nullptr graph node
+ *    -# Nullptr params
+ * Test source
+ * ------------------------
+ *  - /unit/vulkan_interop/hipGraphExecExternalSemaphoresWaitNodeSetParams.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipGraphExecExternalSemaphoresWaitNodeSetParams_Vulkan_Negative_Parameters") {
   hipGraph_t graph = nullptr;
   HIP_CHECK(hipGraphCreate(&graph, 0));

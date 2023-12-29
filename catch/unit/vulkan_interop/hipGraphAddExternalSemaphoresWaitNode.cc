@@ -25,21 +25,92 @@ THE SOFTWARE.
 #include "wait_semaphore_common.hh"
 #include "graph_tests_common.hh"
 
+/**
+ * @addtogroup hipGraphAddExternalSemaphoresWaitNode hipGraphAddExternalSemaphoresWaitNode
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphAddExternalSemaphoresWaitNode(hipGraphNode_t* pGraphNode, hipGraph_t graph, const
+ * hipGraphNode_t* pDependencies, size_t numDependencies, const hipExternalSemaphoreWaitNodeParams*
+ * nodeParams)` - Creates a external semaphor wait node and adds it to a graph.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates two host visible Vulkan buffers.
+ *  - Adds a buffer copy command which will copy from one buffer to another.
+ *  - Creates an external Vulkan binary semaphore.
+ *  - Creates a Vulkan fence and signals semaphore asynchronously.
+ *  - Waits for the operation to finish successfully.
+ * Test source
+ * ------------------------
+ *  - unit/vulkan_interop/hipGraphAddExternalSemaphoresWaitNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+
 TEST_CASE("Unit_hipGraphAddExternalSemaphoresWaitNode_Positive_Basic") {
   WaitExternalSemaphoreCommon(GraphExtSemaphoreWaitWrapper<>);
 }
 
 // Timeline semaphores unsupported on AMD
 #if HT_NVIDIA
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates an external Vulkan timeline semaphore.
+ *  - Imports the semaphore and signals.
+ *  - Waits for the operation to finish successfully.
+ * Test source
+ * ------------------------
+ *  - unit/vulkan_interop/hipGraphAddExternalSemaphoresWaitNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipGraphAddExternalSemaphoresWaitNode_Vulkan_Positive_Timeline_Semaphore") {
   WaitExternalTimelineSemaphoreCommon(GraphExtSemaphoreWaitWrapper<>);
 }
 #endif
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates two host visible Vulkan buffers.
+ *  - Adds a buffer copy command which will copy from one buffer to another.
+ *  - Creates multiple external Vulkan binary semaphores.
+ *  - Createas a Vulkan fence and signals semaphores.
+ *  - Waits for the operations to finish successfully.
+ * Test source
+ * ------------------------
+ *  - unit/vulkan_interop/hipGraphAddExternalSemaphoresWaitNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipGraphAddExternalSemaphoresWaitNode_Vulkan_Positive_Multiple_Semaphores") {
   WaitExternalMultipleSemaphoresCommon(GraphExtSemaphoreWaitWrapper<>);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipGraphAddExternalSemaphoresWaitNode behavior with invalid arguments:
+ *    -# Nullptr graph
+ *    -# Nullptr graph node
+ *    -# Invalid numDependencies for null list of dependencies
+ *    -# Node in dependency is from different graph
+ *    -# Invalid numNodes
+ *    -# Duplicate node in dependencies
+ * Test source
+ * ------------------------
+ *  - /unit/vulkan_interop/hipGraphAddExternalSemaphoresWaitNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
 TEST_CASE("Unit_hipGraphAddExternalSemaphoresWaitNode_Vulkan_Negative_Parameters") {
   using namespace std::placeholders;
   hipGraph_t graph = nullptr;

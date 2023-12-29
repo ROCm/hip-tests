@@ -104,6 +104,7 @@ struct CPUMultiGrid {
   unsigned int thread_count_;
 };
 
+/* Generate dimensions for 1D, 2D and 3D blocks of threads */
 inline dim3 GenerateThreadDimensions() {
   hipDeviceProp_t props;
   HIP_CHECK(hipGetDeviceProperties(&props, 0));
@@ -125,6 +126,7 @@ inline dim3 GenerateThreadDimensions() {
       dim3(props.warpSize + 1, 3, 3));
 }
 
+/* Generate dimensions for 1D, 2D and 3D grids of blocks */
 inline dim3 GenerateBlockDimensions() {
   hipDeviceProp_t props;
   HIP_CHECK(hipGetDeviceProperties(&props, 0));
@@ -142,6 +144,7 @@ inline dim3 GenerateBlockDimensions() {
                        dim3(5, 5, 5));
 }
 
+/* Generate dimensions for 1D, 2D and 3D blocks of threads - reduced set */
 inline dim3 GenerateThreadDimensionsForShuffle() {
   hipDeviceProp_t props;
   HIP_CHECK(hipGetDeviceProperties(&props, 0));
@@ -162,6 +165,7 @@ inline dim3 GenerateThreadDimensionsForShuffle() {
       dim3(props.warpSize + 1, 3, 3));
 }
 
+/* Generate dimensions for 1D, 2D and 3D grids of blocks - reduced set */
 inline dim3 GenerateBlockDimensionsForShuffle() {
   hipDeviceProp_t props;
   HIP_CHECK(hipGetDeviceProperties(&props, 0));

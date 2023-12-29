@@ -375,7 +375,8 @@ TEST_CASE("Unit_hipGraphAddNodeTypeMemcpy_Positive_Basic") {
  * Test Description
  * ------------------------
  *    - Verify basic API functionality where one event record node is added to graph with
- * hipGraphAddNode and its correct behavior is verified. Test source
+ * hipGraphAddNode and its correct behavior is verified.
+ * Test source
  * ------------------------
  *    - unit/graph/hipGraphAddNode.cc
  * Test requirements
@@ -412,7 +413,8 @@ TEST_CASE("Unit_hipGraphAddNodeTypeEventRecord_Positive_Basic") {
  * Test Description
  * ------------------------
  *    - Verify basic API functionality where one event record and one event wait nodes are added to
- * graph with hipGraphAddNode and their correct behavior is verified. Test source
+ * graph with hipGraphAddNode and their correct behavior is verified.
+ * Test source
  * ------------------------
  *    - unit/graph/hipGraphAddNode.cc
  * Test requirements
@@ -457,7 +459,8 @@ TEST_CASE("Unit_hipGraphAddNodeTypeEventWait_Positive_Basic") {
  * ------------------------
  *  - Test to verify basic API functionality when memalloc and memfree nodes are added with
  * hipGraphAddNode. Verify that memory is allocated correctly and graph behaves as expected when
- * free node is added to the same graph. Test source
+ * free node is added to the same graph.
+ * Test source
  * ------------------------
  *  - /unit/graph/hipGraphAddNode.cc
  * Test requirements

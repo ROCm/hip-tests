@@ -144,21 +144,6 @@ THE SOFTWARE.
  * @}
  */
 
- /**
- * @defgroup StreamOTest Ordered Memory Allocator
- * @{
- * This section describes the tests for Stream Ordered Memory Allocator functions of HIP runtime
- * API.
- * @}
- */
-
-/**
- * @defgroup StreamOTest Ordered Memory Allocator
- * @{
- * This section describes the tests for Stream Ordered Memory Allocator functions of HIP runtime
- * API.
- */
-
 /**
  * @defgroup StreamOTest Ordered Memory Allocator
  * @{
@@ -170,13 +155,6 @@ THE SOFTWARE.
  * @defgroup StreamTest Stream Management
  * @{
  * This section describes the stream management types & functions of HIP runtime API.
- * @}
- */
-
-/**
- * @defgroup PerformanceTest Performance tests
- * @{
- * This section describes performance tests for the target API groups and use-cases.
  * @}
  */
 
@@ -209,7 +187,6 @@ THE SOFTWARE.
  */
 
  /**
- * @defgroup ComplexTest Complex type
  * @{
  * This section describes tests for the Complex type functions.
  * @}

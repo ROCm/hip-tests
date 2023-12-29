@@ -171,10 +171,3 @@ THE SOFTWARE.
  * This section describes the various Printf use case Scenarios.
  * @}
  */
-
-/**
- * @defgroup DeviceLanguageTest Device Language
- * @{
- * This section describes tests for the Device Language API.
- * @}
- */

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 - 2024 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -44,7 +44,8 @@ Negative -
 #include <vector>
 #include <numeric>
 
-static void validateMemcpyNode1DArray(bool peerAccess) {
+static void validateMemcpyNode1DArray(bool peerAccess,
+            hipMemcpyKind d2d_type = hipMemcpyDeviceToDevice) {
   constexpr int SIZE{32};
   int harray1D[SIZE]{};
   int harray1Dres[SIZE]{};
@@ -79,7 +80,7 @@ static void validateMemcpyNode1DArray(bool peerAccess) {
 
   // Device to Device (devArray1 -> devArray2)
   HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyD2D, graph, &memcpyH2D, 1,
-                     devArray2, devArray1, numBytes, hipMemcpyDeviceToDevice));
+                     devArray2, devArray1, numBytes, d2d_type));
 
   // Device to host (devArray2 -> harray1Dres)
   HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyD2H, graph, &memcpyD2D, 1,
@@ -119,7 +120,9 @@ TEST_CASE("Unit_hipGraphAddMemcpyNode1D_Functional") {
   SECTION("Memcpy with 1D array on default device") {
     validateMemcpyNode1DArray(false);
   }
-
+  SECTION("Memcpy with 1D array using DeviceToDeviceNoCU") {
+    validateMemcpyNode1DArray(false, hipMemcpyDeviceToDeviceNoCU);
+  }
   SECTION("Memcpy with 1D array on peer device") {
     int numDevices{}, peerAccess{};
     HIP_CHECK(hipGetDeviceCount(&numDevices));

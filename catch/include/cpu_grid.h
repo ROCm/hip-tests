@@ -92,10 +92,11 @@ struct CPUMultiGrid {
   inline unsigned int thread0_rank_in_multi_grid(const unsigned int grid_rank) const {
     unsigned int multi_grid_thread_rank_0 = 0;
     unsigned int multi_grid_thread_count = 0;
-    for (int i = 0; i <= grid_rank; i++) {
+    for (int i = 0; i < grid_rank; i++) {
       multi_grid_thread_rank_0 = multi_grid_thread_count;
       multi_grid_thread_count += grids_[i].thread_count_;
     }
+    multi_grid_thread_rank_0 = multi_grid_thread_count;
     return multi_grid_thread_rank_0;
   }
 

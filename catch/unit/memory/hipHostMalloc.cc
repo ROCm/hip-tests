@@ -48,7 +48,7 @@ static constexpr size_t sizeBytes{numElements * sizeof(int)};
 
 #if HT_AMD
 static __global__ void kerTestMemAccess(char *buf) {
-  int myId = threadIdx.x + blockDim.x * blockIdx.x;
+  size_t myId = threadIdx.x + blockDim.x * blockIdx.x;
   buf[myId] = VALUE;
 }
 #endif

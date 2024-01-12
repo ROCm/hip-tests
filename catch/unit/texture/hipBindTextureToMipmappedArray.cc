@@ -19,7 +19,9 @@ THE SOFTWARE.
 
 #pragma clang diagnostic ignored "-Wunused-parameter"
 #include <hip_test_common.hh>
+#include <hip_test_checkers.hh>
 
+#if (!HT_NVIDIA) || (CUDA_VERSION < CUDA_12000)
 /**
  * @addtogroup hipBindTextureToMipmappedArray hipBindTextureToMipmappedArray
  * @{
@@ -28,15 +30,16 @@ THE SOFTWARE.
  * hipMipmappedArray_const_t mipmappedArray, const hipChannelFormatDesc* desc)` -
  * Binds a mipmapped array to a texture.
  */
-
 texture<float, 2, hipReadModeElementType> texRef;
 
 // MipMap is currently supported only on windows
 #if (defined(_WIN32) && !defined(__HIP_NO_IMAGE_SUPPORT))
-__global__ void tex2DKernel(float* outputData, int width, float level) {
+__global__ void tex2DKernel(float* outputData, int width, int height, float level) {
   int x = blockIdx.x * blockDim.x + threadIdx.x;
   int y = blockIdx.y * blockDim.y + threadIdx.y;
-  outputData[y * width + x] = tex2DLod<float>(texRef, x, y, level);
+  float u = x / (float)width;
+  float v = y / (float)height;
+  outputData[y * width + x] = tex2DLod<float>(texRef, u, v, level);
 }
 
 static void runMipMapTest(unsigned int width, unsigned int height, unsigned int mipmap_level) {
@@ -67,7 +70,7 @@ static void runMipMapTest(unsigned int width, unsigned int height, unsigned int 
                                     make_hipExtent(orig_width, orig_height, 0), 2 * mipmap_level,
                                     hipArrayDefault));
 
-  hipArray* hipArray = nullptr;
+  hipArray_t hipArray = nullptr;
   HIP_CHECK(hipGetMipmappedArrayLevel(&hipArray, mip_array_ptr, mipmap_level));
   HIP_CHECK(hipMemcpy2DToArray(hipArray, 0, 0, hData, width * sizeof(float), width * sizeof(float),
                                height, hipMemcpyHostToDevice));
@@ -76,7 +79,7 @@ static void runMipMapTest(unsigned int width, unsigned int height, unsigned int 
   texRef.addressMode[0] = hipAddressModeWrap;
   texRef.addressMode[1] = hipAddressModeWrap;
   texRef.filterMode = hipFilterModePoint;
-  texRef.normalized = 0;
+  texRef.normalized = 1;
 
   // Bind the array to the texture
   HIP_CHECK(hipBindTextureToMipmappedArray(&texRef, mip_array_ptr, &channelDesc));
@@ -89,7 +92,8 @@ static void runMipMapTest(unsigned int width, unsigned int height, unsigned int 
   dim3 dimBlock(16, 16, 1);
   dim3 dimGrid(width / dimBlock.x, height / dimBlock.y, 1);
 
-  hipLaunchKernelGGL(tex2DKernel, dim3(dimGrid), dim3(dimBlock), 0, 0, dData, width, mipmap_level);
+  hipLaunchKernelGGL(tex2DKernel, dim3(dimGrid), dim3(dimBlock), 0, 0, dData,
+    width, height, mipmap_level);
   HIP_CHECK(hipGetLastError());
   HIP_CHECK(hipDeviceSynchronize());
 
@@ -135,7 +139,7 @@ TEST_CASE("Unit_hipTextureMipmapRef2D_Positive_Check") {
   // Height Width Vector
   std::vector<unsigned int> hw_vec = {2048, 1024, 512, 256, 64};
   std::vector<unsigned int> mip_vec = {8, 4, 2, 1};
-#ifdef _WIN32
+#if (defined(_WIN32) && !defined(__HIP_NO_IMAGE_SUPPORT))
   for (auto& hw : hw_vec) {
     for (auto& mip : mip_vec) {
       if ((hw / static_cast<int>(pow(2, (mip * 2)))) > 0) {
@@ -144,7 +148,8 @@ TEST_CASE("Unit_hipTextureMipmapRef2D_Positive_Check") {
     }
   }
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  SUCCEED("Mipmaps are Supported only on windows on devices with image support,"
+    " skipping the test.");
 #endif
 }
 
@@ -170,7 +175,7 @@ TEST_CASE("Unit_hipTextureMipmapRef2D_Positive_Check") {
 TEST_CASE("Unit_hipTextureMipmapRef2D_Negative_Parameters") {
   CHECK_IMAGE_SUPPORT
 
-#ifdef _WIN32
+#if (defined(_WIN32) && !defined(__HIP_NO_IMAGE_SUPPORT))
   unsigned int width = 64;
   unsigned int height = 64;
   unsigned int mipmap_level = 1;
@@ -204,6 +209,8 @@ TEST_CASE("Unit_hipTextureMipmapRef2D_Negative_Parameters") {
 
   HIP_CHECK(hipFreeMipmappedArray(mip_array_ptr));
 #else
-  SUCCEED("Mipmaps are Supported only on windows, skipping the test.");
+  SUCCEED("Mipmaps are Supported only on windows on devices with image support,"
+    " skipping the test.");
 #endif
 }
+#endif

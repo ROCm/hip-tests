@@ -60,6 +60,8 @@ TEST_CASE("Unit_RTC_LinkerAPI") {
   std::vector<char> code(codesize, '\0');
   HIPRTC_CHECK(hiprtcGetBitcode(program, &code[0]));
 
+  HIPRTC_CHECK(hiprtcDestroyProgram(&program));
+
   const char* isaopts[] = {"-mllvm", "-inline-threshold=1", "-mllvm", "-inlinehint-threshold=1"};
   std::vector<hiprtcJIT_option> jit_options = {HIPRTC_JIT_IR_TO_ISA_OPT_EXT,
                                                HIPRTC_JIT_IR_TO_ISA_OPT_COUNT_EXT};
@@ -119,6 +121,7 @@ TEST_CASE("Unit_RTC_LinkerAPI") {
   HIP_CHECK(hipFree(dY));
   HIP_CHECK(hipFree(dOut));
 
+  HIPRTC_CHECK(hiprtcLinkDestroy(linkstate));
   HIP_CHECK(hipModuleUnload(module));
 
   for (size_t i = 0; i < n; ++i) {

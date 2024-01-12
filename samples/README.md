@@ -1,37 +1,44 @@
 Build procedure
 
-The CMakeLists.txt at hip-tests/samples folder is currently used for packaging purpose.
-We provide Makefile and CMakeLists.txt to build the samples seperately.
+The CMakeLists.txt at hip-tests/samples folder can be used for building and packaging samples.
 
-1.Makefile supports shared lib of hip-rocclr runtime and nvcc.
-
-To build a sample, just type in sample folder,
-
-make
-
-
-
-2.CMakeLists.txt can support shared and static libs of hip-rocclr runtime.
+CMakeLists.txt can support shared and static libs of hip-rocclr runtime.
 The same steps can be followed for both.
 
-To build a sample, run in the sample folder,
+1. To build a specific sample (e.g. 0_Intro/bit_extract) run ..
+
+cd samples/0_Intro/bit_extract
+
+mkdir -p build && cd build
+
+cmake ..
+
+make all
+
+2. To build all samples together run ..
+
+cd hip-tests
 
 mkdir -p build && cd build
 
 rm -rf * (to clear up)
 
-cmake -DCMAKE_PREFIX_PATH=<path/to/rocm> -DHIP_CXX_COMPILER=<path/to/clang> ..
+cmake ../samples
 
-Then run,
+make build_samples
 
-make
+In order to build specific samples (Intro, Utils or Cookbook) run ..
+
+make build_intro
+make build_utils
+make build_cookbook
 
 Note that if you want debug version, add "-DCMAKE_BUILD_TYPE=Debug" in cmake cmd.
 
-
-3.To package samples and generate packages. From hip-tests/build
+3. To package samples and generate packages. From hip-tests/build
 
 cmake ../samples
 
 make package_samples
 
+## Note: sample 2_Cookbook/22_cmake_hip_lang is current not included in toplevel cmake. To build this sample from toplevel cmake, uncomment Line 43 inside samples/2_Cookbook/CMakeLists.txt. 

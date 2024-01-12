@@ -31,13 +31,19 @@ project(hipVulkan)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake;${CMAKE_MODULE_PATH}")
 
+if(UNIX)
+  if(NOT DEFINED ROCM_PATH)
+    set(ROCM_PATH "/opt/rocm" CACHE STRING "Default ROCM installation directory.")
+  endif()
+  # Search for rocm in common locations
+  list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
+endif()
+
 # need to set rocm_path for windows
 # since clang and hip are two different folders during build/install step
 if (WIN32 AND HIPINFO_INTERNAL_BUILD)
      set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --rocm-path=${CMAKE_PREFIX_PATH}")
 endif()
-
-
 
 # Find hip
 find_package(hip REQUIRED)
@@ -90,3 +96,6 @@ else (WIN32)
   target_link_libraries(hipVulkan hip::host vulkan glfw)
 endif (WIN32)
 
+if(TARGET build_cookbook)
+add_dependencies(build_cookbook hipVulkan)
+endif()

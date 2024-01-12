@@ -27,7 +27,8 @@ THE SOFTWARE.
 #include <catch.hpp>
 #include <atomic>
 #include <chrono>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdlib>
 #include <iostream>
 #include <iomanip>
 #include <mutex>
@@ -101,6 +102,19 @@ THE SOFTWARE.
     }                                                                                              \
   }
 
+// Check that an expression, errorExpr, evaluates to the expected error_t, expectedError.
+#define HIPRTC_CHECK_ERROR(errorExpr, expectedError)                                               \
+  {                                                                                                \
+    auto localError = errorExpr;                                                                   \
+    INFO("Matching Errors: "                                                                       \
+         << "\n    Expected Error: " << hiprtcGetErrorString(expectedError)                        \
+         << "\n    Expected Code: " << expectedError << '\n'                                       \
+         << "                  Actual Error:   " << hiprtcGetErrorString(localError)               \
+         << "\n    Actual Code:   " << localError << "\nStr: " << #errorExpr                       \
+         << "\n    In File: " << __FILE__ << "\n    At line: " << __LINE__);                       \
+    REQUIRE(localError == expectedError);                                                          \
+  }
+
 // Although its assert, it will be evaluated at runtime
 #define HIP_ASSERT(x)                                                                              \
   { REQUIRE((x)); }
@@ -128,7 +142,7 @@ THE SOFTWARE.
 #define CTX_DESTROY() HIPCHECK(hipCtxDestroy(context));
 #define ARRAY_DESTROY(array) HIPCHECK(hipArrayDestroy(array));
 #define HIP_TEX_REFERENCE hipTexRef
-#define HIP_ARRAY hiparray
+#define HIP_ARRAY hipArray_t
 static void initHipCtx(hipCtx_t* pcontext) {
   HIPCHECK(hipInit(0));
   hipDevice_t device;
@@ -140,7 +154,7 @@ static void initHipCtx(hipCtx_t* pcontext) {
 #define CTX_DESTROY()
 #define ARRAY_DESTROY(array) HIPCHECK(hipFreeArray(array));
 #define HIP_TEX_REFERENCE textureReference*
-#define HIP_ARRAY hipArray*
+#define HIP_ARRAY hipArray_t
 #endif
 
 static inline bool IsGfx11() {

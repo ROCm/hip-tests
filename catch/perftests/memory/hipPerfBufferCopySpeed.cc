@@ -245,7 +245,7 @@ TEST_CASE("Perf_hipPerfBufferCopySpeed_test") {
   } else {
     int deviceId = 0;
     HIP_CHECK(hipSetDevice(deviceId));
-    hipDeviceProp_t props = {0};
+    hipDeviceProp_t props;
     HIP_CHECK(hipGetDeviceProperties(&props, deviceId));
 
     INFO("hipPerfBufferCopySpeed - info: Set device to " << deviceId

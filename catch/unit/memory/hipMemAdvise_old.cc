@@ -685,7 +685,7 @@ TEST_CASE("Unit_hipMemAdvise_TstAlignedAllocMem") {
       // The following hipMemAdvise() call is made to know if advise on
       // aligned_alloc() is causing any issue
       HIP_CHECK(hipMemAdvise(Mllc, MemSz, hipMemAdviseSetPreferredLocation, 0));
-      HIP_CHECK(hipMemPrefetchAsync(Mllc, MemSz, 0, strm));
+      HIP_CHECK_ERROR(hipMemPrefetchAsync(Mllc, MemSz, 0, strm), hipErrorInvalidValue);
       HIP_CHECK(hipStreamSynchronize(strm));
       MemAdvise2<<<(NumElms/32), 32, 0, strm>>>(Mllc, NumElms);
       HIP_CHECK(hipStreamSynchronize(strm));
@@ -695,7 +695,7 @@ TEST_CASE("Unit_hipMemAdvise_TstAlignedAllocMem") {
           }
         }
       REQUIRE(DataMismatch == 0);
-      } 
+      }
   } else {
       HipTest::HIP_SKIP_TEST("GPU is not xnack enabled hence skipping the test...\n");
     }

@@ -6,6 +6,8 @@ set(CMAKE_CXX_COMPILER_WORKS 1)
 
 project(hiptests)
 
+option(ASAN_BUILD "Option to enable ASAN build" OFF)
+
 # flag to generate standalone exe per src file.
 message(STATUS "STANDALONE_TESTS : ${STANDALONE_TESTS}")
 
@@ -19,15 +21,15 @@ if(WIN32)
 endif()
 
 if(HIP_PLATFORM STREQUAL "amd")
-   if(UNIX AND DEFINED ROCM_PATH)
-      # Read -DROCM_PATH and set CXX_FLAGS for amd platform only
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --rocm-path=${ROCM_PATH}")
-   endif()
+    if(UNIX AND DEFINED ROCM_PATH)
+        # Read -DROCM_PATH and set CXX_FLAGS for amd platform only
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --rocm-path=${ROCM_PATH}")
+    endif()
 
-   if(DEFINED HIP_PATH)
-      # Read -DHIP_PATH and set CXX_FLAGS for amd platform only
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --hip-path=${HIP_PATH}")
-   endif()
+    if(DEFINED HIP_PATH)
+        # Read -DHIP_PATH and set CXX_FLAGS for amd platform only
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --hip-path=${HIP_PATH}")
+    endif()
 endif()
 
 # Read -DHIP_PATH
@@ -41,13 +43,19 @@ if(WIN32)
 endif()
 
 if(NOT DEFINED HIP_PATH)
-   if(DEFINED ROCM_PATH)
-      set(HIP_PATH ${ROCM_PATH})
-   else()
-      set(HIP_PATH "/opt/rocm")
-   endif()
+    if(DEFINED ROCM_PATH)
+        set(HIP_PATH ${ROCM_PATH})
+    else()
+        set(HIP_PATH "/opt/rocm")
+    endif()
 endif()
+
+if(NOT DEFINED ROCM_PATH)
+    set(ROCM_PATH "/opt/rocm")
+endif()
+
 message(STATUS "HIP_PATH: ${HIP_PATH}")
+message(STATUS "ROCM_PATH: ${ROCM_PATH}")
 
 set(CMAKE_CXX_COMPILER "${HIP_PATH}/bin/hipcc${EXT}")
 set(CMAKE_C_COMPILER "${HIP_PATH}/bin/hipcc${EXT}")
@@ -59,12 +67,21 @@ execute_process(COMMAND ${HIPCONFIG_EXECUTABLE} --version
 # enforce c++17
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++17")
 
+# Address sanitizer options
+if(ASAN_BUILD)
+    message(STATUS "Building catch tests with Address Sanitizer options")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -shared-libasan -g -gz")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -shared-libasan -g -gz")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-new-dtags -fuse-ld=lld -fsanitize=address -shared-libasan -g -gz -Wl,--build-id=sha1 -L${ROCM_PATH}/lib/asan")
+endif()
+
 string(REPLACE "." ";" VERSION_LIST ${HIP_VERSION})
 list(GET VERSION_LIST 0 HIP_VERSION_MAJOR)
 list(GET VERSION_LIST 1 HIP_VERSION_MINOR)
 list(GET VERSION_LIST 2 HIP_VERSION_PATCH_GITHASH)
 string(REPLACE "-" ";" VERSION_LIST ${HIP_VERSION_PATCH_GITHASH})
 list(GET VERSION_LIST 0 HIP_VERSION_PATCH)
+list(GET VERSION_LIST 1 HIP_VERSION_GITHASH)
 
 if(DEFINED ENV{ROCM_LIBPATCH_VERSION})
    set(HIP_PACKAGING_VERSION_PATCH ${HIP_VERSION_PATCH}.$ENV{ROCM_LIBPATCH_VERSION})
@@ -118,7 +135,13 @@ endif()
 add_definitions(-DKERNELS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/kernels/")
 
 set(CATCH_BUILD_DIR catch_tests)
-file(COPY ./hipTestMain/config DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/hipTestMain)
+execute_process(COMMAND ${CMAKE_COMMAND} -E
+                make_directory ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/hipTestMain/config)
+file(GLOB JSON_FILES "./hipTestMain/config/*.json")
+foreach(json IN LISTS JSON_FILES)
+    file(COPY ${json}
+         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/hipTestMain/config/)
+endforeach()
 file(COPY ./external/Catch2/cmake/Catch2/CatchAddTests.cmake
      DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/script)
 file(COPY ./external/Catch2/cmake/Catch2/catch_include.cmake
@@ -146,7 +169,7 @@ if (WIN32)
 endif()
 
 if(HIP_PLATFORM STREQUAL "amd")
-    add_compile_options(-Wall -Wextra -Werror -Wno-deprecated)
+    add_compile_options(-Wall -Wextra -Wvla -Werror -Wno-deprecated -Wno-option-ignored)
 endif()
 
 cmake_policy(PUSH)
@@ -172,23 +195,22 @@ message(STATUS "CMAKE HIP ARCHITECTURES: ${CMAKE_HIP_ARCHITECTURES}")
 if(NOT DEFINED OFFLOAD_ARCH_STR
    AND EXISTS "${ROCM_PATH}/bin/rocm_agent_enumerator"
    AND HIP_PLATFORM STREQUAL "amd" AND UNIX)
-    execute_process(COMMAND ${ROCM_PATH}/bin/rocm_agent_enumerator
+    execute_process(COMMAND "${ROCM_PATH}/bin/rocm_agent_enumerator"
          OUTPUT_VARIABLE HIP_GPU_ARCH
-         RESULT_VARIABLE ROCM_AGENT_ENUM_RESULT)
+         RESULT_VARIABLE ROCM_AGENT_ENUM_RESULT
+         OUTPUT_STRIP_TRAILING_WHITESPACE)
     # Trim out gfx000
     string(REPLACE "gfx000\n" "" HIP_GPU_ARCH ${HIP_GPU_ARCH})
     if (NOT HIP_GPU_ARCH STREQUAL "")
-        string(LENGTH ${HIP_GPU_ARCH} HIP_GPU_ARCH_LEN)
-        # If string has more gfx target except gfx000
-        if(${HIP_GPU_ARCH_LEN} GREATER_EQUAL 1)
-            string(REGEX REPLACE "\n" ";" HIP_GPU_ARCH_LIST "${HIP_GPU_ARCH}")
-            set(OFFLOAD_ARCH_STR "")
-            foreach(_hip_gpu_arch ${HIP_GPU_ARCH_LIST})
-                set(OFFLOAD_ARCH_STR "--offload-arch=${_hip_gpu_arch} ${OFFLOAD_ARCH_STR}")
-            endforeach()
-        endif()
+        string(REGEX REPLACE "\n" ";" HIP_GPU_ARCH_LIST "${HIP_GPU_ARCH}")
+        list(REMOVE_DUPLICATES  HIP_GPU_ARCH_LIST)
+        list(LENGTH HIP_GPU_ARCH_LIST HIP_GPU_ARCH_LEN)
+        set(OFFLOAD_ARCH_STR "")
+        foreach(_hip_gpu_arch ${HIP_GPU_ARCH_LIST})
+            set(OFFLOAD_ARCH_STR "--offload-arch=${_hip_gpu_arch} ${OFFLOAD_ARCH_STR}")
+        endforeach()
     else()
-        message(STATUS "ROCm Agent Enumurator found no valid architectures")
+        message(STATUS "ROCm Agent Enumerator found no valid architectures")
     endif()
 elseif(DEFINED OFFLOAD_ARCH_STR)
     string(REPLACE "--offload-arch=" "" HIP_GPU_ARCH_LIST ${OFFLOAD_ARCH_STR})
@@ -210,7 +232,44 @@ if(git_result EQUAL 0)
   set(HIP_TESTS_GITHASH ${git_output})
 endif()
 
+set(OFFLOAD_ARCH_LIST ${OFFLOAD_ARCH_STR})
+separate_arguments(OFFLOAD_ARCH_LIST)
+list(REMOVE_DUPLICATES  OFFLOAD_ARCH_LIST)
+set(hip_gpu_arch_list "")
+foreach(__offload_arch ${OFFLOAD_ARCH_LIST})
+    string(REPLACE "--offload-arch=" "" targetid ${__offload_arch})
+    string(REPLACE ":" ";" target_id_list ${targetid})
+    list(GET target_id_list 0 arch)
+    string(APPEND hip_gpu_arch_list "${arch};")
+    list(REMOVE_DUPLICATES  hip_gpu_arch_list)
+endforeach()
 
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/hipTestMain/config)
+set(config_gen_path ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/hipTestMain/config)
+if(WIN32)
+    set(configToUse "config_amd_windows")
+    set(config_file ${CMAKE_SOURCE_DIR}/hipTestMain/config/${configToUse})
+    set(json_file ${config_gen_path}/${configToUse}.json)
+    set(CLANG_CPP "${HIP_PATH}/../lc/bin/clang-cpp.exe")
+
+    set(cmd "${CLANG_CPP} -P -DGITHASH=\"${HIP_VERSION_GITHASH}\" ${config_file}>${json_file}")
+    message(${cmd})
+    execute_process(COMMAND cmd.exe /C ${cmd}
+    RESULT_VARIABLE json_result)
+    message(STATUS "${configToUse}.json file generation result: ${json_result}")
+else()
+    set(configToUse "config_amd_linux")
+    foreach(arch ${hip_gpu_arch_list})
+        set(config_file ${CMAKE_SOURCE_DIR}/hipTestMain/config/${configToUse})
+        set(config_gen_path ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/hipTestMain/config)
+        set(json_file ${config_gen_path}/${configToUse}_${arch}.json)
+        set(cmd "${ROCM_PATH}/llvm/bin/clang-cpp -P -D${arch} -DGITHASH=\\\"${HIP_VERSION_GITHASH}\\\" ${config_file}>${json_file}")
+        message(${cmd})
+        execute_process(COMMAND bash -c ${cmd}
+        RESULT_VARIABLE json_result)
+        message(STATUS "${configToUse}_${arch}.json file generation result: ${json_result}")
+    endforeach()
+endif()
 # prints the catch info to a file
 string(TIMESTAMP _timestamp UTC)
 set(_autogen "# Auto-generated by cmake on ${_timestamp} UTC\n")
@@ -233,7 +292,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_custom_target(build_tests)
 
-
 # Tests folder
 add_subdirectory(unit ${CATCH_BUILD_DIR}/unit)
 add_subdirectory(ABM ${CATCH_BUILD_DIR}/ABM)
@@ -242,9 +300,7 @@ add_subdirectory(hipTestMain ${CATCH_BUILD_DIR}/hipTestMain)
 add_subdirectory(stress ${CATCH_BUILD_DIR}/stress)
 add_subdirectory(TypeQualifiers ${CATCH_BUILD_DIR}/TypeQualifiers)
 add_subdirectory(perftests ${CATCH_BUILD_DIR}/perftests)
-if(UNIX)
-   add_subdirectory(multiproc ${CATCH_BUILD_DIR}/multiproc)
-endif()
+add_subdirectory(multiproc ${CATCH_BUILD_DIR}/multiproc)
 add_subdirectory(performance ${CATCH_BUILD_DIR}/performance)
 
 cmake_policy(POP)

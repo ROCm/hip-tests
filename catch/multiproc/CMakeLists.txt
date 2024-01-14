@@ -18,7 +18,7 @@ set(TEST_SRC
 )
 
 if(UNIX)
-    add_custom_target(dummy_kernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${CMAKE_CURRENT_SOURCE_DIR}/dummy_kernel.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../multiproc/dummy_kernel.code -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include)
+    add_custom_target(dummy_kernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${CMAKE_CURRENT_SOURCE_DIR}/dummy_kernel.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../multiproc/dummy_kernel.code -I${HIP_PATH}/include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include)
 endif()
 
 # the last argument linker libraries is required for this test but optional to the function

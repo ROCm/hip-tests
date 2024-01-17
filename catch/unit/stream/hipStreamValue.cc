@@ -563,3 +563,99 @@ TEMPLATE_TEST_CASE("Unit_hipStreamValue_Negative_InvalidFlag", "", uint32_t, uin
   HIP_CHECK(hipHostUnregister(hostPtr.get()));
   HIP_CHECK(hipStreamDestroy(stream));
 }
+
+TEMPLATE_TEST_CASE("Unit_hipStreamWriteValue_Default", "", uint32_t, uint64_t) {
+  if (!streamWaitValueSupported()) {
+    HipTest::HIP_SKIP_TEST("hipStreamWaitValue not supported on this device.");
+    return;
+  }
+
+  hipStream_t stream{nullptr};
+  HIP_CHECK(hipStreamCreate(&stream));
+  REQUIRE(stream != nullptr);
+
+  // Allocate Host Memory
+  auto hostPtr = std::make_unique<TestType>();
+
+  // Register Host Memory
+  HIP_CHECK(hipHostRegister(hostPtr.get(), sizeof(TestType), 0));
+
+  // Set dummy data
+  *hostPtr = 0x0;
+
+  HIP_CHECK(writeFunc<TestType>(stream, hostPtr.get(), 0, writeFlag));
+
+  // Cleanup
+  HIP_CHECK(hipHostUnregister(hostPtr.get()));
+  HIP_CHECK(hipStreamDestroy(stream));
+}
+
+template <typename T> __global__ void add(T* a, T* b, T* c, size_t size) {
+  size_t i = threadIdx.x;
+  if (i < size) c[i] = a[i] + b[i];
+}
+
+TEMPLATE_TEST_CASE("Unit_hipStreamWaitValue_Default", "", uint32_t, uint64_t) {
+  if (!streamWaitValueSupported()) {
+    HipTest::HIP_SKIP_TEST("hipStreamWaitValue not supported on this device.");
+    return;
+  }
+
+  auto size = GENERATE(as<size_t>{}, 100, 500, 1000);
+  // Create test data
+  std::vector<uint32_t> a(size), b(size), c(size);
+  for (size_t i = 0; i < size; i++) {
+    a[i] = b[i] = (i + 1);
+    c[i] = a[i] + b[i];
+  }
+
+  // Allocate IO memory to be used in kernel
+  uint32_t *d_a, *d_b, *d_c;
+  HIP_CHECK(hipMalloc(&d_a, sizeof(uint32_t) * size));
+  HIP_CHECK(hipMalloc(&d_b, sizeof(uint32_t) * size));
+  HIP_CHECK(hipMalloc(&d_c, sizeof(uint32_t) * size));
+
+  // Create 2 separate streams. Once would be used for data copy, other will be used to execute
+  // kernel
+  hipStream_t dataCopyStream{nullptr};
+  hipStream_t kernelExecStream{nullptr};
+  HIP_CHECK(hipStreamCreate(&dataCopyStream));
+  HIP_CHECK(hipStreamCreate(&kernelExecStream));
+  REQUIRE(dataCopyStream != nullptr);
+  REQUIRE(kernelExecStream != nullptr);
+
+  // Create memory for streams to operate on. Kernel execution stream will wait for data stream to
+  // finish copies
+  auto hostPtr = std::make_unique<TestType>();
+  HIP_CHECK(hipHostRegister(hostPtr.get(), sizeof(TestType), 0));
+  *hostPtr = 0x0;
+
+  // Perform copy operations on dataCopyStream
+  HIP_CHECK(hipMemcpyAsync(d_a, a.data(), sizeof(uint32_t) * size, hipMemcpyHostToDevice,
+                           dataCopyStream));
+  HIP_CHECK(hipMemcpyAsync(d_b, b.data(), sizeof(uint32_t) * size, hipMemcpyHostToDevice,
+                           dataCopyStream));
+  HIP_CHECK(writeFunc<TestType>(dataCopyStream, hostPtr.get(), 1, writeFlag));
+
+  // Perform operations on kernelExecStream
+  HIP_CHECK(waitFunc<TestType>(kernelExecStream, hostPtr.get(), 1, hipStreamWaitValueGte));
+  add<<<1, size, 0, kernelExecStream>>>(d_a, d_b, d_c, size);
+  HIP_CHECK(hipGetLastError());
+
+  // Synchronize both streams, copy output to host and synchronize globally
+  HIP_CHECK(hipStreamSynchronize(dataCopyStream));
+  HIP_CHECK(hipStreamSynchronize(kernelExecStream));
+
+  HIP_CHECK(hipMemcpyAsync(a.data(), d_c, sizeof(uint32_t) * size, hipMemcpyDeviceToHost,
+                           dataCopyStream));
+
+  HIP_CHECK(hipDeviceSynchronize());
+
+  // Resource cleanup and validation
+  HIP_CHECK(hipFree(d_a));
+  HIP_CHECK(hipFree(d_b));
+  HIP_CHECK(hipFree(d_c));
+  HIP_CHECK(hipStreamDestroy(dataCopyStream));
+  HIP_CHECK(hipStreamDestroy(kernelExecStream));
+  REQUIRE(a == c);
+}

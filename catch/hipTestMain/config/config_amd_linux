@@ -104,7 +104,6 @@
         "Unit_hipGraphClone_Test_hipGraphExecMemcpyNodeSetParams",
         "Unit_hipGraphClone_Test_hipGraphMemcpyNodeSetParams1D_and_exec",
         "=== Below tests fail in stress test on 30/06/23 ===",
-        "Unit_hipStreamValue_Write - TestParams<uint32_t, PtrType::HostPtr>",
         "Unit_hipMemcpyParam2DAsync_multiDevice-StreamOnDiffDevice",
         "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/96 ===",
         "Unit_hipHostGetDevicePointer_Negative",

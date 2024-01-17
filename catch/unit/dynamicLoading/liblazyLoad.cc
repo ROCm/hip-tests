@@ -19,6 +19,8 @@ THE SOFTWARE.
 #include <hip/hip_runtime.h>
 #include <hip/hip_runtime_api.h>
 
+#include <algorithm> // std::min
+
 #define CHECK_RET_VAL(cmd) \
 { \
   hipError_t error = cmd;\

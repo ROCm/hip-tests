@@ -234,7 +234,6 @@
         "Unit_atomicExch_system_Positive_Host_And_Peer_GPUs - float",
         "Unit_atomicExch_system_Positive_Host_And_Peer_GPUs - double",
         "=== SWDEV-439004: Below tests failing randomly in CQE staging ===",
-        "Unit_hipLaunchCooperativeKernel_Streams",
         "Unit_hipGLGetDevices_Positive_Basic",
         "Unit_hipGLGetDevices_Positive_Parameters",
         "Unit_hipGLGetDevices_Negative_Parameters",

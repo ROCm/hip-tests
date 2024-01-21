@@ -20,12 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* HIT_START
- * BUILD: %t %s ../../test_common.cpp NVCC_OPTIONS -std=c++11
- * TEST: %t
- * HIT_END
- */
-
 #include <hip_test_checkers.hh>
 #include <hip_test_kernels.hh>
 

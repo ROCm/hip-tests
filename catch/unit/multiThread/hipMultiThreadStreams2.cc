@@ -20,11 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* HIT_START
- * BUILD: %t %s ../../test_common.cpp NVCC_OPTIONS -std=c++11
- * TEST: %t
- * HIT_END
- */
 //This file is a port from hiprocclrtests (hipMultiThreadStreams2)
 
 

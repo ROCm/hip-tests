@@ -45,9 +45,21 @@ Index for the respective operand in the ordered fashion is provided by `%` follo
 Output Constraints are specified by an `"="` prefix as shown above ("=v"). This indicate that assemby will write to this operand, and the operand will then be made available as a return value of the asm expression. Input constraints do not have a prefix - just the constraint code. The constraint string of `"0"` says to use the assigned register for output as an input as well (it being the 0'th constraint).
 
 ## How to build and run:
-Use the make command and execute it using ./exe
-Use hipcc to build the application, which is using hcc on AMD and nvcc on nvidia.
-
+- Build the sample using cmake
+```
+$ mkdir build; cd build
+$ cmake .. -DCMAKE_PREFIX_PATH=/opt/rocm
+$ make
+```
+- Execute the sample
+```
+$ ./inline_asm
+Device name
+hipMemcpyHostToDevice time taken  =  1.057ms
+kernel Execution time             =  0.509ms
+hipMemcpyDeviceToHost time taken  =  1.254ms
+PASSED!
+```
 
 ## More Info:
 - [HIP FAQ](https://github.com/ROCm-Developer-Tools/HIP/blob/master/docs/markdown/hip_faq.md)

@@ -22,6 +22,9 @@ set(TEST_SRC
   trig_funcs.cc
   misc_funcs.cc
   remainder_and_rounding_funcs.cc
+  single_precision_intrinsics.cc
+  double_precision_intrinsics.cc
+  integer_intrinsics.cc
 )
 
 if(HIP_PLATFORM MATCHES "nvidia")
@@ -58,3 +61,18 @@ add_test(NAME Unit_Device_rounding_Negative
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
          ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
          math_rounding_negative_kernels.cc 40)
+
+add_test(NAME Unit_Single_Precision_Intrinsics_Negative
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+         single_precision_intrinsics_negative_kernels.cc 42)
+
+add_test(NAME Unit_Double_Precision_Intrinsics_Negative
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+         double_precision_intrinsics_negative_kernels.cc 18)
+
+add_test(NAME Unit_Integer_Intrinsics_Negative
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+         integer_intrinsics_negative_kernels.cc 20)

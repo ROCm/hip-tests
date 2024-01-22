@@ -18,13 +18,14 @@ THE SOFTWARE.
 */
 
 #include <hip_test_common.hh>
-#include <string.h>
 #ifdef __linux__
 #include <unistd.h>
 #endif
 #include <cstring>
 #include <cstdio>
-
+#include <map>
+#include <sstream>
+#include <vector>
 
 /**
  * @addtogroup hipDeviceGetUuid hipDeviceGetUuid
@@ -112,17 +113,14 @@ TEST_CASE("Unit_hipDeviceGetUuid_Negative") {
  * ------------------------
  *  - HIP_VERSION >= 5.7
  */
-
 TEST_CASE("Unit_hipDeviceGetUuid_From_RocmInfo") {
   int deviceCount = 0;
-  hipDevice_t device;
-  hipUUID uuid{0};
   HIP_CHECK(hipGetDeviceCount(&deviceCount));
   assert(deviceCount > 0);
 
-  FILE *fpipe;
+  FILE* fpipe;
   char command[COMMAND_LEN] = "";
-  const char *rocmInfo = "rocminfo";
+  const char* rocmInfo = "rocminfo";
 
   snprintf(command, COMMAND_LEN, "%s", rocmInfo);
   strncat(command, " | grep -i Uuid:", COMMAND_LEN);
@@ -134,24 +132,35 @@ TEST_CASE("Unit_hipDeviceGetUuid_From_RocmInfo") {
   }
   char command_op[BUFFER_LEN];
   int j = 0;
-  std::vector<std::string> output(deviceCount);  //NOLINT
+  std::map<int, std::vector<char>> uuid_map;
   while (fgets(command_op, BUFFER_LEN, fpipe)) {
     std::string rocminfo_line(command_op);
-    if ((std::string::npos != rocminfo_line.find("CPU-"))) {
+    if (std::string::npos != rocminfo_line.find("CPU-")) {
       continue;
-    } else if ((std::string::npos != rocminfo_line.find("GPU-"))) {
-        output[j] =  rocminfo_line.substr(31, 16);
+    } else if (auto loc = rocminfo_line.find("GPU-"); loc != std::string::npos) {
+      if (std::string::npos ==
+          rocminfo_line.find("GPU-XX")) {  // Only make an entry if the device is not an iGPU
+        std::vector<char> t_uuid(16, 0);
+        std::memcpy(t_uuid.data(), &rocminfo_line[loc + 4], 16);
+        uuid_map[j] = t_uuid;
+      }
     }
     j++;
   }
-  for (int dev = 0; dev < deviceCount; dev++) {
+
+  for (const auto& i : uuid_map) {
+    if (i.second.size() == 0) {
+      continue;
+    }
+    auto dev = i.first;
     HIP_CHECK(hipSetDevice(dev));
+    hipDevice_t device;
     HIP_CHECK(hipDeviceGet(&device, dev));
-    HIP_CHECK(hipDeviceGetUuid(&uuid, device));
-    REQUIRE(output[dev] == uuid.bytes);
+    hipUUID d_uuid{0};
+    HIP_CHECK(hipDeviceGetUuid(&d_uuid, device));
+    REQUIRE(memcmp(d_uuid.bytes, i.second.data(), 16) == 0);
   }
 }
-#endif
 #endif
 /**
  * Test Description
@@ -178,7 +187,8 @@ TEST_CASE("Unit_hipDeviceGetUuid_VerifyUuidFrm_hipGetDeviceProperties") {
     HIP_CHECK(hipDeviceGet(&device, dev));
     HIP_CHECK(hipDeviceGetUuid(&uuid, device));
     HIP_CHECK(hipGetDeviceProperties(&prop, dev));
-    REQUIRE(strcmp(prop.uuid.bytes, uuid.bytes) == 0);
+    REQUIRE(memcmp(uuid.bytes, prop.uuid.bytes, 16) == 0);
   }
 }
+#endif
 #endif

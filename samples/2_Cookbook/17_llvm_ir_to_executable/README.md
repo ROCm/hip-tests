@@ -84,14 +84,16 @@ Finally, using the system linker, hipcc, or clang, link the host and device obje
 If you haven't modified the GPU archs, this executable should run on the defined `gfx900`, `gfx906`, `gfx908`, `gfx1010`, `gfx1030`, `gfx1100`, `gfx1101`, `gfx1102` and `gfx1103`.
 
 ## How to build and run this sample:
-Use these make commands to compile into LLVM IR, compile IR into executable, and execute it.
-- To compile the HIP application into host and device LLVM IR: `make src_to_ir`.
-- To disassembly the LLVM IR bitcode into human readable LLVM IR: `make bc_to_ll`.
-- To assembly the human readable LLVM IR bitcode back into LLVM IR bitcode: `make ll_to_bc`.
-- To compile the LLVM IR files into an executable: `make ir_to_exec`.
-- To execute, run
+- Build the sample using cmake
 ```
-./square_ir.out
+$ mkdir build; cd build
+$ cmake .. -DCMAKE_PREFIX_PATH=/opt/rocm
+$ make
+```
+
+- Execute sample
+```
+$ ./square_ir.out
 info: running on device AMD Radeon Graphics
 info: allocate host mem (  7.63 MB)
 info: allocate device mem (  7.63 MB)

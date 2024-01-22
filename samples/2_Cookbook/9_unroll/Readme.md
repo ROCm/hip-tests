@@ -16,7 +16,7 @@ Programmers familiar with CUDA, OpenCL will be able to quickly learn and start c
 
 ## Simple Matrix Transpose
 
-For this tutorial we will be using an example which sums up the row of a 2D matrix and writes it in a 1D array. 
+For this tutorial we will be using an example which sums up the row of a 2D matrix and writes it in a 1D array.
 
 In this tutorial, we'll use `#pragma unroll`. In the same sourcecode, we used for gpuMatrixRowSum. We'll add it just before the for loop as following:
 
@@ -31,9 +31,18 @@ Specifying the optional parameter, #pragma unroll value, directs the unroller to
 Specifying #pragma nounroll indicates that the loop should not be unroll. #pragma unroll 1 will show the same behaviour.
 
 ## How to build and run:
-Use the make command and execute it using ./exe
-Use hipcc to build the application, which is using hcc on AMD and nvcc on nvidia.
-
+- Build the sample using cmake
+```
+$ mkdir build; cd build
+$ cmake .. -DCMAKE_PREFIX_PATH=/opt/rocm
+$ make
+```
+- Execute the sample
+```
+$ ./unroll
+Device name
+PASSED
+```
 ## requirement for nvidia
 please make sure you have a 3.0 or higher compute capable device in order to use warp shfl operations and add `-gencode arch=compute=30, code=sm_30` nvcc flag in the Makefile while using this application.
 

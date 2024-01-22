@@ -139,4 +139,6 @@ void TernaryFloatingPointTest(kernel_sig<T, TArg, TArg, TArg> kernel, ref_sig<RT
                                                                                                    \
     TernaryFloatingPointTest(kern_name##_kernel<TestType>, ref,                                    \
                             ULPValidatorBuilderFactory<TestType>(ulp));                            \
+                                                                                                   \
   }
+

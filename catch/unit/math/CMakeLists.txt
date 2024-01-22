@@ -26,6 +26,7 @@ set(TEST_SRC
   double_precision_intrinsics.cc
   integer_intrinsics.cc
   root_funcs.cc
+  pow_funcs.cc
 )
 
 if(HIP_PLATFORM MATCHES "nvidia")
@@ -86,3 +87,7 @@ add_test(NAME Unit_Device_root_3Dand4D_Negative
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
          ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
          math_root_negative_kernels_3Dand4D.cc 56)
+add_test(NAME Unit_Device_pow_Negative
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+         math_pow_negative_kernels.cc 76)

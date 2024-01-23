@@ -29,6 +29,7 @@ set(TEST_SRC
   pow_funcs.cc
   log_funcs.cc
   special_funcs.cc
+  casting_double_funcs.cc
 )
 
 if(HIP_PLATFORM MATCHES "nvidia")
@@ -101,3 +102,7 @@ add_test(NAME Unit_Device_special_funcs_Negative
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
          ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
          math_special_func_kernels.cc 76)
+add_test(NAME Unit_Device_casting_double_Negative
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+         casting_double_negative_kernels.cc 69)

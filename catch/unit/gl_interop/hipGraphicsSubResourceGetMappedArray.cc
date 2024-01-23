@@ -29,6 +29,15 @@ THE SOFTWARE.
 TEST_CASE("Unit_hipGraphicsSubResourceGetMappedArray_Positive_Basic") {
   GLContextScopeGuard gl_context;
 
+  const int device_count = HipTest::getDeviceCount();
+  unsigned int gl_device_count = 0;
+  std::vector<int> gl_devices(device_count, -1);
+
+  // Initialize GL interop
+  HIP_CHECK(hipGLGetDevices(&gl_device_count, gl_devices.data(), device_count, hipGLDeviceListAll));
+  REQUIRE(gl_device_count == 1);
+  REQUIRE(gl_devices.at(0) == 0);
+
   GLImageObject tex;
 
   hipGraphicsResource* tex_resource;
@@ -50,6 +59,15 @@ TEST_CASE("Unit_hipGraphicsSubResourceGetMappedArray_Positive_Basic") {
 
 TEST_CASE("Unit_hipGraphicsSubResourceGetMappedArray_Negative_Parameters") {
   GLContextScopeGuard gl_context;
+
+  const int device_count = HipTest::getDeviceCount();
+  unsigned int gl_device_count = 0;
+  std::vector<int> gl_devices(device_count, -1);
+
+  // Initialize GL interop
+  HIP_CHECK(hipGLGetDevices(&gl_device_count, gl_devices.data(), device_count, hipGLDeviceListAll));
+  REQUIRE(gl_device_count == 1);
+  REQUIRE(gl_devices.at(0) == 0);
 
   GLImageObject tex;
 

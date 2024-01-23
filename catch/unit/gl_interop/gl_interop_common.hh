@@ -78,6 +78,20 @@ class GLImageObject {
 };
 
 static std::once_flag glut_init_flag;
+static void GlutError(const char *fmt, va_list ap)
+{
+    // Print what error occurred
+    fprintf(stderr, "GlutError:");
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, "\n");
+
+    // Mark this test as skipped because this error could be
+    // due to system doesn't have display connected, e.g: Jenkins CI machine
+    HipTest::HIP_SKIP_TEST("GLUT Init Failed");
+
+    glutExit();
+    exit(1);
+}
 
 class GLUTContextScopeGuard {
  public:
@@ -101,7 +115,7 @@ class GLUTContextScopeGuard {
     static char proc_name[] = "";
     static std::array<char*, 2> glut_argv = {proc_name, nullptr};
     static int glut_argc = 1;
-
+    glutInitErrorFunc(&GlutError);
     glutInit(&glut_argc, glut_argv.data());
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
     glutInitWindowSize(512, 512);

@@ -36,6 +36,15 @@ constexpr std::array<unsigned int, 5> kFlags{
 TEST_CASE("Unit_hipGraphicsGLRegisterImage_Positive_Basic") {
   GLContextScopeGuard gl_context;
 
+  const int device_count = HipTest::getDeviceCount();
+  unsigned int gl_device_count = 0;
+  std::vector<int> gl_devices(device_count, -1);
+
+  // Initialize GL interop
+  HIP_CHECK(hipGLGetDevices(&gl_device_count, gl_devices.data(), device_count, hipGLDeviceListAll));
+  REQUIRE(gl_device_count == 1);
+  REQUIRE(gl_devices.at(0) == 0);
+
   const auto flags = GENERATE(from_range(begin(kFlags), end(kFlags)));
 
   GLImageObject tex;
@@ -49,6 +58,14 @@ TEST_CASE("Unit_hipGraphicsGLRegisterImage_Positive_Basic") {
 
 TEST_CASE("Unit_hipGraphicsGLRegisterImage_Positive_Register_Twice") {
   GLContextScopeGuard gl_context;
+  const int device_count = HipTest::getDeviceCount();
+  unsigned int gl_device_count = 0;
+  std::vector<int> gl_devices(device_count, -1);
+
+  // Initialize GL interop
+  HIP_CHECK(hipGLGetDevices(&gl_device_count, gl_devices.data(), device_count, hipGLDeviceListAll));
+  REQUIRE(gl_device_count == 1);
+  REQUIRE(gl_devices.at(0) == 0);
 
   GLImageObject tex;
 

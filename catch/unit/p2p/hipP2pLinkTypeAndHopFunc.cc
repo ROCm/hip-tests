@@ -215,7 +215,7 @@ bool testhipLinkTypeHopcountDevice(int numDevices) {
   rsmi_status_t (*fntopo_init)(uint64_t);
   rsmi_status_t (*fntopo_shut_down)();
 
-  lib_rocm_smi_hdl = dlopen("/opt/rocm/rocm_smi/lib/librocm_smi64.so",
+  lib_rocm_smi_hdl = dlopen("/opt/rocm/lib/librocm_smi64.so",
                         RTLD_LAZY);
   REQUIRE(lib_rocm_smi_hdl);
 

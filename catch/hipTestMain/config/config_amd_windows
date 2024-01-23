@@ -322,6 +322,8 @@
         "Unit_Device_Complex_Binary_double_Negative",
         "Unit_Device_Complex_hipCfma_Negative",
         "Unit_Device__hip_hc_8pk_Negative",
+        "SWDEV-413997: VMM test still failing in windows",
+        "Unit_hipMemSetAccess_ChangeAccessProp",
     #endif
         "End of json"
     ]

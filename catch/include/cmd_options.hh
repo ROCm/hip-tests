@@ -37,3 +37,7 @@ struct CmdOptions {
 };
 
 extern CmdOptions cmd_options;
+<<<<<<< HEAD
+=======
+
+>>>>>>> c08a2a5d (Merge branch 'develop' into casting_int_tests)

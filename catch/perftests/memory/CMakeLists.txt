@@ -30,6 +30,7 @@ set(TEST_SRC
   hipPerfSampleRate.cc
   hipPerfSharedMemReadSpeed.cc
   hipPerfBufferCopySpeedP2P.cc
+  hipPerfBufferCopySpeedAll2All.cc
 )
 
 if(HIP_PLATFORM MATCHES "amd")

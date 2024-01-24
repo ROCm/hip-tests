@@ -65,7 +65,12 @@ TEST_CASE("Unit_hipMemVmm_Basic") {
 
   HIP_CHECK(hipMemMap(reservedAddress, size, 0, gaHandle, 0));
 
+  hipDevice_t device;
+  HIP_CHECK(hipDeviceGet(&device, 0));
   hipMemAccessDesc desc;
+  desc.location.type = hipMemLocationTypeDevice;
+  desc.location.id = device;
+  desc.flags = hipMemAccessFlagsProtReadWrite;
   std::vector<char> values(size);
   const char value = 1;
 

@@ -215,7 +215,7 @@ template <int error_num> void NegativeTestRTCWrapper(const char* program_source)
   HIPRTC_CHECK(
       hiprtcCreateProgram(&program, program_source, "math_test_rtc.cc", 0, nullptr, nullptr));
 #if HT_AMD
-  std::string args = std::string("-ferror-limit=100");
+  std::string args = std::string("-ferror-limit=200");
   const char* options[] = {args.c_str()};
   hiprtcResult result{hiprtcCompileProgram(program, 1, options)};
 #else

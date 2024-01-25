@@ -45,13 +45,5 @@ hip_add_exe_to_target(NAME DeviceTest
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests
                       COMPILE_OPTIONS -std=c++17)
-# Add hsa-runtime dependencies for Unit_hipGetDeviceAttribute_CheckFineGrainSupport
-if(UNIX)
-  if(HIP_PLATFORM STREQUAL "amd")
-    target_include_directories(DeviceTest PRIVATE ${ROCM_PATH}/include)
-    target_link_libraries(DeviceTest hsa-runtime64)
-    target_link_directories(DeviceTest PRIVATE ${ROCM_PATH}/lib)
-  endif()
-endif()
 
 add_dependencies(build_tests getDeviceCount)

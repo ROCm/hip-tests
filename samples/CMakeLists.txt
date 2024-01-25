@@ -21,6 +21,7 @@
 cmake_minimum_required(VERSION 3.16.8)
 project(hip-samples)
 
+option(ENABLE_ADDRESS_SANITIZER "Option to enable ASAN build" OFF)
 
 if (WIN32)
     set(EXT ".bat")
@@ -77,12 +78,20 @@ endif()
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Address sanitizer options
+if(ENABLE_ADDRESS_SANITIZER)
+    message(STATUS "Building catch tests with Address Sanitizer options")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -shared-libasan -g -gz")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -shared-libasan -g -gz")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-new-dtags -fuse-ld=lld -fsanitize=address -shared-libasan -g -gz -Wl,--build-id=sha1 -L${ROCM_PATH}/lib/asan")
+endif()
+
 add_custom_target(build_samples
             COMMAND make build_intro build_utils build_cookbook
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
-add_subdirectory(0_Intro )
-add_subdirectory(1_Utils )
+add_subdirectory(0_Intro)
+add_subdirectory(1_Utils)
 add_subdirectory(2_Cookbook)
 
 

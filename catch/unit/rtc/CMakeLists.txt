@@ -20,6 +20,7 @@ set(AMD_TEST_SRC
     hiprtc_MathFunctions_HeaderTst.cc
     hiprtc_fp16_HeaderTst.cc
     hiprtc_TextureTypes_HeaderTst.cc
+    hipRtcComplexHeader.cc
 )
 
 add_custom_target(copyRtcHeaders ALL

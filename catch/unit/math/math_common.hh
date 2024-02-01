@@ -7,15 +7,8 @@ in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-<<<<<<< HEAD
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-=======
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
->>>>>>> c08a2a5d (Merge branch 'develop' into casting_int_tests)
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -33,6 +26,7 @@ THE SOFTWARE.
 
 #include <hip/hip_cooperative_groups.h>
 
+#include "Float16.hh"
 #include "thread_pool.hh"
 #include "validators.hh"
 
@@ -44,6 +38,15 @@ operator<<(std::ostream& os, const std::pair<T, U>& p) {
   const auto default_prec = os.precision();
   return os << "<" << std::setprecision(std::numeric_limits<T>::max_digits10 - 1) << p.first << ", "
             << std::setprecision(std::numeric_limits<U>::max_digits10 - 1) << p.second << ">"
+            << std::setprecision(default_prec);
+}
+
+template <typename T>
+std::enable_if_t<sizeof(T) / sizeof(decltype(T().x)) == 2 && !std::is_same_v<T, __half2>, std::ostream&>
+operator<<(std::ostream& os, const T& p) {
+  const auto default_prec = os.precision();
+  return os << "<" << std::setprecision(std::numeric_limits<decltype(T().x)>::max_digits10 - 1) << p.x << ", "
+            << std::setprecision(std::numeric_limits<decltype(T().x)>::max_digits10 - 1) << p.y << ">"
             << std::setprecision(default_prec);
 }
 
@@ -107,11 +110,7 @@ template <typename T, typename... Ts> class MathTest {
   template <bool parallel, typename RT, typename ValidatorBuilder, typename... RTs, size_t... I>
   void RunImpl(const ValidatorBuilder& validator_builder, const size_t grid_dim,
                const size_t block_dim, RT (*const ref_func)(RTs...), const size_t num_args,
-<<<<<<< HEAD
-               std::index_sequence<I...> is, const Ts*... xss) {
-=======
                std::index_sequence<I...>, const Ts*... xss) {
->>>>>>> c08a2a5d (Merge branch 'develop' into casting_int_tests)
     const auto xss_tup = std::make_tuple(xss...);
 
     constexpr auto f = [](auto dst, auto src, size_t size) {
@@ -195,6 +194,8 @@ template <typename T, typename... Ts> class MathTest {
 };
 
 template <typename T> struct RefType {};
+
+template <> struct RefType<Float16> { using type = float; };
 
 template <> struct RefType<float> { using type = double; };
 

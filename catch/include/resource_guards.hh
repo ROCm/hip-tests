@@ -112,6 +112,9 @@ template <typename T> class LinearAllocGuard {
   T* host_ptr_ = nullptr;
 
   void dealloc() {
+    if (ptr_ == nullptr) {
+      return;
+    }
     // No Catch macros, don't want to possibly throw in the destructor
     if (ptr_ != nullptr) {
       switch (allocation_type_) {

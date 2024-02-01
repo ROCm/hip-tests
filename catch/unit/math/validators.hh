@@ -61,21 +61,21 @@ template <typename T, typename Matcher> class ValidatorBase : public MatcherBase
 };
 
 template <typename T> auto ULPValidatorBuilderFactory(int64_t ulps) {
-  return [=](T target, auto&&... args) {
+  return [=](T target, auto&&...) {
     return std::make_unique<ValidatorBase<T, Catch::Matchers::Floating::WithinUlpsMatcher>>(
         target, Catch::WithinULP(target, ulps));
   };
 };
 
 template <typename T> auto AbsValidatorBuilderFactory(double margin) {
-  return [=](T target, auto&&... args) {
+  return [=](T target, auto&&...) {
     return std::make_unique<ValidatorBase<T, Catch::Matchers::Floating::WithinAbsMatcher>>(
         target, Catch::WithinAbs(target, margin));
   };
 }
 
 template <typename T> auto RelValidatorBuilderFactory(T margin) {
-  return [=](T target, auto&&... args) {
+  return [=](T target, auto&&...) {
     return std::make_unique<ValidatorBase<T, Catch::Matchers::Floating::WithinRelMatcher>>(
         target, Catch::WithinRel(target, margin));
   };
@@ -104,7 +104,7 @@ template <typename T> class EqValidator : public MatcherBase<T> {
 };
 
 template <typename T> auto EqValidatorBuilderFactory() {
-  return [](T val, auto&&... args) { return std::make_unique<EqValidator<T>>(val); };
+  return [](T val, auto&&...) { return std::make_unique<EqValidator<T>>(val); };
 }
 
 template <typename T, typename U, typename VBF, typename VBS>
@@ -128,25 +128,25 @@ class PairValidator : public MatcherBase<std::pair<T, U>> {
 
 template <typename T, typename ValidatorBuilder>
 auto PairValidatorBuilderFactory(const ValidatorBuilder& vb) {
-  return [=](const std::pair<T, T>& t, auto&&... args) {
+  return [=](const std::pair<T, T>& t, auto&&...) {
     return std::make_unique<PairValidator<T, T, ValidatorBuilder, ValidatorBuilder>>(t, vb, vb);
   };
 }
 
 template <typename T, typename U, typename VBF, typename VBS>
 auto PairValidatorBuilderFactory(const VBF& vbf, const VBS& vbs) {
-  return [=](const std::pair<T, U>& t, auto&&... args) {
+  return [=](const std::pair<T, U>& t, auto&&...) {
     return std::make_unique<PairValidator<T, U, VBF, VBS>>(t, vbf, vbs);
   };
 }
 
 template <typename T> class NopValidator : public MatcherBase<T> {
  public:
-  bool match(const T& val) const override { return true; }
+  bool match(const T&) const override { return true; }
 
   std::string describe() const override { return ""; }
 };
 
 template <typename T> auto NopValidatorBuilderFactory() {
-  return [](auto&&... args) { return std::make_unique<NopValidator<T>>(); };
+  return [](auto&&...) { return std::make_unique<NopValidator<T>>(); };
 }

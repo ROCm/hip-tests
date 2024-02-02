@@ -17,7 +17,7 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include <hip_test_common.hh>
-#include <hip_test_defgroups.hh>
+ 
 
 #define LEN8 8 * 4
 #define LEN9 9 * 4

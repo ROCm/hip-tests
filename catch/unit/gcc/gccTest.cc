@@ -18,7 +18,7 @@
  * */
 
 #include <hip_test_common.hh>
-#include <hip_test_defgroups.hh>
+ 
 extern "C" {
 #include "LaunchKernel.h"
 }

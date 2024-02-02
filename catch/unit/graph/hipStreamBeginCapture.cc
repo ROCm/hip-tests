@@ -172,7 +172,6 @@ TEST_CASE("Unit_hipStreamBeginCapture_Negative_Parameters") {
   SECTION("Creating hipStream with invalid mode") {
     HIP_CHECK_ERROR(hipStreamBeginCapture(stream, hipStreamCaptureMode(-1)), hipErrorInvalidValue);
   }
-#if HT_NVIDIA  // EXSWHTEC-216
   SECTION("Stream capture on uninitialized stream returns error code.") {
     constexpr auto InvalidStream = [] {
       StreamGuard sg(Streams::created);
@@ -181,7 +180,6 @@ TEST_CASE("Unit_hipStreamBeginCapture_Negative_Parameters") {
     HIP_CHECK_ERROR(hipStreamBeginCapture(InvalidStream(), hipStreamCaptureModeGlobal),
                     hipErrorContextIsDestroyed);
   }
-#endif
 }
 
 /**
@@ -728,7 +726,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_Negative_DetectingInvalidCapture") {
   StreamsGuard streams(2);
   EventsGuard events(1);
   hipEvent_t event = events[0];
-
+  hipGraph_t graph;
   HIP_CHECK(hipStreamBeginCapture(streams[0], hipStreamCaptureModeGlobal));
   HIP_CHECK(hipEventRecord(event, streams[0]));
   HIP_CHECK(hipStreamWaitEvent(streams[1], event, 0));
@@ -737,6 +735,7 @@ TEST_CASE("Unit_hipStreamBeginCapture_Negative_DetectingInvalidCapture") {
   // hipStreamBeginCapture on stream[1] is expected to return error.
   HIP_CHECK_ERROR(hipStreamBeginCapture(streams[1], hipStreamCaptureModeGlobal),
                   hipErrorIllegalState);
+  HIP_CHECK(hipStreamEndCapture(streams[0], &graph));
 }
 
 /**
@@ -817,7 +816,6 @@ TEST_CASE("Unit_hipStreamBeginCapture_Negative_CheckingSyncDuringCapture") {
   SECTION("Query stream during capture") {
     HIP_CHECK_ERROR(hipStreamQuery(stream), hipErrorStreamCaptureUnsupported);
   }
-#if HT_NVIDIA
   SECTION("Synchronize device during capture") {
     HIP_CHECK_ERROR(hipDeviceSynchronize(), hipErrorStreamCaptureUnsupported);
   }
@@ -829,10 +827,8 @@ TEST_CASE("Unit_hipStreamBeginCapture_Negative_CheckingSyncDuringCapture") {
     HIP_CHECK(hipEventRecord(e, stream));
     HIP_CHECK_ERROR(hipEventQuery(e), hipErrorCapturedEvent);
   }
-#endif
 }
 
-#if HT_NVIDIA
 /**
  * Test Description
  * ------------------------
@@ -873,7 +869,6 @@ TEST_CASE("Unit_hipStreamBeginCapture_Negative_UnsafeCallsDuringCapture") {
     HIP_CHECK_ERROR(hipMemset(devMem.ptr(), 0, sizeof(int)), hipErrorStreamCaptureImplicit);
   }
 }
-#endif
 
 /**
  * Test Description
@@ -1437,7 +1432,6 @@ TEST_CASE("Unit_hipStreamBeginCapture_StreamSync_OngoingCapture_MThread") {
     error = hipStreamSynchronize(stream[1]);
     REQUIRE(error == hipErrorStreamCaptureUnsupported);
   }
-#if HT_NVIDIA
   SECTION("Capture Flag = hipStreamCaptureModeThreadLocal Single Threaded") {
     StreamsGuard stream(2);
     // Capture streams into graph
@@ -1449,7 +1443,6 @@ TEST_CASE("Unit_hipStreamBeginCapture_StreamSync_OngoingCapture_MThread") {
     error = hipStreamSynchronize(stream[1]);
     REQUIRE(error == hipErrorStreamCaptureUnsupported);
   }
-#endif
   SECTION("Capture Flag = hipStreamCaptureModeGlobal Multithreaded") {
     captureStrmThread(&graph, Ah.host_ptr(), Ad.ptr(), Bh.host_ptr(), Bd.ptr(), BLOCKSIZE, GRIDSIZE,
                       hipStreamCaptureModeGlobal, &error);

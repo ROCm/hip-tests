@@ -23,7 +23,7 @@ THE SOFTWARE.
 /**
  * @addtogroup hipMemRelease hipMemRelease
  * @{
- * @ingroup MemoryTest
+ * @ingroup VirtualMemoryManagementTest
  * `hipMemRelease(hipMemGenericAllocationHandle_t handle)` -
  * Release a memory handle representing a memory allocation which was previously
  * allocated through hipMemCreate.
@@ -36,13 +36,11 @@ THE SOFTWARE.
  * ------------------------
  *    - Negative Tests
  * ------------------------
- *    - catch\unit\memory\hipMemRelease.cc
+ *    - unit/virtualMemoryManagement/hipMemRelease.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
  */
 TEST_CASE("Unit_hipMemRelease_negative") {
-  SECTION("Nullptr to handle") {
-    REQUIRE(hipMemRelease(nullptr) == hipErrorInvalidValue);
-  }
+  SECTION("Nullptr to handle") { REQUIRE(hipMemRelease(nullptr) == hipErrorInvalidValue); }
 }

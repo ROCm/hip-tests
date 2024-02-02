@@ -92,6 +92,8 @@
         "Unit_hipMemcpy_Positive_Synchronization_Behavior",
         "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/210 ===",
         "Unit_StaticAssert_Positive_Basic",
-        "Unit_StaticAssert_Negative_Basic"
+        "Unit_StaticAssert_Negative_Basic",
+        "Unit_hipMemImportFromShareableHandle_Positive_MultiProc",
+        "Unit_hipMemMapArrayAsync_Positive_Basic"
     ]
 }

@@ -23,7 +23,7 @@ THE SOFTWARE.
 /**
  * @addtogroup hipMemAddressReserve hipMemAddressReserve
  * @{
- * @ingroup MemoryTest
+ * @ingroup VirtualMemoryManagementTest
  * `hipError_t hipMemAddressReserve (void** ptr,
  *                                   size_t size,
  *                                   size_t alignment,
@@ -33,6 +33,7 @@ THE SOFTWARE.
  */
 
 #include <hip_test_common.hh>
+
 #include "hip_vmm_common.hh"
 
 #define DATA_SIZE (1 << 13)
@@ -43,7 +44,7 @@ THE SOFTWARE.
  *    - Verify if reserved address returned by hipMemAddressReserve
  * for different alignment values are correctly aligned.
  * ------------------------
- *    - catch\unit\memory\hipMemAddressReserve.cc
+ *    - unit/virtualMemoryManagement/hipMemAddressReserve.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -56,16 +57,15 @@ TEST_CASE("Unit_hipMemAddressReserve_AlignmentTest") {
   int deviceId = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
-  HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &prop,
-  hipMemAllocationGranularityMinimum));
+  HIP_CHECK(
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   // Allocate virtual address range
   hipDeviceptr_t ptrA;
   size_t alignmnt = 1;
@@ -106,7 +106,7 @@ TEST_CASE("Unit_hipMemAddressReserve_AlignmentTest") {
  * ------------------------
  *    - Negative Tests
  * ------------------------
- *    - catch\unit\memory\hipMemAddressReserve.cc
+ *    - unit/virtualMemoryManagement/hipMemAddressReserve.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -118,35 +118,33 @@ TEST_CASE("Unit_hipMemAddressReserve_Negative") {
   int deviceId = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
-  HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &prop,
-  hipMemAllocationGranularityMinimum));
+  HIP_CHECK(
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   // Allocate virtual address range
   hipDeviceptr_t ptrA;
+
   SECTION("Nullptr to ptr") {
-    REQUIRE(hipMemAddressReserve(nullptr, size_mem, 0, 0, 0) ==
-            hipErrorInvalidValue);
+    REQUIRE(hipMemAddressReserve(nullptr, size_mem, 0, 0, 0) == hipErrorInvalidValue);
   }
 
   SECTION("pass size as 0") {
-    REQUIRE(hipMemAddressReserve(&ptrA, 0, 0, 0, 0) ==
-            hipErrorMemoryAllocation);
+    REQUIRE(hipMemAddressReserve(&ptrA, 0, 0, 0, 0) == hipErrorMemoryAllocation);
   }
+
 #if HT_NVIDIA
   SECTION("pass non power of two for alignment") {
-    REQUIRE(hipMemAddressReserve(&ptrA, size_mem, 3, 0, 0) ==
-            hipErrorMemoryAllocation);
+    REQUIRE(hipMemAddressReserve(&ptrA, size_mem, 3, 0, 0) == hipErrorMemoryAllocation);
   }
 #endif
+
   SECTION("pass size as non multiple of host page size") {
-    REQUIRE(hipMemAddressReserve(&ptrA, (size_mem - 1), 0, 0, 0) ==
-            hipErrorMemoryAllocation);
+    REQUIRE(hipMemAddressReserve(&ptrA, (size_mem - 1), 0, 0, 0) == hipErrorMemoryAllocation);
   }
 }

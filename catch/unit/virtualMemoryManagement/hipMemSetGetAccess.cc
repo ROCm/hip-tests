@@ -23,7 +23,7 @@ THE SOFTWARE.
 /**
  * @addtogroup hipMemSetAccess hipMemSetAccess
  * @{
- * @ingroup MemoryTest
+ * @ingroup VirtualMemoryManagementTest
  * `hipError_t hipMemSetAccess (void* ptr,
  *                              size_t size,
  *                              const hipMemAccessDesc* desc,
@@ -31,18 +31,23 @@ THE SOFTWARE.
  * Set the access flags for each location specified in desc for the given
  * virtual address range.
  */
-#include "hipMallocManagedCommon.hh"
-#include "hip_vmm_common.hh"
-#include <hip_test_kernels.hh>
-#include <hip_test_common.hh>
+
 #ifdef __linux__
 #include <unistd.h>
 #include <sys/wait.h>
 #endif
+
+#include <hip_test_kernels.hh>
+#include <hip_test_common.hh>
+
+#include "hipMallocManagedCommon.hh"
+#include "hip_vmm_common.hh"
+
 #define THREADS_PER_BLOCK 512
 #define NUM_OF_BUFFERS 3
 #define DATA_SIZE (1 << 13)
-#define NEW_DATA_SIZE (2*DATA_SIZE)
+#define NEW_DATA_SIZE (2 * DATA_SIZE)
+
 constexpr int initializer = 0;
 
 /**
@@ -63,7 +68,7 @@ static __global__ void square_kernel(int* Buff) {
  * Validate that flags = hipMemAccessFlagsProtNone is returned by
  * hipMemGetAccess() when location is set to device 1.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -75,23 +80,21 @@ TEST_CASE("Unit_hipMemSetAccess_SetGet") {
   int deviceId = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
-  HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &prop,
-  hipMemAllocationGranularityMinimum));
+  HIP_CHECK(
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   hipMemGenericAllocationHandle_t handle;
   // Allocate physical memory
   HIP_CHECK(hipMemCreate(&handle, size_mem, &prop, 0));
   // Allocate virtual address range
   hipDeviceptr_t ptrA;
-  HIP_CHECK(hipMemAddressReserve(&ptrA, size_mem,
-                                0, 0, 0));
+  HIP_CHECK(hipMemAddressReserve(&ptrA, size_mem, 0, 0, 0));
   HIP_CHECK(hipMemMap(ptrA, size_mem, 0, handle, 0));
   HIP_CHECK(hipMemRelease(handle));
   // Set access
@@ -132,7 +135,7 @@ TEST_CASE("Unit_hipMemSetAccess_SetGet") {
  * flags = hipMemAccessFlagsProtReadWrite is returned by hipMemGetAccess()
  * when location is set to device 1.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -150,18 +153,17 @@ TEST_CASE("Unit_hipMemSetAccess_MultDevSetGet") {
   }
 
   HIP_CHECK(hipDeviceGet(&device0, deviceId));
-  checkVMMSupported(device0)
+  checkVMMSupported(device0);
   HIP_CHECK(hipDeviceGet(&device1, (deviceId + 1)));
-  checkVMMSupported(device1)
+  checkVMMSupported(device1);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device0;  // Current Devices
-  HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &prop,
-  hipMemAllocationGranularityMinimum));
+  HIP_CHECK(
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   hipMemGenericAllocationHandle_t handle;
   // Allocate physical memory
   HIP_CHECK(hipMemCreate(&handle, size_mem, &prop, 0));
@@ -203,7 +205,7 @@ TEST_CASE("Unit_hipMemSetAccess_MultDevSetGet") {
  * to device 0. Validate that flags = 3 is returned by hipMemGetAccess()
  * for entire virtual address range when location is set to device 0.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -215,23 +217,21 @@ TEST_CASE("Unit_hipMemSetAccess_EntireVMMRangeSetGet") {
   int deviceId = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
-  HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &prop,
-  hipMemAllocationGranularityMinimum));
+  HIP_CHECK(
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   // Allocate physical memory
   hipMemGenericAllocationHandle_t handle;
   hipDeviceptr_t ptrA;
   HIP_CHECK(hipMemCreate(&handle, size_mem, &prop, 0));
   // Allocate virtual address range
-  HIP_CHECK(hipMemAddressReserve(&ptrA, size_mem,
-                                0, 0, 0));
+  HIP_CHECK(hipMemAddressReserve(&ptrA, size_mem, 0, 0, 0));
   HIP_CHECK(hipMemMap(ptrA, size_mem, 0, handle, 0));
   HIP_CHECK(hipMemRelease(handle));
   // Set access
@@ -250,8 +250,7 @@ TEST_CASE("Unit_hipMemSetAccess_EntireVMMRangeSetGet") {
   REQUIRE(flags == hipMemAccessFlagsProtReadWrite);
   uint64_t uiptr = reinterpret_cast<uint64_t>(ptrA);
   uiptr += (size_mem - 1);
-  HIP_CHECK(hipMemGetAccess(&flags, &location,
-  reinterpret_cast<void*>(uiptr)));
+  HIP_CHECK(hipMemGetAccess(&flags, &location, reinterpret_cast<void*>(uiptr)));
   REQUIRE(flags == hipMemAccessFlagsProtReadWrite);
   HIP_CHECK(hipMemUnmap(ptrA, size_mem));
   HIP_CHECK(hipMemAddressFree(ptrA, size_mem));
@@ -262,7 +261,7 @@ TEST_CASE("Unit_hipMemSetAccess_EntireVMMRangeSetGet") {
  * ------------------------
  *    - Negative Tests
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -274,23 +273,21 @@ TEST_CASE("Unit_hipMemGetAccess_NegTst") {
   int deviceId = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
-  HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &prop,
-  hipMemAllocationGranularityMinimum));
+  HIP_CHECK(
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   // Allocate physical memory
   hipMemGenericAllocationHandle_t handle;
   hipDeviceptr_t ptrA;
   HIP_CHECK(hipMemCreate(&handle, size_mem, &prop, 0));
   // Allocate virtual address range
-  HIP_CHECK(hipMemAddressReserve(&ptrA, size_mem,
-                                0, 0, 0));
+  HIP_CHECK(hipMemAddressReserve(&ptrA, size_mem, 0, 0, 0));
   HIP_CHECK(hipMemMap(ptrA, size_mem, 0, handle, 0));
   HIP_CHECK(hipMemRelease(handle));
   // Set access
@@ -326,7 +323,7 @@ TEST_CASE("Unit_hipMemGetAccess_NegTst") {
  * address range, launch a kernel to perform operation on the data and
  * validate the result.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -340,16 +337,15 @@ TEST_CASE("Unit_hipMemSetAccess_FuncTstOnMultDev") {
   HIP_CHECK(hipGetDeviceCount(&devicecount));
   for (deviceId = 0; deviceId < devicecount; deviceId++) {
     HIP_CHECK(hipDeviceGet(&device, deviceId));
-    checkVMMSupported(device)
+    checkVMMSupported(device);
     hipMemAllocationProp prop{};
     prop.type = hipMemAllocationTypePinned;
     prop.location.type = hipMemLocationTypeDevice;
     prop.location.id = device;  // Current Devices
-    HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &prop,
-    hipMemAllocationGranularityMinimum));
+    HIP_CHECK(
+        hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
     REQUIRE(granularity > 0);
-    size_t size_mem =
-    ((granularity + buffer_size - 1) / granularity) * granularity;
+    size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
     // Allocate physical memory
     hipDeviceptr_t ptrA;
     hipMemGenericAllocationHandle_t handle;
@@ -371,9 +367,8 @@ TEST_CASE("Unit_hipMemSetAccess_FuncTstOnMultDev") {
     }
     HIP_CHECK(hipMemcpyHtoD(ptrA, A_h.data(), buffer_size));
     // Launch square kernel
-    hipLaunchKernelGGL(square_kernel, dim3(N / THREADS_PER_BLOCK),
-                      dim3(THREADS_PER_BLOCK), 0, 0,
-                      static_cast<int*>(ptrA));
+    hipLaunchKernelGGL(square_kernel, dim3(N / THREADS_PER_BLOCK), dim3(THREADS_PER_BLOCK), 0, 0,
+                       static_cast<int*>(ptrA));
     HIP_CHECK(hipMemcpyDtoH(B_h.data(), ptrA, buffer_size));
     HIP_CHECK(hipDeviceSynchronize());
     REQUIRE(true == std::equal(B_h.begin(), B_h.end(), A_h.data()));
@@ -389,7 +384,7 @@ TEST_CASE("Unit_hipMemSetAccess_FuncTstOnMultDev") {
  * Access (Read/Write) the virtual pointer directly on host.
  * Ensure this behavior for all devices on host.
  * ------------------------
- *    - catch\unit\memory\hipMemMap.cc
+ *    - unit/virtualMemoryManagement/hipMemMap.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -407,17 +402,15 @@ TEST_CASE("Unit_hipMemSetAccess_AccessDirectlyFromHost") {
   for (int dev = 0; dev < devicecount; dev++) {
     hipDevice_t device;
     HIP_CHECK(hipDeviceGet(&device, dev));
-    checkVMMSupported(device)
+    checkVMMSupported(device);
     hipMemAllocationProp prop{};
     prop.type = hipMemAllocationTypePinned;
     prop.location.type = hipMemLocationTypeDevice;
     prop.location.id = device;  // Current Devices
     HIP_CHECK(
-      hipMemGetAllocationGranularity(&granularity, &prop,
-      hipMemAllocationGranularityMinimum));
+        hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
     REQUIRE(granularity > 0);
-    size_t size_mem =
-    ((granularity + buffer_size - 1) / granularity) * granularity;
+    size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
     hipMemGenericAllocationHandle_t handle;
     // Allocate a physical memory chunk
     HIP_CHECK(hipMemCreate(&handle, size_mem, &prop, 0));
@@ -453,7 +446,7 @@ TEST_CASE("Unit_hipMemSetAccess_AccessDirectlyFromHost") {
  * the property of the range to read only. Check if the memory
  * range can be read.
  * ------------------------
- *    - catch\unit\memory\hipMemMap.cc
+ *    - unit/virtualMemoryManagement/hipMemMap.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -465,17 +458,15 @@ TEST_CASE("Unit_hipMemSetAccess_ChangeAccessProp") {
   int dev = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, dev));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
   HIP_CHECK(
-    hipMemGetAllocationGranularity(&granularity, &prop,
-    hipMemAllocationGranularityMinimum));
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   hipMemGenericAllocationHandle_t handle;  // Allocate host memory and intialize data
   std::vector<int> A_h(N), B_h(N);
   // Initialize with data
@@ -526,14 +517,12 @@ TEST_CASE("Unit_hipMemSetAccess_ChangeAccessProp") {
   SECTION("Check error while writing on Read-Only memory") {
     accessDesc.flags = hipMemAccessFlagsProtRead;
     HIP_CHECK(hipMemSetAccess(ptrA, size_mem, &accessDesc, 1));
-    REQUIRE(hipErrorInvalidValue ==
-    hipMemcpyHtoD(ptrA, A_h.data(), buffer_size));
+    REQUIRE(hipErrorInvalidValue == hipMemcpyHtoD(ptrA, A_h.data(), buffer_size));
   }
   SECTION("Check error while writing on inaccessible memory") {
     accessDesc.flags = hipMemAccessFlagsProtNone;
     HIP_CHECK(hipMemSetAccess(ptrA, size_mem, &accessDesc, 1));
-    REQUIRE(hipErrorInvalidValue ==
-    hipMemcpyHtoD(ptrA, A_h.data(), buffer_size));
+    REQUIRE(hipErrorInvalidValue == hipMemcpyHtoD(ptrA, A_h.data(), buffer_size));
   }
 #endif
   HIP_CHECK(hipMemUnmap(ptrA, size_mem));
@@ -541,6 +530,7 @@ TEST_CASE("Unit_hipMemSetAccess_ChangeAccessProp") {
   HIP_CHECK(hipMemRelease(handle));
   HIP_CHECK(hipMemAddressFree(ptrA, size_mem));
 }
+
 /**
  * Test Description
  * ------------------------
@@ -548,7 +538,7 @@ TEST_CASE("Unit_hipMemSetAccess_ChangeAccessProp") {
  * a Virtual Memory chunk and a Unified Memory chunk. Test if data can
  * be exchanged between these chunks.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -565,23 +555,21 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2UnifiedMemCpy") {
   int deviceId = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
-  HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &prop,
-  hipMemAllocationGranularityMinimum));
+  HIP_CHECK(
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   // Allocate physical memory
   hipMemGenericAllocationHandle_t handle;
   hipDeviceptr_t ptrA, ptrB;
   HIP_CHECK(hipMemCreate(&handle, size_mem, &prop, 0));
   // Allocate virtual address range
-  HIP_CHECK(hipMemAddressReserve(&ptrA, size_mem,
-                                0, 0, 0));
+  HIP_CHECK(hipMemAddressReserve(&ptrA, size_mem, 0, 0, 0));
   HIP_CHECK(hipMemMap(ptrA, size_mem, 0, handle, 0));
   HIP_CHECK(hipMemRelease(handle));
   // Set access
@@ -623,7 +611,7 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2UnifiedMemCpy") {
  * Memory chunk and a Device Memory chunk. Test if data can be exchanged
  * between these chunks.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -635,23 +623,21 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2DevMemCpy") {
   int deviceId = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
-  HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &prop,
-  hipMemAllocationGranularityMinimum));
+  HIP_CHECK(
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   // Allocate physical memory
   hipMemGenericAllocationHandle_t handle;
   hipDeviceptr_t ptrA, ptrB;
   HIP_CHECK(hipMemCreate(&handle, size_mem, &prop, 0));
   // Allocate virtual address range
-  HIP_CHECK(hipMemAddressReserve(&ptrA, size_mem,
-                                0, 0, 0));
+  HIP_CHECK(hipMemAddressReserve(&ptrA, size_mem, 0, 0, 0));
   HIP_CHECK(hipMemMap(ptrA, size_mem, 0, handle, 0));
   HIP_CHECK(hipMemRelease(handle));
   // Set access
@@ -682,7 +668,7 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2DevMemCpy") {
  * Peer Device Memory chunk. Test if data can be exchanged between
  * these chunks using hipMemcpyDtoD.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -694,23 +680,21 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2PeerDevMemCpy") {
   int deviceId = 0, value = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
-  HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &prop,
-  hipMemAllocationGranularityMinimum));
+  HIP_CHECK(
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   // Allocate physical memory
   hipMemGenericAllocationHandle_t handle;
   hipDeviceptr_t ptrA;
   HIP_CHECK(hipMemCreate(&handle, size_mem, &prop, 0));
   // Allocate virtual address range
-  HIP_CHECK(hipMemAddressReserve(&ptrA, size_mem,
-                                0, 0, 0));
+  HIP_CHECK(hipMemAddressReserve(&ptrA, size_mem, 0, 0, 0));
   HIP_CHECK(hipMemMap(ptrA, size_mem, 0, handle, 0));
   HIP_CHECK(hipMemRelease(handle));
   // Set access
@@ -737,9 +721,8 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2PeerDevMemCpy") {
       break;
     }
     HIP_CHECK(hipDeviceGet(&device_other, deviceId));
-    HIP_CHECK(hipDeviceGetAttribute(&value,
-              hipDeviceAttributeVirtualMemoryManagementSupported,
-              device_other));
+    HIP_CHECK(hipDeviceGetAttribute(&value, hipDeviceAttributeVirtualMemoryManagementSupported,
+                                    device_other));
     if (value == 0) {
       // Virtual Memory Mgmt is not supported
       WARN("Machine does not support Virtual Memory Management\n");
@@ -764,7 +747,7 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2PeerDevMemCpy") {
  * a Peer Device Memory chunk. Test if data can be exchanged between
  * these chunks using hipMemcpyPeer.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -776,23 +759,21 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2PeerPeerMemCpy") {
   int deviceId = 0, value = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
-  HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &prop,
-  hipMemAllocationGranularityMinimum));
+  HIP_CHECK(
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   // Allocate physical memory
   hipMemGenericAllocationHandle_t handle;
   hipDeviceptr_t ptrA;
   HIP_CHECK(hipMemCreate(&handle, size_mem, &prop, 0));
   // Allocate virtual address range
-  HIP_CHECK(hipMemAddressReserve(&ptrA, size_mem,
-                                0, 0, 0));
+  HIP_CHECK(hipMemAddressReserve(&ptrA, size_mem, 0, 0, 0));
   HIP_CHECK(hipMemMap(ptrA, size_mem, 0, handle, 0));
   HIP_CHECK(hipMemRelease(handle));
   // Set access
@@ -820,9 +801,8 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2PeerPeerMemCpy") {
       break;
     }
     HIP_CHECK(hipDeviceGet(&device_other, deviceId));
-    HIP_CHECK(hipDeviceGetAttribute(&value,
-              hipDeviceAttributeVirtualMemoryManagementSupported,
-              device_other));
+    HIP_CHECK(hipDeviceGetAttribute(&value, hipDeviceAttributeVirtualMemoryManagementSupported,
+                                    device_other));
     if (value == 0) {
       // Virtual Memory Mgmt is not supported
       WARN("Machine does not support Virtual Memory Management\n");
@@ -848,7 +828,7 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2PeerPeerMemCpy") {
  * address space in device 0(PtrB). Check if data can be copied from
  * PtrA -> PtrB using hipMemcpy.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -860,16 +840,15 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2VMMMemCpy") {
   int deviceId = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
-  HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &prop,
-  hipMemAllocationGranularityMinimum));
+  HIP_CHECK(
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   // Allocate physical memory
   hipMemGenericAllocationHandle_t handle1, handle2;
   HIP_CHECK(hipMemCreate(&handle1, size_mem, &prop, 0));
@@ -912,7 +891,7 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2VMMMemCpy") {
  * address space in device 1(PtrB). Check if data can be copied from
  * PtrA -> PtrB using hipMemcpyPeer.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -924,16 +903,15 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2VMMInterDevMemCpy") {
   int deviceId = 0, value = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
-  HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &prop,
-  hipMemAllocationGranularityMinimum));
+  HIP_CHECK(
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   hipMemGenericAllocationHandle_t handle;
   // Allocate physical memory
   HIP_CHECK(hipMemCreate(&handle, size_mem, &prop, 0));
@@ -966,9 +944,8 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2VMMInterDevMemCpy") {
     }
     std::fill(B_h.begin(), B_h.end(), initializer);
     HIP_CHECK(hipDeviceGet(&device_other, deviceId));
-    HIP_CHECK(hipDeviceGetAttribute(&value,
-              hipDeviceAttributeVirtualMemoryManagementSupported,
-              device_other));
+    HIP_CHECK(hipDeviceGetAttribute(&value, hipDeviceAttributeVirtualMemoryManagementSupported,
+                                    device_other));
     if (value == 0) {
       // Virtual Memory Mgmt is not supported
       WARN("Machine does not support Virtual Memory Management\n");
@@ -980,9 +957,8 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2VMMInterDevMemCpy") {
     prop_loc.location.type = hipMemLocationTypeDevice;
     prop_loc.location.id = device_other;  // Current Devices
     HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &prop_loc,
-    hipMemAllocationGranularityMinimum));
-    size_t size_mem_loc =
-    ((granularity + buffer_size - 1) / granularity) * granularity;
+                                             hipMemAllocationGranularityMinimum));
+    size_t size_mem_loc = ((granularity + buffer_size - 1) / granularity) * granularity;
     hipMemGenericAllocationHandle_t handle_loc;
     // Allocate physical memory
     HIP_CHECK(hipMemCreate(&handle_loc, size_mem_loc, &prop_loc, 0));
@@ -1015,7 +991,7 @@ TEST_CASE("Unit_hipMemSetAccess_Vmm2VMMInterDevMemCpy") {
  * chunk of memory and map it to device1. Check if these 2 distinct memory
  * chunks can be mapped to a single address space.
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -1028,32 +1004,28 @@ TEST_CASE("Unit_hipMemSetAccess_MapPhysChksFromMulDev") {
   size_t buffer_size = N * sizeof(int), granularity = 0;
   int deviceId = 0;
   // Allocate resources for all gpus
-  hipMemGenericAllocationHandle_t *handle =
-  static_cast<hipMemGenericAllocationHandle_t *>(
-  malloc(sizeof(hipMemGenericAllocationHandle_t)*numOfBuffers));
+  hipMemGenericAllocationHandle_t* handle = static_cast<hipMemGenericAllocationHandle_t*>(
+      malloc(sizeof(hipMemGenericAllocationHandle_t) * numOfBuffers));
   REQUIRE(handle != nullptr);
-  size_t *size_mem = static_cast<size_t *>(
-  malloc(sizeof(size_t)*numOfBuffers));
+  size_t* size_mem = static_cast<size_t*>(malloc(sizeof(size_t) * numOfBuffers));
   REQUIRE(size_mem != nullptr);
   size_t total_mem = 0;
   // Create memory chunks
   for (deviceId = 0; deviceId < numOfBuffers; deviceId++) {
     hipDevice_t device;
     HIP_CHECK(hipDeviceGet(&device, deviceId));
-    checkVMMSupported(device)
+    checkVMMSupported(device);
     hipMemAllocationProp prop_loc{};
     prop_loc.type = hipMemAllocationTypePinned;
     prop_loc.location.type = hipMemLocationTypeDevice;
     prop_loc.location.id = device;  // Current Devices
     HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &prop_loc,
-    hipMemAllocationGranularityMinimum));
+                                             hipMemAllocationGranularityMinimum));
     REQUIRE(granularity > 0);
-    size_mem[deviceId] =
-    ((granularity + buffer_size - 1) / granularity) * granularity;
+    size_mem[deviceId] = ((granularity + buffer_size - 1) / granularity) * granularity;
     total_mem = total_mem + size_mem[deviceId];
     // Allocate physical memory chunks
-    HIP_CHECK(hipMemCreate(&handle[deviceId], size_mem[deviceId],
-                                &prop_loc, 0));
+    HIP_CHECK(hipMemCreate(&handle[deviceId], size_mem[deviceId], &prop_loc, 0));
   }
   // Allocate virtual address range for all the memory chunks
   hipDeviceptr_t ptrA;
@@ -1063,9 +1035,9 @@ TEST_CASE("Unit_hipMemSetAccess_MapPhysChksFromMulDev") {
     hipDevice_t device;
     HIP_CHECK(hipDeviceGet(&device, deviceId));
     uint64_t uiptr = reinterpret_cast<uint64_t>(ptrA);
-    uiptr = uiptr + deviceId*size_mem[deviceId];
-    HIP_CHECK(hipMemMap(reinterpret_cast<void*>(uiptr),
-              size_mem[deviceId], 0, handle[deviceId], 0));
+    uiptr = uiptr + deviceId * size_mem[deviceId];
+    HIP_CHECK(
+        hipMemMap(reinterpret_cast<void*>(uiptr), size_mem[deviceId], 0, handle[deviceId], 0));
     HIP_CHECK(hipMemRelease(handle[deviceId]));
     // Set access
     hipMemAccessDesc accessDesc_loc = {};
@@ -1073,46 +1045,28 @@ TEST_CASE("Unit_hipMemSetAccess_MapPhysChksFromMulDev") {
     accessDesc_loc.location.id = device;
     accessDesc_loc.flags = hipMemAccessFlagsProtReadWrite;
     // Make the address accessible to deviceId
-    HIP_CHECK(hipMemSetAccess(reinterpret_cast<void*>(uiptr),
-            size_mem[deviceId], &accessDesc_loc, 1));
+    HIP_CHECK(
+        hipMemSetAccess(reinterpret_cast<void*>(uiptr), size_mem[deviceId], &accessDesc_loc, 1));
   }
-  std::vector<int> A_h(numOfBuffers*N),
-  B_h(numOfBuffers*N);
+  std::vector<int> A_h(numOfBuffers * N), B_h(numOfBuffers * N);
   // Fill Data
-  for (int idx = 0; idx < (numOfBuffers*N); idx++) {
-    A_h[idx] = idx*idx;
+  for (int idx = 0; idx < (numOfBuffers * N); idx++) {
+    A_h[idx] = idx * idx;
   }
-  HIP_CHECK(hipMemcpyHtoD(ptrA, A_h.data(), numOfBuffers*buffer_size));
-  HIP_CHECK(hipMemcpyDtoH(B_h.data(), ptrA, numOfBuffers*buffer_size));
+  HIP_CHECK(hipMemcpyHtoD(ptrA, A_h.data(), numOfBuffers * buffer_size));
+  HIP_CHECK(hipMemcpyDtoH(B_h.data(), ptrA, numOfBuffers * buffer_size));
   // Validate Results
   REQUIRE(true == std::equal(B_h.begin(), B_h.end(), A_h.data()));
   for (deviceId = 0; deviceId < numOfBuffers; deviceId++) {
     uint64_t uiptr = reinterpret_cast<uint64_t>(ptrA);
-    uiptr = uiptr + deviceId*size_mem[deviceId];
-    HIP_CHECK(hipMemUnmap(reinterpret_cast<void*>(uiptr),
-                        size_mem[deviceId]));
+    uiptr = uiptr + deviceId * size_mem[deviceId];
+    HIP_CHECK(hipMemUnmap(reinterpret_cast<void*>(uiptr), size_mem[deviceId]));
   }
   HIP_CHECK(hipMemAddressFree(ptrA, total_mem));
   free(handle);
   free(size_mem);
 }
 
-/**
- * Test Description
- * ------------------------
- *    - Testing memory resize: Allocate physical memory and map it to virtual
- * address range (PtrA). After setting device permission, copy data from
- * host to device. Allocate another chunk of memory of a different size.
- * Map the new chunk to offset (PtrA + size of old chunk).
- * After setting device permission, copy data from host to device at
- * offset (PtrA + size of old chunk). Validate both the old data and new
- * data after copying back to host.
- * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
- * Test requirements
- * ------------------------
- *    - HIP_VERSION >= 6.1
- */
 class vmm_resize_class {
   size_t current_size_tot;
   size_t current_size_rounded_tot;
@@ -1120,18 +1074,16 @@ class vmm_resize_class {
   std::vector<hipMemGenericAllocationHandle_t> vhandle;
   std::vector<size_t> vsize;
   // allocate initial VMM memory chunk
-  int allocate_vmm(hipDeviceptr_t *ptr, hipDevice_t device,
-                    size_t size) {
+  int allocate_vmm(hipDeviceptr_t* ptr, hipDevice_t device, size_t size) {
     size_t granularity = 0;
     hipMemAllocationProp prop{};
     prop.type = hipMemAllocationTypePinned;
     prop.location.type = hipMemLocationTypeDevice;
     prop.location.id = device;  // Current Devices
-    HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &prop,
-    hipMemAllocationGranularityMinimum));
+    HIP_CHECK(
+        hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
     REQUIRE(granularity > 0);
-    size_t size_rounded =
-    ((granularity + size - 1) / granularity) * granularity;
+    size_t size_rounded = ((granularity + size - 1) / granularity) * granularity;
     hipMemGenericAllocationHandle_t handle;
     // Allocate physical memory
     HIP_CHECK(hipMemCreate(&handle, size_rounded, &prop, 0));
@@ -1155,20 +1107,20 @@ class vmm_resize_class {
   }
 
  public:
-  vmm_resize_class(hipDeviceptr_t *ptr, hipDevice_t device, size_t size):
-  current_size_tot(0), current_size_rounded_tot(0) {
+  vmm_resize_class(hipDeviceptr_t* ptr, hipDevice_t device, size_t size)
+      : current_size_tot(0), current_size_rounded_tot(0) {
     allocate_vmm(ptr, device, size);
   }
   // Free all VMM
   void free_vmm() {
-    for (hipMemGenericAllocationHandle_t &myhandle : vhandle) {
+    for (hipMemGenericAllocationHandle_t& myhandle : vhandle) {
       HIP_CHECK(hipMemRelease(myhandle));
     }
     HIP_CHECK(hipMemUnmap(ptrVmm, current_size_rounded_tot));
     HIP_CHECK(hipMemAddressFree(ptrVmm, current_size_rounded_tot));
   }
   // grow memory chunk
-  int grow_vmm(hipDeviceptr_t *ptr, hipDevice_t device, size_t size) {
+  int grow_vmm(hipDeviceptr_t* ptr, hipDevice_t device, size_t size) {
     size_t granularity = 0;
     if (size <= current_size_tot) {
       return -1;
@@ -1177,13 +1129,12 @@ class vmm_resize_class {
     prop.type = hipMemAllocationTypePinned;
     prop.location.type = hipMemLocationTypeDevice;
     prop.location.id = device;  // Current Devices
-    HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &prop,
-    hipMemAllocationGranularityMinimum));
+    HIP_CHECK(
+        hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
     REQUIRE(granularity > 0);
     // diff size
     size_t grow_size = (size - current_size_tot);
-    size_t size_rounded =
-    ((granularity + grow_size - 1) / granularity) * granularity;
+    size_t size_rounded = ((granularity + grow_size - 1) / granularity) * granularity;
     hipMemGenericAllocationHandle_t handle;
     // Allocate physical memory
     HIP_CHECK(hipMemCreate(&handle, size_rounded, &prop, 0));
@@ -1194,17 +1145,15 @@ class vmm_resize_class {
     // Unmap and Free the old vmm
     HIP_CHECK(hipMemUnmap(ptrVmm, current_size_rounded_tot));
     HIP_CHECK(hipMemAddressFree(ptrVmm, current_size_rounded_tot));
-    HIP_CHECK(hipMemAddressReserve(&ptrVmm,
-            (size_rounded + current_size_rounded_tot), 0, 0, 0));
+    HIP_CHECK(hipMemAddressReserve(&ptrVmm, (size_rounded + current_size_rounded_tot), 0, 0, 0));
     int idx = 0;
-    for (hipMemGenericAllocationHandle_t &myhandle : vhandle) {
+    for (hipMemGenericAllocationHandle_t& myhandle : vhandle) {
       if (idx == 0) {
         HIP_CHECK(hipMemMap(ptrVmm, vsize[idx], 0, myhandle, 0));
       } else {
         uint64_t uiptr = reinterpret_cast<uint64_t>(ptrVmm);
-        uiptr = uiptr + vsize[idx-1];
-        HIP_CHECK(hipMemMap(reinterpret_cast<void *>(uiptr),
-                  vsize[idx], 0, myhandle, 0));
+        uiptr = uiptr + vsize[idx - 1];
+        HIP_CHECK(hipMemMap(reinterpret_cast<void*>(uiptr), vsize[idx], 0, myhandle, 0));
       }
       idx++;
     }
@@ -1214,9 +1163,7 @@ class vmm_resize_class {
     accessDesc.location.id = device;
     accessDesc.flags = hipMemAccessFlagsProtReadWrite;
     // Make the address accessible to GPU 0
-    HIP_CHECK(hipMemSetAccess(ptrVmm,
-             (size_rounded + current_size_rounded_tot),
-             &accessDesc, 1));
+    HIP_CHECK(hipMemSetAccess(ptrVmm, (size_rounded + current_size_rounded_tot), &accessDesc, 1));
     *ptr = ptrVmm;
     current_size_tot += size;
     current_size_rounded_tot += size_rounded;
@@ -1224,6 +1171,22 @@ class vmm_resize_class {
   }
 };
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Testing memory resize: Allocate physical memory and map it to virtual
+ * address range (PtrA). After setting device permission, copy data from
+ * host to device. Allocate another chunk of memory of a different size.
+ * Map the new chunk to offset (PtrA + size of old chunk).
+ * After setting device permission, copy data from host to device at
+ * offset (PtrA + size of old chunk). Validate both the old data and new
+ * data after copying back to host.
+ * ------------------------
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 6.1
+ */
 TEST_CASE("Unit_hipMemSetAccess_GrowVMM") {
   hipDeviceptr_t ptr;
   constexpr int N = DATA_SIZE;
@@ -1231,11 +1194,11 @@ TEST_CASE("Unit_hipMemSetAccess_GrowVMM") {
   int deviceId = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   // Create VMM Object of size buffer_size
   vmm_resize_class resizeobj(&ptr, device, buffer_size);
   // Inititalize Host Buffer
-  int *ptrA_h = static_cast<int *>(malloc(buffer_size));
+  int* ptrA_h = static_cast<int*>(malloc(buffer_size));
   REQUIRE(ptrA_h != nullptr);
   for (int idx = 0; idx < N; idx++) {
     ptrA_h[idx] = idx;
@@ -1250,17 +1213,16 @@ TEST_CASE("Unit_hipMemSetAccess_GrowVMM") {
     return;
   }
   free(ptrA_h);
-  ptrA_h = static_cast<int *>(malloc(buffer_size_new - buffer_size));
+  ptrA_h = static_cast<int*>(malloc(buffer_size_new - buffer_size));
   REQUIRE(ptrA_h != nullptr);
   for (int idx = 0; idx < (Nnew - N); idx++) {
     ptrA_h[idx] = N + idx;
   }
-  int *ptrB_h = static_cast<int *>(malloc(buffer_size_new));
+  int* ptrB_h = static_cast<int*>(malloc(buffer_size_new));
   REQUIRE(ptrB_h != nullptr);
   uint64_t uiptr = reinterpret_cast<uint64_t>(ptr);
   uiptr = uiptr + buffer_size;
-  HIP_CHECK(hipMemcpyHtoD(reinterpret_cast<void *>(uiptr),
-            ptrA_h, (buffer_size_new - buffer_size)));
+  HIP_CHECK(hipMemcpyHtoD(reinterpret_cast<void*>(uiptr), ptrA_h, (buffer_size_new - buffer_size)));
   HIP_CHECK(hipMemcpyDtoH(ptrB_h, ptr, buffer_size_new));
   bool bPassed = true;
   for (int idx = 0; idx < Nnew; idx++) {
@@ -1275,18 +1237,6 @@ TEST_CASE("Unit_hipMemSetAccess_GrowVMM") {
   resizeobj.free_vmm();
 }
 
-/**
- * Test Description
- * ------------------------
- *    - Multithreaded test: Allocate unique virtual memory chunks from
- * multiple threads. Transfer data to these chunks from host and execute
- * kernel function on these data. Validate the results.
- * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
- * Test requirements
- * ------------------------
- *    - HIP_VERSION >= 6.1
- */
 std::atomic<int> bTestPassed{1};
 #define NUM_THREADS 5
 void test_thread(hipDevice_t device) {
@@ -1296,14 +1246,14 @@ void test_thread(hipDevice_t device) {
   // Create VMM Object of size buffer_size
   vmm_resize_class vmmobj(&ptr, device, buffer_size);
   // Inititalize Host Buffer
-  int *ptrA_h = static_cast<int *>(malloc(buffer_size));
+  int* ptrA_h = static_cast<int*>(malloc(buffer_size));
   REQUIRE(ptrA_h != nullptr);
   for (int idx = 0; idx < N; idx++) {
     ptrA_h[idx] = idx;
   }
   // Copy to VMM
   HIP_CHECK(hipMemcpyHtoD(ptr, ptrA_h, buffer_size));
-  int *ptrB_h = static_cast<int *>(malloc(buffer_size));
+  int* ptrB_h = static_cast<int*>(malloc(buffer_size));
   REQUIRE(ptrB_h != nullptr);
   HIP_CHECK(hipMemcpyDtoH(ptrB_h, ptr, buffer_size));
   bool bPassed = true;
@@ -1323,11 +1273,23 @@ void test_thread(hipDevice_t device) {
   vmmobj.free_vmm();
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *    - Multithreaded test: Allocate unique virtual memory chunks from
+ * multiple threads. Transfer data to these chunks from host and execute
+ * kernel function on these data. Validate the results.
+ * ------------------------
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 6.1
+ */
 TEST_CASE("Unit_hipMemSetAccess_Multithreaded") {
   int deviceId = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   std::thread T[NUM_THREADS];
   for (int i = 0; i < NUM_THREADS; i++) {
     T[i] = std::thread(test_thread, device);
@@ -1340,18 +1302,7 @@ TEST_CASE("Unit_hipMemSetAccess_Multithreaded") {
 }
 
 #ifdef __linux__
-/**
- * Test Description
- * ------------------------
- *    - Multiprocess test: Allocate unique virtual memory chunks from
- * multiple processes. Transfer data to these chunks from host and
- * execute kernel function on these data. Validate the results.
- * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
- * Test requirements
- * ------------------------
- *    - HIP_VERSION >= 6.1
- */
+
 bool test_mprocess() {
   int fd[2];
   bool testResult = false;
@@ -1369,7 +1320,7 @@ bool test_mprocess() {
     hipDeviceptr_t ptr;
     hipDevice_t device;
     HIP_CHECK(hipDeviceGet(&device, deviceId));
-    checkVMMSupportedRetVal(device)
+    checkVMMSupportedRetVal(device);
     // Create VMM Object of size buffer_size
     vmm_resize_class vmmobj(&ptr, device, buffer_size);
     // Inititalize Host Buffer
@@ -1399,7 +1350,7 @@ bool test_mprocess() {
     hipDevice_t device;
 
     HIP_CHECK(hipDeviceGet(&device, deviceId));
-    checkVMMSupportedRetVal(device)
+    checkVMMSupportedRetVal(device);
     // Create VMM Object of size buffer_size
     vmm_resize_class vmmobj(&ptr, device, buffer_size);
     // Inititalize Host Buffer
@@ -1424,9 +1375,20 @@ bool test_mprocess() {
   return testResult;
 }
 
-TEST_CASE("Unit_hipMemSetAccess_MultiProc") {
-  REQUIRE(true == test_mprocess());
-}
+/**
+ * Test Description
+ * ------------------------
+ *    - Multiprocess test: Allocate unique virtual memory chunks from
+ * multiple processes. Transfer data to these chunks from host and
+ * execute kernel function on these data. Validate the results.
+ * ------------------------
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 6.1
+ */
+TEST_CASE("Unit_hipMemSetAccess_MultiProc") { REQUIRE(true == test_mprocess()); }
+
 #endif
 
 /**
@@ -1434,7 +1396,7 @@ TEST_CASE("Unit_hipMemSetAccess_MultiProc") {
  * ------------------------
  *    - Negative Tests for hipMemSetAccess()
  * ------------------------
- *    - catch\unit\memory\hipMemSetGetAccess.cc
+ *    - unit/virtualMemoryManagement/hipMemSetGetAccess.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -1446,16 +1408,15 @@ TEST_CASE("Unit_hipMemSetAccess_negative") {
   int deviceId = 0;
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, deviceId));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = device;  // Current Devices
-  HIP_CHECK(hipMemGetAllocationGranularity(&granularity, &prop,
-  hipMemAllocationGranularityMinimum));
+  HIP_CHECK(
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t size_mem =
-  ((granularity + buffer_size - 1) / granularity) * granularity;
+  size_t size_mem = ((granularity + buffer_size - 1) / granularity) * granularity;
   hipMemGenericAllocationHandle_t handle;
   // Allocate physical memory
   HIP_CHECK(hipMemCreate(&handle, size_mem, &prop, 0));
@@ -1470,73 +1431,62 @@ TEST_CASE("Unit_hipMemSetAccess_negative") {
   accessDesc.flags = hipMemAccessFlagsProtReadWrite;
 
   SECTION("nullptr to ptrA") {
-    REQUIRE(hipMemSetAccess(nullptr, size_mem, &accessDesc, 1) ==
-            hipErrorInvalidValue);
+    REQUIRE(hipMemSetAccess(nullptr, size_mem, &accessDesc, 1) == hipErrorInvalidValue);
   }
 
   SECTION("pass zero to size") {
-    REQUIRE(hipMemSetAccess(&ptrA, 0, &accessDesc, 1) ==
-            hipErrorInvalidValue);
+    REQUIRE(hipMemSetAccess(&ptrA, 0, &accessDesc, 1) == hipErrorInvalidValue);
   }
 
   SECTION("pass a size greater than reserved size") {
-    REQUIRE(hipMemSetAccess(&ptrA, size_mem + 1, &accessDesc, 1) ==
-            hipErrorInvalidValue);
+    REQUIRE(hipMemSetAccess(&ptrA, size_mem + 1, &accessDesc, 1) == hipErrorInvalidValue);
   }
 
   SECTION("pass a size less than reserved size") {
-    REQUIRE(hipMemSetAccess(&ptrA, size_mem - 1, &accessDesc, 1) ==
-            hipErrorInvalidValue);
+    REQUIRE(hipMemSetAccess(&ptrA, size_mem - 1, &accessDesc, 1) == hipErrorInvalidValue);
   }
 
   SECTION("invalid location type") {
     accessDesc.location.type = hipMemLocationTypeInvalid;
-    REQUIRE(hipMemSetAccess(&ptrA, size_mem, &accessDesc, 1) ==
-            hipErrorInvalidValue);
+    REQUIRE(hipMemSetAccess(&ptrA, size_mem, &accessDesc, 1) == hipErrorInvalidValue);
   }
 
   SECTION("invalid id") {
     accessDesc.location.id = -1;
-    REQUIRE(hipMemSetAccess(&ptrA, size_mem, &accessDesc, 1) ==
-            hipErrorInvalidValue);
+    REQUIRE(hipMemSetAccess(&ptrA, size_mem, &accessDesc, 1) == hipErrorInvalidValue);
   }
 
   SECTION("pass location id as > highest device number") {
     int numDevices = 0;
     HIP_CHECK(hipGetDeviceCount(&numDevices));
     accessDesc.location.id = numDevices;  // set to non existing device
-    REQUIRE(hipMemSetAccess(&ptrA, size_mem, &accessDesc, 1) ==
-            hipErrorInvalidValue);
+    REQUIRE(hipMemSetAccess(&ptrA, size_mem, &accessDesc, 1) == hipErrorInvalidValue);
   }
 
   SECTION("invalid flag") {
     accessDesc.flags = static_cast<hipMemAccessFlags>(-1);
-    REQUIRE(hipMemSetAccess(&ptrA, size_mem, &accessDesc, 1) ==
-            hipErrorInvalidValue);
+    REQUIRE(hipMemSetAccess(&ptrA, size_mem, &accessDesc, 1) == hipErrorInvalidValue);
   }
 
   SECTION(" pass zero to count") {
-    REQUIRE(hipMemSetAccess(&ptrA, size_mem, &accessDesc, 0) ==
-            hipErrorInvalidValue);
+    REQUIRE(hipMemSetAccess(&ptrA, size_mem, &accessDesc, 0) == hipErrorInvalidValue);
   }
 
   SECTION("pass desc as nullptr") {
-    REQUIRE(hipMemSetAccess(&ptrA, size_mem, nullptr, 1) ==
-            hipErrorInvalidValue);
+    REQUIRE(hipMemSetAccess(&ptrA, size_mem, nullptr, 1) == hipErrorInvalidValue);
   }
 
   SECTION("uninitialized virtual memory") {
     hipDeviceptr_t ptrB;
     HIP_CHECK(hipMemAddressReserve(&ptrB, size_mem, 0, 0, 0));
-    REQUIRE(hipMemSetAccess(&ptrB, size_mem, &accessDesc, 1) ==
-            hipErrorInvalidValue);
+    REQUIRE(hipMemSetAccess(&ptrB, size_mem, &accessDesc, 1) == hipErrorInvalidValue);
   }
 
   HIP_CHECK(hipMemUnmap(ptrA, size_mem));
   SECTION("unmapped virtual memory") {
-    REQUIRE(hipMemSetAccess(&ptrA, size_mem, &accessDesc, 1) ==
-            hipErrorInvalidValue);
+    REQUIRE(hipMemSetAccess(&ptrA, size_mem, &accessDesc, 1) == hipErrorInvalidValue);
   }
+
   HIP_CHECK(hipMemAddressFree(ptrA, size_mem));
   HIP_CHECK(hipMemRelease(handle));
 }

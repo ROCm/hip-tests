@@ -21,7 +21,7 @@ THE SOFTWARE.
 */
 #include <hip_test_common.hh>
 #include <hip/hip_cooperative_groups.h>
-#include <hip_test_defgroups.hh>
+ 
 
 /**
  * @addtogroup coalesced_group thread_block_tile

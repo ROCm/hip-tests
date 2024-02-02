@@ -19,7 +19,7 @@
    THE SOFTWARE.
  */
 #include <hip_test_common.hh>
-#include <hip_test_defgroups.hh>
+ 
 
 #define ITER_COUNT 61681
 #define KERNEL_ITERATIONS 15

@@ -44,7 +44,7 @@ THE SOFTWARE.
  */
 
 #include <hip_test_common.hh>
-#include <hip_test_defgroups.hh>
+ 
 #include <iostream>
 #include <fstream>
 #include "hip/hip_ext.h"

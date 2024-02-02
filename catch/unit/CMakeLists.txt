@@ -52,6 +52,7 @@ add_subdirectory(p2p)
 add_subdirectory(gcc)
 add_subdirectory(syncthreads)
 add_subdirectory(threadfence)
+add_subdirectory(virtualMemoryManagement)
 
 if(HIP_PLATFORM STREQUAL "amd")
 add_subdirectory(callback)

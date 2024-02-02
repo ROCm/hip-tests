@@ -94,7 +94,8 @@ if(HIP_PLATFORM MATCHES "amd")
       hipMemAddressFree.cc
       hipMemAddressReserve.cc
       hipMemRelease.cc
-      hipMemGetAllocationPropertiesFromHandle.cc)
+      hipMemGetAllocationPropertiesFromHandle.cc
+      hipArray.cc)
 else()
   set(TEST_SRC ${TEST_SRC} hipGetSymbolSizeAddress.cc)
 endif()

@@ -20,26 +20,27 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
-#include "hip_vmm_common.hh"
-
-#define DATA_SIZE (1 << 13)
-
 /**
  * @addtogroup hipMemGetAllocationPropertiesFromHandle hipMemGetAllocationPropertiesFromHandle
  * @{
- * @ingroup MemoryTest
+ * @ingroup VirtualMemoryManagementTest
  * `hipError_t hipMemGetAllocationPropertiesFromHandle(hipMemAllocationProp* prop,
  *                                                     hipMemGenericAllocationHandle_t handle)` -
  * Retrieve the property structure of the given handle.
  */
+
+#include <hip_test_common.hh>
+
+#include "hip_vmm_common.hh"
+
+#define DATA_SIZE (1 << 13)
 
 /**
  * Test Description
  * ------------------------
  *    - Functional test to verify the values of hipMemAllocationProp properties.
  * ------------------------
- *    - catch\unit\memory\hipMemGetAllocationPropertiesFromHandle.cc
+ *    - unit/virtualMemoryManagement/hipMemGetAllocationPropertiesFromHandle.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -47,7 +48,7 @@ THE SOFTWARE.
 TEST_CASE("Unit_hipMemGetAllocationPropertiesFromHandle_functional") {
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, 0));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemGenericAllocationHandle_t handle;
   hipMemAllocationProp prop = {};
   prop.type = hipMemAllocationTypePinned;
@@ -58,11 +59,10 @@ TEST_CASE("Unit_hipMemGetAllocationPropertiesFromHandle_functional") {
   size_t granularity = 0;
   int N = DATA_SIZE;
   size_t buffer_size = N * sizeof(int);
-  HIP_CHECK(hipMemGetAllocationGranularity
-                    (&granularity, &prop, hipMemAllocationGranularityMinimum));
+  HIP_CHECK(
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t mem_size = ((granularity + buffer_size - 1) / granularity)
-                                          * granularity;
+  size_t mem_size = ((granularity + buffer_size - 1) / granularity) * granularity;
   // Allocate physical memory
   HIP_CHECK(hipMemCreate(&handle, mem_size, &prop, 0));
   // verify properties has been retrived from handle
@@ -78,7 +78,7 @@ TEST_CASE("Unit_hipMemGetAllocationPropertiesFromHandle_functional") {
  * ------------------------
  *    - Negative Tests.
  * ------------------------
- *    - catch\unit\memory\hipMemGetAllocationPropertiesFromHandle.cc
+ *    - unit/virtualMemoryManagement/hipMemGetAllocationPropertiesFromHandle.cc
  * Test requirements
  * ------------------------
  *    - HIP_VERSION >= 6.1
@@ -86,7 +86,7 @@ TEST_CASE("Unit_hipMemGetAllocationPropertiesFromHandle_functional") {
 TEST_CASE("Unit_hipMemGetAllocationPropertiesFromHandle_Negative") {
   hipDevice_t device;
   HIP_CHECK(hipDeviceGet(&device, 0));
-  checkVMMSupported(device)
+  checkVMMSupported(device);
   hipMemGenericAllocationHandle_t handle;
   hipMemAllocationProp prop = {};
   prop.type = hipMemAllocationTypePinned;
@@ -97,23 +97,21 @@ TEST_CASE("Unit_hipMemGetAllocationPropertiesFromHandle_Negative") {
   size_t granularity = 0;
   int N = DATA_SIZE;
   size_t buffer_size = N * sizeof(int);
-  HIP_CHECK(hipMemGetAllocationGranularity
-                    (&granularity, &prop, hipMemAllocationGranularityMinimum));
+  HIP_CHECK(
+      hipMemGetAllocationGranularity(&granularity, &prop, hipMemAllocationGranularityMinimum));
   REQUIRE(granularity > 0);
-  size_t mem_size = ((granularity + buffer_size - 1) / granularity)
-                                          * granularity;
+  size_t mem_size = ((granularity + buffer_size - 1) / granularity) * granularity;
   // Allocate physical memory
   HIP_CHECK(hipMemCreate(&handle, mem_size, &prop, 0));
 
   SECTION("Nullptr as prop") {
-    REQUIRE(hipMemGetAllocationPropertiesFromHandle(nullptr, handle)
-                             == hipErrorInvalidValue);
+    REQUIRE(hipMemGetAllocationPropertiesFromHandle(nullptr, handle) == hipErrorInvalidValue);
   }
 
   SECTION("null handle") {
     prop.location.type = hipMemLocationTypeInvalid;
-    REQUIRE(hipMemGetAllocationPropertiesFromHandle(&prop_temp, nullptr)
-                             == hipErrorInvalidValue);
+    REQUIRE(hipMemGetAllocationPropertiesFromHandle(&prop_temp, nullptr) == hipErrorInvalidValue);
   }
+
   HIP_CHECK(hipMemRelease(handle));
 }

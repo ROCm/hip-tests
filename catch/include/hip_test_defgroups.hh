@@ -103,16 +103,9 @@ THE SOFTWARE.
  */
 
 /**
-* @defgroup KernelTest Kernel Functions Management
-* @{
-* This section describes the various kernel functions invocation.
-* @}
-*/
-
-/**
- * @defgroup AtomicsTest Device Atomics
+ * @defgroup KernelTest Kernel Functions Management
  * @{
- * This section describes tests for the Device Atomic APIs.
+ * This section describes the various kernel functions invocation.
  * @}
  */
 
@@ -140,7 +133,8 @@ THE SOFTWARE.
 /**
  * @defgroup PeerToPeerTest PeerToPeer Device Memory Access
  * @{
- * This section describes tests for the PeerToPeer device memory access functions of HIP runtime API.
+ * This section describes tests for the PeerToPeer device memory access functions of HIP runtime
+ * API.
  * @warning PeerToPeer support is experimental.
  * @}
  */
@@ -200,124 +194,6 @@ THE SOFTWARE.
  * @}
  */
 
-/**
- * @defgroup AtomicsTest Device Atomics
- * @{
- * This section describes tests for the Device Atomic APIs.
- */
-
-/**
- * @addtogroup atomicAdd atomicAdd
- * @{
- * @ingroup AtomicsTest
- */
-
-/**
- * Test Description
- * ------------------------
- *  - Compiles atomicAdd with invalid parameters.
- *  - Compiles the source with specialized Python tool.
- *    -# Utilizes sub-process to invoke compilation of faulty source.
- *    -# Performs post-processing of compiler output and counts errors.
- * Test source
- * ------------------------
- *  - unit/atomics/CMakeLists.txt
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_atomicAdd_Negative_Parameters") {}
-/**
- * End doxygen group atomicAdd.
- * @}
- */
-
-/**
- * @addtogroup atomicSub atomicSub
- * @{
- * @ingroup AtomicsTest
- */
-
-/**
- * Test Description
- * ------------------------
- *  - Compiles atomicSub with invalid parameters.
- *  - Compiles the source with specialized Python tool.
- *    -# Utilizes sub-process to invoke compilation of faulty source.
- *    -# Performs post-processing of compiler output and counts errors.
- * Test source
- * ------------------------
- *  - unit/atomics/CMakeLists.txt
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_atomicSub_Negative_Parameters") {}
-/**
- * End doxygen group atomicSub.
- * @}
- */
-
-/**
- * @addtogroup atomicInc atomicInc
- * @{
- * @ingroup AtomicsTest
- */
-
-/**
- * Test Description
- * ------------------------
- *  - Compiles atomicInc with invalid parameters.
- *  - Compiles the source with specialized Python tool.
- *    -# Utilizes sub-process to invoke compilation of faulty source.
- *    -# Performs post-processing of compiler output and counts errors.
- * Test source
- * ------------------------
- *  - unit/atomics/CMakeLists.txt
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_atomicInc_Negative_Parameters") {}
-/**
- * End doxygen group atomicInc.
- * @}
- */
-
-/**
- * @addtogroup atomicDec atomicDec
- * @{
- * @ingroup AtomicsTest
- */
-
-/**
- * Test Description
- * ------------------------
- *  - Compiles atomicDec with invalid parameters.
- *  - Compiles the source with specialized Python tool.
- *    -# Utilizes sub-process to invoke compilation of faulty source.
- *    -# Performs post-processing of compiler output and counts errors.
- * Test source
- * ------------------------
- *  - unit/atomics/CMakeLists.txt
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_atomicDec_Negative_Parameters") {}
-/**
- * End doxygen group atomicDec.
- * @}
- */
-
-/**
- * End doxygen group AtomicsTest.
- * @defgroup MathTest Math Device Functions
- * @{
- * This section describes tests for device math functions of HIP runtime API.
- * @}
- */
-
  /**
  * @defgroup MathTest Math Device Functions
  * @{
@@ -347,62 +223,8 @@ TEST_CASE("Unit_atomicDec_Negative_Parameters") {}
  */
 
 /**
- * @defgroup DeviceLanguageTest Device Language
+ * @defgroup VirtualMemoryManagementTest Virtual Memory Management APIs
  * @{
- * This section describes tests for the Device Language API.
- */
-
-/**
- * @addtogroup launch_bounds launch_bounds
- * @{
- * @ingroup DeviceLanguageTest
- */
-
-/**
- * Test Description
- * ------------------------
- *  - Validates handling of invalid arguments:
- *    -# Compiles kernels that are not created appropriately:
- *      - Maximum number of threads is 0
- *      - Maximum number of threads is not integer value
- *      - Mimimum number of warps is not integer value
- *    -# Expected output: compiler error
- * Test source
- * ------------------------
- *  - unit/launch_bounds/CMakeLists.txt
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_Kernel_Launch_bounds_Negative_Parameters_CompilerError") {}
-
-/**
- * Test Description
- * ------------------------
- *  - Validates handling of invalid arguments:
- *    -# Compiles kernels that are not created appropriately:
- *      - Maximum number of threads is negative
- *      - Mimimum number of warps is negative
- *  - Validates handling of invalid arguments:
- *    -# Expected output: parse error
- * Test source
- * ------------------------
- *  - unit/launch_bounds/CMakeLists.txt
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_Kernel_Launch_bounds_Negative_Parameters_ParseError") {}
-
-/**
- * End doxygen group launch_bounds.
+ * This section describes the virtual memory management types & functions of HIP runtime API.
  * @}
- */
-
-/**
- * End doxygen group DeviceLanguageTest.
- * @}
- * @defgroup VectorTypeTest Vector types
- * @{
- * This section describes tests for the Vector type functions and operators.
  */

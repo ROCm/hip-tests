@@ -79,7 +79,17 @@ if(HIP_PLATFORM MATCHES "amd")
       hipExtMallocWithFlags.cc
       hipMallocMngdMultiThread.cc
       hipArray.cc
-      hipMemVmm.cc)
+      hipMemVmm.cc
+      hipMemCreate.cc
+      hipMemMap.cc
+      hipMemGetAllocationGranularity.cc
+      hipMemSetGetAccess.cc
+      hipMemRetainAllocationHandle.cc
+      hipMemUnmap.cc
+      hipMemAddressFree.cc
+      hipMemAddressReserve.cc
+      hipMemRelease.cc
+      hipMemGetAllocationPropertiesFromHandle.cc)
 else()
   set(TEST_SRC ${TEST_SRC} hipGetSymbolSizeAddress.cc)
 endif()
@@ -140,7 +150,8 @@ set(TEST_SRC
     hipMallocAsync.cc
     hipStreamAttachMemAsync.cc
     hipMemRangeGetAttributes_old.cc
-    hipMemGetAddressRange.cc)
+    hipMemGetAddressRange.cc
+    hipArrayGetDescriptor.cc)
 
 set(NOT_FOR_MI200_AND_ABOVE_TEST hipMallocArray.cc hipArrayCreate.cc) # tests not for MI200+
 set(MI200_AND_ABOVE_TARGETS gfx90a gfx940 gfx941 gfx942)

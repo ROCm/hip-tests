@@ -66,8 +66,21 @@ Here the first parameter will store the time taken value, second parameter is th
 We can print the value of time take comfortably since eventMs is float variable.
 
 ## How to build and run:
-Use the make command and execute it using ./exe
-Use hipcc to build the application, which is using hcc on AMD and nvcc on nvidia.
+- Build the sample using cmake
+```
+$ mkdir build; cd build
+$ cmake .. -DCMAKE_PREFIX_PATH=/opt/rocm
+$ make
+```
+- Execute the sample
+```
+$ ./hipEvent
+Device name Navi 14 [Radeon Pro W5500]
+hipMemcpyHostToDevice time taken  =  0.981ms
+kernel Execution time             =  0.539ms
+hipMemcpyDeviceToHost time taken  =  1.220ms
+PASSED!
+```
 
 ## More Info:
 - [HIP FAQ](https://github.com/ROCm-Developer-Tools/HIP/blob/master/docs/markdown/hip_faq.md)

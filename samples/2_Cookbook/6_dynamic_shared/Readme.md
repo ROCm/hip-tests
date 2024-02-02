@@ -38,9 +38,18 @@ The other important change is:
 here we replaced 4th parameter with amount of additional shared memory to allocate when launching the kernel.
 
 ## How to build and run:
-Use the make command and execute it using ./exe
-Use hipcc to build the application, which is using hcc on AMD and nvcc on nvidia.
-
+- Build the sample using cmake
+```
+$ mkdir build; cd build
+$ cmake .. -DCMAKE_PREFIX_PATH=/opt/rocm
+$ make
+```
+- Execute the sample
+```
+$ ./dynamic_shared
+Device name Navi 14 [Radeon Pro W5500]
+dynamic_shared PASSED!
+```
 ## More Info:
 - [HIP FAQ](https://github.com/ROCm-Developer-Tools/HIP/blob/master/docs/markdown/hip_faq.md)
 - [HIP Kernel Language](https://github.com/ROCm-Developer-Tools/HIP/blob/master/docs/markdown/hip_kernel_language.md)

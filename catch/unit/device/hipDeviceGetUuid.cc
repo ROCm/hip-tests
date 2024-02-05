@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2022-2023 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -18,8 +18,14 @@ THE SOFTWARE.
 */
 
 #include <hip_test_common.hh>
+#ifdef __linux__
+#include <unistd.h>
+#endif
 #include <cstring>
 #include <cstdio>
+#include <map>
+#include <sstream>
+#include <vector>
 
 /**
  * @addtogroup hipDeviceGetUuid hipDeviceGetUuid
@@ -50,7 +56,6 @@ TEST_CASE("Unit_hipDeviceGetUuid_Positive") {
 
   // Scenario 1
   HIP_CHECK(hipDeviceGetUuid(&uuid, device));
-
   // Atleast one non zero value
   size_t uuidSize = sizeof(uuid.bytes) / sizeof(uuid.bytes[0]);
   for (size_t i = 0; i < uuidSize; i++) {
@@ -92,3 +97,98 @@ TEST_CASE("Unit_hipDeviceGetUuid_Negative") {
     REQUIRE_FALSE(hipSuccess == hipDeviceGetUuid(&uuid, numDevices));
   }
 }
+#ifdef __linux__
+#if HT_AMD
+#define COMMAND_LEN 256
+#define BUFFER_LEN 512
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Get the UUID from rocminfo and compare it with the value from hipDeviceGetUuid API
+ * Test source
+ * ------------------------
+ *  - unit/device/hipDeviceGetUuid.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.7
+ */
+TEST_CASE("Unit_hipDeviceGetUuid_From_RocmInfo") {
+  int deviceCount = 0;
+  HIP_CHECK(hipGetDeviceCount(&deviceCount));
+  assert(deviceCount > 0);
+
+  FILE* fpipe;
+  char command[COMMAND_LEN] = "";
+  const char* rocmInfo = "rocminfo";
+
+  snprintf(command, COMMAND_LEN, "%s", rocmInfo);
+  strncat(command, " | grep -i Uuid:", COMMAND_LEN);
+  // Execute the rocminfo command and extract the UUID info
+  fpipe = popen(command, "r");
+  if (fpipe == nullptr) {
+    printf("Unable to create command file\n");
+    return;
+  }
+  char command_op[BUFFER_LEN];
+  int j = 0;
+  std::map<int, std::vector<char>> uuid_map;
+  while (fgets(command_op, BUFFER_LEN, fpipe)) {
+    std::string rocminfo_line(command_op);
+    if (std::string::npos != rocminfo_line.find("CPU-")) {
+      continue;
+    } else if (auto loc = rocminfo_line.find("GPU-"); loc != std::string::npos) {
+      if (std::string::npos ==
+          rocminfo_line.find("GPU-XX")) {  // Only make an entry if the device is not an iGPU
+        std::vector<char> t_uuid(16, 0);
+        std::memcpy(t_uuid.data(), &rocminfo_line[loc + 4], 16);
+        uuid_map[j] = t_uuid;
+      }
+    }
+    j++;
+  }
+
+  for (const auto& i : uuid_map) {
+    if (i.second.size() == 0) {
+      continue;
+    }
+    auto dev = i.first;
+    HIP_CHECK(hipSetDevice(dev));
+    hipDevice_t device;
+    HIP_CHECK(hipDeviceGet(&device, dev));
+    hipUUID d_uuid{0};
+    HIP_CHECK(hipDeviceGetUuid(&d_uuid, device));
+    REQUIRE(memcmp(d_uuid.bytes, i.second.data(), 16) == 0);
+  }
+}
+#endif
+/**
+ * Test Description
+ * ------------------------
+ *  - Get the UUID from hipGetDeviceProperties and compare it with value from hipDeviceGetUuid API
+ * Test source
+ * ------------------------
+ *  - unit/device/hipDeviceGetUuid.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.7
+ */
+// Guarding it against NVIDIA as this test is faling on it.
+#if HT_AMD
+TEST_CASE("Unit_hipDeviceGetUuid_VerifyUuidFrm_hipGetDeviceProperties") {
+  int deviceCount = 0;
+  hipDevice_t device;
+  hipDeviceProp_t prop;
+  hipUUID uuid{0};
+  HIP_CHECK(hipGetDeviceCount(&deviceCount));
+  assert(deviceCount > 0);
+  for (int dev = 0; dev < deviceCount; dev++) {
+    HIP_CHECK(hipSetDevice(dev));
+    HIP_CHECK(hipDeviceGet(&device, dev));
+    HIP_CHECK(hipDeviceGetUuid(&uuid, device));
+    HIP_CHECK(hipGetDeviceProperties(&prop, dev));
+    REQUIRE(memcmp(uuid.bytes, prop.uuid.bytes, 16) == 0);
+  }
+}
+#endif
+#endif

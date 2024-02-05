@@ -46,7 +46,6 @@ enum class FreeType { DevFree, ArrayFree, ArrayDestroy, HostFree };
 
 // Amount of time kernel should wait
 using namespace std::chrono_literals;
-const std::chrono::duration<uint64_t, std::milli> delay = 50ms;
 constexpr size_t numAllocs = 10;
 
 TEST_CASE("Unit_hipFreeImplicitSyncDev") {
@@ -54,9 +53,14 @@ TEST_CASE("Unit_hipFreeImplicitSyncDev") {
   size_t size_mult = GENERATE(1, 32, 64, 128, 256);
   HIP_CHECK(hipMalloc(&devPtr, sizeof(*devPtr) * size_mult));
 
-  LaunchDelayKernel(delay);
-  // make sure device is busy
+  HipTest::BlockingContext b_context{nullptr};
+
+  b_context.block_stream();
+  REQUIRE(b_context.is_blocked());
+
   HIP_CHECK_ERROR(hipStreamQuery(nullptr), hipErrorNotReady);
+  b_context.unblock_stream();
+
   HIP_CHECK(hipFree(devPtr));
   HIP_CHECK(hipStreamQuery(nullptr));
 }
@@ -67,9 +71,14 @@ TEST_CASE("Unit_hipFreeImplicitSyncHost") {
 
   HIP_CHECK(hipHostMalloc(&hostPtr, sizeof(*hostPtr) * size_mult));
 
-  LaunchDelayKernel(delay);
-  // make sure device is busy
+  HipTest::BlockingContext b_context{nullptr};
+
+  b_context.block_stream();
+  REQUIRE(b_context.is_blocked());
+
   HIP_CHECK_ERROR(hipStreamQuery(nullptr), hipErrorNotReady);
+  b_context.unblock_stream();
+
   HIP_CHECK(hipHostFree(hostPtr));
   HIP_CHECK(hipStreamQuery(nullptr));
 }
@@ -79,6 +88,7 @@ TEMPLATE_TEST_CASE("Unit_hipFreeImplicitSyncArray", "", char, float, float2, flo
   CHECK_IMAGE_SUPPORT
 
   using vec_info = vector_info<TestType>;
+  const std::chrono::duration<uint64_t, std::milli> delay = 50ms;
   DriverContext ctx;
 
 
@@ -124,9 +134,14 @@ TEMPLATE_TEST_CASE("Unit_hipFreeImplicitSyncArray", "", char, float, float2, flo
   hipChannelFormatDesc desc = hipCreateChannelDesc<TestType>();
 
   HIP_CHECK(hipMallocArray(&arrayPtr, &desc, extent.width, extent.height, hipArrayDefault));
-  LaunchDelayKernel(delay);
-  // make sure device is busy
+  HipTest::BlockingContext b_context{nullptr};
+
+  b_context.block_stream();
+  REQUIRE(b_context.is_blocked());
+
   HIP_CHECK_ERROR(hipStreamQuery(nullptr), hipErrorNotReady);
+  b_context.unblock_stream();
+
   // Second free segfaults
   SECTION("ArrayDestroy") {
     HIP_CHECK(hipArrayDestroy(arrayPtr));

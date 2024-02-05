@@ -78,7 +78,8 @@ set(AMD_TEST_SRC
     hipMathFunctions.cc
     hmax_hmin.cc
     hipBfloat16.cc
-    hipVectorTypes.cc
+    hipVectorTypesHost.cc
+    hipVectorTypesDevice.cc
     hipTestHalf.cc
     hipComplex.cc
     hipTestFMA.cc
@@ -86,7 +87,9 @@ set(AMD_TEST_SRC
     hip_test_make_type.cc
     bfloat16.cc
     AtomicsWithRandomActiveLanesInWavefront.cc
+    fp16_ops.cc
 )
+
 set(AMD_ARCH_SPEC_TEST_SRC
     AtomicAdd_Coherent_withunsafeflag.cc
     AtomicAdd_Coherent_withoutflag.cc
@@ -112,25 +115,25 @@ add_custom_target(kerDevAllocMultCO.code
                   COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
                   ${CMAKE_CURRENT_SOURCE_DIR}/kerDevAllocMultCO.cc
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/deviceLib/kerDevAllocMultCO.code
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/
+                  -I${HIP_PATH}/include/
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 add_custom_target(kerDevWriteMultCO.code
                   COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
                   ${CMAKE_CURRENT_SOURCE_DIR}/kerDevWriteMultCO.cc
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/deviceLib/kerDevWriteMultCO.code
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/
+                  -I${HIP_PATH}/include/
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 add_custom_target(kerDevFreeMultCO.code
                   COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
                   ${CMAKE_CURRENT_SOURCE_DIR}/kerDevFreeMultCO.cc
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/deviceLib/kerDevFreeMultCO.code
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/
+                  -I${HIP_PATH}/include/
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 add_custom_target(kerDevAllocSingleKer.code
                   COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
                   ${CMAKE_CURRENT_SOURCE_DIR}/kerDevAllocSingleKer.cc
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/deviceLib/kerDevAllocSingleKer.code
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/
+                  -I${HIP_PATH}/include/
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 
 # Accepted archs to compile this cmake file

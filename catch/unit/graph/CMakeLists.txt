@@ -35,6 +35,7 @@ set(TEST_SRC
   hipGraphAddMemcpyNode_old.cc
   hipGraphClone.cc
   hipGraphInstantiateWithFlags.cc
+  hipGraphInstantiateWithParams.cc
   hipGraphAddHostNode.cc
   hipGraphAddMemcpyNodeFromSymbol_old.cc
   hipGraphAddMemcpyNodeFromSymbol.cc

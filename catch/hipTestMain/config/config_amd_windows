@@ -327,6 +327,19 @@
         "Unit_Device__hip_hc_8pk_Negative",
         "SWDEV-413997: VMM test still failing in windows",
         "Unit_hipMemSetAccess_ChangeAccessProp",
+        "SWDEV-444265: This test fails in Phoenix",
+        "Unit_hipGraphExecEventWaitNodeSetEvent_SetAndVerifyMemory",
+        "SWDEV-444041: These tests fail randomly in Navi21 MGU",
+        "Unit_hipMemMap_SameMemoryReuse",
+        "Unit_hipMemMap_negative",
+        "Unit_hipMemSetAccess_Vmm2PeerDevMemCpy",
+        "SWDEV-444041: These tests fail in Navi31 MGPU",
+        "Unit_hipMemMap_PhysicalMemoryReuse_SingleGPU",
+        "Unit_hipMemMap_PhysicalMemory_Map2MultVMMs",
+        "Unit_hipMemMap_PhysicalMemoryReuse_MultiDev",
+        "Unit_hipMemSetAccess_Vmm2VMMMemCpy",
+        "SWDEV-444031: This test fails in Navi32 MGPU",
+        "Unit_hipMemSetAccess_Multithreaded",
     #endif
         "End of json"
     ]

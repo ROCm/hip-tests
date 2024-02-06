@@ -1,5 +1,7 @@
 # Common Tests - Test independent of all platforms
 set(TEST_SRC
+  warp_shfl_up.cc
+  warp_shfl_down.cc
   warp_shfl_xor.cc
   warp_shfl.cc
   warp_shfl_up.cc

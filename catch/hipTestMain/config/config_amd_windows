@@ -455,6 +455,17 @@
         "Unit_Assert_Positive_Basic_KernelFail",
         "Unit_StaticAssert_Positive_Basic",
         "Unit_StaticAssert_Negative_Basic",
+        "=== Below tests are disabled due to defect EXSWHTEC-356 ===",
+        "Unit_Device___hisinf2_Accuracy_Positive",
+        "Unit_Device___hisnan2_Accuracy_Positive",
+        "Unit_Device___hbequ2_Accuracy_Positive",
+        "Unit_Device___hne_Accuracy_Positive",
+        "Unit_Device___hne2_Accuracy_Positive",
+        "Unit_Device___hbne2_Accuracy_Positive",
+        "Unit_Device___hbgeu2_Accuracy_Positive",
+        "Unit_Device___hbgtu2_Accuracy_Positive",
+        "Unit_Device___hbleu2_Accuracy_Positive",
+        "Unit_Device___hbltu2_Accuracy_Positive",
     #endif
         "End of json"
     ]

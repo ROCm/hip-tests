@@ -28,8 +28,18 @@ Be careful while using shared memory, since all threads within the block can acc
 `  __syncthreads();`
 
 ## How to build and run:
-Use the make command and execute it using ./exe
-Use hipcc to build the application, which is using hcc on AMD and nvcc on nvidia.
+- Build the sample using cmake
+```
+$ mkdir build; cd build
+$ cmake .. -DCMAKE_PREFIX_PATH=/opt/rocm
+$ make
+```
+- Execute the sample
+```
+$ ./sharedMemory
+Device name Navi 14 [Radeon Pro W5500]
+PASSED!
+```
 
 ## More Info:
 - [HIP FAQ](https://github.com/ROCm-Developer-Tools/HIP/blob/master/docs/markdown/hip_faq.md)

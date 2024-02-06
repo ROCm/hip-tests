@@ -38,6 +38,7 @@ set(TEST_SRC
   half_precision_comparison.cc
   casting_half2int_funcs.cc
   casting_int2half_funcs.cc
+  casting_half_float_funcs.cc
 )
 
 if(HIP_PLATFORM MATCHES "nvidia")
@@ -148,3 +149,7 @@ add_test(NAME Unit_Device_casting_int2half_Negative
          COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
          ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
          casting_int2half_negative_kernels.cc 78)
+add_test(NAME Unit_Device_casting_half_float_Negative
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
+         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+         casting_half_float_negative_kernels.cc 18)

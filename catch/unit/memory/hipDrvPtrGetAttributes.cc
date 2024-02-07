@@ -55,13 +55,18 @@ TEST_CASE("Unit_hipDrvPtrGetAttributes_Negative") {
                          hipHostMallocDefault));
   HIP_CHECK(hipGetDevice(&deviceId));
   unsigned int device_ordinal;
-  int *dev_ptr;
+  int *dev_ptr{nullptr};
   void *data[2];
   data[0] = &dev_ptr;
   data[1] = &device_ordinal;
 
   hipPointer_attribute attributes[] = {HIP_POINTER_ATTRIBUTE_DEVICE_POINTER,
                                        HIP_POINTER_ATTRIBUTE_DEVICE_ORDINAL};
+
+  SECTION("Passing invalid number to numAttributes") {
+    REQUIRE(hipDrvPointerGetAttributes(0, attributes, data,
+            reinterpret_cast<hipDeviceptr_t>(A_d)) == hipErrorInvalidValue);
+  }
 
   SECTION("Passing nullptr to attributes") {
     REQUIRE(hipDrvPointerGetAttributes(2, nullptr, data,
@@ -70,7 +75,7 @@ TEST_CASE("Unit_hipDrvPtrGetAttributes_Negative") {
 
   SECTION("Passing nullptr to data") {
     REQUIRE(hipDrvPointerGetAttributes(2, attributes, nullptr,
-              reinterpret_cast<hipDeviceptr_t>(A_d)) == hipErrorInvalidValue);
+            reinterpret_cast<hipDeviceptr_t>(A_d)) == hipErrorInvalidValue);
   }
 
 #if HT_AMD
@@ -124,12 +129,12 @@ TEST_CASE("Unit_hipDrvPtrGetAttributes_Functional") {
                                          HIP_POINTER_ATTRIBUTE_DEVICE_ORDINAL,
                                          HIP_POINTER_ATTRIBUTE_DEVICE_POINTER,
                                          HIP_POINTER_ATTRIBUTE_RANGE_SIZE,
-                                        HIP_POINTER_ATTRIBUTE_RANGE_START_ADDR};
+                                         HIP_POINTER_ATTRIBUTE_RANGE_START_ADDR};
     HIP_CHECK(hipPointerGetAttribute(&dev_ptr1,
               HIP_POINTER_ATTRIBUTE_DEVICE_POINTER,
               reinterpret_cast<hipDeviceptr_t>(A_d + 100)));
     HIP_CHECK(hipPointerGetAttribute(&dev,
-	      HIP_POINTER_ATTRIBUTE_DEVICE_POINTER,
+	            HIP_POINTER_ATTRIBUTE_DEVICE_POINTER,
               reinterpret_cast<hipDeviceptr_t>(A_d)));
     HIP_CHECK(hipDrvPointerGetAttributes(5, attributes, data,
               reinterpret_cast<hipDeviceptr_t>(A_d + 100)));

@@ -56,6 +56,8 @@ THE SOFTWARE.
  */
 TEMPLATE_TEST_CASE("Unit_hipGraphMemsetNodeSetParams_Positive_Basic", "", uint8_t, uint16_t,
                    uint32_t) {
+  CHECK_IMAGE_SUPPORT
+
   const auto f = [](hipMemsetParams* params) {
     hipGraph_t graph = nullptr;
     HIP_CHECK(hipGraphCreate(&graph, 0));

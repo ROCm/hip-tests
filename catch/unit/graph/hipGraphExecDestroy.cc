@@ -24,24 +24,47 @@ THE SOFTWARE.
  * @{
  * @ingroup GraphTest
  * `hipGraphExecDestroy(hipGraphExec_t graphExec)` -
- * Destroys an executable graph.
- * ________________________
- * Test cases from other modules:
- *  - @ref Unit_hipGraph_BasicFunctional
+ * Destroys an executable graph
  */
 
-static void HostFunctionSetToZero(void* arg) {
-  int* test_number = (int*)arg;
-  (*test_number) = 0;
+/**
+ * Test Description
+ * ------------------------
+ *    - Test to verify API behavior with invalid arguments:
+ *        -# GraphExec is nullptr
+ *        -# GraphExec is uninitialized
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphExecDestroy.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipGraphExecDestroy_Negative_Parameters") {
+
+  SECTION("Pass hipGraphExecDestroy with nullptr") {
+    HIP_CHECK_ERROR(hipGraphExecDestroy(nullptr), hipErrorInvalidValue);
+  }
+
+  SECTION("Pass hipGraphExecDestroy with un-initilze structure") {
+    hipGraphExec_t graph_exec{};
+    HIP_CHECK_ERROR(hipGraphExecDestroy(graph_exec), hipErrorInvalidValue);
+  }
 }
 
-static void HostFunctionAddOne(void* arg) {
-  int* test_number = (int*)arg;
-  (*test_number) += 1;
-}
-
-/* create an executable graph that will set an integer pointed to by 'number' to one*/
-static void CreateTestExecutableGraph(hipGraphExec_t* graph_exec, int* number) {
+/**
+ * Test Description
+ * ------------------------
+ *    - Basic positive test for hipGraphExecDestroy
+ *    - create an executable graph and then destroy it
+ * Test source
+ * ------------------------
+ *    - unit/graph/hipGraphExecDestroy.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipGraphExecDestroy_Positive_Basic") {
   hipGraph_t graph;
   hipGraphNode_t node_error;
 
@@ -58,41 +81,4 @@ static void CreateTestExecutableGraph(hipGraphExec_t* graph_exec, int* number) {
 
   HIP_CHECK(hipGraphInstantiate(graph_exec, graph, &node_error, nullptr, 0));
   HIP_CHECK(hipGraphDestroy(graph));
-}
-
-/**
- * Test Description
- * ------------------------
- *  - Creates an executable graph.
- *  - Destroys it successfully.
- * Test source
- * ------------------------
- *  - unit/graph/hipGraphExecDestroy.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipGraphExecDestroy_Positive_Basic") {
-  int number = 5;
-  hipGraphExec_t graph_exec;
-  CreateTestExecutableGraph(&graph_exec, &number);
-  REQUIRE(hipGraphExecDestroy(graph_exec) == hipSuccess);
-}
-
-/**
- * Test Description
- * ------------------------
- *  - Validates handling of invalid arguments:
- *    - When executable graph handle is not instantiated
- *      - Expected output: return `hipErrorInvalidValue`
- * Test source
- * ------------------------
- *  - unit/graph/hipGraphExecDestroy.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipGraphExecDestroy_Negative_Parameters") {
-  hipGraphExec_t graph_exec{};
-  HIP_CHECK_ERROR(hipGraphExecDestroy(graph_exec), hipErrorInvalidValue);
 }

@@ -29,21 +29,21 @@ THE SOFTWARE.
  * @{
  * @ingroup GraphTest
  * `hipGraphAddDependencies(hipGraph_t graph, const hipGraphNode_t *from, const hipGraphNode_t *to,
- * size_t numDependencies)` - Adds dependency edges to a graph.
+ * size_t numDependencies)` - adds dependency edges to a graph
  */
 
 /**
  * Test Description
  * ------------------------
- *  - Functional Test for adding dependencies in graph and verifying execution:
- *    -# Create dependencies node by node
- *    -# Create dependencies with node lists
+ *    - Functional Test for adding dependencies in graph and verifying execution:
+ *        -# Create dependencies node by node
+ *        -# Create dependencies with node lists
  * Test source
  * ------------------------
- *  - catch\unit\graph\hipGraphAddDependencies.cc
+ *    - catch\unit\graph\hipGraphAddDependencies.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddDependencies_Positive_Functional") {
   constexpr size_t N = 1024;
@@ -97,18 +97,18 @@ TEST_CASE("Unit_hipGraphAddDependencies_Positive_Functional") {
 /**
  * Test Description
  * ------------------------
- *  - Test to verify API behavior with special cases of valid arguments:
- *    -# When numDependencies is zero, To/From are `nullptr`
- *    -# When numDependencies is zero, To or From are `nullptr`
- *    -# When numDependencies is zero, To/From are valid
- *    -# When numDependencies is zero, To/From are the same
- *    -# When numDependencies < To/From length
+ *    - Test to verify API behavior with special cases of valid arguments:
+ *        -# numDependencies is zero, To/From are nullptr
+ *        -# numDependencies is zero, To or From are nullptr
+ *        -# numDependencies is zero, To/From are valid
+ *        -# numDependencies is zero, To/From are the same
+ *        -# numDependencies < To/From length
  * Test source
  * ------------------------
- *  - catch\unit\graph\hipGraphAddDependencies.cc
+ *    - catch\unit\graph\hipGraphAddDependencies.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddDependencies_Positive_Parameters") {
   constexpr size_t Nbytes = 1024;
@@ -172,35 +172,24 @@ TEST_CASE("Unit_hipGraphAddDependencies_Positive_Parameters") {
 /**
  * Test Description
  * ------------------------
- *  - Test to verify API behavior with invalid arguments:
- *    -# When graph is `nullptr`
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When graph is uninitialized
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When To or From is `nullptr`
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When To/From are `nullptr` graph node
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When from belongs to different graph
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When To belongs to different graph
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When From is uninitialized
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When To is uninitialized
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When Dependencies are duplicated
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When node Dependencies are the same
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When numDependencies > To/From length
- *      - Expected output: return `hipErrorInvalidValue`
+ *    - Test to verify API behavior with invalid arguments:
+ *        -# Null Graph
+ *        -# Graph is uninitialized
+ *        -# To or From is nullptr
+ *        -# To/From are null graph node
+ *        -# From belongs to different graph
+ *        -# To belongs to different graph
+ *        -# From is uninitialized
+ *        -# To is uninitialized
+ *        -# Duplicate Dependencies
+ *        -# Same Node Dependencies
+ *        -# numDependencies > To/From length
  * Test source
  * ------------------------
- *  - catch\unit\graph\hipGraphAddDependencies.cc
+ *    - catch\unit\graph\hipGraphAddDependencies.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddDependencies_Negative_Parameters") {
   // Initialize

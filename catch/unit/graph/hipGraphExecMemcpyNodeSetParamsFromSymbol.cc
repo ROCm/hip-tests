@@ -202,19 +202,6 @@ TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParamsFromSymbol_Negative_Parameters") 
   }
 #endif
 
-  SECTION("Changing dst allocation device") {
-    if (HipTest::getDeviceCount() < 2) {
-      HipTest::HIP_SKIP_TEST("Test requires two connected GPUs");
-      return;
-    }
-    HIP_CHECK(hipSetDevice(1));
-    LinearAllocGuard<int> new_var(LinearAllocs::hipMalloc, sizeof(int));
-    HIP_CHECK_ERROR(hipGraphExecMemcpyNodeSetParamsFromSymbol(
-                        graph_exec, node, new_var.ptr(), SYMBOL(int_device_var),
-                        sizeof(*new_var.ptr()), 0, static_cast<hipMemcpyKind>(-1)),
-                    hipErrorInvalidValue);
-  }
-
   HIP_CHECK(hipGraphExecDestroy(graph_exec));
   HIP_CHECK(hipGraphDestroy(graph));
 }

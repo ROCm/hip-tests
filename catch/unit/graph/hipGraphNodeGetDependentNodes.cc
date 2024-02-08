@@ -31,23 +31,23 @@ THE SOFTWARE.
  * @{
  * @ingroup GraphTest
  * `hipGraphNodeGetDependentNodes(hipGraphNode_t node, hipGraphNode_t *pDependentNodes, size_t
- * *pNumDependentNodes)` - Returns a node's dependent nodes.
+ * *pNumDependentNodes)` - returns a node's dependent nodes
  */
 
 /**
  * Test Description
  * ------------------------
- *  - Functional test to validate API for different number of dependent nodes:
- *    -# Validate number of dependent nodes when numDeps = num of nodes
- *    -# Validate number of dependent nodes when numDeps < num of nodes
- *    -# Validate number of dependent nodes when numDeps > num of nodes
- *    -# Validate number of dependent nodes when passed node is the last in graph
+ *    - Functional test to validate API for different number of dependent nodes:
+ *        -# Validate number of dependent nodes when numDeps = num of nodes
+ *        -# Validate number of dependent nodes when numDeps < num of nodes
+ *        -# Validate number of dependent nodes when numDeps > num of nodes
+ *        -# Validate number of dependent nodes when passed node is the last in graph
  * Test source
  * ------------------------
- *  - catch\unit\graph\hipGraphNodeGetDependentNodes.cc
+ *    - catch\unit\graph\hipGraphNodeGetDependentNodes.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphNodeGetDependentNodes_Positive_Functional") {
   using namespace std::placeholders;
@@ -199,19 +199,16 @@ TEST_CASE("Unit_hipGraphNodeGetDependentNodes_Positive_Functional") {
 /**
  * Test Description
  * ------------------------
- *  - Test to verify API behavior with invalid arguments:
- *    -# When Node is `nullptr`
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When numDependentNodes is `nullptr`
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When Node is un-initialized/invalid parameter
- *      - Expected output: return `hipErrorInvalidValue`
+ *    - Test to verify API behavior with invalid arguments:
+ *        -# Node is nullptr
+ *        -# NumDependentNodes is nullptr
+ *        -# Node is un-initialized/invalid parameter
  * Test source
  * ------------------------
- *  - catch\unit\graph\hipGraphNodeGetDependentNodes.cc
+ *    - catch\unit\graph\hipGraphNodeGetDependentNodes.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphNodeGetDependentNodes_Negative_Parameters") {
   hipGraph_t graph{};

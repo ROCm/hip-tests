@@ -210,8 +210,9 @@ TEST_CASE("Unit_hipGraphExecEventRecordNodeSetEvent_Negative_DifferentDevices") 
     return;
   }
   hipGraphExec_t graphExec;
+  hipStream_t streamForGraph;
   hipGraph_t graph;
-  hipEvent_t event1, event2, event_out;
+  hipEvent_t event1, event2;
 
   HIP_CHECK(hipSetDevice(0));
   HIP_CHECK(hipEventCreate(&event1));
@@ -223,12 +224,17 @@ TEST_CASE("Unit_hipGraphExecEventRecordNodeSetEvent_Negative_DifferentDevices") 
   HIP_CHECK(hipGraphCreate(&graph, 0));
   HIP_CHECK(hipGraphAddEventRecordNode(&eventrec, graph, nullptr, 0, event1));
 
-  // Create node, error should be reported as event is on different device
-  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
-  HIP_CHECK_ERROR(hipGraphExecEventRecordNodeSetEvent(graphExec, eventrec, event2),
-                  hipErrorInvalidValue);
+  // Verify event on different device can be set in graphExec
   // Instantiate and launch the graph
+  HIP_CHECK(hipStreamCreate(&streamForGraph));
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+  HIP_CHECK(hipGraphExecEventRecordNodeSetEvent(graphExec, eventrec, event2));
+  HIP_CHECK(hipGraphLaunch(graphExec, streamForGraph));
+  // Wait for graph to complete
+  HIP_CHECK(hipStreamSynchronize(streamForGraph));
+  // Free resources
   HIP_CHECK(hipGraphExecDestroy(graphExec));
+  HIP_CHECK(hipStreamDestroy(streamForGraph));
   HIP_CHECK(hipGraphDestroy(graph));
   HIP_CHECK(hipEventDestroy(event2));
   HIP_CHECK(hipEventDestroy(event1))

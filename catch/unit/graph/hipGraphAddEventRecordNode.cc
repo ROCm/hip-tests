@@ -68,7 +68,9 @@ TEST_CASE("Unit_hipGraphAddEventRecordNode_Functional_Simple") {
   HIP_CHECK(hipStreamDestroy(streamForGraph));
 }
 
-// Local test function
+/**
+ * Local test function
+ */
 static void validateAddEventRecordNode(bool measureTime, bool withFlags, int nstep,
                                        unsigned flag = 0) {
   constexpr size_t N = 1024;

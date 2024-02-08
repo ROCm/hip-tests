@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -19,116 +19,200 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
+#include <hip_test_kernels.hh>
 
 /**
- * @addtogroup hipGraphUpload hipGraphUpload
- * @{
- * @ingroup GraphTest
- * `hipGraphUpload(hipGraphExec_t graphExec, hipStream_t stream)` -
- * Uploads graphExec to the device in stream without executing it.
- * @warning No HIP version supports this API yet.
+ * Functional Test for API - hipGraphUpload
+ - Make graph from hipStreamBeginCapture with a stream.
+   Upload the graph into different stream and execute the graph and verify.
  */
 
-#if 0
+static void hipGraphUploadFunctional_with_hipStreamBeginCapture(
+                                                     hipStream_t iStream) {
+  hipGraph_t graph{nullptr};
+  hipGraphExec_t graphExec{nullptr};
+  constexpr unsigned blocks = 512;
+  constexpr unsigned threadsPerBlock = 256;
+  constexpr size_t N = 1024;
+  size_t Nbytes = N * sizeof(float);
 
-static void HostFunctionSetToZero(void *arg)
-{
-  int *test_number = (int *) arg;
-  (*test_number) = 0;
+  int *A_d, *C_d;
+  int *A_h, *C_h;
+  HipTest::initArrays<int>(&A_d, nullptr, &C_d, &A_h, nullptr, &C_h, N, false);
+
+  hipStream_t stream;
+  HIP_CHECK(hipStreamCreate(&stream));
+  HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
+
+  HIP_CHECK(hipMemcpyAsync(A_d, A_h, Nbytes, hipMemcpyHostToDevice, stream));
+
+  HIP_CHECK(hipMemsetAsync(C_d, 0, Nbytes, stream));
+  hipLaunchKernelGGL(HipTest::vector_square, dim3(blocks),
+                     dim3(threadsPerBlock), 0, stream, A_d, C_d, N);
+  HIP_CHECK(hipMemcpyAsync(C_h, C_d, Nbytes, hipMemcpyDeviceToHost, stream));
+
+  HIP_CHECK(hipStreamEndCapture(stream, &graph));
+
+  // Validate end capture is successful
+  REQUIRE(graph != nullptr);
+
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+  REQUIRE(graphExec != nullptr);
+
+  HIP_CHECK(hipGraphUpload(graphExec, iStream));
+  HIP_CHECK(hipGraphLaunch(graphExec, iStream));
+  HIP_CHECK(hipStreamSynchronize(stream));
+  HIP_CHECK(hipStreamSynchronize(iStream));
+
+  HIP_CHECK(hipGraphExecDestroy(graphExec));
+  HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipStreamDestroy(stream));
+
+  // Validate the computation
+  for (size_t i = 0; i < N; i++) {
+    if (C_h[i] != A_h[i] * A_h[i]) {
+      UNSCOPED_INFO("A and C not matching at " << i);
+    }
+  }
+  HipTest::freeArrays<int>(A_d, nullptr, C_d, A_h, nullptr, C_h, false);
 }
 
-static void HostFunctionAddOne(void *arg)
-{
-  int *test_number = (int *) arg;
-  (*test_number) += 1;
-}
+/**
+ * Functional Test for API - hipGraphUpload
+ - Make graph by creating graph and add node and functionality to it.
+   Upload the graph into different stream and execute the graph and verify.
+ */
 
-/* create an executable graph that will set an integer pointed to by 'number' to one*/
-static void CreateTestExecutableGraph(hipGraphExec_t *graph_exec, int *number)
-{
+static void hipGraphUploadFunctional_with_stream(hipStream_t stream) {
+  constexpr size_t N = 1024;
+  constexpr size_t Nbytes = N * sizeof(int);
+  constexpr auto blocksPerCU = 6;  // to hide latency
+  constexpr auto threadsPerBlock = 256;
   hipGraph_t graph;
-  hipGraphNode_t node_error;
-  
-  hipGraphNode_t node_set_zero;
-  hipHostNodeParams params_set_to_zero = {HostFunctionSetToZero, number};
-  
-  hipGraphNode_t node_add_one;
-  hipHostNodeParams params_set_add_one = {HostFunctionAddOne, number};
-  
+  hipGraphNode_t memcpy_A, memcpy_B, memcpy_C, kNodeAdd;
+  hipKernelNodeParams kNodeParams{};
+  int *A_d, *B_d, *C_d;
+  int *A_h, *B_h, *C_h;
+  hipGraphExec_t graphExec;
+  size_t NElem{N};
+
+  HipTest::initArrays(&A_d, &B_d, &C_d, &A_h, &B_h, &C_h, N, false);
+  unsigned blocks = HipTest::setNumBlocks(blocksPerCU, threadsPerBlock, N);
+
   HIP_CHECK(hipGraphCreate(&graph, 0));
-  
-  HIP_CHECK(hipGraphAddHostNode(&node_set_zero, graph, nullptr, 0, &params_set_to_zero));
-  HIP_CHECK(hipGraphAddHostNode(&node_add_one, graph, &node_set_zero, 1, &params_set_add_one));
-  
-  HIP_CHECK(hipGraphInstantiate(graph_exec, graph, &node_error, nullptr, 0));
+  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpy_A, graph, nullptr, 0, A_d, A_h,
+                                   Nbytes, hipMemcpyHostToDevice));
+  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpy_B, graph, nullptr, 0, B_d, B_h,
+                                   Nbytes, hipMemcpyHostToDevice));
+
+  void* kernelArgs[] = {&A_d, &B_d, &C_d, reinterpret_cast<void *>(&NElem)};
+  kNodeParams.func = reinterpret_cast<void *>(HipTest::vectorADD<int>);
+  kNodeParams.gridDim = dim3(blocks);
+  kNodeParams.blockDim = dim3(threadsPerBlock);
+  kNodeParams.sharedMemBytes = 0;
+  kNodeParams.kernelParams = reinterpret_cast<void**>(kernelArgs);
+  kNodeParams.extra = nullptr;
+  HIP_CHECK(hipGraphAddKernelNode(&kNodeAdd, graph, nullptr, 0, &kNodeParams));
+
+  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpy_C, graph, nullptr, 0, C_h, C_d,
+                                    Nbytes, hipMemcpyDeviceToHost));
+
+  HIP_CHECK(hipGraphAddDependencies(graph, &memcpy_A, &kNodeAdd, 1));
+  HIP_CHECK(hipGraphAddDependencies(graph, &memcpy_B, &kNodeAdd, 1));
+  HIP_CHECK(hipGraphAddDependencies(graph, &kNodeAdd, &memcpy_C, 1));
+
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, NULL, NULL, 0));
+
+  HIP_CHECK(hipGraphUpload(graphExec, stream));
+  HIP_CHECK(hipGraphLaunch(graphExec, stream));
+  HIP_CHECK(hipStreamSynchronize(stream));
+
+  // Verify graph execution result
+  HipTest::checkVectorADD<int>(A_h, B_h, C_h, N);
+
+  HipTest::freeArrays(A_d, B_d, C_d, A_h, B_h, C_h, false);
+  HIP_CHECK(hipGraphExecDestroy(graphExec));
   HIP_CHECK(hipGraphDestroy(graph));
 }
 
-static int HipGraphUpload_Positive_Simple(hipStream_t stream) {
-  int number = 5;
-  
-  hipGraphExec_t graph_exec;
-  CreateTestExecutableGraph(&graph_exec, &number);
-  
-  
-  HIP_CHECK(hipGraphUpload(graph_exec, stream));
-  HIP_CHECK(hipStreamSynchronize(stream));
-  REQUIRE(number == 5);
-  HIP_CHECK(hipGraphLaunch(graph_exec, stream));
-  HIP_CHECK(hipStreamSynchronize(stream));
-  REQUIRE(number == 1);
-  
-  
-  HIP_CHECK(hipGraphExecDestroy(graph_exec));
-
-}
-
-
-/**
- * Test Description
- * ------------------------ 
- *  - Validates several basic scenarios:
- *    -# When graph is uploaded with a stream as a created stream
- *    -# with graph is uploaded with a stream as a per thread
- * Test source
- * ------------------------ 
- *  - unit/graph/hipGraphUpload.cc
- * Test requirements
- * ------------------------ 
- *  - No hip version supports hipGraphUpload still
- */
-TEST_CASE("Unit_hipGraphUpload_Positive") {
-  SECTION("stream as a created stream") {
+TEST_CASE("Unit_hipGraphUpload_Functional") {
+  SECTION("Pass a stream") {
     hipStream_t stream;
     HIP_CHECK(hipStreamCreate(&stream));
-    HipGraphUpload_Positive_Simple(stream);
+    hipGraphUploadFunctional_with_hipStreamBeginCapture(stream);
+    hipGraphUploadFunctional_with_stream(stream);
     HIP_CHECK(hipStreamDestroy(stream));
   }
-  
-  SECTION("with stream as hipStreamPerThread") {
-    HipGraphUpload_Positive_Simple(hipStreamPerThread);
+  SECTION("Pass stream as default stream") {
+    hipGraphUploadFunctional_with_hipStreamBeginCapture(0);
+    hipGraphUploadFunctional_with_stream(0);
   }
+  SECTION("Pass stream as hipStreamPerThread") {
+    hipGraphUploadFunctional_with_hipStreamBeginCapture(hipStreamPerThread);
+    hipGraphUploadFunctional_with_stream(hipStreamPerThread);
+  }
+}
 
+TEST_CASE("Unit_hipGraphUpload_Functional_multidevice_test") {
+  int numDevices = 0;
+  HIP_CHECK(hipGetDeviceCount(&numDevices));
+
+  if (numDevices > 0) {
+    SECTION("Pass a common stream for all device") {
+      hipStream_t stream;
+      HIP_CHECK(hipStreamCreate(&stream));
+      int currDevice = -1;
+      HIP_CHECK(hipGetDevice(&currDevice));
+      for (int i = 0; i < numDevices; i++) {
+        if (i != currDevice) {
+          int can_access_peer = 0;
+          HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, currDevice, i));
+          if (!can_access_peer) {
+            INFO("Peer access cannot be enabled between devices " << currDevice << " " << i);
+            continue;
+          }
+        }
+        HIP_CHECK(hipSetDevice(i));
+        hipGraphUploadFunctional_with_hipStreamBeginCapture(stream);
+        hipGraphUploadFunctional_with_stream(stream);
+      }
+
+      HIP_CHECK(hipStreamDestroy(stream));
+    }
+    SECTION("Pass a separate stream for each device") {
+      for (int i = 0; i < numDevices; i++) {
+        HIP_CHECK(hipSetDevice(i));
+
+        hipStream_t dStream;
+        HIP_CHECK(hipStreamCreate(&dStream));
+        hipGraphUploadFunctional_with_hipStreamBeginCapture(dStream);
+        hipGraphUploadFunctional_with_stream(dStream);
+        HIP_CHECK(hipStreamDestroy(dStream));
+      }
+    }
+    SECTION("Pass stream as default stream for each device") {
+      for (int i = 0; i < numDevices; i++) {
+        HIP_CHECK(hipSetDevice(i));
+        hipGraphUploadFunctional_with_hipStreamBeginCapture(0);
+        hipGraphUploadFunctional_with_stream(0);
+      }
+    }
+    SECTION("Pass stream as hipStreamPerThread for each device") {
+      for (int i = 0; i < numDevices; i++) {
+        HIP_CHECK(hipSetDevice(i));
+        hipGraphUploadFunctional_with_hipStreamBeginCapture(hipStreamPerThread);
+        hipGraphUploadFunctional_with_stream(hipStreamPerThread);
+      }
+    }
+  } else {
+    SUCCEED("Skipped the testcase as there is no device to test.");
+  }
 }
 
 /**
- * Test Description
- * ------------------------ 
- *  - Validates handling of invalid arguments:
- *    -# When graph handle is `nullptr` and stream is a created stream
-  *      - Expected output: return `hipErrorInvalidValue`
- *    -# When graph handle is `nullptr` and stream is per thread
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When graph handle is an empty object
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When graph handle is destroyed before calling upload
- *      - Expected output: return `hipErrorInvalidValue`
- * Test source
- * ------------------------ 
- *    - unit/graph/hipGraphUpload.cc
- * Test requirements
- * ------------------------ 
- *    - No hip version supports hipGraphUpload still
+ * Functional Test for API - hipGraphUpload
+ - Make graph by using hipStreamBeginCapture with a low priority stream.
+   Upload the graph into high priority stream and execute the graph and verify.
  */
 
 TEST_CASE("Unit_hipGraphUpload_Functional_With_Priority_Stream") {
@@ -215,5 +299,3 @@ TEST_CASE("Unit_hipGraphUpload_Negative_Parameters") {
   }
   HIP_CHECK(hipStreamDestroy(stream));
 }
-
-#endif

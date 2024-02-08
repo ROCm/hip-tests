@@ -28,15 +28,6 @@ THE SOFTWARE.
 
 #include "graph_memcpy_to_from_symbol_common.hh"
 
-/**
- * @addtogroup hipGraphExecMemcpyNodeSetParamsToSymbol hipGraphExecMemcpyNodeSetParamsToSymbol
- * @{
- * @ingroup GraphTest
- * `hipGraphExecMemcpyNodeSetParamsToSymbol(hipGraphExec_t hGraphExec, hipGraphNode_t node,
- * const void *symbol, void *src, size_t count, size_t offset, hipMemcpyKind kind)` -
- * Sets the parameters for a memcpy node in the given graphExec to copy to a symbol on the device.
- */
-
 HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_GLOBALS(char)
 HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_GLOBALS(int)
 HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_GLOBALS(float)
@@ -80,27 +71,31 @@ void GraphExecMemcpyToSymbolSetParamsShell(const void* symbol, const void* alt_s
 }
 
 /**
+ * @addtogroup hipGraphExecMemcpyNodeSetParamsToSymbol hipGraphExecMemcpyNodeSetParamsToSymbol
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphExecMemcpyNodeSetParamsToSymbol(hipGraphExec_t hGraphExec, hipGraphNode_t node,
+ * const void *symbol, void *src, size_t count, size_t offset, hipMemcpyKind kind)` -
+ * Sets the parameters for a memcpy node in the given graphExec to copy to a symbol on the device
+ */
+
+/**
  * Test Description
  * ------------------------
- *  - Verify that data is correctly copied to a symbol after node parameters are set following
- *    node addition.
- *  - A graph is constructed to which a MemcpyToSymbol node is added with valid but
- *    incorrect parameters.
- *  - After the graph is instantiated the parameters are updated to correct values and the
- *    graph executed.
- *  - After graph execution, a MemcpyFromSymbol is performed.
- *  - The copied values are compared against values known to have been copied to symbol memory
-previously.
- *  - The test is run for scalar, const scalar, array, and const array symbols of types char, int,
- *    float and double.
- *  - For array symbols, the test is repeated for zero and non-zero offset values.
- *  - Verification is performed for destination memory allocated on host and device.
+ *    - Verify that data is correctly copied to a symbol after node parameters are set following
+ * node addition. A graph is constructed to which a MemcpyToSymbol node is added with valid but
+ * incorrect parameters. After the graph is instantiated the parameters are updated to correct
+ * values and the graph executed. After graph execution, a MemcpyFromSymbol is performed and the
+ * copied values are compared against values known to have been copied to symbol memory previously.  
+ * The test is run for scalar, const scalar, array, and const array symbols of types char, int,
+ * float and double. For array symbols, the test is repeated for zero and non-zero offset values.
+ * Verification is performed for destination memory allocated on host and device.
  * Test source
  * ------------------------
- *  - unit/graph/hipGraphExecMemcpyNodeSetParamsToSymbol.cc
+ *    - unit/graph/hipGraphExecMemcpyNodeSetParamsToSymbol.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParamsToSymbol_Positive_Basic") {
   SECTION("char") {
@@ -127,38 +122,24 @@ TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParamsToSymbol_Positive_Basic") {
 /**
  * Test Description
  * ------------------------
- *  - Verify API behavior with invalid arguments:
- *    -# When gGraphExec is `nullptr`
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When node is `nullptr`
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When src is `nullptr`
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When symbol is `nullptr`
- *      - Expected output: return `hipErrorInvalidSymbol`
- *    -# When count is zero
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When count is larger than symbol size
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When count + offset is larger than symbol size
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When kind is illogical (`hipMemcpyHostToDevice`)
- *      - Platform specific (NVIDIA)
- *      - Expected output: return `hipErrorInvalidMemoryDirection`
- *    -# When kind is an invalid enum value
- *      - Platform specific (NVIDIA)
- *      - Expected output: return `hipErrorInvalidMemoryDirection`
- *    -# When changing memcpy direction
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When changing src to memory allocated on a different device than the original src
- *      - Multi-device
- *      - Expected output: return `hipErrorInvalidValue`
+ *    - Verify API behavior with invalid arguments:
+ *      -# gGraphExec is nullptr
+ *      -# node is nullptr
+ *      -# src is nullptr
+ *      -# symbol is nullptr
+ *      -# count is zero
+ *      -# count is larger than symbol size
+ *      -# count + offset is larger than symbol size
+ *      -# kind is illogical (hipMemcpyDeviceToHost)
+ *      -# kind is an invalid enum value
+ *      -# Changing memcpy direction
+ *      -# Changing src to memory allocated on a different device than the original src
  * Test source
  * ------------------------
- *  - unit/graph/hipGraphExecMemcpyNodeSetParamsToSymbol.cc
+ *    - unit/graph/hipGraphExecMemcpyNodeSetParamsToSymbol.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParamsToSymbol_Negative_Parameters") {
   using namespace std::placeholders;
@@ -205,7 +186,7 @@ TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParamsToSymbol_Negative_Parameters") {
     }
     HIP_CHECK(hipSetDevice(1));
     LinearAllocGuard<int> new_var(LinearAllocs::hipMalloc, sizeof(int));
-    HIP_CHECK_ERROR(hipGraphExecMemcpyNodeSetParamsFromSymbol(
+    HIP_CHECK_ERROR(hipGraphExecMemcpyNodeSetParamsToSymbol(
                         graph_exec, node, SYMBOL(int_device_var), new_var.ptr(),
                         sizeof(*new_var.ptr()), 0, static_cast<hipMemcpyKind>(-1)),
                     hipErrorInvalidValue);

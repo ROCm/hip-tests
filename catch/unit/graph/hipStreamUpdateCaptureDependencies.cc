@@ -25,7 +25,8 @@ THE SOFTWARE.
 #include "stream_capture_common.hh"
 
 /**
- * @addtogroup hipStreamUpdateCaptureDependencies hipStreamUpdateCaptureDependencies
+ * @addtogroup hipStreamUpdateCaptureDependencies
+ * hipStreamUpdateCaptureDependencies
  * @{
  * @ingroup GraphTest
  * `hipStreamUpdateCaptureDependencies(hipStream_t stream, hipGraphNode_t
@@ -33,7 +34,7 @@ THE SOFTWARE.
  * update the set of dependencies in a capturing stream
  */
 
-static __global__ void vectorSet(const float* A_d, float* B_d, int64_t NELEM) {
+static __global__ void vectorSet(const float* A_d, float* B_d, size_t NELEM) {
   size_t offset = (blockIdx.x * blockDim.x + threadIdx.x);
   size_t stride = blockDim.x * gridDim.x;
 
@@ -51,7 +52,8 @@ static __global__ void vectorSum(const float* A_d, const float* B_d, float* C_d,
   }
 }
 
-// Local Function for setting new dependency
+/* Local Function for setting new dependency
+ */
 static void UpdateStreamCaptureDependenciesSet(hipStream_t stream,
                                                hipStreamCaptureMode captureMode) {
   constexpr size_t N = 1000000;
@@ -157,7 +159,7 @@ static void UpdateStreamCaptureDependenciesSet(hipStream_t stream,
   HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < kLaunchIters; i++) {
+  for (size_t i = 0; i < kLaunchIters; i++) {
     std::fill_n(A_h.host_ptr(), N, static_cast<float>(i));
     std::fill_n(C_h.host_ptr(), N, static_cast<float>(i));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
@@ -169,7 +171,8 @@ static void UpdateStreamCaptureDependenciesSet(hipStream_t stream,
   HIP_CHECK(hipGraphDestroy(graph));
 }
 
-// Local Function for adding new dependency
+/* Local Function for adding new dependency
+ */
 static void UpdateStreamCaptureDependenciesAdd(hipStream_t stream,
                                                hipStreamCaptureMode captureMode) {
   constexpr size_t N = 1000000;
@@ -272,7 +275,7 @@ static void UpdateStreamCaptureDependenciesAdd(hipStream_t stream,
   HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < kLaunchIters; i++) {
+  for (size_t i = 0; i < kLaunchIters; i++) {
     std::fill_n(A_h.host_ptr(), N, static_cast<float>(i));
     std::fill_n(C_h.host_ptr(), N, static_cast<float>(i));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
@@ -287,20 +290,20 @@ static void UpdateStreamCaptureDependenciesAdd(hipStream_t stream,
 /**
  * Test Description
  * ------------------------
- *  - Test to verify replacing existing dependency set with new nodes.
- *  - New modes are set by calling the api with flag `hipStreamSetCaptureDependencies` for
- *    created/hipStreamPerThread for all capture modes.
- *  - Verify updated dependency list is taking effect:
+ *    - Test to verify replacing existing dependency set with new nodes by
+ * calling the api with flag hipStreamSetCaptureDependencies for
+ * created/hipStreamPerThread for all capture modes. Verify updated dependency
+ * list is taking effect:
  *        -# Replace existing dependencies with a new memcpy node that has no
- *           dependencies
+ * dependencies
  *        -# Replace existing dependencies with a new kernel node which depends
- *           on a previously captured sequence
+ * on a previously captured sequence
  * Test source
  * ------------------------
- *  - catch\unit\graph\hipStreamUpdateCaptureDependencies.cc
+ *    - catch\unit\graph\hipStreamUpdateCaptureDependencies.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.3
+ *    - HIP_VERSION >= 5.3
  */
 TEST_CASE("Unit_hipStreamSetCaptureDependencies_Positive_Functional") {
   const auto stream_type = GENERATE(Streams::perThread, Streams::created);
@@ -316,19 +319,18 @@ TEST_CASE("Unit_hipStreamSetCaptureDependencies_Positive_Functional") {
 /**
  * Test Description
  * ------------------------
- *  - Test to verify adding additional depencies in the flow by calling the
- *    api with flag hipStreamAddCaptureDependencies for created/hipStreamPerThread
- *    for all capture modes.
- *  - Verify updated dependency list is taking effect:
+ *    - Test to verify adding additional depencies in the flow by calling the
+ * api with flag hipStreamAddCaptureDependencies for created/hipStreamPerThread
+ * for all capture modes. Verify updated dependency list is taking effect:
  *        -# Add new memcpy node that has no parent to the existing dependecies
  *        -# Add new kernel node which depends on a previously captured sequence
- *           to the existing dependencies
+ * to the existing dependencies
  * Test source
  * ------------------------
- *  - catch\unit\graph\hipStreamUpdateCaptureDependencies.cc
+ *    - catch\unit\graph\hipStreamUpdateCaptureDependencies.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.3
+ *    - HIP_VERSION >= 5.3
  */
 TEST_CASE("Unit_hipStreamAddCaptureDependencies_Positive_Functional") {
   const auto stream_type = GENERATE(Streams::perThread, Streams::created);
@@ -344,14 +346,14 @@ TEST_CASE("Unit_hipStreamAddCaptureDependencies_Positive_Functional") {
 /**
  * Test Description
  * ------------------------
- *  - Test to verify when dependencies are passed as `nullptr` and numDeps as 0.
- *  - `hipSuccess` shall be returned.
+ *    - Test to verify when dependencies are passed as nullptr and numDeps as 0,
+ * api returns success
  * Test source
  * ------------------------
- *  - catch\unit\graph\hipStreamUpdateCaptureDependencies.cc
+ *    - catch\unit\graph\hipStreamUpdateCaptureDependencies.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.3
+ *    - HIP_VERSION >= 5.3
  */
 TEST_CASE("Unit_hipStreamUpdateCaptureDependencies_Positive_Parameters") {
   hipGraph_t graph{nullptr};
@@ -365,7 +367,7 @@ TEST_CASE("Unit_hipStreamUpdateCaptureDependencies_Positive_Parameters") {
   const hipStreamUpdateCaptureDependenciesFlags flag =
       GENERATE(hipStreamAddCaptureDependencies, hipStreamSetCaptureDependencies);
 
-  HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
+  HIP_CHECK(hipStreamBeginCapture(stream, captureMode)); //hipStreamCaptureModeGlobal));
 
   HIP_CHECK(hipStreamUpdateCaptureDependencies(stream, nullptr, 0, flag));
 
@@ -377,17 +379,12 @@ TEST_CASE("Unit_hipStreamUpdateCaptureDependencies_Positive_Parameters") {
 /**
  * Test Description
  * ------------------------
- *  - Test to verify API behavior with invalid arguments:
- *    -# When dependencies are `nullptr` and numDeps are nonzero
- *      - Exected output: return `hipErrorInvalidValue`
- *    -# When invalid flag is passed
- *      - Exected output: return `hipErrorInvalidValue`
- *    -# When numDeps exceeds actual number of nodes
- *      - Exected output: return `hipErrorInvalidValue`
- *    -# When dependency node is a un-initialized/invalid parameter
- *      - Exected output: return `hipErrorInvalidValue`
- *    -# When stream is not capturing
- *      - Exected output: return `hipErrorIllegalState`
+ *    - Test to verify API behavior with invalid arguments:
+ *        -# Pass Dependencies as nullptr and numDeps as nonzero
+ *        -# numDeps exceeds actual number of nodes
+ *        -# Invalid flag is passed
+ *        -# Dependency node is a un-initialized/invalid parameter
+ *        -# Stream is not capturing
  * Test source
  * ------------------------
  *    - catch\unit\graph\hipStreamUpdateCaptureDependencies.cc

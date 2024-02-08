@@ -21,6 +21,8 @@ THE SOFTWARE.
 #include <hip_test_checkers.hh>
 #include <hip_test_kernels.hh>
 
+#define NUM_OF_INSTANCES 10
+
 /**
  * @addtogroup hipGraphInstantiate hipGraphInstantiate
  * @{
@@ -32,6 +34,7 @@ THE SOFTWARE.
  * Test cases from other modules:
  *  - @ref Unit_hipGraph_BasicFunctional
  */
+
 
 /**
  * Test Description
@@ -101,9 +104,20 @@ TEST_CASE("Unit_hipGraphInstantiate_Basic") {
   HIP_CHECK(hipGraphDestroy(graph));
 }
 #if HT_NVIDIA
-/* Test Functional Scenario 2.a, 2.b, 2.c with hipGraphInstantiate and
-hipGraphInstantiateWithFlags.
-*/
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates following testcase scenarios, where instantiating the graph should result in error:
+ *    -# Create a cyclic graph with two empty nodes
+ *    -# Create a more complex cyclic graph
+ *    -# Create a graph with child node. The graph in the child node is a cyclical graph
+ * Test source
+ * ------------------------
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphInstantiate_InvalidCyclicGraph") {
   hipGraph_t graph;
   hipGraphExec_t graphExec;
@@ -189,6 +203,7 @@ TEST_CASE("Unit_hipGraphInstantiate_InvalidCyclicGraph") {
   HIP_CHECK(hipGraphDestroy(graph));
 }
 #endif
+
 /* Local function to initialize input data.
  */
 static void init_input(int* a, size_t size) {
@@ -198,7 +213,21 @@ static void init_input(int* a, size_t size) {
   }
 }
 
-/* Test Functional Scenario 3.a, 3.b and 3.c.
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates following testcase scenarios::
+ *    -# Create a graph with redundant dependencies. Instantiate and execute the graph and validate
+ * the output
+ *    -# Create a graph. Instantiate the graph multiple times. Execute all the instantiated graphs
+ * and validate the output. Destroy the instantiated graphs at the end
+ *    -# Create a graph. Instantiate the graph multiple times. In loop, execute an instantiated
+ * graph, validate the output and destroy the current instantiated graph
+ * Test source
+ * ------------------------
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphInstantiate_functionalScenarios") {
   hipGraph_t graph;

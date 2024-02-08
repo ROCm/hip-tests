@@ -26,14 +26,11 @@ THE SOFTWARE.
 static __global__ void dummyKernel() { return; }
 
 /**
- * @addtogroup hipGraphDestroy hipGraphDestroy
+ * @addtogroup hipGraphDestroyNode hipGraphDestroyNode
  * @{
  * @ingroup GraphTest
- * `hipGraphDestroy(hipGraph_t graph)` -
- * Destroys a graph.
- * ________________________
- * Test cases from other modules:
- *  - @ref Unit_hipGraph_BasicFunctional
+ * `hipGraphDestroyNode(hipGraphNode_t node)` -
+ * Remove a node from the graph.
  */
 
 /**
@@ -44,7 +41,7 @@ static __global__ void dummyKernel() { return; }
  *      - Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------
- *  - unit/graph/hipGraphDestroy.cc
+ *  - unit/graph/hipGraphDestroyNode.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -63,7 +60,7 @@ TEST_CASE("Unit_hipGraphDestroyNode_Negative") {
  *  - Destroys the graph successfully.
  * Test source
  * ------------------------
- *  - unit/graph/hipGraphDestroy.cc
+ *  - unit/graph/hipGraphDestroyNode.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -95,7 +92,7 @@ TEST_CASE("Unit_hipGraphDestroyNode_BasicFunctionality") {
  * graph.
  * Test source
  * ------------------------
- *  - unit/graph/hipGraphDestroy.cc
+ *  - unit/graph/hipGraphDestroyNode.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -169,7 +166,7 @@ TEST_CASE("Unit_hipGraphDestroyNode_DestroyDependencyNode") {
  * dependencies using hipGraphGetNodes and hipGraphGetEdges.
  * Test source
  * ------------------------
- *  - unit/graph/hipGraphDestroy.cc
+ *  - unit/graph/hipGraphDestroyNode.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -220,7 +217,7 @@ TEST_CASE("Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep") {
  * intact.
  * Test source
  * ------------------------
- *  - unit/graph/hipGraphDestroy.cc
+ *  - unit/graph/hipGraphDestroyNode.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -277,7 +274,7 @@ TEST_CASE("Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ClonedGrph") {
  * and hipGraphGetEdges.
  * Test source
  * ------------------------
- *  - unit/graph/hipGraphDestroy.cc
+ *  - unit/graph/hipGraphDestroyNode.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2

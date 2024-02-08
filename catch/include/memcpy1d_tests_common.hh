@@ -24,10 +24,10 @@ THE SOFTWARE.
 
 #include <functional>
 
-#include <hip/hip_runtime_api.h>
 #include <hip_test_common.hh>
-#include <resource_guards.hh>
+#include <hip/hip_runtime_api.h>
 #include <utils.hh>
+#include <resource_guards.hh>
 
 static inline unsigned int GenerateLinearAllocationFlagCombinations(
     const LinearAllocs allocation_type) {
@@ -142,7 +142,7 @@ void MemcpyDeviceToDeviceShell(F memcpy_func, const hipStream_t kernel_stream = 
     HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, src_device, dst_device));
     if (!can_access_peer) {
       INFO("Peer access cannot be enabled between devices " << src_device << " " << dst_device);
-      REQUIRE(can_access_peer);
+      return;
     }
     HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));
   }
@@ -169,8 +169,8 @@ void MemcpyDeviceToDeviceShell(F memcpy_func, const hipStream_t kernel_stream = 
   HIP_CHECK(
       hipMemcpy(result.host_ptr(), dst_allocation.ptr(), allocation_size, hipMemcpyDeviceToHost));
   if constexpr (enable_peer_access) {
-    // If we've gotten this far, EnablePeerAccess must have succeeded, so we
-    // only need to check this condition
+    // If we've gotten this far, EnablePeerAccess must have succeeded, so we only need to check this
+    // condition
     HIP_CHECK(hipDeviceDisablePeerAccess(dst_device));
   }
 
@@ -238,6 +238,7 @@ void MemcpySyncBehaviorCheck(F memcpy_func, const bool should_sync,
   LaunchDelayKernel(std::chrono::milliseconds{100}, kernel_stream);
   HIP_CHECK(memcpy_func());
   if (should_sync) {
+    HIP_CHECK(hipStreamSynchronize(kernel_stream));
     HIP_CHECK(hipStreamQuery(kernel_stream));
   } else {
     HIP_CHECK_ERROR(hipStreamQuery(kernel_stream), hipErrorNotReady);

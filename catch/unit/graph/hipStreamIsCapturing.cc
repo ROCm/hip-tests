@@ -28,20 +28,16 @@ THE SOFTWARE.
  * @{
  * @ingroup GraphTest
  * `hipStreamIsCapturing(hipStream_t stream, hipStreamCaptureStatus
- * *pCaptureStatus)` - Get stream's capture state.
+ * *pCaptureStatus)` - get stream's capture state
  */
 
 /**
  * Test Description
  * ------------------------
- *  - Test to verify API behavior with invalid arguments:
- *    -# When capture status is `nullptr`
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When capture status is checked on null stream
- *      - Expected output: return `hipErrorStreamCaptureImplicit`
- *    -# When stream is uninitialized
- *      - Platform specific (NVIDIA)
- *      - Expected output: return `hipErrorContextIsDestroyed`
+ *    - Test to verify API behavior with invalid arguments:
+ *        -# Capture status is nullptr
+ *        -# Capture status is checked on null stream
+ *        -# Stream is uninitialized
  * Test source
  * ------------------------
  *    - catch\unit\graph\hipStreamIsCapturing.cc
@@ -84,14 +80,14 @@ TEST_CASE("Unit_hipStreamIsCapturing_Negative_Parameters") {
 /**
  * Test Description
  * ------------------------
- *  - Initiate simple API call for stream capture status on custom
- *    stream/hipStreamPerThread.
+ *    - Initiate simple API call for stream capture status on custom
+ * stream/hipStreamPerThread
  * Test source
  * ------------------------
- *  - catch\unit\graph\hipStreamIsCapturing.cc
+ *    - catch\unit\graph\hipStreamIsCapturing.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamIsCapturing_Positive_Basic") {
   hipStreamCaptureStatus cStatus;
@@ -137,7 +133,7 @@ void checkStreamCaptureStatus(hipStreamCaptureMode mode, hipStream_t stream) {
   REQUIRE(graphExec != nullptr);
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < kLaunchIters; i++) {
+  for (size_t i = 0; i < kLaunchIters; i++) {
     std::fill_n(A_h.host_ptr(), N, static_cast<float>(i));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
     HIP_CHECK(hipStreamSynchronize(stream));
@@ -151,15 +147,15 @@ void checkStreamCaptureStatus(hipStreamCaptureMode mode, hipStream_t stream) {
 /**
  * Test Description
  * ------------------------
- *  - Initiate stream capture with different modes on custom
- *    stream/hipStreamPerThread
- *  - Checks that capture status is correct in different capturing phases.
+ *    -  Initiate stream capture with different modes on custom
+ * stream/hipStreamPerThread. Check that capture status is correct in different
+ * capturing phases
  * Test source
  * ------------------------
- *  - catch\unit\graph\hipStreamIsCapturing.cc
+ *    - catch\unit\graph\hipStreamIsCapturing.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamIsCapturing_Positive_Functional") {
   const auto stream_type = GENERATE(Streams::perThread, Streams::created);
@@ -181,16 +177,15 @@ static void thread_func(hipStream_t stream) {
 /**
  * Test Description
  * ------------------------
- *  - Initiate stream capture with different modes on custom
- *    stream/hipStreamPerThread.
- *  - Checks that capture status is correct when status
- *    is checked in a separate thread.
+ *    -  Initiate stream capture with different modes on custom
+ * stream/hipStreamPerThread. Check that capture status is correct when status
+ * is checked in a separate thread
  * Test source
  * ------------------------
- *  - catch\unit\graph\hipStreamIsCapturing.cc
+ *    - catch\unit\graph\hipStreamIsCapturing.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamIsCapturing_Positive_Thread") {
   constexpr size_t N = 1000000;

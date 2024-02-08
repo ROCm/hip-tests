@@ -30,7 +30,7 @@ THE SOFTWARE.
  * `hipStreamGetCaptureInfo_v2(hipStream_t stream, hipStreamCaptureStatus
  * *captureStatus_out, unsigned long long *id_out __dparm(0), hipGraph_t
  * *graph_out __dparm(0), const hipGraphNode_t **dependencies_out __dparm(0),
- * size_t *numDependencies_out __dparm(0)))` - Get stream's capture state.
+ * size_t *numDependencies_out __dparm(0)))` - Get stream's capture state
  */
 
 void checkStreamCaptureInfo_v2(hipStreamCaptureMode mode, hipStream_t stream) {
@@ -40,7 +40,7 @@ void checkStreamCaptureInfo_v2(hipStreamCaptureMode mode, hipStream_t stream) {
   hipGraph_t graph{nullptr}, capInfoGraph{nullptr};
   hipGraphExec_t graphExec{nullptr};
   const hipGraphNode_t* nodelist{};
-  int numDepsCreated = 0;
+  size_t numDepsCreated = 0;
   hipStreamCaptureStatus captureStatus{hipStreamCaptureStatusNone};
   hipGraphNodeType type(hipGraphNodeTypeEmpty);
   unsigned long long capSequenceID = 0;  // NOLINT
@@ -119,7 +119,7 @@ void checkStreamCaptureInfo_v2(hipStreamCaptureMode mode, hipStream_t stream) {
   REQUIRE(graphExec != nullptr);
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < kLaunchIters; i++) {
+  for (size_t i = 0; i < kLaunchIters; i++) {
     std::fill_n(A_h.host_ptr(), N, static_cast<float>(i));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
     HIP_CHECK(hipStreamSynchronize(stream));
@@ -133,21 +133,21 @@ void checkStreamCaptureInfo_v2(hipStreamCaptureMode mode, hipStream_t stream) {
 /**
  * Test Description
  * ------------------------
- *  - Test to verify that:
- *    -# `hipStreamCaptureStatusActive` is returned during stream capture
- *    -# Correct number of created dependencies is returned
- *    -# Sequence ID is valid
- *  - When capture is ended, status is changed to `hipStreamCaptureStatusNone`.
- *  - Error is not reported when some arguments are not passed.
- *        -# Sequence graph is linear, number of created dependencies is 1, node type is correct.
- *        -# Sequence graph is branched, number of created dependencies is 2, node types are
-correct.
+ *    - Test to verify that hipStreamCaptureStatusActive is returned during
+ * stream capture, correct number of created dependencies is returned and
+ * sequence ID is valid. When capture is ended, status is changed to
+ * hipStreamCaptureStatusNone and error is not reported when some arguments are
+ * not passed.
+ *        -# Sequence graph is linear, number of created dependencies is 1, node
+ * type is correct
+ *        -# Sequence graph is branched, number of created dependencies is 2,
+ * node types are correct
  * Test source
  * ------------------------
- *  - catch\unit\graph\hipStreamGetCaptureInfo_v2.cc
+ *    - catch\unit\graph\hipStreamGetCaptureInfo_v2.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamGetCaptureInfo_v2_Positive_Functional") {
   const auto stream_type = GENERATE(Streams::perThread, Streams::created);
@@ -163,14 +163,14 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_v2_Positive_Functional") {
 /**
  * Test Description
  * ------------------------
- *  - Test to verify stream capture on multiple streams.
- *  - Verifies uniqueness of identifiers returned from capture Info V2.
+ *    - Test to verify stream capture on multiple streams and verifies
+ * uniqueness of identifiers returned from capture Info V2:
  * Test source
  * ------------------------
- *  - catch\unit\graph\hipStreamGetCaptureInfo_v2.cc
+ *    - catch\unit\graph\hipStreamGetCaptureInfo_v2.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamGetCaptureInfo_v2_Positive_UniqueID") {
   constexpr int numStreams = 100;
@@ -208,24 +208,20 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_v2_Positive_UniqueID") {
 /**
  * Test Description
  * ------------------------
- *  - Test to verify API behavior with invalid arguments:
- *    -# When capture status is `nullptr`
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When capture status checked on legacy/null stream
- *      - Platform specific (NVIDIA)
- *      - Expected output: return `hipErrorStreamCaptureImplicit`
- *    -# When capture status when stream is uninitialized
- *      - Platform specific (NVIDIA)
- *      - Expected output: return `hipErrorContextIsDestroyed`
+ *    - Test to verify API behavior with invalid arguments:
+ *        -# Capture status is nullptr
+ *        -# Capture status checked on legacy/null stream
+ *        -# Capture status when stream is uninitialized
  * Test source
  * ------------------------
- *  - catch\unit\graph\hipStreamGetCaptureInfo_v2.cc
+ *    - catch\unit\graph\hipStreamGetCaptureInfo_v2.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamGetCaptureInfo_v2_Negative_Parameters") {
   hipGraph_t capInfoGraph{};
+#if HT_NVIDIA
   hipStreamCaptureStatus captureStatus;
 #endif
   unsigned long long capSequenceID;  // NOLINT

@@ -66,19 +66,32 @@ TEST_CASE("Unit_hipGraphExecDestroy_Negative_Parameters") {
  */
 TEST_CASE("Unit_hipGraphExecDestroy_Positive_Basic") {
   hipGraph_t graph;
-  hipGraphNode_t node_error;
-
-  hipGraphNode_t node_set_zero;
-  hipHostNodeParams params_set_to_zero = {HostFunctionSetToZero, number};
-
-  hipGraphNode_t node_add_one;
-  hipHostNodeParams params_set_add_one = {HostFunctionAddOne, number};
+  hipGraphExec_t graphExec;
+  hipStream_t streamForGraph;
+  hipGraphNode_t memsetNode;
 
   HIP_CHECK(hipGraphCreate(&graph, 0));
+  HIP_CHECK(hipStreamCreate(&streamForGraph));
 
-  HIP_CHECK(hipGraphAddHostNode(&node_set_zero, graph, nullptr, 0, &params_set_to_zero));
-  HIP_CHECK(hipGraphAddHostNode(&node_add_one, graph, &node_set_zero, 1, &params_set_add_one));
+  char *devData;
+  HIP_CHECK(hipMalloc(&devData, 1024));
+  hipMemsetParams memsetParams{};
+  memset(&memsetParams, 0, sizeof(memsetParams));
+  memsetParams.dst = reinterpret_cast<void*>(devData);
+  memsetParams.value = 0;
+  memsetParams.pitch = 0;
+  memsetParams.elementSize = sizeof(char);
+  memsetParams.width = 1024;
+  memsetParams.height = 1;
+  HIP_CHECK(hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0,
+                                  &memsetParams));
 
-  HIP_CHECK(hipGraphInstantiate(graph_exec, graph, &node_error, nullptr, 0));
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+  REQUIRE(graphExec != nullptr);
+  HIP_CHECK(hipGraphLaunch(graphExec, streamForGraph));
+  HIP_CHECK(hipStreamSynchronize(streamForGraph));
+
   HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipGraphExecDestroy(graphExec));
+  HIP_CHECK(hipStreamDestroy(streamForGraph));
 }

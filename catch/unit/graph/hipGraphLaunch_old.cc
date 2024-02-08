@@ -25,10 +25,10 @@ Negative scenarios -
 1) Pass graphExec as nullptr and verify api returns error code.
 2) Pass pGraphExec as nullptr and stream as hipStreamPerThread and verify  api returns error code.
 3) Pass pGraphExec as empty object and verify  api returns error code.
-<<<<<<< HEAD
-4) Destroy executable graph and try to launch it. Make sure api should not crash and it should
-returns error code. 5) Destroy stream and try to launch respective executable graph. Make sure api
-should not crash and it should returns error code. 6) Destroy actual graph created and try to launch
+4) Destroy executable graph and try to launch it. Make sure api should not crash and it should returns error code.
+5) Destroy stream and try to launch respective executable graph. Make sure api should not crash and it should returns error code.
+6) Destroy actual graph created and try to launch respective executable graph.
+   Check api should execute properly without crash or error code.
 Functional Scenario -
 1) Check basic functionality with stream as hipStreamPerThread
 2) Test hipGraphLaunch call on multiple devices.
@@ -42,10 +42,10 @@ Functional Scenario -
 #define SIZE 1024
 #define TEST_LOOP_SIZE 3
 
->>>>>>> origin/develop
 TEST_CASE("Unit_hipGraphLaunch_Negative") {
   hipError_t ret;
   SECTION("Pass pGraphExec as nullptr") {
+    hipStream_t stream{};
     ret = hipGraphLaunch(nullptr, stream);
     REQUIRE(hipErrorInvalidValue == ret);
   }

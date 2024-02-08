@@ -33,28 +33,26 @@ THE SOFTWARE.
  * @ingroup GraphTest
  * `hipGraphExecMemsetNodeSetParams(hipGraphExec_t hGraphExec, hipGraphNode_t node, const
  * hipMemsetParams *pNodeParams)` -
- * Sets the parameters for a memset node in the given graphExec.
+ * Sets the parameters for a memset node in the given graphExec
  */
 
 /**
  * Test Description
  * ------------------------
- *  - Verify that node parameters get updated correctly by creating a node with valid but
- *    incorrect parameters
- *  - Afterwards, correct values in the executable graph are set.
- *  - The executable graph is run and the results of the memset is verified.
- *  - `hipGraphMemsetNodeGetParams` is used to verify that node parameters in the graph were not
- * updated, which also constitutes a test for said API.
- *  - The test is repeated for all valid element sizes(1, 2, 4).
- *  - The test is repeated for several allocations of different width(height is always 1 because
- * only 1D memset nodes can be updated).
- *  - The test is repeated for both host and device.
+ *    - Verify that node parameters get updated correctly by creating a node with valid but
+ * incorrect parameters, and then setting them to the correct values in the executable graph.
+ * The executable graph is run and the results of the memset is verified.
+ * hipGraphMemsetNodeGetParams is used to verify that node parameters in the graph were not updated,
+ * which also constitutes a test for said API.
+ * The test is repeated for all valid element sizes(1,
+ * 2, 4), and several allocations of different width(height is always 1 because only 1D memset nodes
+ * can be updated), both on host and device 
  * Test source
  * ------------------------
- *  - unit/graph/hipGraphExecMemsetNodeSetParams.cc
+ *    - unit/graph/hipGraphExecMemsetNodeSetParams.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_hipGraphExecMemsetNodeSetParams_Positive_Basic", "", uint8_t, uint16_t,
                    uint32_t) {
@@ -112,41 +110,25 @@ TEMPLATE_TEST_CASE("Unit_hipGraphExecMemsetNodeSetParams_Positive_Basic", "", ui
 /**
  * Test Description
  * ------------------------
- *  - Verify API behaviour with invalid arguments:
- *    -# When pGraphExec is `nullptr`
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When node is `nullptr`
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When pMemsetParams is `nullptr`
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When pMemsetParams dst data member is `nullptr`
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When pMemsetParams elementSize data member is different from 1, 2, and 4
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When pMemsetParams width data member is zero
- *      - Platform specific (NVIDIA)
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When pMemsetParams width data member is larger than the allocated memory region
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When pMemsetParams height data member is zero
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When pMemsetParams pitch data memebr is less than width when height is more than 1
- *      - Platform specific (NVIDIA)
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When pMemsetParams pitch * pMemsetParams height is larger than the allocated memory region
- *      - Platform specific (NVIDIA)
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When pNodeParams dst data member holds a pointer to memory allocated on a device different
-from the one
- *       the original dst was allocated on.
- *      - Multi-device
- *      - Expected output: return `hipErrorInvalidValue`
+ *    - Verify API behaviour with invalid arguments:
+ *        -# pGraphExec is nullptr
+ *        -# node is nullptr
+ *        -# pNodeParams is nullptr
+ *        -# pNodeParams::dst is nullptr
+ *        -# pNodeParams::elementSize is different from 1, 2, and 4
+ *        -# pNodeParams::width is zero
+ *        -# pNodeParams::width is larger than the allocated memory region
+ *        -# pNodeParams::height is zero
+ *        -# pNodeParams::pitch is less than width when height is more than 1
+ *        -# pNodeParams::pitch * pMemsetParams::height is larger than the allocated memory region
+ *        -# pNodeParams::dst holds a pointer to memory allocated on a device different from the one
+ * the original dst was allocated on
  * Test source
  * ------------------------
- *  - unit/graph/hipGraphExecMemsetNodeSetParams.cc
+ *    - unit/graph/hipGraphExecMemsetNodeSetParams.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecMemsetNodeSetParams_Negative_Parameters") {
   // FIXME: this test tests 1D/2D/3D stuff in one single go, need to decouple it so that it can run
@@ -202,13 +184,13 @@ TEST_CASE("Unit_hipGraphExecMemsetNodeSetParams_Negative_Parameters") {
 /**
  * Test Description
  * ------------------------
- *  - Verify that a 2D node cannot be updated.
+ *    - Verify that a 2D node cannot be updated
  * Test source
  * ------------------------
- *  - unit/graph/hipGraphExecMemsetNodeSetParams.cc
+ *    - unit/graph/hipGraphExecMemsetNodeSetParams.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecMemsetNodeSetParams_Negative_Updating_Non1D_Node") {
   CHECK_IMAGE_SUPPORT

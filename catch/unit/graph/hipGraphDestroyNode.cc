@@ -21,23 +21,30 @@ THE SOFTWARE.
 #include <hip_test_checkers.hh>
 #include <hip_test_kernels.hh>
 
+#define NUM_OF_DUMMY_NODES 8
+
+static __global__ void dummyKernel() { return; }
+
 /**
- * @addtogroup hipGraphDestroyNode hipGraphDestroyNode
+ * @addtogroup hipGraphDestroy hipGraphDestroy
  * @{
  * @ingroup GraphTest
- * `hipGraphDestroyNode(hipGraphNode_t node)` -
- * Remove a node from the graph.
+ * `hipGraphDestroy(hipGraph_t graph)` -
+ * Destroys a graph.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipGraph_BasicFunctional
  */
 
 /**
  * Test Description
  * ------------------------
  *  - Validates handling of invalid arguments:
- *    -# When node handle is `nullptr`
+ *    -# When graph handle is `nullptr`
  *      - Expected output: return `hipErrorInvalidValue`
  * Test source
  * ------------------------
- *  - unit/graph/hipGraphDestroyNode.cc
+ *  - unit/graph/hipGraphDestroy.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -51,11 +58,12 @@ TEST_CASE("Unit_hipGraphDestroyNode_Negative") {
 /**
  * Test Description
  * ------------------------
- *  - Creates graph.
- *  - Destroys one of the nodes successfully.
+ *  - Creates an empty graph.
+ *  - Checks that it is not `nullptr`.
+ *  - Destroys the graph successfully.
  * Test source
  * ------------------------
- *  - unit/graph/hipGraphDestroyNode.cc
+ *  - unit/graph/hipGraphDestroy.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -83,12 +91,11 @@ TEST_CASE("Unit_hipGraphDestroyNode_BasicFunctionality") {
 /**
  * Test Description
  * ------------------------
- *  - Creates graph with dependencies.
- *  - Destroys one of the dependency nodes.
- *  - Executes the graph.
+ *  - Create graph with dependencies and destroy one of the dependency node before executing the
+ * graph.
  * Test source
  * ------------------------
- *  - unit/graph/hipGraphDestroyNode.cc
+ *  - unit/graph/hipGraphDestroy.cc
  * Test requirements
  * ------------------------
  *  - HIP_VERSION >= 5.2
@@ -155,8 +162,17 @@ TEST_CASE("Unit_hipGraphDestroyNode_DestroyDependencyNode") {
 }
 
 /**
- * Functional Test to test hipGraphDestroyNode using hipGraphGetNodes
- * and hipGraphGetEdges APIs.
+ * Test Description
+ * ------------------------
+ *  - Create a graph with N nodes and (N-1) dependencies between them as shown below. Start
+ * destroying the nodes in iteration from left. In each iteration verify the number of nodes and
+ * dependencies using hipGraphGetNodes and hipGraphGetEdges.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphDestroy.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep") {
   hipGraph_t graph;
@@ -195,8 +211,19 @@ TEST_CASE("Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep") {
 }
 
 /**
- * Functional Test to test hipGraphDestroyNode using hipGraphGetNodes
- * and hipGraphGetEdges APIs on a cloned graph
+ * Test Description
+ * ------------------------
+ *  - Create a graph with N nodes and (N-1) dependencies between them as shown above. Clone the
+ * graph. Start destroying the nodes in iteration from left in the cloned graph. In each iteration
+ * verify the number of nodes and dependencies using hipGraphGetNodes and hipGraphGetEdges. Once all
+ * nodes in the cloned graph are deleted, verify the number of nodes in the original graph are
+ * intact.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphDestroy.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ClonedGrph") {
   hipGraph_t graph, clonedgraph;
@@ -242,8 +269,18 @@ TEST_CASE("Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ClonedGrph") {
 }
 
 /**
- * Functional Test to test hipGraphDestroyNode on child node using
- * hipGraphGetNodes and hipGraphGetEdges APIs on a cloned graph.
+ * Test Description
+ * ------------------------
+ *  - Create a graph1 with N nodes and (N-1) dependencies between them as shown above. Create
+ * another empty graph0. Add graph1 as child node to graph0. Delete the child node in graph0. Verify
+ * that the nodes in graph1 are still intact after deleting the child node using hipGraphGetNodes
+ * and hipGraphGetEdges.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphDestroy.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ChldNode") {
   hipGraph_t graph0, graph1;

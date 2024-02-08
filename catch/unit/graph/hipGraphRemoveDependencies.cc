@@ -37,21 +37,9 @@ inline constexpr size_t kNumOfEdges = 6;
 }  // anonymous namespace
 
 /**
- * @addtogroup hipGraphRemoveDependencies hipGraphRemoveDependencies
- * @{
- * @ingroup GraphTest
- * `hipGraphRemoveDependencies(hipGraph_t graph, const hipGraphNode_t *from, const hipGraphNode_t
- * *to, size_t numDependencies)` - Removes dependency edges from a graph.
+ * Kernel Functions to perform square and return in the same
+ * input memory location.
  */
-
-namespace {
-inline constexpr size_t kNumOfEdges = 6;
-}  // anonymous namespace
-
-/*
-Kernel Functions to perform square and return in the same
-input memory location.
-*/
 static __global__ void vector_square(int* A_d, size_t N_ELMTS) {
   size_t gputhread = (blockIdx.x * blockDim.x + threadIdx.x);
   size_t stride = blockDim.x * gridDim.x;

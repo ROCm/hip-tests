@@ -28,31 +28,23 @@ THE SOFTWARE.
  * @{
  * @ingroup GraphTest
  * `hipStreamEndCapture(hipStream_t stream, hipGraph_t *pGraph)` -
- * Ends capture on a stream, returning the captured graph.
- * ________________________
- * Test cases from other modules:
- *  - @ref Unit_hipGraph_BasicFunctional
+ * ends capture on a stream, returning the captured graph
  */
 
 /**
  * Test Description
  * ------------------------
- *  - Test to verify API behavior with invalid arguments:
- *    -# When end capture on legacy/null stream
- *      - Expected output: return `hipErrorIllegalState`
- *    -# When end capture when graph is `nullptr`
- *      - Platform specific (NVIDIA)
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When end capture on stream where capture has not yet started
- *      - Expected output: return `hipErrorIllegalState`
- *    -# When destroy stream and try to end capture
- *      - Expected output: return `hipErrorContextIsDestroyed`
+ *    - Test to verify API behavior with invalid arguments:
+ *        -# End capture on legacy/null stream
+ *        -# End capture when graph is nullptr
+ *        -# End capture on stream where capture has not yet started
+ *        -# Destroy stream and try to end capture
  * Test source
  * ------------------------
- *  - catch\unit\graph\hipStreamEndCapture.cc
+ *    - catch\unit\graph\hipStreamEndCapture.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamEndCapture_Negative_Parameters") {
   hipGraph_t graph{nullptr};
@@ -83,13 +75,14 @@ TEST_CASE("Unit_hipStreamEndCapture_Negative_Parameters") {
 /**
  * Test Description
  * ------------------------
- *  - Test to verify no error occurs when graph is destroyed before capture ends.
+ *    - Test to verify no error occurs when graph is destroyed before capture
+ * ends
  * Test source
  * ------------------------
- *  - catch\unit\graph\hipStreamEndCapture.cc
+ *    - catch\unit\graph\hipStreamEndCapture.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamEndCapture_Positive_GraphDestroy") {
   hipGraph_t graph{nullptr};
@@ -120,16 +113,15 @@ static void thread_func_neg(hipStream_t stream, hipGraph_t graph) {
 /**
  * Test Description
  * ------------------------
- *  - Test to verify that when capture is initiated on a thread with mode
- *    other than `hipStreamCaptureModeRelaxed`.
- *  - Try to end capture from different thread.
- *  - It is expected to return `hipErrorStreamCaptureWrongThread`.
+ *    - Test to verify that when capture is initiated on a thread with mode
+ * other than hipStreamCaptureModeRelaxed and try to end capture from different
+ * thread, it is expected to return hipErrorStreamCaptureWrongThread
  * Test source
  * ------------------------
- *  - catch\unit\graph\hipStreamEndCapture.cc
+ *    - catch\unit\graph\hipStreamEndCapture.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamEndCapture_Negative_Thread") {
   constexpr size_t N = 1000000;
@@ -166,15 +158,15 @@ static void thread_func_pos(hipStream_t stream, hipGraph_t* graph) {
 /**
  * Test Description
  * ------------------------
- *  - Test to verify that when capture is initiated on a thread with
- *    `hipStreamCaptureModeRelaxed` mode
- *  - Ends capture in a different thread successfully.
+ *    - Test to verify that when capture is initiated on a thread with
+ * hipStreamCaptureModeRelaxed mode, end capture in a different thread is
+ * successful
  * Test source
  * ------------------------
- *  - catch\unit\graph\hipStreamEndCapture.cc
+ *    - catch\unit\graph\hipStreamEndCapture.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamEndCapture_Positive_Thread") {
   constexpr size_t N = 1000000;
@@ -202,7 +194,7 @@ TEST_CASE("Unit_hipStreamEndCapture_Positive_Thread") {
   HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
 
   // Replay the recorded sequence multiple times
-  for (int i = 0; i < kLaunchIters; i++) {
+  for (size_t i = 0; i < kLaunchIters; i++) {
     std::fill_n(A_h.host_ptr(), N, static_cast<float>(i));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
     HIP_CHECK(hipStreamSynchronize(stream));

@@ -30,17 +30,6 @@ THE SOFTWARE.
 #include "graph_memcpy_to_from_symbol_common.hh"
 #include "graph_tests_common.hh"
 
-
-/**
- * @addtogroup hipGraphAddMemcpyNodeToSymbol hipGraphAddMemcpyNodeToSymbol
- * @{
- * @ingroup GraphTest
- * `hipGraphAddMemcpyNodeToSymbol(hipGraphNode_t *pGraphNode, hipGraph_t graph, const hipGraphNode_t
- * *pDependencies, size_t numDependencies, const void *symbol, const void *src, size_t count, size_t
- * offset, hipMemcpyKind kind)` -
- * Creates a memcpy node to copy to a symbol on the device and adds it to a graph
- */
-
 HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_GLOBALS(char)
 HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_GLOBALS(int)
 HIP_GRAPH_MEMCPY_FROM_SYMBOL_NODE_DEFINE_GLOBALS(float)
@@ -73,23 +62,32 @@ void GraphMemcpyToSymbolShell(const void* symbol, size_t offset, const std::vect
 }
 
 /**
+ * @addtogroup hipGraphAddMemcpyNodeToSymbol hipGraphAddMemcpyNodeToSymbol
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphAddMemcpyNodeToSymbol(hipGraphNode_t *pGraphNode, hipGraph_t graph, const hipGraphNode_t
+ * *pDependencies, size_t numDependencies, const void *symbol, const void *src, size_t count, size_t
+ * offset, hipMemcpyKind kind)` -
+ * Creates a memcpy node to copy to a symbol on the device and adds it to a graph
+ */
+
+
+/**
  * Test Description
  * ------------------------
- *  - Verify that data is correctly copied to a symbol.
- *  - A graph is constructed to which a MemcpyToSymbol node is added.
- *  - After graph execution, a MemcpyFromSymbol is performed.
- *  - The copied values are compared against values known to have been copied to symbol memory
- *    previously.
- *  - The test is run for scalar, const scalar, array, and const array symbols of types char, int,
- *    float and double.
- *  - For array symbols, the test is repeated for zero and non-zero offset values.
- *  - Verification is performed for source memory allocated on host and device.
+ *    - Verify that data is correctly copied to a symbol. A graph is constructed to which a
+ * MemcpyToSymbol node is added. After graph execution, a MemcpyFromSymbol is performed  and
+ * the copied values are compared against values known to have been copied to symbol memory
+ * previously.  
+ * The test is run for scalar, const scalar, array, and const array symbols of types char, int,
+ * float and double. For array symbols, the test is repeated for zero and non-zero offset values.
+ * Verification is performed for source memory allocated on host and device.
  * Test source
  * ------------------------
- *  - unit/graph/hipGraphAddMemcpyNodeToSymbol.cc
+ *    - unit/graph/hipGraphAddMemcpyNodeToSymbol.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddMemcpyNodeToSymbol_Positive_Basic") {
   SECTION("char") {
@@ -112,43 +110,26 @@ TEST_CASE("Unit_hipGraphAddMemcpyNodeToSymbol_Positive_Basic") {
 /**
  * Test Description
  * ------------------------
- *  - Verify API behavior with invalid arguments:
- *    -# When pGraphNode is `nullptr`
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When graph is `nullptr`
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When pDependencies is `nullptr` and numDependencies is not zero
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When a node in pDependencies originates from a different graph
- *      - Platform specific (NVIDIA)
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When numNodes is invalid
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When a node is duplicated in pDependencies
- *      - Platform specific (NVIDIA)
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When src is `nullptr`
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When symbol is `nullptr`
- *      - Expected output: return `hipErrorInvalidSymbol`
- *    -# When count is zero
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When count is larger than symbol size
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When count + offset is larger than symbol size
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When kind is illogical (`hipMemcpyHostToDevice`)
- *      - Platform specific (NVIDIA)
- *      - Expected output: return `hipErrorInvalidMemoryDirection`
- *    -# When kind is an invalid enum value
- *      - Platform specific (NVIDIA)
- *      - Expected output: return `hipErrorInvalidMemoryDirection`
+ *    - Verify API behavior with invalid arguments:
+ *      -# pGraphNodes is nullptr
+ *      -# graph is nullptr
+ *      -# pDependencies is nullptr when numDependencies is non-zero
+ *      -# A node in pDependencies belongs to a different graph
+ *      -# numDependencies in invalid
+ *      -# A node appears twice in pDependencies
+ *      -# src is nullptr
+ *      -# symbol is nullptr
+ *      -# count is zero
+ *      -# count is larger than symbol size
+ *      -# count + offset is larger than symbol size
+ *      -# kind is illogical (hipMemcpyDeviceToHost)
+ *      -# kind is an invalid enum value
  * Test source
  * ------------------------
- *  - unit/graph/hipGraphAddMemcpyNodeToSymbol.cc
+ *    - unit/graph/hipGraphAddMemcpyNodeToSymbol.cc
  * Test requirements
  * ------------------------
- * - HIP_VERSION >= 5.2
+ *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddMemcpyNodeToSymbol_Negative_Parameters") {
   using namespace std::placeholders;

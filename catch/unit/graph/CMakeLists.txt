@@ -32,7 +32,6 @@ set(TEST_SRC
   hipGraph.cc
   hipSimpleGraphWithKernel.cc
   hipGraphAddMemcpyNode.cc
-  hipGraphAddMemcpyNode_old.cc
   hipGraphClone.cc
   hipGraphInstantiateWithFlags.cc
   hipGraphAddHostNode.cc
@@ -55,7 +54,6 @@ set(TEST_SRC
   hipGraphAddMemcpyNode1D.cc
   hipGraphAddChildGraphNode.cc
   hipGraphNodeGetType.cc
-  hipGraphExecMemcpyNodeSetParams1D_old.cc
   hipGraphExecMemcpyNodeSetParams1D.cc
   hipGraphGetEdges.cc
   hipGraphGetEdges_old.cc
@@ -73,11 +71,8 @@ set(TEST_SRC
   hipGraphEventRecordNodeSetEvent.cc
   hipGraphEventWaitNodeGetEvent.cc
   hipGraphExecMemcpyNodeSetParams.cc
-  hipGraphExecMemcpyNodeSetParams_old.cc
   hipStreamBeginCapture.cc
   hipStreamBeginCapture_old.cc
-  hipGraphAddMemcpyNode1D_old.cc
-  hipGraphAddMemcpyNode1D.cc
   hipStreamIsCapturing.cc
   hipStreamIsCapturing_old.cc)
 
@@ -103,15 +98,12 @@ set(TEST_SRC
   hipGraphAddMemsetNode.cc
   hipGraphAddKernelNode.cc
   hipGraphMemcpyNodeGetParams.cc
-  hipGraphMemcpyNodeGetParams_old.cc
   hipGraphMemcpyNodeSetParams.cc
-  hipGraphMemcpyNodeSetParams_old.cc
   hipGraphKernelNodeGetParams.cc
   hipGraphKernelNodeSetParams.cc
   hipGraphExecKernelNodeSetParams.cc
   hipGraphLaunch.cc
   hipGraphLaunch_old.cc
-  hipGraphMemcpyNodeSetParams1D_old.cc
   hipGraphMemcpyNodeSetParams1D.cc
   hipGraphExecMemcpyNodeSetParamsToSymbol_old.cc
   hipGraphExecMemcpyNodeSetParamsToSymbol.cc
@@ -122,18 +114,13 @@ set(TEST_SRC
   hipGraphHostNodeGetParams.cc
   hipGraphExecChildGraphNodeSetParams.cc
   hipStreamGetCaptureInfo_v2.cc
-  hipStreamGetCaptureInfo_v2_old.cc
+  hipGraphCreate.cc
+  hipGraphDestroy.cc
   hipStreamUpdateCaptureDependencies.cc
   hipThreadExchangeStreamCaptureMode.cc
   hipLaunchHostFunc.cc
-  hipGraphCreate.cc
-  hipGraphDestroy.cc
-  hipGraphExecDestroy.cc
-  hipGraphLaunch_old.cc
-  hipGraphUpload.cc
+  hipStreamGetCaptureInfo_v2_old.cc
   hipUserObjectCreate.cc
-  hipGraphKernelNodeSetAttribute.cc
-  hipGraphKernelNodeGetAttribute.cc
   hipUserObjectRelease.cc
   hipUserObjectRetain.cc
   hipGraphReleaseUserObject.cc

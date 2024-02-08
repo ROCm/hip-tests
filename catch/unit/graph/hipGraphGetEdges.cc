@@ -37,11 +37,7 @@ inline constexpr size_t kNumOfEdges = 6;
 }  // anonymous namespace
 
 /**
- * @addtogroup hipGraphGetEdges hipGraphGetEdges
- * @{
- * @ingroup GraphTest
- * `hipGraphGetEdges(hipGraph_t graph, hipGraphNode_t *from, hipGraphNode_t *to, size_t *numEdges)`
- * - Returns a graph's dependency edges.
+ * Local Function to validate number of edges.
  */
 static void validate_hipGraphGetEdges_fromto(size_t testNumEdges, GraphGetNodesTest test_type,
                                              std::vector<hipGraphNode_t>& nodes_from,

@@ -17,32 +17,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_common.hh>
-#include <hip_test_checkers.hh>
-#include <hip_test_kernels.hh>
-
 /**
  * @addtogroup hipGraphExecUpdate hipGraphExecUpdate
  * @{
  * @ingroup GraphTest
  * `hipGraphExecUpdate(hipGraphExec_t hGraphExec, hipGraph_t hGraph,
- * hipGraphNode_t* hErrorNode_out, hipGraphExecUpdateResult* updateResult_out)` -
- * Check whether an executable graph can be updated with a graph and perform the update if
- * possible.
+ *                     hipGraphExecUpdateResultInfo* resultInfo)` -
+ * Check whether an executable graph can be updated with a graph
+ * and perform the update if possible.
  */
+
+#include <hip_test_common.hh>
+#include <hip_test_checkers.hh>
+#include <hip_test_kernels.hh>
 
 /**
  * Test Description
  * ------------------------
- *  - Validates handling of invalid arguments:
- *    -# When executable graph handle is `nullptr`
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When graph handle is `nullptr`
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When pointer to the graph node, which caused and update error, is `nullptr`
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When update result variable is `nullptr`
- *      - Expected output: return `hipErrorInvalidValue`
+ *  - Test verifies hipGraphExecUpdate API Negative nullptr check scenarios.
  * Test source
  * ------------------------
  *  - unit/graph/hipGraphExecUpdate.cc
@@ -86,6 +78,7 @@ TEST_CASE("Unit_hipGraphExecUpdate_Negative_Basic") {
  * ------------------------
  *  - HIP_VERSION >= 6.0
  */
+
 TEST_CASE("Unit_hipGraphExecUpdate_Negative_TypeChange") {
   constexpr size_t N = 1024;
   constexpr size_t Nbytes = N * sizeof(char);
@@ -141,6 +134,7 @@ TEST_CASE("Unit_hipGraphExecUpdate_Negative_TypeChange") {
  * ------------------------
  *  - HIP_VERSION >= 6.0
  */
+
 TEST_CASE("Unit_hipGraphExecUpdate_Negative_CountDiffer") {
   constexpr size_t N = 1024;
   constexpr size_t Nbytes = N * sizeof(int);

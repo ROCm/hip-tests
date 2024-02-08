@@ -57,6 +57,10 @@ TEST_CASE("Unit_hipGraphInstantiate_Negative") {
   hipGraph_t graph;
   HIP_CHECK(hipGraphCreate(&graph, 0));
 
+  SECTION("Pass pGraphExec as nullptr") {
+    ret = hipGraphInstantiate(nullptr, graph, nullptr, nullptr, 0);
+    REQUIRE(hipErrorInvalidValue == ret);
+  }
   SECTION("Pass graph as null/invalid ptr") {
     ret = hipGraphInstantiate(&gExec, nullptr, nullptr, nullptr, 0);
     REQUIRE(hipErrorInvalidValue == ret);

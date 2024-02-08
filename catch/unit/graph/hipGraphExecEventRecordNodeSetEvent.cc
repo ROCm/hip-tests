@@ -188,13 +188,13 @@ TEST_CASE("Unit_hipGraphExecEventRecordNodeSetEvent_VerifyEventNotChanged") {
 /**
  * Test Description
  * ------------------------
- *  - Scenario to verify that event set returns an error when event is
- *    created on different device.
+ *  - Scenario to verify that hipGraphExecEventRecordNodeSetEvent can set event created on different
+ * device.
  *  - Create an event record node with event1 and add it to graph.
  *  - Instantiate the graph to create an executable graph.
- *  - Call the API to change the event in the executable graph to the event which has been created on different device.
- *  - Verify that error is reported.
- *    - Expected output: return `hipErrorInvalidValue`
+ *  - Call the API to change the event in the executable graph to the event which has been created
+ * on different device.
+ *  - Verify that graph can be launched and no error is reported.
  * Test source
  * ------------------------
  *  - unit/graph/hipGraphExecEventRecordNodeSetEvent.cc
@@ -203,7 +203,7 @@ TEST_CASE("Unit_hipGraphExecEventRecordNodeSetEvent_VerifyEventNotChanged") {
  *  - Multi-device
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipGraphExecEventRecordNodeSetEvent_Negative_DifferentDevices") {
+TEST_CASE("Unit_hipGraphExecEventRecordNodeSetEvent_Positive_DifferentDevices") {
   const auto device_count = HipTest::getDeviceCount();
   if (device_count < 2) {
     HipTest::HIP_SKIP_TEST("Skipping because devices < 2");

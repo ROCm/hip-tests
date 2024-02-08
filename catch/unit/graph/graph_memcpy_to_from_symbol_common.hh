@@ -23,6 +23,7 @@ THE SOFTWARE.
 #pragma once
 
 #include <stddef.h>
+#include <numeric>
 
 #include <hip/hip_runtime_api.h>
 #include <resource_guards.hh>

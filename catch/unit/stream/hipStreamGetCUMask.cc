@@ -18,6 +18,8 @@ THE SOFTWARE.
 */
 
 #include <hip_test_common.hh>
+
+#include <cmath>
 #include <vector>
 
 /**
@@ -42,8 +44,7 @@ THE SOFTWARE.
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipExtStreamGetCUMask_verifyDefaultAndCustomMask") {
-  constexpr int maxNum = 6;
-  std::vector<uint32_t> cuMask(maxNum);
+  constexpr unsigned maxCUPerValue = 32;
   hipDeviceProp_t props;
   std::stringstream ss;
   std::string gCUMask;
@@ -61,6 +62,10 @@ TEST_CASE("Unit_hipExtStreamGetCUMask_verifyDefaultAndCustomMask") {
   HIP_CHECK(hipGetDeviceProperties(&props, 0));
   INFO("info: running on bus " << "0x" << props.pciBusID << " " <<
          props.name << " with " << props.multiProcessorCount << " CUs");
+
+  const unsigned int maxNum =
+      static_cast<unsigned int>(std::ceil((props.multiProcessorCount * 1.0f) / maxCUPerValue));
+  std::vector<uint32_t> cuMask(maxNum);
 
   // Get global CU Mask if exists
   gCUMask = TestContext::getEnvVar("ROC_GLOBAL_CU_MASK");

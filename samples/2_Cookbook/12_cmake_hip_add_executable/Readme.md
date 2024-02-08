@@ -6,7 +6,7 @@ Since FindHIP cmake module is not yet a part of the default cmake distribution, 
 
 The simplest approach is to use
 ```
-set(CMAKE_MODULE_PATH "/opt/rocm/hip/cmake" ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH "/opt/rocm/lib/cmake/hip/" ${CMAKE_MODULE_PATH})
 find_package(HIP)
 ```
 
@@ -32,20 +32,21 @@ The macro supports specifying CLANG-specific, NVCC-specific compiler options usi
 Common options targeting both compilers can be specificed after the ```HIPCC_OPTIONS``` keyword.
 
 ## How to build and run:
-Use the following commands to build and execute the sample
-
+- Build sample using cmake
 ```
-mkdir build
-cd build
+$ mkdir build; cd build
+ # For shared lib of hip rt,
+$ cmake ..
+ # Or for static lib of hip rt,
+$ cmake -DCMAKE_PREFIX_PATH="/opt/rocm/llvm/lib/cmake" ..
+$ make
+```
 
-For shared lib of hip rt,
-cmake ..
-Or for static lib of hip rt,
-cmake -DCMAKE_PREFIX_PATH="/opt/rocm/llvm/lib/cmake" ..
-
-Then,
-make
-./MatrixTranspose
+- Execute the sample
+```
+$ ./MatrixTranspose
+Device name
+PASSED!
 ```
 
 ## More Info:

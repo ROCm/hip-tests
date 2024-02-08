@@ -184,17 +184,6 @@ TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParamsFromSymbol_Negative_Parameters") 
   }
 #endif
 
-  if (HipTest::getDeviceCount() >= 2) {
-    SECTION("Changing dst allocation device") {
-    HIP_CHECK(hipSetDevice(1));
-    LinearAllocGuard<int> new_var(LinearAllocs::hipMalloc, sizeof(int));
-    HIP_CHECK_ERROR(hipGraphExecMemcpyNodeSetParamsFromSymbol(
-                        graph_exec, node, new_var.ptr(), SYMBOL(int_device_var),
-                        sizeof(*new_var.ptr()), 0, hipMemcpyDeviceToDevice),
-                    hipErrorInvalidValue);
-    }
-  }
-
   HIP_CHECK(hipGraphExecDestroy(graph_exec));
   HIP_CHECK(hipGraphDestroy(graph));
 }

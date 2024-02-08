@@ -19,7 +19,7 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 #include "streamCommon.hh"
-
+#include <utils.hh>
 /**
  * @addtogroup hipStreamQuery hipStreamQuery
  * @{
@@ -155,7 +155,7 @@ TEST_CASE("Unit_hipStreamQuery_SubmitWorkOnStreamAndQueryNullStream") {
     HIP_CHECK(hipStreamCreate(&stream));
 
     HIP_CHECK(hipStreamQuery(hip::nullStream));
-    HipTest::runKernelForDuration(std::chrono::milliseconds(500), stream);
+    LaunchDelayKernel(std::chrono::milliseconds(500), stream);
     HIP_CHECK_ERROR(hipStreamQuery(hip::nullStream), hipErrorNotReady);
     HIP_CHECK(hipDeviceSynchronize());
 
@@ -178,7 +178,7 @@ TEST_CASE("Unit_hipStreamQuery_SubmitWorkOnStreamAndQueryNullStream") {
  */
 TEST_CASE("Unit_hipStreamQuery_NullStreamQuery") {
   HIP_CHECK(hipStreamQuery(hip::nullStream));
-  HipTest::runKernelForDuration(std::chrono::milliseconds(500), hip::nullStream);
+  LaunchDelayKernel(std::chrono::milliseconds(500), hip::nullStream);
   HIP_CHECK_ERROR(hipStreamQuery(hip::nullStream), hipErrorNotReady);
 
   HIP_CHECK(hipStreamSynchronize(hip::nullStream));
@@ -200,8 +200,7 @@ TEST_CASE("Unit_hipStreamQuery_WithPendingWork") {
   hipStream_t waitingStream{nullptr};
   HIP_CHECK(hipStreamCreate(&waitingStream));
 
-  HipTest::runKernelForDuration(std::chrono::milliseconds(500), waitingStream);
-
+  LaunchDelayKernel(std::chrono::milliseconds(500), waitingStream);
   HIP_CHECK_ERROR(hipStreamQuery(waitingStream), hipErrorNotReady);
   HIP_CHECK(hipStreamSynchronize(waitingStream));
   HIP_CHECK(hipStreamQuery(waitingStream));

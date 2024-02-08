@@ -19,6 +19,7 @@ THE SOFTWARE.
 
 #include <chrono>
 #include <hip_test_common.hh>
+#include <utils.hh>
 
 /**
  * @addtogroup hipStreamCreateWithFlags hipStreamCreateWithFlags
@@ -118,10 +119,7 @@ TEST_CASE("Unit_hipStreamCreateWithFlags_Default") {
 TEST_CASE("Unit_hipStreamCreateWithFlags_DefaultStreamInteraction") {
   const hipStream_t defaultStream = GENERATE(static_cast<hipStream_t>(nullptr), hipStreamPerThread);
   const unsigned int flagUnderTest = GENERATE(hipStreamDefault, hipStreamNonBlocking);
-  const hipError_t expectedError = (flagUnderTest == hipStreamDefault) && (defaultStream == nullptr)
-      ? hipErrorNotReady
-      : hipSuccess;
-  CAPTURE(defaultStream, flagUnderTest, expectedError, hipGetErrorString(expectedError));
+  CAPTURE(defaultStream, flagUnderTest);
 
   hipStream_t stream{};
   HIP_CHECK(hipStreamCreateWithFlags(&stream, flagUnderTest));
@@ -129,12 +127,15 @@ TEST_CASE("Unit_hipStreamCreateWithFlags_DefaultStreamInteraction") {
   constexpr auto delay = std::chrono::milliseconds(500);
 
   SECTION("default stream waiting for created stream") {
-    HipTest::runKernelForDuration(delay, stream);
+    const hipError_t expectedError = (flagUnderTest == hipStreamDefault) && (defaultStream == nullptr)
+      ? hipErrorNotReady
+      : hipSuccess;
+    LaunchDelayKernel(delay, stream);
     REQUIRE(hipStreamQuery(defaultStream) == expectedError);
   }
   SECTION("created stream waiting for default stream") {
-    HipTest::runKernelForDuration(delay, defaultStream);
-    REQUIRE(hipStreamQuery(stream) == expectedError);
+    LaunchDelayKernel(delay, defaultStream);
+    REQUIRE(hipStreamQuery(stream) == hipSuccess);
   }
 
   HIP_CHECK(hipDeviceSynchronize());

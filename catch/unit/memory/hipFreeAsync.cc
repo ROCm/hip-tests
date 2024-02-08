@@ -22,6 +22,7 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 
+<<<<<<< HEAD
 /**
  * @addtogroup hipFreeAsync hipFreeAsync
  * @{
@@ -49,11 +50,17 @@ THE SOFTWARE.
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
+=======
+>>>>>>> origin/develop
 TEST_CASE("Unit_hipFreeAsync_negative") {
   HIP_CHECK(hipSetDevice(0));
   void* p = nullptr;
   hipStream_t stream{nullptr};
+<<<<<<< HEAD
   hipStreamCreate(&stream);
+=======
+  HIP_CHECK(hipStreamCreate(&stream));
+>>>>>>> origin/develop
 
   SECTION("dev_ptr is nullptr") { REQUIRE(hipFreeAsync(nullptr, stream) != hipSuccess); }
 

@@ -165,6 +165,8 @@ template <PtrType type, typename UIntT> auto allocMem() {
     *signalPtr = 0;
 
     auto freeStuff = [](uint64_t* sPtr) { HIP_CHECK(hipFree(sPtr)); };
+    // sync ensures the memory intialization is complete before using the memory
+    HIP_CHECK(hipDeviceSynchronize());
     return TestPtr<type, UIntT, std::unique_ptr<uint64_t, decltype(freeStuff)>>{
         signalPtr, std::unique_ptr<uint64_t, decltype(freeStuff)>(signalPtr, freeStuff)};
   } else if constexpr (type == PtrType::DevicePtrToHost) {
@@ -183,7 +185,8 @@ template <PtrType type, typename UIntT> auto allocMem() {
       HIP_CHECK(hipHostUnregister(ptr));
       delete[] ptr;
     };
-
+    // sync ensures the memory intialization is complete before using the memory
+    HIP_CHECK(hipDeviceSynchronize());
     return TestPtr<type, UIntT, std::unique_ptr<UIntT[], decltype(freeStuff)>>{
         devicePtr, std::unique_ptr<UIntT[], decltype(freeStuff)>(hostPtr, freeStuff)};
   } else if constexpr (type == PtrType::HostPtr) {
@@ -199,7 +202,8 @@ template <PtrType type, typename UIntT> auto allocMem() {
       HIP_CHECK(hipHostUnregister(ptr));
       delete[] ptr;
     };
-
+    // sync ensures the memory intialization is complete before using the memory
+    HIP_CHECK(hipDeviceSynchronize());
     return TestPtr<type, UIntT, std::unique_ptr<UIntT[], decltype(freeStuff)>>{
         hostPtr, std::unique_ptr<UIntT[], decltype(freeStuff)>(hostPtr, freeStuff)};
   } else {
@@ -208,6 +212,8 @@ template <PtrType type, typename UIntT> auto allocMem() {
     HIP_CHECK(hipMalloc(&devicePtr, sizeof(UIntT) * arraySize));
     HIP_CHECK(hipMemset(devicePtr, 0, sizeof(UIntT) * arraySize));
     auto freeStuff = [](UIntT* ptr) { HIP_CHECK(hipFree(ptr)); };
+    // sync ensures the memory intialization is complete before using the memory
+    HIP_CHECK(hipDeviceSynchronize());
     return TestPtr<type, UIntT, std::unique_ptr<UIntT, decltype(freeStuff)>>{
         devicePtr, std::unique_ptr<UIntT, decltype(freeStuff)>(devicePtr, freeStuff)};
   }

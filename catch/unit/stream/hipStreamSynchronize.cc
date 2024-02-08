@@ -18,6 +18,7 @@ THE SOFTWARE.
 */
 
 #include <hip_test_common.hh>
+#include <utils.hh>
 #include "streamCommon.hh"
 
 /**
@@ -93,7 +94,7 @@ TEST_CASE("Unit_hipStreamSynchronize_FinishWork") {
     HIP_CHECK(hipStreamCreate(&stream));
   }
 
-  HipTest::runKernelForDuration(std::chrono::milliseconds(500), stream);
+  LaunchDelayKernel(std::chrono::milliseconds(500), stream);
   HIP_CHECK(hipStreamSynchronize(stream));
   HIP_CHECK(hipStreamQuery(stream));
 
@@ -125,14 +126,14 @@ TEST_CASE("Unit_hipStreamSynchronize_NullStreamSynchronization") {
   }
 
   for (int i = 0; i < totalStreams; ++i) {
-    HipTest::runKernelForDuration(std::chrono::milliseconds(1000), streams[i]);
+    LaunchDelayKernel(std::chrono::milliseconds(1000), streams[i]);
   }
+
+  HIP_CHECK_ERROR(hipStreamQuery(hip::nullStream), hipErrorNotReady);
 
   for (int i = 0; i < totalStreams; ++i) {
     HIP_CHECK_ERROR(hipStreamQuery(streams[i]), hipErrorNotReady);
   }
-
-  HIP_CHECK_ERROR(hipStreamQuery(hip::nullStream), hipErrorNotReady);
 
   HIP_CHECK(hipStreamSynchronize(hip::nullStream));
   HIP_CHECK(hipStreamQuery(hip::nullStream));
@@ -171,8 +172,8 @@ TEST_CASE("Unit_hipStreamSynchronize_SynchronizeStreamAndQueryNullStream") {
   HIP_CHECK(hipStreamCreate(&stream1));
   HIP_CHECK(hipStreamCreate(&stream2));
 
-  HipTest::runKernelForDuration(std::chrono::milliseconds(500), stream1);
-  HipTest::runKernelForDuration(std::chrono::milliseconds(2000), stream2);
+  LaunchDelayKernel(std::chrono::milliseconds(500), stream1);
+  LaunchDelayKernel(std::chrono::milliseconds(2000), stream2);
 
   SECTION("Do not use NullStream") {}
   SECTION("Submit Kernel to NullStream") {
@@ -213,10 +214,10 @@ TEST_CASE("Unit_hipStreamSynchronize_SynchronizeStreamAndQueryNullStream") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamSynchronize_NullStreamAndStreamPerThread") {
-  HipTest::runKernelForDuration(std::chrono::milliseconds(500), hip::streamPerThread);
+  LaunchDelayKernel(std::chrono::milliseconds(500), hip::streamPerThread);
   HIP_CHECK_ERROR(hipStreamQuery(hip::nullStream), hipErrorNotReady);
   HIP_CHECK_ERROR(hipStreamQuery(hip::streamPerThread), hipErrorNotReady);
-  HipTest::runKernelForDuration(std::chrono::milliseconds(500), hip::nullStream);
+  LaunchDelayKernel(std::chrono::milliseconds(500), hip::nullStream);
   HIP_CHECK(hipStreamSynchronize(hip::nullStream))
   HIP_CHECK_ERROR(hipStreamQuery(hip::streamPerThread), hipSuccess);
   HIP_CHECK_ERROR(hipStreamQuery(hip::nullStream), hipSuccess);

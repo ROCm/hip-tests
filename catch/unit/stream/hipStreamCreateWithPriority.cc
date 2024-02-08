@@ -686,8 +686,8 @@ void TestForMultipleStreamWithPriority(void) {
   }
   // launch kernels repeatedly on each of the low prioritiy stream
   for (int k = 0; k < LOW_PRIORITY_STREAMCOUNT; ++k) {
-    for (int i = 0; i < size; i += MEMCPYSIZE1) {
-      int j = i / sizeof(T);
+    for (size_t i = 0; i < size; i += MEMCPYSIZE1) {
+      size_t j = i / sizeof(T);
       if (enable_priority_low) {
         hipLaunchKernelGGL((memcpy_kernel<T>), dim3(GRIDSIZE), dim3(BLOCKSIZE),
         0, stream_low[k], dst_d_low[k] + j, src_d_low[k] + j,
@@ -697,8 +697,8 @@ void TestForMultipleStreamWithPriority(void) {
   }
   // launch kernels repeatedly on each of the normal prioritiy stream
   for (int k = 0; k < NORMAL_PRIORITY_STREAMCOUNT; ++k) {
-    for (int i = 0; i < size; i += MEMCPYSIZE1) {
-      int j = i / sizeof(T);
+    for (size_t i = 0; i < size; i += MEMCPYSIZE1) {
+      size_t j = i / sizeof(T);
       if (enable_priority_normal) {
         hipLaunchKernelGGL((memcpy_kernel<T>), dim3(GRIDSIZE), dim3(BLOCKSIZE),
         0, stream_normal[k], dst_d_normal[k] + j, src_d_normal[k] + j,
@@ -708,8 +708,8 @@ void TestForMultipleStreamWithPriority(void) {
   }
   // launch kernels repeatedly on each of the high prioritiy stream
   for (int k = 0; k < HIGH_PRIORITY_STREAMCOUNT; ++k) {
-    for (int i = 0; i < size; i += MEMCPYSIZE1) {
-      int j = i / sizeof(T);
+    for (size_t i = 0; i < size; i += MEMCPYSIZE1) {
+      size_t j = i / sizeof(T);
       if (enable_priority_high) {
         hipLaunchKernelGGL((memcpy_kernel<T>), dim3(GRIDSIZE), dim3(BLOCKSIZE),
         0, stream_high[k], dst_d_high[k] + j, src_d_high[k] + j,

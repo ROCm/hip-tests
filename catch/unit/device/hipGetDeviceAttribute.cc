@@ -163,9 +163,6 @@ TEST_CASE("Unit_hipGetDeviceAttribute_CheckAttrValues") {
                                       hipDeviceAttributePciDeviceId,
                                       props.pciDeviceID));
   HIP_CHECK(test_hipDeviceGetAttribute(deviceId,
-                      hipDeviceAttributeMaxSharedMemoryPerMultiprocessor,
-                      props.maxSharedMemoryPerMultiProcessor));
-  HIP_CHECK(test_hipDeviceGetAttribute(deviceId,
                                       hipDeviceAttributeIntegrated,
                                       props.integrated));
   HIP_CHECK(test_hipDeviceGetAttribute(deviceId,
@@ -194,6 +191,9 @@ TEST_CASE("Unit_hipGetDeviceAttribute_CheckAttrValues") {
                           props.cooperativeMultiDeviceLaunch));
 
 #if HT_AMD
+  HIP_CHECK(test_hipDeviceGetAttribute(deviceId,
+                      hipDeviceAttributeMaxSharedMemoryPerMultiprocessor,
+                      props.maxSharedMemoryPerMultiProcessor));
   HIP_CHECK(test_hipDeviceGetHdpAddress(deviceId,
                                      hipDeviceAttributeHdpMemFlushCntl,
                                      props.hdpMemFlushCntl));
@@ -250,113 +250,7 @@ TEST_CASE("Unit_hipGetDeviceAttribute_CheckAttrValues") {
   HIP_CHECK(test_hipDeviceGetAttribute(deviceId,
                                        hipDeviceAttributeTexturePitchAlignment,
                                        props.texturePitchAlignment));
-  HIP_CHECK(test_hipDeviceGetAttribute(deviceId,
-                              hipDeviceAttributeUnifiedAddressing, 1/*true*/));
 }
-
-/*
- * Validate the hipDeviceAttributeFineGrainSupport property in AMD.
- */
-#ifdef __linux__
-#if HT_AMD
-#define COMMAND_LEN 256
-#define BUFFER_LEN 512
-
-static bool isRocmPathSet() {
-  FILE *fpipe;
-  char const *command = "echo $ROCM_PATH";
-  fpipe = popen(command, "r");
-
-  if (fpipe == nullptr) {
-    printf("Unable to create command\n");
-    return false;
-  }
-  char command_op[BUFFER_LEN];
-  if (fgets(command_op, BUFFER_LEN, fpipe)) {
-    size_t len = strlen(command_op);
-    if (len > 1) {  // This is because fgets always adds newline character
-      pclose(fpipe);
-      return true;
-    }
-  }
-  pclose(fpipe);
-  return false;
-}
-
-/**
- * Test Description
- * ------------------------
- *  - Validate fine grain support attribute against
- *    known values for different AMD architectures
- * Test source
- * ------------------------
- *  - unit/device/hipGetDeviceAttribute.cc
- * Test requirements
- * ------------------------
- *  - Platform specific (AMD)
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipGetDeviceAttribute_CheckFineGrainSupport") {
-  int deviceId;
-  int deviceCount = 0;
-  FILE *fpipe;
-  char command[COMMAND_LEN] = "";
-  const char *rocmpath = nullptr;
-  if (isRocmPathSet()) {
-    // For STG2 testing where /opt/rocm path is not present
-    rocmpath = "$ROCM_PATH/bin/rocminfo";
-  } else {
-    // Check if the rocminfo tool exists
-    rocmpath = "/opt/rocm/bin/rocminfo";
-  }
-  snprintf(command, COMMAND_LEN, "%s", rocmpath);
-  strncat(command, " | grep -i \"Segment:\\|Uuid:\"", COMMAND_LEN);
-  // Execute the rocminfo command and extract the segment info
-  fpipe = popen(command, "r");
-  if (fpipe == nullptr) {
-    printf("Unable to create command file\n");
-    return;
-  }
-  HIP_CHECK(hipGetDeviceCount(&deviceCount));
-  assert(deviceCount > 0);
-  int *fine_grained_val = new int[deviceCount];
-  assert(fine_grained_val != nullptr);
-  bool *gpuFound = new bool[deviceCount];
-  assert(gpuFound != nullptr);
-  for (int i = 0; i < deviceCount; i++) {
-    gpuFound[i] = false;
-    fine_grained_val[i] = 0;  // Initialize to 0
-  }
-  char command_op[BUFFER_LEN];
-  int count = -1;
-  // Extract each segment flags
-  while (fgets(command_op, BUFFER_LEN, fpipe)) {
-    std::string rocminfo_line(command_op);
-    if ((std::string::npos != rocminfo_line.find("GPU-")) &&
-        (std::string::npos != rocminfo_line.find("Uuid:"))) {
-      count++;
-      gpuFound[count] = true;
-    } else if (gpuFound[count] &&
-    (std::string::npos != rocminfo_line.find("FLAGS: FINE GRAINED"))) {
-      fine_grained_val[count] = 1;
-    }
-  }
-  for (int dev = 0; dev < deviceCount; dev++) {
-    HIP_CHECK(hipSetDevice(dev));
-    HIP_CHECK(hipGetDevice(&deviceId));
-    hipDeviceProp_t props;
-    HIP_CHECK(hipGetDeviceProperties(&props, deviceId));
-    int value = 0;
-    HIP_CHECK(hipDeviceGetAttribute(&value,
-              hipDeviceAttributeFineGrainSupport, deviceId));
-    REQUIRE(value == fine_grained_val[dev]);
-  }
-  // Validate hipDeviceAttributeFineGrainSupport
-  delete[] fine_grained_val;
-  delete[] gpuFound;
-}
-#endif
-#endif
 
 /**
  * Test Description
@@ -418,7 +312,7 @@ using AttributeToStringMap = std::array<std::pair<hipDeviceAttribute_t, const ch
 
 namespace {
 
-constexpr AttributeToStringMap<57> kCommonAttributes{{
+constexpr AttributeToStringMap<58> kCommonAttributes{{
     {hipDeviceAttributeEccEnabled, "hipDeviceAttributeEccEnabled"},
     {hipDeviceAttributeCanMapHostMemory, "hipDeviceAttributeCanMapHostMemory"},
     {hipDeviceAttributeClockRate, "hipDeviceAttributeClockRate"},
@@ -462,7 +356,7 @@ constexpr AttributeToStringMap<57> kCommonAttributes{{
     {hipDeviceAttributeMemoryClockRate, "hipDeviceAttributeMemoryClockRate"},
     {hipDeviceAttributeComputeCapabilityMinor, "hipDeviceAttributeComputeCapabilityMinor"},
     {hipDeviceAttributeMultiprocessorCount, "hipDeviceAttributeMultiprocessorCount"},
-    {hipDeviceAttributeName, "hipDeviceAttributeName"},
+    {hipDeviceAttributeUnused1, "hipDeviceAttributeUnused1"},
     {hipDeviceAttributePageableMemoryAccess, "hipDeviceAttributePageableMemoryAccess"},
     {hipDeviceAttributePageableMemoryAccessUsesHostPageTables,
      "hipDeviceAttributePageableMemoryAccessUsesHostPageTables"},
@@ -479,9 +373,10 @@ constexpr AttributeToStringMap<57> kCommonAttributes{{
     {hipDeviceAttributeTotalGlobalMem, "hipDeviceAttributeTotalGlobalMem"},
     {hipDeviceAttributeWarpSize, "hipDeviceAttributeWarpSize"},
     {hipDeviceAttributeMemoryPoolsSupported, "hipDeviceAttributeMemoryPoolsSupported"},
-	{hipDeviceAttributeUnifiedAddressing, "hipDeviceAttributeUnifiedAddressing"},
+    {hipDeviceAttributeUnifiedAddressing, "hipDeviceAttributeUnifiedAddressing"},
     {hipDeviceAttributeVirtualMemoryManagementSupported,
-     "hipDeviceAttributeVirtualMemoryManagementSupported"}
+     "hipDeviceAttributeVirtualMemoryManagementSupported"},
+    {hipDeviceAttributeHostRegisterSupported, "hipDeviceAttributeHostRegisterSupported"}
 }};
 
 #if HT_NVIDIA
@@ -520,17 +415,17 @@ constexpr AttributeToStringMap<33> kCudaOnlyAttributes{
      {hipDeviceAttributeStreamPrioritiesSupported, "hipDeviceAttributeStreamPrioritiesSupported"},
      {hipDeviceAttributeSurfaceAlignment, "hipDeviceAttributeSurfaceAlignment"},
      {hipDeviceAttributeTccDriver, "hipDeviceAttributeTccDriver"},
-     {hipDeviceAttributeUuid, "hipDeviceAttributeUuid"}}};
+     {hipDeviceAttributeUnused2, "hipDeviceAttributeUnused2"}}};
 #endif
 
 #if HT_AMD
 constexpr AttributeToStringMap<17> kAmdOnlyAttributes{{
     {hipDeviceAttributeClockInstructionRate, "hipDeviceAttributeClockInstructionRate"},
-    {hipDeviceAttributeArch, "hipDeviceAttributeArch"},
+    {hipDeviceAttributeUnused3, "hipDeviceAttributeUnused3"},
     {hipDeviceAttributeMaxSharedMemoryPerMultiprocessor,
      "hipDeviceAttributeMaxSharedMemoryPerMultiprocessor"},
-    {hipDeviceAttributeGcnArch, "hipDeviceAttributeGcnArch"},
-    {hipDeviceAttributeGcnArchName, "hipDeviceAttributeGcnArchName"},
+    {hipDeviceAttributeUnused4, "hipDeviceAttributeUnused4"},
+    {hipDeviceAttributeUnused5, "hipDeviceAttributeUnused5"},
     {hipDeviceAttributeHdpMemFlushCntl, "hipDeviceAttributeHdpMemFlushCntl"},
     {hipDeviceAttributeHdpRegFlushCntl, "hipDeviceAttributeHdpRegFlushCntl"},
     {hipDeviceAttributeCooperativeMultiDeviceUnmatchedFunc,
@@ -609,4 +504,39 @@ TEST_CASE("Print_Out_Attributes") {
 #endif
 
   std::flush(std::cout);
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - verify hipDeviceAttributeHostRegisterSupported attribute.
+ * Test source
+ * ------------------------
+ *  - unit/device/hipGetDeviceAttribute.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+TEST_CASE("Unit_hipGetDeviceAttribute_hipDevAttrHostRegisterSupported") {
+  hipError_t ret_val;
+  int hipDevAttr = 0;
+  ret_val = hipDeviceGetAttribute(&hipDevAttr,
+                                  hipDeviceAttributeHostRegisterSupported, 0);
+  INFO("hipDeviceAttributeHostRegisterSupported: " << hipDevAttr);
+
+  if (ret_val == hipSuccess) {
+    auto x = std::unique_ptr<int>(new int);
+    HIP_CHECK(hipHostRegister(x.get(), sizeof(int), hipHostRegisterDefault));
+
+    void* device_memory;
+    HIP_CHECK(hipHostGetDevicePointer(&device_memory, x.get(), 0));
+
+    HIP_CHECK(hipHostUnregister(x.get()));
+    HIP_CHECK_ERROR(hipHostGetDevicePointer(&device_memory, x.get(), 0),
+                    hipErrorInvalidValue);
+  } else {
+    HipTest::HIP_SKIP_TEST("Skipping the test as GPU 0 doesn't support "
+             "hipDeviceAttributeHostRegisterSupported attribute.\n");
+    return;
+  }
 }

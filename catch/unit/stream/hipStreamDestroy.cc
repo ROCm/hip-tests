@@ -18,6 +18,7 @@ THE SOFTWARE.
 */
 #include <chrono>
 #include <hip_test_common.hh>
+#include <utils.hh>
 
 /**
  * @addtogroup hipStreamDestroy hipStreamDestroy
@@ -149,7 +150,7 @@ TEST_CASE("Unit_hipStreamDestroy_WithPendingWork") {
   HIP_CHECK(hipMalloc(&deviceData, sizeof(int) * numDataPoints));
   HIP_CHECK(hipMemset(deviceData, 0, sizeof(int) * numDataPoints));
 
-  HipTest::runKernelForDuration(std::chrono::milliseconds(500), stream);
+  LaunchDelayKernel(std::chrono::milliseconds(500), stream);
   setToOne<<<1, numDataPoints, 0, stream>>>(deviceData, numDataPoints);
   HIP_CHECK_ERROR(hipStreamQuery(stream), hipErrorNotReady);
   HIP_CHECK_ERROR(hipStreamQuery(nullptr), hipErrorNotReady);

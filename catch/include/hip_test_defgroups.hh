@@ -20,6 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#include <hip_test_common.hh>
+
 // Test groups are named based on the group names from hip_api_runtime.h, with adding "Test" suffix
 
 /**
@@ -30,46 +32,10 @@ THE SOFTWARE.
  */
 
 /**
- * @defgroup GraphTest Graph Management
+ * @defgroup ContextTest Context Management
  * @{
- * This section describes tests for the graph management types & functions of HIP runtime API.
- * @}
- */
-
-/**
- * @defgroup DeviceTest Device Management
- * @{
- * This section describes tests for device management functions of HIP runtime API.
- * @}
- */
-
-/**
- * @defgroup EventTest Event Management
- * @{
- * This section describes tests for the event management functions of HIP runtime API.
- * @}
- */
-
-/**
- * @defgroup ErrorTest Error Handling
- * @{
- * This section describes tests for the error handling functions of HIP runtime API.
- * @}
- */
-
-/**
- * @defgroup PeerToPeerTest PeerToPeer Device Memory Access
- * @{
- * This section describes tests for the PeerToPeer device memory access functions of HIP runtime
- * API.
- * @warning PeerToPeer support is experimental.
- * @}
- */
-
-/**
- * @defgroup DriverTest Initialization and Version
- * @{
- * This section describes tests for the initialization and version functions of HIP runtime API.
+ * This section describes tests for the context management functions of HIP runtime API.
+ * @warning All Context Management APIs are **deprecated** and shall not be implemented.
  * @}
  */
 
@@ -81,9 +47,87 @@ THE SOFTWARE.
  */
 
 /**
+ * @defgroup DeviceTest Device Management
+ * @{
+ * This section describes tests for device management functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup DriverTest Initialization and Version
+ * @{
+ * This section describes tests for the initialization and version functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup DynamicLoadingTest Kernel Loading Management
+ * @{
+ * This section describes the different kernel launch approaches.
+ * @}
+ */
+
+/**
+ * @defgroup ErrorTest Error Handling
+ * @{
+ * This section describes tests for the error handling functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup EventTest Event Management
+ * @{
+ * This section describes tests for the event management functions of HIP runtime API.
+ * @}
+ */
+
+/**
  * @defgroup ExecutionTest Execution Control
  * @{
  * This section describes tests for the execution control functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup GraphTest Graph Management
+ * @{
+ * This section describes tests for the graph management types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+* @defgroup KernelTest Kernel Functions Management
+* @{
+* This section describes the various kernel functions invocation.
+* @}
+*/
+
+/**
+ * @defgroup AtomicsTest Device Atomics
+ * @{
+ * This section describes tests for the Device Atomic APIs.
+ * @}
+ */
+
+/**
+ * @defgroup MemoryTest memory Management APIs
+ * @{
+ * This section describes the memory management types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup PeerToPeerTest PeerToPeer Device Memory Access
+ * @{
+ * This section describes tests for the PeerToPeer device memory access functions of HIP runtime API.
+ * @warning PeerToPeer support is experimental.
+ * @}
+ */
+
+/**
+ * @defgroup PerformanceTest Performance tests
+ * @{
+ * This section describes performance tests for the target API groups and use-cases.
  * @}
  */
 
@@ -100,546 +144,10 @@ THE SOFTWARE.
  * This section describes tests for the Stream Memory Wait and Write functions of HIP runtime API.
  */
 
-// Adding dummy Test Cases that are in the form of function macros/templates and are
-// not possible to generate with Doxygen.
-
-/**
- * @addtogroup hipStreamWaitValue32 hipStreamWaitValue32
- * @{
- * @ingroup StreamMTest
- * `hipStreamWaitValue32(hipStream_t stream, void* ptr, uint32_t value,
- * unsigned int flags, uint32_t mask __dparm(0xFFFFFFFF))` -
- * Enqueues a wait command to the stream, all operations enqueued on this stream after this, will
- * not execute until the defined wait condition is true.
- */
-
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs blocking wait for specified value using Eq (==) without masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_NoMask_Eq") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs non-blocking wait for specified value using Eq (==) without masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_NoMask_Eq") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs non-blocking wait for specified value using Gte (>=) without masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_NoMask_Gte") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs non-blocking wait for specified value using Gte (>=) without masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_NoMask_Gte") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs blocking wait for specified value using And (&) without masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_NoMask_And") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs non-blocking wait for specified value using And (&) without masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_NoMask_And") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs blocking wait for specified value using Nor (|) without masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_NoMask_Nor") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs non-blocking wait for specified value using Nor (|) without masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_NoMask_Nor") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs blocking wait for specified value using Gte (>=) with masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_Mask_Gte") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs non-blocking wait for specified value using Gte (>=) with masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_Mask_Gte") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs blocking wait for specified value using Eq (==) with masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_Mask_Eq_1") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs non-blocking wait for specified value using Eq (==) with masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_Mask_Eq_1") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs blocking wait for specified value using Eq (==) with masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_Mask_Eq_2") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs non-blocking wait for specified value using Eq (==) with masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_Mask_Eq_2") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs blocking wait for specified value using And (&) with masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait32_Blocking_Mask_And") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs non-blocking wait for specified value using And (&) with masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait32_NonBlocking_Mask_And") {}
-TEST_CASE("Unit_hipStreamValue_Negative_InvalidMemory") {}
-/**
- * End doxygen group hipStreamWaitValue32.
- * @}
- */
-
-/**
- * @addtogroup hipStreamWaitValue64 hipStreamWaitValue64
- * @{
- * @ingroup StreamMTest
- * `hipStreamWaitValue64(hipStream_t stream, void* ptr, uint64_t value,
- * unsigned int flags, uint64_t mask __dparm(0xFFFFFFFFFFFFFFFF))` -
- * Enqueues a wait command to the stream, all operations enqueued  on this stream after this, will
- * not execute until the defined wait condition is true.
- * ________________________
- * Test cases from other modules:
- *  - @ref Unit_hipStreamValue_Negative_InvalidFlag
- *  - @ref Unit_hipStreamValue_Negative_InvalidMemory
- *  - @ref Unit_hipStreamValue_Negative_UninitializedStream
- */
-
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs blocking wait for specified value using Eq (==) without masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_NoMask_Eq") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs non-blocking wait for specified value using Eq (==) without masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_NoMask_Eq") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs non-blocking wait for specified value using Gte (>=) without masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_NoMask_Gte") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs non-blocking wait for specified value using Gte (>=) without masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_NoMask_Gte") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs blocking wait for specified value using And (&) without masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_NoMask_And") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs non-blocking wait for specified value using And (&) without masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_NoMask_And") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs blocking wait for specified value using Nor (|) without masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_NoMask_Nor") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs non-blocking wait for specified value using Nor (|) without masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_NoMask_Nor") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs blocking wait for specified value using Gte (>=) with masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_Mask_Gte_1") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs non-blocking wait for specified value using Gte (>=) with masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_Gte_1") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs blocking wait for specified value using Gte (>=) with masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_Mask_Gte_2") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs non-blocking wait for specified value using Gte (>=) with masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_Gte_2") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs blocking wait for specified value using Eq (==) with masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_Mask_Eq_1") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs non-blocking wait for specified value using Eq (==) with masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_Eq_1") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs blocking wait for specified value using Eq (==) with masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_Mask_Eq_2") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs non-blocking wait for specified value using Eq (==) with masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_Eq_2") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs blocking wait for specified value using And (&) with masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait64_Blocking_Mask_And") {}
-/**
- * Test Description
- * ------------------------
- *  - Creates valid stream.
- *  - Performs non-blocking wait for specified value using And (&) with masking.
- *  - Checks if results are valid.
- * Test source
- * ------------------------
- *  - unit/stream/hipStreamValue.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_And") {}
-/**
- * End doxygen group hipStreamWaitValue64.
- * @}
- */
-
-/**
- * @addtogroup hipStreamWriteValue64 hipStreamWriteValue64
- * @{
- * @ingroup StreamMTest
- * `hipStreamWriteValue64(hipStream_t stream, void* ptr, uint64_t value, unsigned int flags)` -
- * Enqueues a write command to the stream, write operation is performed after all earlier commands
- * on this stream have completed the execution.
- * ________________________
- * Test cases from other modules:
- *  - @ref Unit_hipStreamValue_Write
- *  - @ref Unit_hipStreamValue_Negative_InvalidMemory
- *  - @ref Unit_hipStreamValue_Negative_UninitializedStream
- * @}
- */
-
-/**
- * End doxygen group StreamMTest.
- * @}
- */
-
 /**
  * @defgroup ShflTest warp shuffle function Management
  * @{
  * This section describes the warp shuffle types & functions of HIP runtime API.
- * @}
  */
 
 /**
@@ -650,10 +158,9 @@ TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_And") {}
  */
 
 /**
- * @defgroup ContextTest Context Management
+ * @defgroup p2pTest P2P Management
  * @{
- * This section describes tests for the context management functions of HIP runtime API.
- * @warning All Context Management APIs are **deprecated** and shall not be implemented.
+ * This section describes the P2P management types & functions of HIP runtime API.
  * @}
  */
 
@@ -665,22 +172,22 @@ TEST_CASE("Unit_hipStreamValue_Wait64_NonBlocking_Mask_And") {}
  */
 
 /**
- * @defgroup DynamicLoadingTest Kernel Loading Management
+ * @defgroup TextureTest Texture Management
  * @{
- * This section describes the different kernel launch approaches.
+ * This section describes tests for the texture management functions of HIP runtime API.
  * @}
  */
 
 /**
- * @defgroup MemoryTest memory Management APIs
+ * @defgroup VectorTypeTest Vector types
  * @{
- * This section describes the memory management types & functions of HIP runtime API.
+ * This section describes tests for the Vector type functions and operators.
  * @}
  */
 
 /**
- * @defgroup KernelTest Kernel Functions Management
+ * @defgroup PrintfTest Printf API Management
  * @{
- * This section describes the various kernel functions invocation.
+ * This section describes the various Printf use case Scenarios.
  * @}
  */

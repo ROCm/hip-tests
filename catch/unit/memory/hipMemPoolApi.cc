@@ -44,85 +44,12 @@ constexpr hipMemPoolProps kPoolProps = {
 };
 
 /**
- * Test Description
- * ------------------------
- *  - Checks that the freed memory is used for allocation again.
- *  - Launches kernel to create a realistic test case.
- * Test source
- * ------------------------
- *  - unit/memory/hipMemPoolApi.cc
- * Test requirements
- * ------------------------
- *  - Runtime supports Memory Pools
- *  - HIP_VERSION >= 5.2
+ * @addtogroup hipMallocAsync hipMallocAsync
+ * @{
+ * @ingroup StreamOTest
  */
-TEST_CASE("Unit_hipMemPoolApi_Default") {
-  int mem_pool_support = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&mem_pool_support, hipDeviceAttributeMemoryPoolsSupported, 0));
-  if (!mem_pool_support) {
-    SUCCEED("Runtime doesn't support Memory Pool. Skip the test case.");
-    return;
-  }
 
-  hipMemPool_t mem_pool;
-  HIP_CHECK(hipDeviceGetDefaultMemPool(&mem_pool, 0));
-
-  float *A, *B, *C;
-  hipStream_t stream;
-  HIP_CHECK(hipStreamCreate(&stream));
-
-  size_t numElements = 8 * 1024 * 1024;
-  HIP_CHECK(hipMallocAsync(reinterpret_cast<void**>(&A), numElements * sizeof(float), stream));
-
-  numElements = 1024;
-  HIP_CHECK(hipMallocAsync(reinterpret_cast<void**>(&C), numElements * sizeof(float), stream));
-
-  int blocks = 2;
-  int clkRate;
-  HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
-
-  kernel500ms<<<32, blocks, 0, stream>>>(A, clkRate);
-
-  hipMemPoolAttr attr;
-  // Not a real free, since kernel isn't done
-  HIP_CHECK(hipFreeAsync(reinterpret_cast<void*>(A), stream));
-
-  numElements = 8 * 1024 * 1024;
-  HIP_CHECK(hipMallocAsync(reinterpret_cast<void**>(&B), numElements * sizeof(float), stream));
-  // Runtime must reuse the pointer
-  REQUIRE(A == B);
-
-  // Make a sync before the second kernel launch to make sure memory B isn't gone
-  HIP_CHECK(hipStreamSynchronize(stream));
-
-  // Second kernel launch with new memory
-  kernel500ms<<<32, blocks, 0, stream>>>(B, clkRate);
-
-  HIP_CHECK(hipFreeAsync(reinterpret_cast<void*>(B), stream));
-
-  HIP_CHECK(hipStreamSynchronize(stream));
-
-  std::uint64_t value64 = 0;
-  attr = hipMemPoolAttrReservedMemCurrent;
-  HIP_CHECK(hipMemPoolGetAttribute(mem_pool, attr, &value64));
-  // Make sure the current reserved is at least allocation size of buffer C (4KB)
-  REQUIRE(sizeof(float) * 1024 <= value64);
-
-  attr = hipMemPoolAttrUsedMemHigh;
-  HIP_CHECK(hipMemPoolGetAttribute(mem_pool, attr, &value64));
-  // Make sure the high watermark usage works - the both buffers must be reported
-  REQUIRE(sizeof(float) * (8 * 1024 * 1024 + 1024) == value64);
-
-  attr = hipMemPoolAttrUsedMemCurrent;
-  HIP_CHECK(hipMemPoolGetAttribute(mem_pool, attr, &value64));
-  // Make sure the current usage reports just one buffer, because the above free doesn't hold memory
-  REQUIRE(sizeof(float) * 1024 == value64);
-
-  HIP_CHECK(hipFreeAsync(reinterpret_cast<void*>(C), stream));
-  HIP_CHECK(hipStreamDestroy(stream));
-}
-
-/**
+ /**
  * Test Description
  * ------------------------
  *  - Allocates memory for the array.
@@ -198,6 +125,95 @@ TEST_CASE("Unit_hipMemPoolApi_Basic") {
 }
 
 /**
+ * Test Description
+ * ------------------------
+ *  - Checks that the freed memory is used for allocation again.
+ *  - Launches kernel to create a realistic test case.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemPoolApi.cc
+ * Test requirements
+ * ------------------------
+ *  - Runtime supports Memory Pools
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipMemPoolApi_Default") {
+  int mem_pool_support = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&mem_pool_support, hipDeviceAttributeMemoryPoolsSupported, 0));
+  if (!mem_pool_support) {
+    SUCCEED("Runtime doesn't support Memory Pool. Skip the test case.");
+    return;
+  }
+
+  hipMemPool_t mem_pool;
+  HIP_CHECK(hipDeviceGetDefaultMemPool(&mem_pool, 0));
+
+  float *A, *B, *C;
+  hipStream_t stream;
+  HIP_CHECK(hipStreamCreate(&stream));
+
+  size_t numElements = 8 * 1024 * 1024;
+  HIP_CHECK(hipMallocAsync(reinterpret_cast<void**>(&A), numElements * sizeof(float), stream));
+
+  numElements = 1024;
+  HIP_CHECK(hipMallocAsync(reinterpret_cast<void**>(&C), numElements * sizeof(float), stream));
+
+  int blocks = 2;
+  int clkRate;
+    
+  if (IsGfx11()) {
+    HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeWallClockRate, 0));
+    kernel500ms_gfx11<<<32, blocks, 0, stream>>>(A, clkRate);
+  } else {
+    HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
+
+    kernel500ms<<<32, blocks, 0, stream>>>(A, clkRate);
+  }
+
+  hipMemPoolAttr attr;
+  // Not a real free, since kernel isn't done
+  HIP_CHECK(hipFreeAsync(reinterpret_cast<void*>(A), stream));
+
+  numElements = 8 * 1024 * 1024;
+  HIP_CHECK(hipMallocAsync(reinterpret_cast<void**>(&B), numElements * sizeof(float), stream));
+  // Runtime must reuse the pointer
+  REQUIRE(A == B);
+
+  // Make a sync before the second kernel launch to make sure memory B isn't gone
+  HIP_CHECK(hipStreamSynchronize(stream));
+
+  // Second kernel launch with new memory
+  if (IsGfx11()) {
+    kernel500ms_gfx11<<<32, blocks, 0, stream>>>(B, clkRate);
+  } else {
+    kernel500ms<<<32, blocks, 0, stream>>>(B, clkRate);
+  }
+
+  HIP_CHECK(hipFreeAsync(reinterpret_cast<void*>(B), stream));
+
+  HIP_CHECK(hipStreamSynchronize(stream));
+
+  std::uint64_t value64 = 0;
+  attr = hipMemPoolAttrReservedMemCurrent;
+  HIP_CHECK(hipMemPoolGetAttribute(mem_pool, attr, &value64));
+  // Make sure the current reserved is at least allocation size of buffer C (4KB)
+  REQUIRE(sizeof(float) * 1024 <= value64);
+
+  attr = hipMemPoolAttrUsedMemHigh;
+  HIP_CHECK(hipMemPoolGetAttribute(mem_pool, attr, &value64));
+  // Make sure the high watermark usage works - the both buffers must be reported
+  REQUIRE(sizeof(float) * (8 * 1024 * 1024 + 1024) == value64);
+
+  attr = hipMemPoolAttrUsedMemCurrent;
+  HIP_CHECK(hipMemPoolGetAttribute(mem_pool, attr, &value64));
+  // Make sure the current usage reports just one buffer, because the above free doesn't hold memory
+  REQUIRE(sizeof(float) * 1024 == value64);
+
+  HIP_CHECK(hipFreeAsync(reinterpret_cast<void*>(C), stream));
+  HIP_CHECK(hipStreamDestroy(stream));
+}
+
+/**
  * End doxygen group hipMallocAsync.
  * @}
  */
@@ -217,12 +233,6 @@ __global__ void kernel500ms(float* hostRes, int clkRate) {
   }
 }
 
-/**
- * @addtogroup hipFreeAsync hipFreeAsync
- * @{
- * @ingroup StreamOTest
- */
-
 __global__ void kernel500ms_gfx11(float* hostRes, int clkRate) {
 #if HT_AMD
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
@@ -237,6 +247,12 @@ __global__ void kernel500ms_gfx11(float* hostRes, int clkRate) {
   }
 #endif
 }
+
+/**
+ * @addtogroup hipFreeAsync hipFreeAsync
+ * @{
+ * @ingroup StreamOTest
+ */
 
 /**
  * Test Description
@@ -732,68 +748,5 @@ TEST_CASE("Unit_hipMemPoolApi_Opportunistic") {
 
 /**
  * End doxygen group hipMallocFromPoolAsync.
- * @}
- */
-
-// Following APIs shall be moved to the matching .cc file when tests
-// within the new ROCm release are implemented.
-
-/**
- * @addtogroup hipMemPoolSetAttribute hipMemPoolSetAttribute
- * @{
- * @ingroup StreamOTest
- * `hipMemPoolSetAttribute(hipMemPool_t mem_pool, hipMemPoolAttr attr, void* value)` -
- * Sets attributes of a memory pool.
- * ________________________
- * Test cases from other modules:
- *  - @ref Unit_hipMemPoolApi_Basic
- */
-/**
- * End doxygen group hipMemPoolSetAttribute.
- * @}
- */
-
-/**
- * @addtogroup hipMemPoolGetAttribute hipMemPoolGetAttribute
- * @{
- * @ingroup StreamOTest
- * `hipMemPoolGetAttribute(hipMemPool_t mem_pool, hipMemPoolAttr attr, void* value)` -
- * Gets attributes of a memory pool.
- * ________________________
- * Test cases from other modules:
- *  - @ref Unit_hipMemPoolApi_Basic
- */
-/**
- * End doxygen group hipMemPoolGetAttribute.
- * @}
- */
-
-/**
- * @addtogroup hipMemPoolSetAccess hipMemPoolSetAccess
- * @{
- * @ingroup StreamOTest
- * `hipMemPoolSetAccess(hipMemPool_t mem_pool, const hipMemAccessDesc* desc_list, size_t count)` -
- * Controls visibility of the specified pool between devices.
- * ________________________
- * Test cases from other modules:
- *  - @ref Unit_hipMemPoolApi_Basic
- */
-/**
- * End doxygen group hipMemPoolSetAccess.
- * @}
- */
-
-/**
- * @addtogroup hipMemPoolGetAccess hipMemPoolGetAccess
- * @{
- * @ingroup StreamOTest
- * `hipMemPoolGetAccess(hipMemAccessFlags* flags, hipMemPool_t mem_pool, hipMemLocation* location)` -
- * Returns the accessibility of a pool from a device.
- * ________________________
- * Test cases from other modules:
- *  - @ref Unit_hipMemPoolApi_Basic
- */
-/**
- * End doxygen group hipMemPoolGetAccess.
  * @}
  */

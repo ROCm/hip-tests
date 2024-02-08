@@ -22,45 +22,11 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 
-<<<<<<< HEAD
-/**
- * @addtogroup hipFreeAsync hipFreeAsync
- * @{
- * @ingroup StreamOTest
- * `hipFreeAsync(void* dev_ptr, hipStream_t stream)` -
- * Frees memory with stream ordered semantics.
- * ________________________
- * Test cases from other modules:
- *  - @ref Unit_hipMemPoolApi_Default
- *  - @ref Unit_hipMemPoolApi_Basic
- */
-
-/**
- * Test Description
- * ------------------------
- *  - Verifies handling of invalid arguments:
- *    -# When the device allocation pointer is `nullptr`
- *      - Expected output: do not return `hipSuccess`
- *    -# When the stream is invalid
- *      - Expected output: do not return `hipSuccess`
- * Test source
- * ------------------------
- *  - unit/memory/hipFreeAsync.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-=======
->>>>>>> origin/develop
 TEST_CASE("Unit_hipFreeAsync_negative") {
   HIP_CHECK(hipSetDevice(0));
   void* p = nullptr;
   hipStream_t stream{nullptr};
-<<<<<<< HEAD
-  hipStreamCreate(&stream);
-=======
   HIP_CHECK(hipStreamCreate(&stream));
->>>>>>> origin/develop
 
   SECTION("dev_ptr is nullptr") { REQUIRE(hipFreeAsync(nullptr, stream) != hipSuccess); }
 

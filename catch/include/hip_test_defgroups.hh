@@ -132,6 +132,13 @@ THE SOFTWARE.
  */
 
 /**
+ * @defgroup StreamOTest Ordered Memory Allocator
+ * @{
+ * This section describes the tests for Stream Ordered Memory Allocator functions of HIP runtime
+ * API.
+ */
+
+/**
  * @defgroup StreamTest Stream Management
  * @{
  * This section describes tests for the stream management functions of HIP runtime API.
@@ -148,13 +155,6 @@ THE SOFTWARE.
  * @defgroup ShflTest warp shuffle function Management
  * @{
  * This section describes the warp shuffle types & functions of HIP runtime API.
- */
-
-/**
- * @defgroup StreamOTest Ordered Memory Allocator
- * @{
- * This section describes the tests for Stream Ordered Memory Allocator functions of HIP runtime
- * API.
  */
 
 /**

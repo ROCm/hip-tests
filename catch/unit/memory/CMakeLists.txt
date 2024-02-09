@@ -153,6 +153,7 @@ set(TEST_SRC
     hipMemPrefetchAsync.cc
     hipMemGetInfo.cc
     hipFree.cc
+    hipFreeArray.cc
     hipMemcpySync.cc
     hipMemsetSync.cc
     hipMemsetAsync.cc

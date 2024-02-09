@@ -380,50 +380,6 @@ TEST_CASE("Unit_bf16_basic") {
     }
   }
 
-  SECTION("Conversion to short") {
-    float* in;
-    HIP_CHECK(hipMalloc(&in, sizeof(float) * max_bf16_num));
-    short* s_res;
-    HIP_CHECK(hipMalloc(&s_res, sizeof(short) * max_bf16_num));
-    unsigned short* u_res;
-    HIP_CHECK(hipMalloc(&u_res, sizeof(unsigned short) * max_bf16_num));
-
-    HIP_CHECK(hipMemcpy(in, f_in.data(), sizeof(float) * max_bf16_num, hipMemcpyHostToDevice));
-    HIP_CHECK(hipMemset(s_res, 0, sizeof(short) * max_bf16_num));
-    HIP_CHECK(hipMemset(u_res, 0, sizeof(unsigned short) * max_bf16_num));
-
-    bf16_to_short<<<(max_bf16_num / 256) + 1, 256>>>(in, s_res, u_res, max_bf16_num);
-    float* s_out;
-    HIP_CHECK(hipMalloc(&s_out, sizeof(float) * max_bf16_num));
-    float* u_out;
-    HIP_CHECK(hipMalloc(&u_out, sizeof(float) * max_bf16_num));
-
-    short_to_bf16<<<(max_bf16_num / 256) + 1, 256>>>(s_res, s_out, max_bf16_num);
-    ushort_to_bf16<<<(max_bf16_num / 256) + 1, 256>>>(u_res, u_out, max_bf16_num);
-
-    std::vector<float> f_res_s(max_bf16_num, 0.0f);
-    std::vector<float> f_res_u(max_bf16_num, 0.0f);
-
-    HIP_CHECK(
-        hipMemcpy(f_res_s.data(), s_out, sizeof(float) * max_bf16_num, hipMemcpyDeviceToHost));
-    HIP_CHECK(
-        hipMemcpy(f_res_u.data(), u_out, sizeof(float) * max_bf16_num, hipMemcpyDeviceToHost));
-
-    for (size_t i = 0; i < f_in.size(); i++) {
-      if (std::isnan(f_res_s[i])) {  // NaNs can't be compared
-        REQUIRE(std::isnan(f_res_u[i]));
-      } else {
-        REQUIRE(f_res_s[i] == f_res_u[i]);
-      }
-    }
-
-    HIP_CHECK(hipFree(in));
-    HIP_CHECK(hipFree(s_res));
-    HIP_CHECK(hipFree(u_res));
-    HIP_CHECK(hipFree(s_out));
-    HIP_CHECK(hipFree(u_out));
-  }
-
   SECTION("Neg Subsection") {
     float *in, *out;
     HIP_CHECK(hipMalloc(&in, sizeof(float) * max_bf16_num));
@@ -449,6 +405,59 @@ TEST_CASE("Unit_bf16_basic") {
   }
 }
 
+template <typename Type> __global__ void bf16_cvt_to_integral(Type* in, float* out, size_t size) {
+  size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i < size) {
+    out[i] = __hip_bfloat16(in[i]);
+  }
+}
+
+TEMPLATE_TEST_CASE("Unit_bf16_conversion_to_integral_type", , unsigned short, short, int,
+                   unsigned int) {
+  constexpr TestType start = std::is_unsigned<TestType>::value
+      ? std::numeric_limits<unsigned short>::min()
+      : std::numeric_limits<short>::min();
+  constexpr TestType end = std::is_unsigned<TestType>::value
+      ? std::numeric_limits<unsigned short>::max()
+      : std::numeric_limits<short>::max();
+  const size_t size = (start < 0) ? end - start : end + start;
+
+  std::cout << "start: " << start << " end: " << end << " size: " << size << std::endl;
+
+  TestType* d_input;
+  float* d_res;
+  HIP_CHECK(hipMalloc(&d_input, sizeof(TestType) * size));
+  HIP_CHECK(hipMalloc(&d_res, sizeof(float) * size));
+
+  std::vector<float> res, gpu_res;
+  std::vector<TestType> input;
+  input.reserve(size);
+  gpu_res.reserve(size);
+  res.reserve(size);
+  for (TestType i = start; i < end; i++) {
+    input.push_back(i);
+    res.push_back(static_cast<float>(i));
+    gpu_res.push_back(0.0f);
+  }
+
+  HIP_CHECK(
+      hipMemcpy(d_input, input.data(), sizeof(TestType) * input.size(), hipMemcpyHostToDevice));
+  auto cvt_kernel = bf16_cvt_to_integral<TestType>;
+  uint32_t blocks = static_cast<uint32_t>(size / 256) + 1;
+  cvt_kernel<<<blocks, 256>>>(d_input, d_res, size);
+  HIP_CHECK(hipMemcpy(gpu_res.data(), d_res, sizeof(float) * res.size(), hipMemcpyDeviceToHost));
+
+  HIP_CHECK(hipFree(d_res));
+  HIP_CHECK(hipFree(d_input));
+
+  for (size_t i = 0; i < size; i++) {
+    if (!(std::isnan(res[i]) || std::isnan(gpu_res[i]))) {
+      INFO("lhs: " << gpu_res[i] << " rhs: " << res[i]);
+      if (gpu_res[i] != res[i]) CHECK((std::fabs(gpu_res[i] - res[i]) / res[i]) < (1.0 / 128.0f));
+    }
+  }
+}
+
 __global__ void bf162_eq(float* in, char* out, size_t size) {
   auto i = blockIdx.x * blockDim.x + threadIdx.x;
   if (i < size) {
@@ -460,12 +469,11 @@ __global__ void bf162_eq(float* in, char* out, size_t size) {
 __global__ void bf162_neq(float* in, char* out, size_t size) {
   auto i = blockIdx.x * blockDim.x + threadIdx.x;
   if (i < size) {
-    auto val = __float2bfloat16(in[i]);
-    auto other_val =
-        __heq(__float2bfloat16(1.0f), val) ? __float2bfloat16(2.0f) : __float2bfloat16(1.0f);
-    auto temp1 = __halves2bfloat162(val, other_val);
-    auto temp2 = __halves2bfloat162(other_val, val);
-    out[i] = (__hbneu2(temp1, temp2)) ? 1 : 0;
+    __hip_bfloat16 val = in[i];
+    __hip_bfloat16 other_val = __hne(__float2bfloat16(1.0f), val) ? 1.0f : 2.0f;
+    __hip_bfloat162 temp1(val, other_val);
+    __hip_bfloat162 temp2(other_val, val);
+    out[i] = (__hbne2(temp1, temp2)) ? 1 : 0;
   }
 }
 
@@ -502,10 +510,125 @@ TEST_CASE("Unit_bf162_basic") {
     HIP_CHECK(hipMemcpy(result.data(), out, sizeof(char) * max_bf16_num, hipMemcpyDeviceToHost));
     // Cant use allof, incase of mismatch we need to show which value had a mismatch
     for (size_t i = 0; i < max_bf16_num; i++) {
-      INFO("Comparing: " << f_in[i] << " for iter: " << i);
+      INFO("Comparing: " << f_in[i] << " for iter: " << i << " result: " << (int)result[i]);
       REQUIRE(result[i] == 1);
     }
     HIP_CHECK(hipFree(in));
     HIP_CHECK(hipFree(out));
+  }
+}
+
+
+TEST_CASE("Unit_bf16_operators_host") {
+  SECTION("Sanity with 1 and 0") {
+    INFO("1+0 <-> 0+1");
+    auto bf16_one = HIPRT_ONE_BF16;
+    auto bf16_zero = HIPRT_ZERO_BF16;
+    REQUIRE(__heq((bf16_one + bf16_zero), (bf16_zero + bf16_one)));
+    REQUIRE((bf16_one + bf16_zero) == (bf16_zero + bf16_one));
+  }
+
+  SECTION("Compare") {
+    auto l = __float2bfloat16(1.1f), r = __float2bfloat16(2.2f);
+
+    INFO("Comparing 1.1f and 2.2f");
+    REQUIRE(l < r);
+    REQUIRE(r > l);
+    REQUIRE(l != r);
+    REQUIRE(l == l);
+    REQUIRE(r == r);
+    REQUIRE(l <= l);
+    REQUIRE(r <= r);
+    REQUIRE(l >= l);
+    REQUIRE(r >= r);
+
+    REQUIRE_FALSE(l > r);
+    REQUIRE_FALSE(r < l);
+    REQUIRE_FALSE(l == r);
+    REQUIRE_FALSE(l != l);
+    REQUIRE_FALSE(r != r);
+  }
+
+  SECTION("Math operator") {
+    constexpr float fl = 1.5f, fr = 2.9f;
+    auto l = __float2bfloat16(fl), r = __float2bfloat16(fr);
+
+    auto approx_equal = [](__hip_bfloat16 a, float b) -> bool {
+      // The relative error should be less than 1/(2^7) since bfloat16 has 7 bits mantissa.
+      UNSCOPED_INFO("Comparing: " << __bfloat162float(a) << " - " << b);
+      return (std::fabs(__bfloat162float(a) - b) / b) < (1.0 / 128.0f);
+    };
+
+    REQUIRE(approx_equal(l * r, fl * fr));
+    REQUIRE(approx_equal(l / r, fl / fr));
+    REQUIRE(approx_equal(l + r, fl + fr));
+    REQUIRE(approx_equal(l - r, fl - fr));
+
+    REQUIRE(approx_equal(r * l, fr * fl));
+    REQUIRE(approx_equal(r / l, fr / fl));
+    REQUIRE(approx_equal(r + l, fr + fl));
+    REQUIRE(approx_equal(r - l, fr - fl));
+  }
+
+  SECTION("Unary") {
+    constexpr float fl = 7.8f, fr = 9.9f;
+    auto l = __float2bfloat16(fl), r = __float2bfloat16(fr);
+
+    REQUIRE(-l == -l);
+    REQUIRE(-r == -r);
+    REQUIRE(r != -r);
+    REQUIRE((l + (-l)) == HIPRT_ZERO_BF16);
+    REQUIRE(((-l) * (-l)) == (l * l));
+    REQUIRE((l * -r) == -(l * r));
+    REQUIRE((l + -l) == HIPRT_ZERO_BF16);
+    REQUIRE((l / -l) == -HIPRT_ONE_BF16);
+  }
+}
+
+TEST_CASE("Unit_bf162_operators_host") {
+  SECTION("Sanity with 1 and 0") {
+    INFO("1+0 <-> 0+1");
+    __hip_bfloat162 bf162_one = {HIPRT_ONE_BF16, HIPRT_ONE_BF16};
+    __hip_bfloat162 bf162_zero = {HIPRT_ZERO_BF16, HIPRT_ZERO_BF16};
+    __hip_bfloat162 true_val = bf162_one;
+    REQUIRE(__heq2((bf162_one + bf162_zero), (bf162_zero + bf162_one)) == true_val);
+    REQUIRE((bf162_one + bf162_zero) == (bf162_zero + bf162_one));
+  }
+
+  SECTION("Compare") {
+    __hip_bfloat162 l = {__float2bfloat16(1.1f), __float2bfloat16(1.1f)},
+                    r = {__float2bfloat16(2.2f), __float2bfloat16(2.2f)};
+
+    INFO("Comparing {1.1f, 1.1f} and {2.2f, 2.2f}");
+    REQUIRE(l < r);
+    REQUIRE(r > l);
+    REQUIRE(l != r);
+    REQUIRE(l == l);
+    REQUIRE(r == r);
+    REQUIRE(l <= l);
+    REQUIRE(r <= r);
+    REQUIRE(l >= l);
+    REQUIRE(r >= r);
+
+    REQUIRE_FALSE(l > r);
+    REQUIRE_FALSE(r < l);
+    REQUIRE_FALSE(l == r);
+    REQUIRE_FALSE(l != l);
+    REQUIRE_FALSE(r != r);
+  }
+
+  SECTION("Unary") {
+    constexpr float fl = 7.8f, fr = 9.9f;
+    __hip_bfloat162 l = {__float2bfloat16(fl), __float2bfloat16(fr)},
+                    r = {__float2bfloat16(fr), __float2bfloat16(fl)};
+
+    REQUIRE(-l == -l);
+    REQUIRE(-r == -r);
+    REQUIRE(r != -r);
+    REQUIRE((l + (-l)) == __hip_bfloat162{HIPRT_ZERO_BF16, HIPRT_ZERO_BF16});
+    REQUIRE(((-l) * (-l)) == (l * l));
+    REQUIRE((l * -r) == -(l * r));
+    REQUIRE((l + -l) == __hip_bfloat162{HIPRT_ZERO_BF16, HIPRT_ZERO_BF16});
+    REQUIRE((l / -l) == -__hip_bfloat162{HIPRT_ONE_BF16, HIPRT_ONE_BF16});
   }
 }

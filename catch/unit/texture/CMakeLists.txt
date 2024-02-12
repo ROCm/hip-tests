@@ -52,6 +52,7 @@ set(TEST_SRC
     hipTextureObj3DCheckModes.cc
     hipTextureObj1DCheckSRGBModes.cc
     hipTextureObj2DCheckSRGBModes.cc
+    hipTexObjectCreate.cc
     hipTexObjectTests.cc
     hipTextureObjectTests.cc
     hipTexRefSetAddress2D.cc

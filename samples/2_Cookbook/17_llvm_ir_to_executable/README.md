@@ -3,7 +3,7 @@ ROCM_PATH is the path where ROCM is installed. default path is /opt/rocm.
 
 This sample shows how to generate the LLVM IR for a simple HIP source application, then re-compiling it and generating a valid HIP executable.
 
-This sample uses a previous HIP application sample, please see [0_Intro/square](https://github.com/ROCm-Developer-Tools/HIP/blob/master/samples/0_Intro/square).
+This sample uses a previous HIP application sample, please see [0_Intro/square](https://github.com/ROCm/hip-tests/tree/develop/samples/0_Intro/square).
 
 ## Compiling the HIP source into LLVM IR
 Using HIP flags `-c -emit-llvm` will help generate the host x86_64 and the device LLVM bitcode when paired with `--cuda-host-only` and `--cuda-device-only` respectively. In this sample we use these commands:

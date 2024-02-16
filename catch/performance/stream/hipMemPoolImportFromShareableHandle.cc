@@ -29,14 +29,19 @@ class MemPoolImportFromShareableHandleBenchmark : public Benchmark<MemPoolImport
  public:
   void operator()() {
     hipMemPool_t mem_pool{nullptr};
-    int share_handle;
+#if defined(_WIN32)
+    void* share_handle;
+#else
+    int64_t share_handle;
+#endif
 
     hipMemPoolProps props = CreateMemPoolProps(0, kHandleType);
     HIP_CHECK(hipMemPoolCreate(&mem_pool, &props));
     HIP_CHECK(hipMemPoolExportToShareableHandle(&share_handle, mem_pool, kHandleType, 0));
 
     TIMED_SECTION(kTimerTypeCpu) {
-      HIP_CHECK(hipMemPoolImportFromShareableHandle(&mem_pool, &share_handle, kHandleType, 0));
+      HIP_CHECK(hipMemPoolImportFromShareableHandle(
+        &mem_pool, (void*)share_handle, kHandleType, 0));
     }
 
     HIP_CHECK(hipMemPoolDestroy(mem_pool));

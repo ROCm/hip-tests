@@ -6,7 +6,7 @@ set(CMAKE_CXX_COMPILER_WORKS 1)
 
 project(hiptests)
 
-option(ASAN_BUILD "Option to enable ASAN build" OFF)
+option(ENABLE_ADDRESS_SANITIZER "Option to enable ASAN build" OFF)
 
 # flag to generate standalone exe per src file.
 message(STATUS "STANDALONE_TESTS : ${STANDALONE_TESTS}")
@@ -68,7 +68,7 @@ execute_process(COMMAND ${HIPCONFIG_EXECUTABLE} --version
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++17")
 
 # Address sanitizer options
-if(ASAN_BUILD)
+if(ENABLE_ADDRESS_SANITIZER)
     message(STATUS "Building catch tests with Address Sanitizer options")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -shared-libasan -g -gz")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -shared-libasan -g -gz")

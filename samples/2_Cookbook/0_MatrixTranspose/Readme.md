@@ -87,8 +87,19 @@ After, copying the data from device to memory, we will verify it with the one we
 Finally, we will free the memory allocated earlier by using free() for host while for devices we will use `hipFree`.
 
 ## How to build and run:
-Use the make command and execute it using ./exe
-Use hipcc to build the application, which is using hcc on AMD and nvcc on nvidia.
+- Build the sample using cmake
+```
+$ mkdir build; cd build
+$ cmake .. -DCMAKE_PREFIX_PATH=/opt/rocm
+$ make
+```
+- Execute the sample
+```
+$ ./MatrixTranspose
+Device name Navi 14 [Radeon Pro W5500]
+PASSED!
+```
+
 
 ## More Info:
 - [HIP FAQ](https://github.com/ROCm-Developer-Tools/HIP/blob/master/docs/markdown/hip_faq.md)

@@ -2,15 +2,14 @@
 I. Build
 
 ```
-mkdir -p build; cd build
-rm -rf *;
-CXX="$(hipconfig -l)"/clang++ cmake -DCMAKE_PREFIX_PATH=/opt/rocm ..
-make
+$ mkdir build; cd build
+$ CXX="$(hipconfig -l)"/clang++ cmake -DCMAKE_PREFIX_PATH=/opt/rocm ..
+$ make
 ```
 
 Note, users may need to add ADMGPU support as command line option, if test failed to run, for example,
 ```
-CXX="$(hipconfig -l)"/clang++ cmake -DCMAKE_PREFIX_PATH=/opt/rocm -DAMDGPU_TARGETS="gfx1102" ..
+$ CXX="$(hipconfig -l)"/clang++ cmake -DCMAKE_PREFIX_PATH=/opt/rocm -DAMDGPU_TARGETS="gfx1102" ..
 ```
 
 II. Test

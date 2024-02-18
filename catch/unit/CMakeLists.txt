@@ -54,3 +54,4 @@ add_subdirectory(clock)
 add_subdirectory(vulkan_interop)
 add_subdirectory(gl_interop) # Disabled on NVIDIA due to defect - EXSWHTEC-246
 endif()
+add_subdirectory(synchronization)

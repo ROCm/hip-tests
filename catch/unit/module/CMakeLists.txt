@@ -25,6 +25,7 @@ set(TEST_SRC
     hipModuleLoadData.cc 
     hipModuleLoadDataEx.cc 
     hipModuleUnload.cc 
+    hipModuleGetFunction.cc
 )
 
 add_custom_target(empty_module.code
@@ -33,6 +34,11 @@ add_custom_target(empty_module.code
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/empty_module.code
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code
+                   COMMAND ${CMAKE_CXX_COMPILER} --genco --std=c++17 ${CMAKE_CURRENT_SOURCE_DIR}/get_function_module.cc -o get_function_module.code
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/get_function_module.cc)   
+add_custom_target(get_function_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code)
 
 # Note to pass arch use format like -DOFFLOAD_ARCH_STR="--offload-arch=gfx900  --offload-arch=gfx906"
 # having space at the start/end of OFFLOAD_ARCH_STR can cause build failures
@@ -129,6 +135,7 @@ hip_add_exe_to_target(NAME ModuleTest
   COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
 
 add_dependencies(build_tests empty_module.code)
+add_dependencies(ModuleTest get_function_module)
 
 if(HIP_PLATFORM MATCHES "amd")
 add_dependencies(build_tests copyKernel.code copyKernel.s)

@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2021-2023 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -35,11 +35,23 @@ add_subdirectory(multiThread)
 add_subdirectory(compiler)
 add_subdirectory(errorHandling)
 add_subdirectory(cooperativeGrps)
-add_subdirectory(module)
 add_subdirectory(context)
+add_subdirectory(module)
+add_subdirectory(warp)
+add_subdirectory(dynamicLoading)
+add_subdirectory(g++)
+add_subdirectory(channelDescriptor)
+add_subdirectory(executionControl)
+add_subdirectory(vector_types)
+add_subdirectory(atomics)
+add_subdirectory(p2p)
+add_subdirectory(gcc)
+
 if(HIP_PLATFORM STREQUAL "amd")
 add_subdirectory(callback)
-#add_subdirectory(clock)
+add_subdirectory(clock)
 # Vulkan interop APIs currently undefined for Nvidia
 add_subdirectory(vulkan_interop)
+add_subdirectory(gl_interop) # Disabled on NVIDIA due to defect - EXSWHTEC-246
 endif()
+add_subdirectory(synchronization)

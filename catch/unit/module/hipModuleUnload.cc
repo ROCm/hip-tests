@@ -40,6 +40,23 @@ THE SOFTWARE.
  *  - Validates handling of invalid arguments:
  *    -# When module is `nullptr`
  *      - Expected output: return `hipErrorInvalidResourceHandle`
+ * Test source
+ * ------------------------
+ *  - unit/module/hipModuleUnload.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipModuleUnload_Negative_Module_Is_Nullptr") {
+  HIP_CHECK(hipFree(nullptr));
+
+  HIP_CHECK_ERROR(hipModuleUnload(nullptr), hipErrorInvalidResourceHandle);
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
  *    -# When module is already unloaded
  *      - Expected output: return `hipErrorNotFound`
  * Test source
@@ -49,23 +66,11 @@ THE SOFTWARE.
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-TEST_CASE("Unit_hipModuleUnload_Negative_Parameters") {
+TEST_CASE("Unit_hipModuleUnload_Negative_Double_Unload") {
   HIP_CHECK(hipFree(nullptr));
 
-// Disabled for AMD due to defect - EXSWHTEC-152
-#if HT_NVIDIA
-  SECTION("module == nullptr") {
-    HIP_CHECK_ERROR(hipModuleUnload(nullptr), hipErrorInvalidResourceHandle);
-  }
-#endif
-
-// Causes CUDA to segfault
-#if HT_AMD
-  SECTION("Double unload") {
-    hipModule_t module = nullptr;
-    HIP_CHECK(hipModuleLoad(&module, "empty_module.code"));
-    HIP_CHECK(hipModuleUnload(module));
-    HIP_CHECK_ERROR(hipModuleUnload(module), hipErrorNotFound);
-  }
-#endif
+  hipModule_t module = nullptr;
+  HIP_CHECK(hipModuleLoad(&module, "empty_module.code"));
+  HIP_CHECK(hipModuleUnload(module));
+  HIP_CHECK_ERROR(hipModuleUnload(module), hipErrorNotFound);
 }

@@ -3,22 +3,24 @@
 Simple test below is an example, shows how to use hipify-perl to port CUDA code to HIP:
 
 - Add hip/bin path to the PATH
-
 ```
 $ export PATH=$PATH:[MYHIP]/bin
 ```
 
 - Define environment variable
-
 ```
 $ export HIP_PATH=[MYHIP]
 ```
 
-- Build executible file
-
+- Build executable file
 ```
 $ cd ~/hip/samples/0_Intro/square
-$ make
+  mkdir -p build && cd build
+
+  cmake ..
+  make
+
+$ Building without cmake
 /opt/rocm/hip/bin/hipify-perl square.cu > square.cpp
 /opt/rocm/hip/bin/hipcc  square.cpp -o square.out
 /opt/rocm/hip/bin/hipcc -use-staticlib  square.cpp -o square.out.static

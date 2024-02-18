@@ -1,11 +1,3 @@
-/* HIT_START
- * BUILD: %t %s ../../test_common.cpp NVCC_OPTIONS -std=c++11
- * TEST_NAMED: %t hipMultiThreadDevice-serial --tests 0x1
- * TEST_NAMED: %t hipMultiThreadDevice-pyramid --tests 0x4
- * TEST_NAMED: %t hipMultiThreadDevice-nearzero --tests 0x10
- * HIT_END
- */
-
 #include "hip/hip_runtime_api.h"
 #include <hip_test_common.hh>
 

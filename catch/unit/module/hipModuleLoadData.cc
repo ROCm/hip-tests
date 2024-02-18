@@ -99,11 +99,11 @@ TEST_CASE("Unit_hipModuleLoadData_Negative_Parameters") {
   SECTION("image == nullptr") {
     HIP_CHECK_ERROR(hipModuleLoadData(&module, nullptr), hipErrorInvalidValue);
   }
+}
 
-// Disabled for AMD due to defect - EXSWHTEC-153
-#if HT_NVIDIA
-  SECTION("image == empty string") {
-    HIP_CHECK_ERROR(hipModuleLoadData(&module, ""), hipErrorInvalidImage);
-  }
-#endif
+TEST_CASE("Unit_hipModuleLoadData_Negative_Image_Is_An_Empty_String") {
+  HIP_CHECK(hipFree(nullptr));
+  hipModule_t module;
+
+  HIP_CHECK_ERROR(hipModuleLoadData(&module, ""), hipErrorInvalidImage);
 }

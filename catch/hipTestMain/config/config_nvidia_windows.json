@@ -15,6 +15,15 @@
         "Unit_ChannelDescriptor_Positive_Basic_3D - ulong3",
         "Unit_ChannelDescriptor_Positive_Basic_3D - long3",
         "Unit_ChannelDescriptor_Positive_Basic_4D - ulong4",
-        "Unit_ChannelDescriptor_Positive_Basic_4D - long4"
+        "Unit_ChannelDescriptor_Positive_Basic_4D - long4",
+        "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/356 ===",
+        "Unit_Device_Complex_Unary_Negative_Parameters_RTC",
+        "Unit_Device_Complex_Binary_Negative_Parameters_RTC",
+        "Unit_Device_Complex_hipCfma_Negative_Parameters_RTC",
+        "Unit_Device_make_Complex_Negative_Parameters_RTC",
+        "Unit_Device_Complex_Cast_Negative_Parameters_RTC",
+        "=== Below 2 tests are disabled due to defect EXSWHTEC-342 ===",
+        "Unit_hipDeviceSetLimit_Negative_Parameters",
+        "Unit_hipDeviceGetLimit_Negative_Parameters"
     ]
 }

@@ -23,6 +23,8 @@ set(TEST_SRC
     hipSurfaceObj1D.cc
     hipSurfaceObj2D.cc
     hipSurfaceObj3D.cc
+    hipCreateSurfaceObject.cc
+    hipDestroySurfaceObject.cc
 )
 
 hip_add_exe_to_target(NAME SurfaceTest

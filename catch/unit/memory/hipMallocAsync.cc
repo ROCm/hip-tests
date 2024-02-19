@@ -17,31 +17,122 @@
    THE SOFTWARE.
  */
 
-#include <hip_test_common.hh>
-#include <hip_test_checkers.hh>
+#include "mempool_common.hh"
 
 #include <limits>
 
-TEST_CASE("Unit_hipMallocAsync_negative") {
-  HIP_CHECK(hipSetDevice(0));
+#pragma clang diagnostic ignored "-Wunused-parameter"
 
-  void* p = nullptr;
+/**
+ * @addtogroup hipMallocAsync hipMallocAsync
+ * @{
+ * @ingroup StreamOTest
+ * `hipMallocAsync(void** dev_ptr, size_t size, hipStream_t stream)`
+ * - Allocates memory with stream ordered semantics
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic test to verify proper allocation and stream ordering of hipMallocAsync when one
+ * memory allocation is performed.
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMallocAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+TEST_CASE("Unit_hipMallocAsync_Basic_OneAlloc") {
+  MallocMemPoolAsync_OneAlloc(
+      [](void** dev_ptr, size_t size, hipMemPool_t mem_pool, hipStream_t stream) {
+        return hipMallocAsync(dev_ptr, size, stream);
+      },
+      MemPools::dev_default);
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic test to verify proper allocation and stream ordering of hipMallocAsync when two
+ * memory allocations are performed.
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMallocAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+TEST_CASE("Unit_hipMallocAsync_Basic_TwoAllocs") {
+  MallocMemPoolAsync_TwoAllocs(
+      [](void** dev_ptr, size_t size, hipMemPool_t mem_pool, hipStream_t stream) {
+        return hipMallocAsync(dev_ptr, size, stream);
+      },
+      MemPools::dev_default);
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic test to verify that memory allocated with hipMallocAsync can be properly reused.
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMallocAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+TEST_CASE("Unit_hipMallocAsync_Basic_Reuse") {
+  MallocMemPoolAsync_Reuse([](void** dev_ptr, size_t size, hipMemPool_t mem_pool,
+                              hipStream_t stream) { return hipMallocAsync(dev_ptr, size, stream); },
+                           MemPools::dev_default);
+}
+
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Test to verify hipMallocAsync behavior with invalid arguments:
+ *    -# Nullptr dev_ptr
+ *    -# Invalid stream handle
+ *    -# Size is max size_t
+ *
+ * Test source
+ * ------------------------
+ *  - /unit/memory/hipMallocAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+TEST_CASE("Unit_hipMallocAsync_Negative_Parameters") {
+  int device_id = 0;
+  HIP_CHECK(hipSetDevice(device_id));
+
+  int mem_pool_support = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&mem_pool_support, hipDeviceAttributeMemoryPoolsSupported, 0));
+  if (!mem_pool_support) {
+    SUCCEED("Runtime doesn't support Memory Pool. Skip the test case.");
+    return;
+  }
+
+  int* p = nullptr;
   size_t max_size = std::numeric_limits<size_t>::max();
-  hipStream_t stream{nullptr};
-  HIP_CHECK(hipStreamCreate(&stream));
+  size_t alloc_size = 1024;
+  MemPoolGuard mempool(MemPools::dev_default, device_id);
+  StreamGuard stream(Streams::created);
 
-
-  SECTION("Device pointer is null") { REQUIRE(hipMallocAsync(nullptr, 100, stream) != hipSuccess); }
-
-  SECTION("stream is invalid") {
-    REQUIRE(hipMallocAsync(static_cast<void**>(&p), 100, reinterpret_cast<hipStream_t>(-1)) !=
-            hipSuccess);
+  SECTION("dev_ptr is nullptr") {
+    HIP_CHECK_ERROR(hipMallocAsync(nullptr, alloc_size, stream.stream()), hipErrorInvalidValue);
   }
 
-  SECTION("out of memory") {
-    REQUIRE(hipMallocAsync(static_cast<void**>(&p), max_size, stream) != hipSuccess);
+  SECTION("invalid stream handle") {
+    HIP_CHECK_ERROR(
+        hipMallocAsync(reinterpret_cast<void**>(&p), alloc_size, reinterpret_cast<hipStream_t>(-1)),
+        hipErrorInvalidHandle);
   }
 
-  HIP_CHECK(hipStreamSynchronize(stream));
-  HIP_CHECK(hipStreamDestroy(stream));
+  SECTION("Size is max size_t") {
+    HIP_CHECK_ERROR(hipMallocAsync(reinterpret_cast<void**>(&p), max_size, stream.stream()),
+                    hipErrorOutOfMemory);
+  }
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,28 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip_test_process.hh>
 
-TEST_CASE("Unit_printf_flags") {
+/**
+* @addtogroup printf printf
+* @{
+* @ingroup PrintfTest
+* `int printf()` -
+* Method to print the content on output device.
+*/
+
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Sanity test for `printf(format, ...)` to check all format specifier flags.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/printf/printfFlags.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_Printf_flags_Sanity_Positive") {
   std::string reference(R"here(00000042
 -0000042
 00000042
@@ -33,8 +54,19 @@ TEST_CASE("Unit_printf_flags") {
 +0000042
 xyzzy   
 -42
+ 42
 00000042        
         00000042
+052
+0x2a
+0X2A
+42.000000
+4.200000e+01
+4.200000E+01
+42.0000
+42.0000
+0x1.5p+5
+0X1.5P+5
 )here");
 
   hip::SpawnProc proc("printfFlags_exe", true);

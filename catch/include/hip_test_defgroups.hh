@@ -144,6 +144,28 @@ THE SOFTWARE.
  * @}
  */
 
+ /**
+ * @defgroup StreamOTest Ordered Memory Allocator
+ * @{
+ * This section describes the tests for Stream Ordered Memory Allocator functions of HIP runtime
+ * API.
+ * @}
+ */
+
+/**
+ * @defgroup StreamOTest Ordered Memory Allocator
+ * @{
+ * This section describes the tests for Stream Ordered Memory Allocator functions of HIP runtime
+ * API.
+ */
+
+/**
+ * @defgroup StreamOTest Ordered Memory Allocator
+ * @{
+ * This section describes the tests for Stream Ordered Memory Allocator functions of HIP runtime
+ * API.
+ */
+
 /**
  * @defgroup StreamTest Stream Management
  * @{
@@ -169,5 +191,19 @@ THE SOFTWARE.
  * @defgroup PrintfTest Printf API Management
  * @{
  * This section describes the various Printf use case Scenarios.
+ * @}
+ */
+
+/**
+ * @defgroup SurfaceTest Surface Management
+ * @{
+ * This section describes tests for the surface management functions of HIP runtime API.
+ * @}
+ */
+
+ /**
+ * @defgroup ComplexTest Complex type
+ * @{
+ * This section describes tests for the Complex type functions.
  * @}
  */

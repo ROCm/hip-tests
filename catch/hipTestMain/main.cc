@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
 
   using namespace Catch::clara;
   // clang-format off
-  auto cli = session.cli() 
+  auto cli = session.cli()
     | Opt(cmd_options.iterations, "iterations")
         ["-I"]["--iterations"]
         ("Number of iterations used for performance tests (default: 1000)")
@@ -32,6 +32,9 @@ int main(int argc, char** argv) {
         ("Show progress bar when running performance tests")
     | Opt(cmd_options.cg_extended_run, "cg_extened_run")
         ["-E"]["--cg-extended-run"]
+        ("TODO: Description goes here")
+    | Opt(cmd_options.cg_iterations, "cg_iterations")
+        ["-C"]["--cg-iterations"]
         ("Number of iterations used for cooperative groups sync tests (default: 5)")
   ;
   // clang-format on

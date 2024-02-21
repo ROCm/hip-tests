@@ -79,7 +79,8 @@ set(TEST_SRC
     hipMemCoherencyTst.cc
     hipMemsetD32.cc
     hipMemsetD16.cc
-    hipMemsetD16Async.cc)
+    hipMemsetD16Async.cc
+    hipMemsetD32Async.cc)
 
 if(HIP_PLATFORM MATCHES "amd")
   set(TEST_SRC

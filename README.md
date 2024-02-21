@@ -1,6 +1,6 @@
 ## What is this repository for? ###
 
-This repository provides unit tests for  [HIP](https://github.com/ROCm-Developer-Tools/HIP) implementation.
+This repository provides unit tests for  [HIP](https://github.com/ROCm/HIP) implementation.
 
 ## DISCLAIMER
 
@@ -26,13 +26,13 @@ hip-tests releases are typically naming convention for each ROCM release to help
 
 ### Build HIP catch tests
 
-For building HIP from sources, please check instructions on [HIP page] (https://github.com/ROCm-Developer-Tools/HIP/blob/rocm-5.4.x/docs/markdown/hip_build.md#build-hip-on-amd-platform)
+For building HIP from sources, please check instructions on [HIP page] (https://rocm.docs.amd.com/projects/HIP/en/latest/developer_guide/build.html)
 
 HIP catch tests can be built via the following instructions,
 
-Clone the hip-tests from rocm-5.4.x branch
+Clone the hip-tests source code from the repository, with definition of branch. The default branch is `develop`, as an example,
 ```
-git clone -b rocm-5.4.x https://github.com/ROCm-Developer-Tools/hip-tests.git
+git clone -b develop https://github.com/ROCm/hip-tests.git
 export HIP_TESTS_DIR="$(readlink -f hip-tests)"
 ```
 
@@ -40,7 +40,6 @@ Build the catch tests
 ```
 cd "$HIP_TESTS_DIR"
 mkdir -p build; cd build
-export HIP_PATH=/opt/rocm-5.4/ (or any custom path where HIP is installed)
 cmake ../catch/  -DHIP_PLATFORM=amd
 make -j$(nproc) build_tests
 ctest # run tests
@@ -50,7 +49,7 @@ HIP catch tests are built under the folder $HIP_TESTS_DIR/build.
 
 ### Build HIP Catch2 standalone test
 
-HIP Catch2 supports build a standalone test, for example,
+HIP Catch2 supports building standalone tests, for example,
 
 ```
 hipcc $HIP_TESTS_DIR/catch/unit/memory/hipPointerGetAttributes.cc -I ./catch/include ./catch/hipTestMain/standalone_main.cc -I ./catch/external/Catch2 -o hipPointerGetAttributes
@@ -59,4 +58,4 @@ hipcc $HIP_TESTS_DIR/catch/unit/memory/hipPointerGetAttributes.cc -I ./catch/inc
 
 ### Building with address sanitizer
 
-To build catch tests with Address Sanitizer options, use the cmake option `-DASAN_BUILD=ON`
+To build catch tests with Address Sanitizer options, use the cmake option `-DENABLE_ADDRESS_SANITIZER=ON`

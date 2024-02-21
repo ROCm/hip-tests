@@ -80,7 +80,8 @@ set(TEST_SRC
     hipMemsetD32.cc
     hipMemsetD16.cc
     hipMemsetD16Async.cc
-    hipMemsetD32Async.cc)
+    hipMemsetD32Async.cc
+    hipMemsetD8Async.cc)
 
 if(HIP_PLATFORM MATCHES "amd")
   set(TEST_SRC

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021 - 2023 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -144,21 +144,6 @@ THE SOFTWARE.
  * @}
  */
 
- /**
- * @defgroup StreamOTest Ordered Memory Allocator
- * @{
- * This section describes the tests for Stream Ordered Memory Allocator functions of HIP runtime
- * API.
- * @}
- */
-
-/**
- * @defgroup StreamOTest Ordered Memory Allocator
- * @{
- * This section describes the tests for Stream Ordered Memory Allocator functions of HIP runtime
- * API.
- */
-
 /**
  * @defgroup StreamOTest Ordered Memory Allocator
  * @{
@@ -201,7 +186,7 @@ THE SOFTWARE.
  * @}
  */
 
- /**
+/**
  * @defgroup ComplexTest Complex type
  * @{
  * This section describes tests for the Complex type functions.

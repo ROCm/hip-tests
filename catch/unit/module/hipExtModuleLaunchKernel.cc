@@ -50,6 +50,8 @@ THE SOFTWARE.
 #include "hip/hip_ext.h"
 #include <regex>  // NOLINT
 
+#include "hip_module_launch_kernel_common.hh"
+
 static constexpr auto totalWorkGroups{1024};
 static constexpr auto localWorkSize{512};
 static constexpr auto lastWorkSizeEven{256};
@@ -69,7 +71,7 @@ static bool searchRegExpr(const std::regex& expr, const char* filename) {
   assemblyfile.seekg(0, assemblyfile.end);
   int len = assemblyfile.tellg();
   assemblyfile.seekg(0, assemblyfile.beg);
-  char *fbuf = new char[len + 1];
+  char* fbuf = new char[len + 1];
   assemblyfile.read(fbuf, len);
   fbuf[len] = '\0';
 
@@ -124,8 +126,7 @@ TEST_CASE("Unit_hipExtModuleLaunchKernel_NonUniformWorkGroup") {
   auto isEven = GENERATE(0, 1);
   // Calculate size
   auto lastWorkSize = isEven ? lastWorkSizeEven : lastWorkSizeOdd;
-  size_t arraylength =
-  (totalWorkGroups - 1)*localWorkSize + lastWorkSize;
+  size_t arraylength = (totalWorkGroups - 1) * localWorkSize + lastWorkSize;
   size_t sizeBytes{arraylength * sizeof(int)};
   // Get module and function from module
   hipModule_t Module;
@@ -133,9 +134,9 @@ TEST_CASE("Unit_hipExtModuleLaunchKernel_NonUniformWorkGroup") {
   HIP_CHECK(hipModuleLoad(&Module, fileName));
   HIP_CHECK(hipModuleGetFunction(&Function, Module, kernel_name));
   // Allocate resources
-  int *A = new int[arraylength];
+  int* A = new int[arraylength];
   REQUIRE(A != nullptr);
-  int *B = new int[arraylength];
+  int* B = new int[arraylength];
   REQUIRE(B != nullptr);
   // Inititialize data
   for (size_t i = 0; i < arraylength; i++) {
@@ -155,14 +156,13 @@ TEST_CASE("Unit_hipExtModuleLaunchKernel_NonUniformWorkGroup") {
   args.buffersize = arraylength;
   size_t size = sizeof(args);
 
-  void* config[] = {HIP_LAUNCH_PARAM_BUFFER_POINTER, &args,
-                    HIP_LAUNCH_PARAM_BUFFER_SIZE, &size,
+  void* config[] = {HIP_LAUNCH_PARAM_BUFFER_POINTER, &args, HIP_LAUNCH_PARAM_BUFFER_SIZE, &size,
                     HIP_LAUNCH_PARAM_END};
   // Memcpy from A to Ad
   HIP_CHECK(hipMemcpy(Ad, A, sizeBytes, hipMemcpyDefault));
-  REQUIRE(hipErrorInvalidValue == hipExtModuleLaunchKernel(Function,
-                 arraylength, 1, 1, localWorkSize, 1, 1, 0, 0, NULL,
-                 reinterpret_cast<void**>(&config), 0));
+  REQUIRE(hipErrorInvalidValue ==
+          hipExtModuleLaunchKernel(Function, arraylength, 1, 1, localWorkSize, 1, 1, 0, 0, NULL,
+                                   reinterpret_cast<void**>(&config), 0));
   HIP_CHECK(hipDeviceSynchronize());
   HIP_CHECK(hipFree(Ad));
   HIP_CHECK(hipFree(Bd));
@@ -194,9 +194,9 @@ TEST_CASE("Unit_hipExtModuleLaunchKernel_UniformWorkGroup") {
   HIP_CHECK(hipModuleLoad(&Module, fileName));
   HIP_CHECK(hipModuleGetFunction(&Function, Module, kernel_name));
   // Allocate resources
-  int *A = new int[arraylength];
+  int* A = new int[arraylength];
   REQUIRE(A != nullptr);
-  int *B = new int[arraylength];
+  int* B = new int[arraylength];
   REQUIRE(B != nullptr);
   // Inititialize data
   for (size_t i = 0; i < arraylength; i++) {
@@ -216,14 +216,12 @@ TEST_CASE("Unit_hipExtModuleLaunchKernel_UniformWorkGroup") {
   args.buffersize = arraylength;
   size_t size = sizeof(args);
 
-  void* config[] = {HIP_LAUNCH_PARAM_BUFFER_POINTER, &args,
-                    HIP_LAUNCH_PARAM_BUFFER_SIZE, &size,
+  void* config[] = {HIP_LAUNCH_PARAM_BUFFER_POINTER, &args, HIP_LAUNCH_PARAM_BUFFER_SIZE, &size,
                     HIP_LAUNCH_PARAM_END};
   // Memcpy from A to Ad
   HIP_CHECK(hipMemcpy(Ad, A, sizeBytes, hipMemcpyDefault));
-  HIP_CHECK(hipExtModuleLaunchKernel(Function, arraylength, 1, 1,
-                                 localWorkSize, 1, 1, 0, 0, NULL,
-                                 reinterpret_cast<void**>(&config), 0));
+  HIP_CHECK(hipExtModuleLaunchKernel(Function, arraylength, 1, 1, localWorkSize, 1, 1, 0, 0, NULL,
+                                     reinterpret_cast<void**>(&config), 0));
   // Memcpy results back to host
   HIP_CHECK(hipMemcpy(B, Bd, sizeBytes, hipMemcpyDefault));
   HIP_CHECK(hipDeviceSynchronize());
@@ -236,4 +234,54 @@ TEST_CASE("Unit_hipExtModuleLaunchKernel_UniformWorkGroup") {
   delete[] A;
   delete[] B;
   HIP_CHECK(hipModuleUnload(Module));
+}
+
+TEST_CASE("Unit_hipExtModuleLaunchKernel_Positive_Basic") {
+  ModuleLaunchKernelPositiveBasic<hipExtModuleLaunchKernel>();
+
+  SECTION("Timed kernel launch with events") {
+    hipEvent_t start_event = nullptr, stop_event = nullptr;
+    HIP_CHECK(hipEventCreate(&start_event));
+    HIP_CHECK(hipEventCreate(&stop_event));
+    const auto kernel = GetKernel(mg.module(), "Delay");
+    int clock_rate = 0;
+    HIP_CHECK(hipDeviceGetAttribute(&clock_rate, hipDeviceAttributeClockRate, 0));
+    uint32_t interval = 100;
+    uint32_t ticks_per_second = clock_rate;
+    void* kernel_params[2] = {&interval, &ticks_per_second};
+    HIP_CHECK(hipExtModuleLaunchKernel(kernel, 1, 1, 1, 1, 1, 1, 0, nullptr, kernel_params, nullptr,
+                                       start_event, stop_event));
+    HIP_CHECK(hipDeviceSynchronize());
+    auto elapsed = 0.0f;
+    HIP_CHECK(hipEventElapsedTime(&elapsed, start_event, stop_event));
+    REQUIRE(static_cast<uint32_t>(elapsed) >= interval);
+  }
+}
+
+TEST_CASE("Unit_hipExtModuleLaunchKernel_Positive_Parameters") {
+  ModuleLaunchKernelPositiveParameters<hipExtModuleLaunchKernel>();
+
+  SECTION("Pass only start event") {
+    hipEvent_t start_event = nullptr;
+    HIP_CHECK(hipEventCreate(&start_event));
+    const auto kernel = GetKernel(mg.module(), "NOPKernel");
+    HIP_CHECK(hipExtModuleLaunchKernel(kernel, 1, 1, 1, 1, 1, 1, 0, nullptr, nullptr, nullptr,
+                                       start_event, nullptr));
+    HIP_CHECK(hipDeviceSynchronize());
+    HIP_CHECK(hipEventQuery(start_event));
+  }
+
+  SECTION("Pass only stop event") {
+    hipEvent_t stop_event = nullptr;
+    HIP_CHECK(hipEventCreate(&stop_event));
+    const auto kernel = GetKernel(mg.module(), "NOPKernel");
+    HIP_CHECK(hipExtModuleLaunchKernel(kernel, 1, 1, 1, 1, 1, 1, 0, nullptr, nullptr, nullptr,
+                                       nullptr, stop_event));
+    HIP_CHECK(hipDeviceSynchronize());
+    HIP_CHECK(hipEventQuery(stop_event));
+  }
+}
+
+TEST_CASE("Unit_hipExtModuleLaunchKernel_Negative_Parameters") {
+  ModuleLaunchKernelNegativeParameters<hipExtModuleLaunchKernel>();
 }

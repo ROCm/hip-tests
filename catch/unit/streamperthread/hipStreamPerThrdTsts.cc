@@ -505,6 +505,7 @@ TEST_CASE("Unit_hipStreamPerThread_CoopLaunch") {
                                                           warp_size, 0));
     int max_active_blocks = max_blocks_per_sm * num_sms;
     int *Ad = nullptr, *Ah = nullptr, *DNumElms = nullptr, NumElms = 4096;
+    NumElms = max_active_blocks * warp_size > NumElms ? NumElms : max_active_blocks * warp_size;
     int Const = 123;
     Ah = new int[NumElms];
     for (int i = 0; i < NumElms; ++i) {

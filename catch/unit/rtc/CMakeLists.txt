@@ -6,6 +6,7 @@ set(TEST_SRC
     hipStreamCaptureRtc.cc
     includepath.cc
     hipRTCDeviceMalloc.cc
+    hiprtcGetLoweredName.cc
 )
 
 # AMD only tests

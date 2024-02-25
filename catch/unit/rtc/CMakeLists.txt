@@ -22,6 +22,7 @@ set(AMD_TEST_SRC
     hiprtc_fp16_HeaderTst.cc
     hiprtc_TextureTypes_HeaderTst.cc
     hipRtcComplexHeader.cc
+    hipRtcPtrdiff_t.cc
 )
 
 add_custom_target(copyRtcHeaders ALL
@@ -51,4 +52,11 @@ elseif(HIP_PLATFORM MATCHES "amd")
                       LINKER_LIBS hiprtc)
 endif()
 
-add_dependencies(build_tests copyRtcHeaders)
+add_executable(ChkPtrdiff_t_Exe EXCLUDE_FROM_ALL ChkPtrdiff_t_Exe.cc)
+if(HIP_PLATFORM MATCHES "nvidia")
+  target_link_libraries(ChkPtrdiff_t_Exe nvrtc)
+elseif(HIP_PLATFORM MATCHES "amd")
+  target_link_libraries(ChkPtrdiff_t_Exe hiprtc)
+endif()
+
+add_dependencies(build_tests copyRtcHeaders ChkPtrdiff_t_Exe)

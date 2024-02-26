@@ -218,7 +218,7 @@ static __global__ void test_kernel(unsigned int* atomic_val, unsigned int* globa
     unsigned grid_rank = mgrid.grid_rank();
     unsigned inter_gpu_offset = (grid_rank + i) % mgrid.num_grids();
     if (rank == (grid.size() - 1)) {
-      if (i % mgrid.num_grids() == 0) {
+      if (i % 2 == 0) {
         global_array[grid_rank] += 2;
       } else {
         global_array[inter_gpu_offset] *= 2;

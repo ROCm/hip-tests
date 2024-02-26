@@ -38,9 +38,13 @@ set(TEST_SRC
     hipMemcpy3DAsync.cc
     hipMemcpy3DAsync_old.cc
     hipMemcpyParam2D.cc
+    hipMemcpyParam2D_old.cc
     hipMemcpyParam2DAsync.cc
+    hipMemcpyParam2DAsync_old.cc
     hipMemcpy2D.cc
+    hipMemcpy2D_old.cc
     hipMemcpy2DAsync.cc
+    hipMemcpy2DAsync_old.cc
     hipMemcpy2DFromArray.cc
     hipMemcpy2DFromArray_old.cc
     hipMemcpy2DFromArrayAsync.cc
@@ -107,6 +111,12 @@ set(TEST_SRC
     hipMemcpyFromSymbol.cc
     hipPtrGetAttribute.cc
     hipMemPoolApi.cc
+    hipMemPoolSetGetAccess.cc
+    hipMemPoolSetGetAttribute.cc
+    hipMemPoolCreate.cc
+    hipMemPoolDestroy.cc
+    hipMemPoolTrimTo.cc
+    hipMallocFromPoolAsync.cc
     hipMemcpyPeer.cc
     hipMemcpyPeer_old.cc
     hipMemcpyPeerAsync.cc
@@ -151,7 +161,9 @@ set(TEST_SRC
     hipStreamAttachMemAsync.cc
     hipMemRangeGetAttributes_old.cc
     hipMemGetAddressRange.cc
-    hipArrayGetDescriptor.cc)
+    hipArrayGetDescriptor.cc
+    hipMallocMipmappedArray.cc
+    hipFreeMipmappedArray.cc)
 
 set(NOT_FOR_MI200_AND_ABOVE_TEST hipMallocArray.cc hipArrayCreate.cc) # tests not for MI200+
 set(MI200_AND_ABOVE_TARGETS gfx90a gfx940 gfx941 gfx942)

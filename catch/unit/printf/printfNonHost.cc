@@ -45,7 +45,7 @@ __global__ void kernel_printf_thread(int *count) {
 }
 
 /**
-* @addtogroup printf
+* @addtogroup printf printf
 * @{
 * @ingroup PrintfTest
 * `int printf()` -

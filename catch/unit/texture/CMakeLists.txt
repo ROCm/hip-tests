@@ -45,6 +45,12 @@ set(TEST_SRC
     hipTexObjectTests.cc
     hipTextureObjectTests.cc
     hipBindTextureToMipmappedArray.cc
+    hipMallocMipmappedArray.cc
+    hipFreeMipmappedArray.cc
+    hipGetMipmappedArrayLevel.cc
+    hipMipmappedArrayCreate.cc
+    hipMipmappedArrayDestroy.cc
+    hipMipmappedArrayGetLevel.cc
 )
 
 if(WIN32)

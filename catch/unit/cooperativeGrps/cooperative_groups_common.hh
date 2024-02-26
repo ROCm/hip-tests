@@ -28,9 +28,16 @@ constexpr size_t kWarpSize = 32;
 #else
 constexpr size_t kWarpSize = 64;
 #endif
+constexpr int kMaxGPUs = 8;
 }  // namespace
 
 constexpr int MaxGPUs = 8;
+
+inline bool operator==(const dim3& l, const dim3& r) {
+  return l.x == r.x && l.y == r.y && l.z == r.z;
+}
+
+inline bool operator!=(const dim3& l, const dim3& r) { return !(l == r); }
 
 __device__ inline unsigned int thread_rank_in_grid() {
   const auto block_size = blockDim.x * blockDim.y * blockDim.z;

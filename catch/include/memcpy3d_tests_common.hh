@@ -21,6 +21,8 @@ THE SOFTWARE.
 */
 
 #pragma once
+#pragma clang diagnostic ignored "-Wmissing-field-initializers"
+#pragma clang diagnostic ignored "-Wunused-lambda-capture"
 
 #include <variant>
 
@@ -31,7 +33,7 @@ THE SOFTWARE.
 
 using PtrVariant = std::variant<hipPitchedPtr, hipArray_t>;
 
-static hipMemcpyKind ReverseMemcpyDirection(const hipMemcpyKind direction) {
+static inline hipMemcpyKind ReverseMemcpyDirection(const hipMemcpyKind direction) {
   switch (direction) {
     case hipMemcpyHostToDevice:
       return hipMemcpyDeviceToHost;
@@ -76,7 +78,7 @@ static bool operator==(const hipExtent& lhs, const hipExtent& rhs) {
   return lhs.width == rhs.width && lhs.height == rhs.height && lhs.depth == rhs.depth;
 }
 
-static bool operator==(const hipMemcpy3DParms& lhs, const hipMemcpy3DParms& rhs) {
+static inline bool operator==(const hipMemcpy3DParms& lhs, const hipMemcpy3DParms& rhs) {
   return lhs.dstArray == rhs.dstArray && lhs.dstPtr == rhs.dstPtr && lhs.dstPos == rhs.dstPos &&
       lhs.srcArray == rhs.srcArray && lhs.srcPtr == rhs.srcPtr && lhs.srcPos == rhs.srcPos &&
       lhs.extent == rhs.extent && lhs.kind == rhs.kind;
@@ -160,7 +162,7 @@ void Memcpy3DDeviceToHostShell(F memcpy_func, const hipStream_t kernel_stream = 
 }
 
 template <bool should_synchronize, bool enable_peer_access, typename F>
-void Memcpy3DDeviceToDeviceShell(F memcpy_func, const hipStream_t kernel_stream = nullptr) {
+void Memcpy3DDeviceToDeviceShell(F memcpy_func, hipStream_t kernel_stream = nullptr) {
   const auto kind = GENERATE(hipMemcpyDeviceToDevice, hipMemcpyDefault);
 
   constexpr hipExtent extent{127 * sizeof(int), 128, 8};
@@ -168,11 +170,13 @@ void Memcpy3DDeviceToDeviceShell(F memcpy_func, const hipStream_t kernel_stream 
   const auto device_count = HipTest::getDeviceCount();
   const auto src_device = GENERATE_COPY(range(0, device_count));
   const auto dst_device = GENERATE_COPY(range(0, device_count));
-  const size_t src_cols_mult = GENERATE(1, 2);
 
   INFO("Src device: " << src_device << ", Dst device: " << dst_device);
 
   HIP_CHECK(hipSetDevice(src_device));
+  if (device_count > 0 && kernel_stream != nullptr && kernel_stream != hipStreamPerThread) {
+    HIP_CHECK(hipStreamCreate(&kernel_stream));
+  }
   if constexpr (enable_peer_access) {
     if (src_device == dst_device) {
       return;
@@ -180,8 +184,10 @@ void Memcpy3DDeviceToDeviceShell(F memcpy_func, const hipStream_t kernel_stream 
     int can_access_peer = 0;
     HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, src_device, dst_device));
     if (!can_access_peer) {
-      INFO("Peer access cannot be enabled between devices " << src_device << " " << dst_device);
-      REQUIRE(can_access_peer);
+      std::string msg = "Skipped as peer access cannot be enabled between devices " +
+                         std::to_string(src_device) + " " + std::to_string(dst_device);
+      HipTest::HIP_SKIP_TEST(msg.c_str());
+      return;
     }
     HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));
   }
@@ -198,8 +204,8 @@ void Memcpy3DDeviceToDeviceShell(F memcpy_func, const hipStream_t kernel_stream 
                     dst_alloc.height() / threads_per_block.y + 1, dst_alloc.depth());
   // Using dst_alloc width and height to set only the elements that will be copied over to
   // dst_alloc
-  Iota<<<blocks, threads_per_block>>>(src_alloc.ptr(), src_alloc.pitch(), dst_alloc.width_logical(),
-                                      dst_alloc.height(), dst_alloc.depth());
+  Iota<<<blocks, threads_per_block, 0, kernel_stream>>>(src_alloc.ptr(), src_alloc.pitch(),
+                          dst_alloc.width_logical(),dst_alloc.height(), dst_alloc.depth());
   HIP_CHECK(hipGetLastError());
 
   HIP_CHECK(memcpy_func(dst_alloc.pitched_ptr(), make_hipPos(0, 0, 0), src_alloc.pitched_ptr(),
@@ -207,7 +213,9 @@ void Memcpy3DDeviceToDeviceShell(F memcpy_func, const hipStream_t kernel_stream 
   if constexpr (should_synchronize) {
     HIP_CHECK(hipStreamSynchronize(kernel_stream));
   }
-
+  if (device_count > 0 && kernel_stream != nullptr && kernel_stream != hipStreamPerThread) {
+    HIP_CHECK(hipStreamDestroy(kernel_stream));
+  }
   HIP_CHECK(Memcpy3DWrapper(make_hipPitchedPtr(host_alloc.ptr(), dst_alloc.width(),
                                                dst_alloc.width(), dst_alloc.height()),
                             make_hipPos(0, 0, 0), dst_alloc.pitched_ptr(), make_hipPos(0, 0, 0),
@@ -616,7 +624,7 @@ constexpr auto MemTypeUnified() {
 #endif
 }
 
-using DrvPtrVariant = std::variant<hipPitchedPtr, hiparray>;
+using DrvPtrVariant = std::variant<hipPitchedPtr, hipArray_t>;
 
 template <bool async = false>
 hipError_t DrvMemcpy3DWrapper(DrvPtrVariant dst_ptr, hipPos dst_pos, DrvPtrVariant src_ptr,
@@ -624,25 +632,25 @@ hipError_t DrvMemcpy3DWrapper(DrvPtrVariant dst_ptr, hipPos dst_pos, DrvPtrVaria
                               hipStream_t stream = nullptr) {
   HIP_MEMCPY3D parms = {0};
 
-  if (std::holds_alternative<hiparray>(dst_ptr)) {
-    parms.dstMemoryType = MemTypeArray();
-    parms.dstArray = std::get<hiparray>(dst_ptr);
+  if (std::holds_alternative<hipArray_t>(dst_ptr)) {
+    parms.dstMemoryType = hipMemoryTypeArray;
+    parms.dstArray = std::get<hipArray_t>(dst_ptr);  
   } else {
     auto ptr = std::get<hipPitchedPtr>(dst_ptr);
     parms.dstPitch = ptr.pitch;
     switch (kind) {
       case hipMemcpyDeviceToHost:
       case hipMemcpyHostToHost:
-        parms.dstMemoryType = MemTypeHost();
+        parms.dstMemoryType = hipMemoryTypeHost;
         parms.dstHost = ptr.ptr;
         break;
       case hipMemcpyDeviceToDevice:
       case hipMemcpyHostToDevice:
-        parms.dstMemoryType = MemTypeDevice();
+        parms.dstMemoryType = hipMemoryTypeDevice;
         parms.dstDevice = reinterpret_cast<hipDeviceptr_t>(ptr.ptr);
         break;
       case hipMemcpyDefault:
-        parms.dstMemoryType = MemTypeUnified();
+        parms.dstMemoryType = hipMemoryTypeUnified;
         parms.dstDevice = reinterpret_cast<hipDeviceptr_t>(ptr.ptr);
         break;
       default:
@@ -650,25 +658,25 @@ hipError_t DrvMemcpy3DWrapper(DrvPtrVariant dst_ptr, hipPos dst_pos, DrvPtrVaria
     }
   }
 
-  if (std::holds_alternative<hiparray>(src_ptr)) {
-    parms.srcMemoryType = MemTypeArray();
-    parms.srcArray = std::get<hiparray>(src_ptr);
+  if (std::holds_alternative<hipArray_t>(src_ptr)) {
+    parms.srcMemoryType = hipMemoryTypeArray;
+    parms.srcArray = std::get<hipArray_t>(src_ptr);
   } else {
     auto ptr = std::get<hipPitchedPtr>(src_ptr);
     parms.srcPitch = ptr.pitch;
     switch (kind) {
       case hipMemcpyDeviceToHost:
       case hipMemcpyDeviceToDevice:
-        parms.srcMemoryType = MemTypeDevice();
+        parms.srcMemoryType = hipMemoryTypeDevice;
         parms.srcDevice = reinterpret_cast<hipDeviceptr_t>(ptr.ptr);
         break;
       case hipMemcpyHostToDevice:
       case hipMemcpyHostToHost:
-        parms.srcMemoryType = MemTypeHost();
+        parms.srcMemoryType = hipMemoryTypeHost;
         parms.srcHost = ptr.ptr;
         break;
       case hipMemcpyDefault:
-        parms.srcMemoryType = MemTypeUnified();
+        parms.srcMemoryType = hipMemoryTypeUnified;
         parms.srcDevice = reinterpret_cast<hipDeviceptr_t>(ptr.ptr);
         break;
       default:

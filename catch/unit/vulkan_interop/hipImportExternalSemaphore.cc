@@ -67,11 +67,13 @@ TEST_CASE("Unit_hipImportExternalSemaphore_Vulkan_Negative_Parameters") {
   SECTION("semHandleDesc == nullptr") {
     HIP_CHECK_ERROR(hipImportExternalSemaphore(&ext_semaphore, nullptr), hipErrorInvalidValue);
   }
-
+  /*
+   * CUDA doesn't specify the case
   SECTION("semHandleDesc.flags != 0") {
     handle_desc.flags = 1;
     HIP_CHECK_ERROR(hipImportExternalSemaphore(&ext_semaphore, &handle_desc), hipErrorInvalidValue);
   }
+  */
 
   SECTION("Invalid semHandleDesc.type") {
     handle_desc.type = static_cast<hipExternalSemaphoreHandleType>(-1);

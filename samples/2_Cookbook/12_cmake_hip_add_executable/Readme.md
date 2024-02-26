@@ -6,7 +6,7 @@ Since FindHIP cmake module is not yet a part of the default cmake distribution, 
 
 The simplest approach is to use
 ```
-set(CMAKE_MODULE_PATH "/opt/rocm/hip/cmake" ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH "/opt/rocm/lib/cmake/hip/" ${CMAKE_MODULE_PATH})
 find_package(HIP)
 ```
 
@@ -32,28 +32,28 @@ The macro supports specifying CLANG-specific, NVCC-specific compiler options usi
 Common options targeting both compilers can be specificed after the ```HIPCC_OPTIONS``` keyword.
 
 ## How to build and run:
-Use the following commands to build and execute the sample
-
+- Build sample using cmake
 ```
-mkdir build
-cd build
+$ mkdir build; cd build
+ # For shared lib of hip rt,
+$ cmake ..
+ # Or for static lib of hip rt,
+$ cmake -DCMAKE_PREFIX_PATH="/opt/rocm/llvm/lib/cmake" ..
+$ make
+```
 
-For shared lib of hip rt,
-cmake ..
-Or for static lib of hip rt,
-cmake -DCMAKE_PREFIX_PATH="/opt/rocm/llvm/lib/cmake" ..
-
-Then,
-make
-./MatrixTranspose
+- Execute the sample
+```
+$ ./MatrixTranspose
+Device name
+PASSED!
 ```
 
 ## More Info:
-- [HIP FAQ](https://github.com/ROCm-Developer-Tools/HIP/blob/master/docs/markdown/hip_faq.md)
-- [HIP Kernel Language](https://github.com/ROCm-Developer-Tools/HIP/blob/master/docs/markdown/hip_kernel_language.md)
-- [HIP Runtime API (Doxygen)](http://rocm-developer-tools.github.io/HIP)
-- [HIP Porting Guide](https://github.com/ROCm-Developer-Tools/HIP/blob/master/docs/markdown/hip_porting_guide.md)
-- [HIP Terminology](https://github.com/ROCm-Developer-Tools/HIP/blob/master/docs/markdown/hip_terms.md) (including Rosetta Stone of GPU computing terms across CUDA/HIP/HC/AMP/OpenL)
-- [HIPIFY](https://github.com/ROCm-Developer-Tools/HIPIFY/blob/master/README.md)
-- [Developer/CONTRIBUTING Info](https://github.com/ROCm-Developer-Tools/HIP/blob/master/CONTRIBUTING.md)
-- [Release Notes](https://github.com/ROCm-Developer-Tools/HIP/blob/master/RELEASE.md)
+- [HIP FAQ](https://github.com/ROCm/HIP/blob/develop/docs/user_guide/faq.md)
+- [HIP Kernel Language](https://github.com/ROCm/HIP/blob/develop/docs/reference/kernel_language.md)
+- [HIP Runtime API (Doxygen)](https://rocm.docs.amd.com/projects/HIP/en/latest/doxygen/html/index.html)
+- [HIP Porting Guide](https://github.com/ROCm/HIP/blob/develop/docs/user_guide/hip_porting_guide.md)
+- [HIP Terminology](https://github.com/ROCm/HIP/blob/develop/docs/reference/terms.md) (including comparing syntax for different compute terms across CUDA/HIP/OpenL)
+- [HIPIFY](https://github.com/ROCm/HIPIFY/blob/amd-staging/README.md)
+- [Developer/CONTRIBUTING Info](https://github.com/ROCm/HIP/blob/develop/docs/developer_guide/contributing.md)

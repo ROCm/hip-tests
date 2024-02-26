@@ -64,32 +64,31 @@ TEST_CASE("Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Binary_Semaphor
   buffer_copy.size = count * sizeof(*src_storage.host_ptr);
   vkCmdCopyBuffer(command_buffer, src_storage.buffer, dst_storage.buffer, 1, &buffer_copy);
   VK_CHECK_RESULT(vkEndCommandBuffer(command_buffer));
-
   const auto semaphore = vkt.CreateExternalSemaphore(VK_SEMAPHORE_TYPE_BINARY);
   const auto hip_sem_handle_desc =
       vkt.BuildSemaphoreDescriptor(semaphore, VK_SEMAPHORE_TYPE_BINARY);
   hipExternalSemaphore_t hip_ext_semaphore;
   HIP_CHECK(hipImportExternalSemaphore(&hip_ext_semaphore, &hip_sem_handle_desc));
-
+  hipExternalSemaphoreSignalParams signal_params = {};
+  signal_params.params.fence.value = 0;
+  HIP_CHECK(hipSignalExternalSemaphoresAsync(&hip_ext_semaphore, &signal_params, 1, nullptr));
+  HIP_CHECK(hipDeviceSynchronize());
   VkSubmitInfo submit_info = {};
   submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
   submit_info.commandBufferCount = 1;
   submit_info.pCommandBuffers = &command_buffer;
+  VkSemaphore waitSemaphores[] = {semaphore};
+  // VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT or VK_PIPELINE_STAGE_TRANSFER_BIT can work
+  VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT};
   submit_info.waitSemaphoreCount = 1;
-  submit_info.pWaitSemaphores = &semaphore;
+  submit_info.pWaitSemaphores = waitSemaphores;
+  submit_info.pWaitDstStageMask = waitStages;
   const auto fence = vkt.CreateFence();
   VK_CHECK_RESULT(vkQueueSubmit(vkt.GetQueue(), 1, &submit_info, fence));
-
   REQUIRE(vkGetFenceStatus(vkt.GetDevice(), fence) == VK_NOT_READY);
-
-  hipExternalSemaphoreSignalParams signal_params = {};
-  signal_params.params.fence.value = 0;
-  HIP_CHECK(hipSignalExternalSemaphoresAsync(&hip_ext_semaphore, &signal_params, 1, nullptr));
   PollStream(nullptr, hipSuccess);
-
   VK_CHECK_RESULT(
       vkWaitForFences(vkt.GetDevice(), 1, &fence, VK_TRUE, 5'000'000'000 /*5 seconds*/));
-
   HIP_CHECK(hipDestroyExternalSemaphore(hip_ext_semaphore));
 }
 
@@ -132,7 +131,6 @@ TEST_CASE("Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Timeline_Semaph
 
   HIP_CHECK(hipDestroyExternalSemaphore(hip_ext_semaphore));
 }
-#endif
 
 /**
  * Test Description
@@ -153,8 +151,10 @@ TEST_CASE("Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Multiple_Semaph
   VulkanTest vkt(enable_validation);
 
   constexpr uint32_t count = 1;
-  const auto src_storage = vkt.CreateMappedStorage<int>(count, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-  const auto dst_storage = vkt.CreateMappedStorage<int>(count, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+  const auto src_storage = vkt.CreateMappedStorage<int>(count,
+      VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+  const auto dst_storage = vkt.CreateMappedStorage<int>(count,
+      VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 
 #if HT_AMD
   constexpr auto second_semaphore_type = VK_SEMAPHORE_TYPE_BINARY;
@@ -182,7 +182,8 @@ TEST_CASE("Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Multiple_Semaph
   const auto hip_timeline_sem_handle_desc =
       vkt.BuildSemaphoreDescriptor(timeline_semaphore, second_semaphore_type);
   hipExternalSemaphore_t hip_timeline_ext_semaphore;
-  HIP_CHECK(hipImportExternalSemaphore(&hip_timeline_ext_semaphore, &hip_timeline_sem_handle_desc));
+  HIP_CHECK(hipImportExternalSemaphore(&hip_timeline_ext_semaphore,
+      &hip_timeline_sem_handle_desc));
 
   uint64_t wait_values[] = {1, 0};
   VkTimelineSemaphoreSubmitInfo timeline_submit_info = {};
@@ -210,7 +211,8 @@ TEST_CASE("Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Multiple_Semaph
   timeline_signal_params.params.fence.value =
       second_semaphore_type == VK_SEMAPHORE_TYPE_TIMELINE ? 2 : 0;
   hipExternalSemaphore_t ext_semaphores[] = {hip_binary_ext_semaphore, hip_timeline_ext_semaphore};
-  hipExternalSemaphoreSignalParams signal_params[] = {binary_signal_params, timeline_signal_params};
+  hipExternalSemaphoreSignalParams signal_params[] = {binary_signal_params,
+      timeline_signal_params};
   HIP_CHECK(hipSignalExternalSemaphoresAsync(ext_semaphores, signal_params, 2, nullptr));
 
   VK_CHECK_RESULT(
@@ -219,6 +221,7 @@ TEST_CASE("Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Multiple_Semaph
   HIP_CHECK(hipDestroyExternalSemaphore(hip_binary_ext_semaphore));
   HIP_CHECK(hipDestroyExternalSemaphore(hip_timeline_ext_semaphore));
 }
+#endif
 
 /**
  * Test Description
@@ -270,8 +273,8 @@ TEST_CASE("Unit_hipSignalExternalSemaphoresAsync_Vulkan_Negative_Parameters") {
     hipStream_t stream = nullptr;
     HIP_CHECK(hipStreamCreate(&stream));
     HIP_CHECK(hipStreamDestroy(stream));
-    HIP_CHECK_ERROR(hipSignalExternalSemaphoresAsync(&hip_ext_semaphore, &signal_params, 1, stream),
-                    hipErrorInvalidValue);
+    HIP_CHECK_ERROR(hipSignalExternalSemaphoresAsync(&hip_ext_semaphore, &signal_params, 1,
+        stream), hipErrorInvalidValue);
     HIP_CHECK(hipDestroyExternalSemaphore(hip_ext_semaphore));
   }
 }

@@ -432,6 +432,8 @@ static void seekAndSet3DArrayPortion(bool bAsync) {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemset3D_MemsetWithExtent") {
+  CHECK_IMAGE_SUPPORT
+
   hipExtent testExtent;
   size_t numH = NUMH_EXT, numW = NUMW_EXT, depth = DEPTH_EXT;
 
@@ -535,6 +537,8 @@ TEST_CASE("Unit_hipMemset3D_SeekSetArrayPortion") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemset3DAsync_MemsetWithExtent") {
+  CHECK_IMAGE_SUPPORT
+
   hipExtent testExtent;
   size_t numH = NUMH_EXT, numW = NUMW_EXT, depth = DEPTH_EXT;
 
@@ -566,6 +570,23 @@ TEST_CASE("Unit_hipMemset3DAsync_MemsetWithExtent") {
 /**
  * Test Description
  * ------------------------
+ *  - Verifies functionality of synchronous memset with maximum unsigned char value.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemset3DFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipMemset3D_MemsetMaxValue") {
+  CHECK_IMAGE_SUPPORT
+
+  testMemsetMaxValue(0);
+}
+
+/**
+ * Test Description
+ * ------------------------
  *  - Verifies functionality of asynchronous memset with maximum unsigned char value.
  * Test source
  * ------------------------
@@ -575,7 +596,27 @@ TEST_CASE("Unit_hipMemset3DAsync_MemsetWithExtent") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemset3DAsync_MemsetMaxValue") {
+  CHECK_IMAGE_SUPPORT
+
   testMemsetMaxValue(1);
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Seeks and synchronously sets random slice of 3D array.
+ *  - Verifies the results.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemset3DFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipMemset3D_SeekSetSlice") {
+  CHECK_IMAGE_SUPPORT
+
+  seekAndSet3DArraySlice(0);
 }
 
 /**
@@ -591,7 +632,27 @@ TEST_CASE("Unit_hipMemset3DAsync_MemsetMaxValue") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemset3DAsync_SeekSetSlice") {
+  CHECK_IMAGE_SUPPORT
+
   seekAndSet3DArraySlice(1);
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Synchronously sets the selected portion of a 3D array.
+ *  - Verifies the results.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemset3DFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipMemset3D_SeekSetArrayPortion") {
+  CHECK_IMAGE_SUPPORT
+
+  seekAndSet3DArrayPortion(0);
 }
 
 /**
@@ -607,5 +668,7 @@ TEST_CASE("Unit_hipMemset3DAsync_SeekSetSlice") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemset3DAsync_SeekSetArrayPortion") {
+  CHECK_IMAGE_SUPPORT
+
   seekAndSet3DArrayPortion(1);
 }

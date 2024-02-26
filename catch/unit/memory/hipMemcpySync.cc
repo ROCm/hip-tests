@@ -21,7 +21,7 @@ THE SOFTWARE.
 */
 
 #include "MemUtils.hh"
-
+#include <utils.hh>
 /*
  * These testcases verify that synchronization behaviour for memcpy functions with respect to
  * the host.
@@ -156,7 +156,7 @@ static void runMemcpyTests(hipStream_t stream, bool async, allocType type, memTy
 
   using namespace std::chrono_literals;
   const std::chrono::duration<uint64_t, std::milli> delay = 100ms;
-  HipTest::runKernelForDuration(delay, stream);
+  LaunchDelayKernel(delay, stream);
 
   memcpyCheck(type, memType, aPtr.first, data, fillerData, async, stream, fromHost);
   checkForSync(stream, async, type, fromHost);

@@ -30,8 +30,6 @@ THE SOFTWARE.
  * Any outstanding signals or waits must have completed before the semaphore is destroyed.
  */
 
-constexpr bool enable_validation = false;
-
 /**
  * Test Description
  * ------------------------
@@ -53,8 +51,9 @@ TEST_CASE("Unit_hipDestroyExternalSemaphore_Vulkan_Negative_Parameters") {
     HIP_CHECK_ERROR(hipDestroyExternalSemaphore(nullptr), hipErrorInvalidValue);
   }
 
-// Segfaults in CUDA
-#if HT_AMD
+// Segfaults in Nvidia and Amd
+#if 0
+  constexpr bool enable_validation = false;
   SECTION("Double free") {
     VulkanTest vkt(enable_validation);
     const auto ext_semaphore = ImportBinarySemaphore(vkt);

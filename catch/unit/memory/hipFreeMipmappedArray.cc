@@ -47,7 +47,6 @@ THE SOFTWARE.
  *  - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_hipFreeMipmappedArrayImplicitSyncArray", "", char, float) {
-#ifdef _WIN32
   hipMipmappedArray_t arrayPtr{};
   hipExtent extent{};
   hipChannelFormatDesc desc = hipCreateChannelDesc<TestType>();
@@ -71,9 +70,6 @@ TEMPLATE_TEST_CASE("Unit_hipFreeMipmappedArrayImplicitSyncArray", "", char, floa
   HIP_CHECK_ERROR(hipStreamQuery(nullptr), hipErrorNotReady);
   HIP_CHECK(hipFreeMipmappedArray(arrayPtr));
   HIP_CHECK(hipStreamQuery(nullptr));
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }
 
 /**
@@ -90,11 +86,7 @@ TEMPLATE_TEST_CASE("Unit_hipFreeMipmappedArrayImplicitSyncArray", "", char, floa
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipFreeMipmappedArray_Negative_Nullptr") {
-#ifdef _WIN32
   HIP_CHECK_ERROR(hipFreeMipmappedArray(nullptr), hipErrorInvalidValue);
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }
 
 /**
@@ -111,7 +103,6 @@ TEST_CASE("Unit_hipFreeMipmappedArray_Negative_Nullptr") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipFreeMipmappedArray_Negative_DoubleFree") {
-#ifdef _WIN32
   hipMipmappedArray_t arrayPtr{};
   hipExtent extent{};
   hipChannelFormatDesc desc = hipCreateChannelDesc<char>();
@@ -132,9 +123,6 @@ TEST_CASE("Unit_hipFreeMipmappedArray_Negative_DoubleFree") {
 
   HIP_CHECK(hipFreeMipmappedArray(arrayPtr));
   HIP_CHECK_ERROR(hipFreeMipmappedArray(arrayPtr), hipErrorContextIsDestroyed);
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }
 
 /**
@@ -151,7 +139,6 @@ TEST_CASE("Unit_hipFreeMipmappedArray_Negative_DoubleFree") {
  *  - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_hipFreeMipmappedArrayMultiTArray", "", char, int) {
-#ifdef _WIN32
   constexpr size_t numAllocs = 10;
   std::vector<std::thread> threads;
   std::vector<hipMipmappedArray_t> ptrs(numAllocs);
@@ -186,7 +173,4 @@ TEMPLATE_TEST_CASE("Unit_hipFreeMipmappedArrayMultiTArray", "", char, int) {
   }
   
   HIP_CHECK_THREAD_FINALIZE();
-#else
-  HipTest::HIP_SKIP_TEST("Mipmaps are Supported only on windows, skipping the test.");
-#endif
 }

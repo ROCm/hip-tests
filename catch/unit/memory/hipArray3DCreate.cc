@@ -32,14 +32,14 @@ THE SOFTWARE.
  */
 
 namespace {
-void checkArrayIsExpected(const hiparray array, const HIP_ARRAY3D_DESCRIPTOR& expected_desc) {
+void checkArrayIsExpected(const hipArray_t array, const HIP_ARRAY3D_DESCRIPTOR& expected_desc) {
 // hipArray3DGetDescriptor doesn't currently exist (EXSWCPHIPT-87)
 #if HT_AMD
   std::ignore = array;
   std::ignore = expected_desc;
 #else
   CUDA_ARRAY3D_DESCRIPTOR queried_desc;
-  cuArray3DGetDescriptor(&queried_desc, array);
+  cuArray3DGetDescriptor(&queried_desc, (CUarray)array);
 
   REQUIRE(queried_desc.Width == expected_desc.Width);
   REQUIRE(queried_desc.Height == expected_desc.Height);
@@ -51,7 +51,7 @@ void checkArrayIsExpected(const hiparray array, const HIP_ARRAY3D_DESCRIPTOR& ex
 }
 
 void testInvalidDescription(HIP_ARRAY3D_DESCRIPTOR desc) {
-  hiparray array;
+  hipArray_t array;
   HIP_CHECK_ERROR(hipArray3DCreate(&array, &desc), hipErrorInvalidValue);
 }
 }  // namespace
@@ -70,6 +70,8 @@ void testInvalidDescription(HIP_ARRAY3D_DESCRIPTOR desc) {
  */
 TEMPLATE_TEST_CASE("Unit_hipArray3DCreate_happy", "", char, uchar2, uint2, int4, short4, float,
                    float2, float4) {
+  CHECK_IMAGE_SUPPORT
+
   using vec_info = vector_info<TestType>;
   DriverContext ctx;
 
@@ -99,7 +101,7 @@ TEMPLATE_TEST_CASE("Unit_hipArray3DCreate_happy", "", char, uchar2, uint2, int4,
 
     CAPTURE(desc.Width, desc.Height, desc.Depth);
 
-    hiparray array;
+    hipArray_t array;
     HIP_CHECK(hipArray3DCreate(&array, &desc));
     checkArrayIsExpected(array, desc);
     HIP_CHECK(hipArrayDestroy(array));
@@ -122,10 +124,12 @@ TEMPLATE_TEST_CASE("Unit_hipArray3DCreate_happy", "", char, uchar2, uint2, int4,
  */
 TEMPLATE_TEST_CASE("Unit_hipArray3DCreate_MaxTexture", "", int, uint4, short, ushort2,
                    unsigned char, float, float4) {
+  CHECK_IMAGE_SUPPORT
+
   using vec_info = vector_info<TestType>;
   DriverContext ctx;
 
-  hiparray array;
+  hipArray_t array;
   HIP_ARRAY3D_DESCRIPTOR desc{};
   desc.Format = vec_info::format;
   desc.NumChannels = vec_info::size;
@@ -252,6 +256,8 @@ constexpr HIP_ARRAY3D_DESCRIPTOR defaultDescriptor(unsigned int flags, size_t si
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipArray3DCreate_Negative_NullArrayPtr") {
+  CHECK_IMAGE_SUPPORT
+
   auto desc = defaultDescriptor(0, 64);
 
   DriverContext ctx;
@@ -271,8 +277,10 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_NullArrayPtr") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipArray3DCreate_Negative_NullDescPtr") {
+  CHECK_IMAGE_SUPPORT
+
   DriverContext ctx;
-  hiparray array;
+  hipArray_t array;
   HIP_CHECK_ERROR(hipArray3DCreate(&array, nullptr), hipErrorInvalidValue);
 }
 
@@ -289,6 +297,8 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_NullDescPtr") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipArray3DCreate_Negative_ZeroWidth") {
+  CHECK_IMAGE_SUPPORT
+
   DriverContext ctx;
 
   unsigned int flags = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
@@ -312,6 +322,8 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_ZeroWidth") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipArray3DCreate_Negative_ZeroHeight") {
+  CHECK_IMAGE_SUPPORT
+
   DriverContext ctx;
 
   unsigned int flags = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
@@ -343,6 +355,8 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_ZeroHeight") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipArray3DCreate_Negative_InvalidFormat") {
+  CHECK_IMAGE_SUPPORT
+
   DriverContext ctx;
 
   unsigned int flags = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
@@ -368,6 +382,8 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_InvalidFormat") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipArray3DCreate_Negative_NumChannels") {
+  CHECK_IMAGE_SUPPORT
+
   DriverContext ctx;
   unsigned int flags = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
   auto desc = defaultDescriptor(flags, 6);
@@ -389,6 +405,8 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_NumChannels") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipArray3DCreate_Negative_InvalidFlags") {
+  CHECK_IMAGE_SUPPORT
+
   DriverContext ctx;
 
   // FIXME: use the same flags for both tests when the values exist for hip
@@ -425,6 +443,8 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_InvalidFlags") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipArray3DCreate_Negative_NumericLimit") {
+  CHECK_IMAGE_SUPPORT
+
   DriverContext ctx;
 
   unsigned int flags = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
@@ -449,6 +469,8 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_NumericLimit") {
  */
 TEMPLATE_TEST_CASE("Unit_hipArray3DCreate_Negative_Non2DTextureGather", "", char, uint2, int4,
                    float2, float4) {
+  CHECK_IMAGE_SUPPORT
+
 #if HT_AMD
   HipTest::HIP_SKIP_TEST("Texture Gather arrays not supported using AMD backend");
   return;

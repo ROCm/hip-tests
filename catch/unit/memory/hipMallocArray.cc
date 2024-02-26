@@ -81,6 +81,8 @@ static void MallocArray_DiffSizes(int gpu) {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMallocArray_DiffSizes") {
+  CHECK_IMAGE_SUPPORT
+
   MallocArray_DiffSizes(0);
   HIP_CHECK_THREAD_FINALIZE();
 }
@@ -99,6 +101,8 @@ TEST_CASE("Unit_hipMallocArray_DiffSizes") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMallocArray_MultiThread") {
+  CHECK_IMAGE_SUPPORT
+
   std::vector<std::thread> threadlist;
   int devCnt = 0;
   devCnt = HipTest::getDeviceCount();
@@ -405,6 +409,7 @@ void testArrayAsSurface(hipArray_t arrayPtr, const size_t width, const size_t he
  */
 TEMPLATE_TEST_CASE("Unit_hipMallocArray_happy", "", uint, int, int4, ushort, short2, char, uchar2,
                    char4, float, float2, float4) {
+  CHECK_IMAGE_SUPPORT
 
   hipChannelFormatDesc desc = hipCreateChannelDesc<TestType>();
 
@@ -431,12 +436,22 @@ TEMPLATE_TEST_CASE("Unit_hipMallocArray_happy", "", uint, int, int4, ushort, sho
     testArrayAsSurface<TestType>(arrayPtr, width, height);
   }
   SECTION("hipArrayTextureGather") {
-    height = 1024;
-    INFO("flag is hipArrayTextureGather");
-    INFO("height: " << height);
+    hipDeviceProp_t prop;
+    int device;
+    HIP_CHECK(hipGetDevice(&device));
+    HIP_CHECK(hipGetDeviceProperties(&prop, device));
+    // tex2Dgather not supported on gfx90a
+    if (std::string(prop.gcnArchName).find("gfx90a") == std::string::npos) {
+      height = 1024;
+      INFO("flag is hipArrayTextureGather");
+      INFO("height: " << height);
 
-    HIP_CHECK(hipMallocArray(&arrayPtr, &desc, width, height, hipArrayTextureGather));
-    testArrayAsTextureWithGather<TestType>(arrayPtr, width, height);
+      HIP_CHECK(hipMallocArray(&arrayPtr, &desc, width, height, hipArrayTextureGather));
+      testArrayAsTextureWithGather<TestType>(arrayPtr, width, height);
+    } else {
+      SUCCEED("tex2Dgather is not supported for gfx90a, Hence"
+               "skipping the testcase for this device " << device);
+    }
   }
 #endif
 
@@ -459,6 +474,8 @@ TEMPLATE_TEST_CASE("Unit_hipMallocArray_happy", "", uint, int, int4, ushort, sho
  */
 TEMPLATE_TEST_CASE("Unit_hipMallocArray_MaxTexture_Default", "", uint, int4, ushort, short2, char,
                    char4, float2, float4) {
+  CHECK_IMAGE_SUPPORT
+
   size_t width, height;
   hipArray_t array{};
   hipChannelFormatDesc desc = hipCreateChannelDesc<TestType>();
@@ -527,6 +544,8 @@ TEMPLATE_TEST_CASE("Unit_hipMallocArray_MaxTexture_Default", "", uint, int4, ush
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMallocArray_Negative_DifferentChannelSizes") {
+  CHECK_IMAGE_SUPPORT
+
   const int bitsX = GENERATE(8, 16, 32);
   const int bitsY = GENERATE(8, 16, 32);
   const int bitsZ = GENERATE(8, 16, 32);
@@ -576,6 +595,8 @@ TEST_CASE("Unit_hipMallocArray_Negative_DifferentChannelSizes") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMallocArray_Negative_ZeroWidth") {
+  CHECK_IMAGE_SUPPORT
+
   hipChannelFormatDesc desc = hipCreateChannelDesc<float4>();
 
   // pointer to the array in device memory
@@ -601,6 +622,8 @@ TEST_CASE("Unit_hipMallocArray_Negative_ZeroWidth") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMallocArray_Negative_NullArrayPtr") {
+  CHECK_IMAGE_SUPPORT
+
   hipChannelFormatDesc desc = hipCreateChannelDesc<float4>();
 
   HIP_CHECK_ERROR(hipMallocArray(nullptr, &desc, 1024, 0, hipArrayDefault), hipErrorInvalidValue);
@@ -619,6 +642,8 @@ TEST_CASE("Unit_hipMallocArray_Negative_NullArrayPtr") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMallocArray_Negative_NullDescPtr") {
+  CHECK_IMAGE_SUPPORT
+
   hipArray_t arrayPtr;
   HIP_CHECK_ERROR(hipMallocArray(&arrayPtr, nullptr, 1024, 0, hipArrayDefault),
                   hipErrorInvalidValue);
@@ -637,6 +662,8 @@ TEST_CASE("Unit_hipMallocArray_Negative_NullDescPtr") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMallocArray_Negative_BadFlags") {
+  CHECK_IMAGE_SUPPORT
+
   hipChannelFormatDesc desc = hipCreateChannelDesc<float4>();
 
   hipArray_t arrayPtr;
@@ -675,6 +702,8 @@ TEST_CASE("Unit_hipMallocArray_Negative_BadFlags") {
  *  - HIP_VERSION >= 5.2
  */
 TEMPLATE_TEST_CASE("Unit_hipMallocArray_Negative_8bitFloat", "", float, float2, float4) {
+  CHECK_IMAGE_SUPPORT
+
   hipChannelFormatDesc desc = GENERATE(hipCreateChannelDesc(8, 0, 0, 0, hipChannelFormatKindFloat),
                                        hipCreateChannelDesc(8, 8, 0, 0, hipChannelFormatKindFloat),
                                        hipCreateChannelDesc(8, 8, 8, 8, hipChannelFormatKindFloat));
@@ -705,6 +734,8 @@ TEMPLATE_TEST_CASE("Unit_hipMallocArray_Negative_8bitFloat", "", float, float2, 
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMallocArray_Negative_BadNumberOfBits") {
+  CHECK_IMAGE_SUPPORT
+
   const int badBits = GENERATE(-1, 0, 10, 100);
   const hipChannelFormatKind formatKind =
       GENERATE(hipChannelFormatKindSigned, hipChannelFormatKindUnsigned, hipChannelFormatKindFloat);
@@ -743,6 +774,8 @@ TEST_CASE("Unit_hipMallocArray_Negative_BadNumberOfBits") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMallocArray_Negative_3ChannelElement") {
+  CHECK_IMAGE_SUPPORT
+
   const int bits = GENERATE(8, 16, 32);
   hipChannelFormatKind formatKind =
       GENERATE(hipChannelFormatKindSigned, hipChannelFormatKindUnsigned, hipChannelFormatKindFloat);
@@ -781,6 +814,8 @@ TEST_CASE("Unit_hipMallocArray_Negative_3ChannelElement") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMallocArray_Negative_ChannelAfterZeroChannel") {
+  CHECK_IMAGE_SUPPORT
+
   const int bits = GENERATE(8, 16, 32);
   const hipChannelFormatKind formatKind =
       GENERATE(hipChannelFormatKindSigned, hipChannelFormatKindUnsigned, hipChannelFormatKindFloat);
@@ -820,6 +855,8 @@ TEST_CASE("Unit_hipMallocArray_Negative_ChannelAfterZeroChannel") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMallocArray_Negative_InvalidChannelFormat") {
+  CHECK_IMAGE_SUPPORT
+
   const int bits = 32;
   hipChannelFormatKind formatKind = static_cast<hipChannelFormatKind>(0xFF);
   hipChannelFormatDesc desc = hipCreateChannelDesc(bits, bits, bits, bits, formatKind);
@@ -854,6 +891,8 @@ TEST_CASE("Unit_hipMallocArray_Negative_InvalidChannelFormat") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMallocArray_Negative_NumericLimit") {
+  CHECK_IMAGE_SUPPORT
+
   hipArray_t arrayPtr;
   hipChannelFormatDesc desc = hipCreateChannelDesc<float>();
 

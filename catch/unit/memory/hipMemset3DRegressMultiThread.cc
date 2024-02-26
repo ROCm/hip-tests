@@ -189,6 +189,8 @@ bool loopRegression(bool bAsync) {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemset3D_RegressInLoop") {
+  CHECK_IMAGE_SUPPORT
+
   bool TestPassed = false;
 
   TestPassed = loopRegression(0);
@@ -219,6 +221,8 @@ TEST_CASE("Unit_hipMemset3D_RegressInLoop") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemset3DAsync_RegressInLoop") {
+  CHECK_IMAGE_SUPPORT
+
   bool TestPassed = false;
 
   TestPassed = loopRegression(1);
@@ -238,6 +242,8 @@ TEST_CASE("Unit_hipMemset3DAsync_RegressInLoop") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemset3DAsync_ConcurrencyMthread") {
+  CHECK_IMAGE_SUPPORT
+
   char *A_h;
   constexpr int memsetval = 1, testval = 2;
   constexpr size_t numH = 256, numW = 100, depth = 10;

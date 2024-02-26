@@ -41,6 +41,265 @@ THE SOFTWARE.
  * Allocates at least width (in bytes) * height bytes of linear memory.
  */
 
+static constexpr auto SMALLCHUNK_NUMW{4};
+static constexpr auto SMALLCHUNK_NUMH{4};
+static constexpr auto LARGECHUNK_NUMW{1025};
+static constexpr auto LARGECHUNK_NUMH{1000};
+static constexpr auto NUM_W{10};
+static constexpr auto NUM_H{10};
+static constexpr auto COLUMNS{8};
+static constexpr auto ROWS{8};
+static constexpr auto CHUNK_LOOP{100};
+
+template<typename T>
+__global__ void copy_var(T* A, T* B,
+                              size_t ROWS, size_t pitch_A) {
+  for (uint64_t i = 0; i< ROWS*pitch_A; i= i+pitch_A) {
+    A[i] = B[i];
+  }
+}
+template<typename T>
+static bool validateResult(T* A, T* B, size_t pitch_A) {
+  bool testResult = true;
+  for (uint64_t i=0; i < pitch_A*ROWS; i=i+pitch_A) {
+    if (A[i] != B[i]) {
+      testResult = false;
+      break;
+    }
+  }
+  return testResult;
+}
+
+/*
+ * This API verifies  memory allocations for small and
+ * bigger chunks of data.
+ * Two scenarios are verified in this API
+ * 1. SmallChunk: Allocates SMALLCHUNK_NUMW in a loop and
+ *    releases the memory and verifies the meminfo.
+ * 2. LargeChunk: Allocates LARGECHUNK_NUMW in a loop and
+ *    releases the memory and verifies the meminfo
+ *
+ * In both cases, the memory info before allocation and
+ * after releasing the memory should be the same
+ *
+ */
+template<typename T>
+static void MemoryAllocDiffSizes(int gpu) {
+  HIP_CHECK(hipSetDevice(gpu));
+  std::vector<size_t> array_size;
+  array_size.push_back(SMALLCHUNK_NUMH);
+  array_size.push_back(LARGECHUNK_NUMH);
+  for (auto &sizes : array_size) {
+    T* A_d[CHUNK_LOOP];
+    size_t pitch_A = 0;
+    size_t width;
+    if (sizes == SMALLCHUNK_NUMH) {
+      width = SMALLCHUNK_NUMW * sizeof(T);
+    } else {
+      width = LARGECHUNK_NUMW * sizeof(T);
+    }
+    for (int i = 0; i < CHUNK_LOOP; i++) {
+      HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&A_d[i]),
+            &pitch_A, width, sizes));
+    }
+    for (int i = 0; i < CHUNK_LOOP; i++) {
+      HIP_CHECK(hipFree(A_d[i]));
+    }
+  }
+}
+
+/*Thread Function */
+static void threadFunc(int gpu) {
+  MemoryAllocDiffSizes<float>(gpu);
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Verify basic scenario for different data types.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocPitch.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEMPLATE_TEST_CASE("Unit_hipMallocPitch_Basic", "[hipMallocPitch]", int, unsigned int, float) {
+  CHECK_IMAGE_SUPPORT
+
+  TestType* A_d;
+  size_t pitch_A = 0;
+  size_t width{NUM_W * sizeof(TestType)};
+  REQUIRE(hipMallocPitch(reinterpret_cast<void**>(&A_d),
+          &pitch_A, width, NUM_H) == hipSuccess);
+  REQUIRE(width <= pitch_A);
+  HIP_CHECK(hipFree(A_d));
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Checks that memory is correctly freed after performing many
+ *    allocations on diferent sizes.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocPitch.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEMPLATE_TEST_CASE("Unit_hipMallocPitch_SmallandBigChunks", "[hipMallocPitch]", int, unsigned int,
+                   float) {
+  CHECK_IMAGE_SUPPORT
+
+  MemoryAllocDiffSizes<TestType>(0);
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Perform a pitch allocation and perform memcpy 2D with all direction arguments:
+ *    -# Host -> Device
+ *    -# Device -> Device
+ *    -# Device -> Host
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocPitch.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEMPLATE_TEST_CASE("Unit_hipMallocPitch_Memcpy2D", "", int, float, double) {
+  CHECK_IMAGE_SUPPORT
+
+  HIP_CHECK(hipSetDevice(0));
+  TestType  *A_h{nullptr}, *B_h{nullptr}, *C_h{nullptr}, *A_d{nullptr},
+            *B_d{nullptr};
+  size_t pitch_A = 0, pitch_B = 0;
+  size_t width{NUM_W * sizeof(TestType)};
+
+  // Allocating memory
+  HipTest::initArrays<TestType>(nullptr, nullptr, nullptr,
+                                  &A_h, &B_h, &C_h, NUM_W*NUM_H, false);
+  HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&A_d),
+                          &pitch_A, width, NUM_H));
+  HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&B_d),
+                          &pitch_B, width, NUM_H));
+
+  // Initialize the data
+  HipTest::setDefaultData<TestType>(NUM_W*NUM_H, A_h, B_h, C_h);
+
+  // Host to Device
+  HIP_CHECK(hipMemcpy2D(A_d, pitch_A, A_h, COLUMNS*sizeof(TestType),
+                        COLUMNS*sizeof(TestType), ROWS, hipMemcpyHostToDevice));
+
+  // Performs D2D on same GPU device
+  HIP_CHECK(hipMemcpy2D(B_d, pitch_B, A_d,
+                        pitch_A, COLUMNS*sizeof(TestType),
+                        ROWS, hipMemcpyDeviceToDevice));
+
+  // hipMemcpy2D Device to Host
+  HIP_CHECK(hipMemcpy2D(B_h, COLUMNS*sizeof(TestType), B_d, pitch_B,
+                        COLUMNS*sizeof(TestType), ROWS,
+                        hipMemcpyDeviceToHost));
+
+  // Validating the result
+  REQUIRE(HipTest::checkArray<TestType>(A_h, B_h, COLUMNS, ROWS) == true);
+
+
+  // DeAllocating the memory
+  HIP_CHECK(hipFree(A_d));
+  HIP_CHECK(hipFree(B_d));
+  HipTest::freeArrays<TestType>(nullptr, nullptr, nullptr,
+                                A_h, B_h, C_h, false);
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Launches threads in parallel on all available devices.
+ *  - Verifies that pitch can be allocated with small and big data chunks.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocPitch.cc
+ * Test requirements
+ * ------------------------
+ *  - Multi-threaded device
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipMallocPitch_MultiThread", "") {
+  CHECK_IMAGE_SUPPORT
+
+  std::vector<std::thread> threadlist;
+  int devCnt = 0;
+
+  devCnt = HipTest::getDeviceCount();
+  for (int i = 0; i < devCnt; i++) {
+    threadlist.push_back(std::thread(threadFunc, i));
+  }
+
+  for (auto &t : threadlist) {
+    t.join();
+  }
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Allocates pitched memory.
+ *  - Launches the kernel and copies the data from allocated kernel variable
+ *    to another kernel variable.
+ *  - Validates the result.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocPitch.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEMPLATE_TEST_CASE("Unit_hipMallocPitch_KernelLaunch", "", int, float, double) {
+  CHECK_IMAGE_SUPPORT
+
+  HIP_CHECK(hipSetDevice(0));
+  TestType  *A_h{nullptr}, *B_h{nullptr}, *C_h{nullptr}, *A_d{nullptr},
+            *B_d{nullptr};
+  size_t pitch_A = 0, pitch_B = 0;
+  size_t width{NUM_W * sizeof(TestType)};
+
+  // Allocating memory
+  HipTest::initArrays<TestType>(nullptr, nullptr, nullptr,
+                                  &A_h, &B_h, &C_h, NUM_W*NUM_H, false);
+  HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&A_d),
+                          &pitch_A, width, NUM_H));
+  HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&B_d),
+                          &pitch_B, width, NUM_H));
+
+  // Host to Device
+  HIP_CHECK(hipMemcpy2D(A_d, pitch_A, A_h, COLUMNS*sizeof(TestType),
+                        COLUMNS*sizeof(TestType), ROWS, hipMemcpyHostToDevice));
+
+
+  hipLaunchKernelGGL(copy_var<TestType>, dim3(1), dim3(1),
+          0, 0, static_cast<TestType*>(A_d),
+          static_cast<TestType*>(B_d), ROWS, pitch_A);
+  HIP_CHECK(hipGetLastError()); 
+
+
+  // hipMemcpy2D Device to Host
+  HIP_CHECK(hipMemcpy2D(B_h, COLUMNS*sizeof(TestType), B_d, pitch_B,
+                        COLUMNS*sizeof(TestType), ROWS,
+                        hipMemcpyDeviceToHost));
+
+  // Validating the result
+  validateResult(A_h, B_h, pitch_A);
+
+  // DeAllocating the memory
+  HIP_CHECK(hipFree(A_d));
+  HIP_CHECK(hipFree(B_d));
+  HipTest::freeArrays<TestType>(nullptr, nullptr, nullptr,
+                                A_h, B_h, C_h, false);
+}
+
 static void validateMemory(void* devPtr, hipExtent extent, size_t pitch) {
   INFO("Width: " << extent.width << " Height: " << extent.height << " Depth: " << extent.depth);
 
@@ -132,78 +391,6 @@ hipExtent generateExtent(AllocationApi api) {
   return extent;
 }
 
-static constexpr auto SMALLCHUNK_NUMW{4};
-static constexpr auto SMALLCHUNK_NUMH{4};
-static constexpr auto LARGECHUNK_NUMW{1025};
-static constexpr auto LARGECHUNK_NUMH{1000};
-static constexpr auto NUM_W{10};
-static constexpr auto NUM_H{10};
-static constexpr auto COLUMNS{8};
-static constexpr auto ROWS{8};
-static constexpr auto CHUNK_LOOP{100};
-
-
-template<typename T>
-__global__ void copy_var(T* A, T* B,
-                              size_t ROWS, size_t pitch_A) {
-  for (uint64_t i = 0; i< ROWS*pitch_A; i= i+pitch_A) {
-    A[i] = B[i];
-  }
-}
-template<typename T>
-static bool validateResult(T* A, T* B, size_t pitch_A) {
-  bool testResult = true;
-  for (uint64_t i=0; i < pitch_A*ROWS; i=i+pitch_A) {
-    if (A[i] != B[i]) {
-      testResult = false;
-      break;
-    }
-  }
-  return testResult;
-}
-/*
- * This API verifies  memory allocations for small and
- * bigger chunks of data.
- * Two scenarios are verified in this API
- * 1. SmallChunk: Allocates SMALLCHUNK_NUMW in a loop and
- *    releases the memory and verifies the meminfo.
- * 2. LargeChunk: Allocates LARGECHUNK_NUMW in a loop and
- *    releases the memory and verifies the meminfo
- *
- * In both cases, the memory info before allocation and
- * after releasing the memory should be the same
- *
- */
-template<typename T>
-static void MemoryAllocDiffSizes(int gpu) {
-  HIP_CHECK(hipSetDevice(gpu));
-  std::vector<size_t> array_size;
-  array_size.push_back(SMALLCHUNK_NUMH);
-  array_size.push_back(LARGECHUNK_NUMH);
-  for (auto &sizes : array_size) {
-    T* A_d[CHUNK_LOOP];
-    size_t pitch_A = 0;
-    size_t width;
-    if (sizes == SMALLCHUNK_NUMH) {
-      width = SMALLCHUNK_NUMW * sizeof(T);
-    } else {
-      width = LARGECHUNK_NUMW * sizeof(T);
-    }
-    for (int i = 0; i < CHUNK_LOOP; i++) {
-      HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&A_d[i]),
-            &pitch_A, width, sizes));
-    }
-    for (int i = 0; i < CHUNK_LOOP; i++) {
-      HIP_CHECK(hipFree(A_d[i]));
-    }
-  }
-}
-
-/*Thread Function */
-static void threadFunc(int gpu) {
-  MemoryAllocDiffSizes<float>(gpu);
-}
-
 /**
  * Test Description
  * ------------------------
@@ -219,6 +406,8 @@ static void threadFunc(int gpu) {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMallocPitch_ValidatePitch") {
+  CHECK_IMAGE_SUPPORT
+
   size_t pitch = 0;
   void* ptr;
   hipExtent validExtent{generateExtent(AllocationApi::hipMemAllocPitch)};
@@ -248,6 +437,8 @@ TEST_CASE("Unit_hipMallocPitch_ValidatePitch") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMallocPitch_Negative") {
+  CHECK_IMAGE_SUPPORT
+
   size_t pitch = 0;
   void* ptr;
   constexpr size_t maxSizeT = std::numeric_limits<size_t>::max();
@@ -288,6 +479,8 @@ TEST_CASE("Unit_hipMallocPitch_Negative") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMallocPitch_Zero_Dims") {
+  CHECK_IMAGE_SUPPORT
+
   void* ptr = nullptr;
   size_t pitch = 0;
 
@@ -300,191 +493,6 @@ TEST_CASE("Unit_hipMallocPitch_Zero_Dims") {
     HIP_CHECK(hipMallocPitch(&ptr, &pitch, 1, 0));
     REQUIRE(ptr == nullptr);
   }
-}
-
-/**
- * Test Description
- * ------------------------
- *  - Validates that pitch can be allocated with falid arguments.
- * Test source
- * ------------------------
- *  - unit/memory/hipMallocPitch.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEMPLATE_TEST_CASE("Unit_hipMallocPitch_Basic",
-    "[hipMallocPitch]", int, unsigned int, float) {
-  TestType* A_d;
-  size_t pitch_A = 0;
-  size_t width{NUM_W * sizeof(TestType)};
-  REQUIRE(hipMallocPitch(reinterpret_cast<void**>(&A_d),
-          &pitch_A, width, NUM_H) == hipSuccess);
-  REQUIRE(width <= pitch_A);
-  HIP_CHECK(hipFree(A_d));
-}
-
-/**
- * Test Description
- * ------------------------
- *  - Checks that memory is correctly freed after performing many
- *    allocations on diferent sizes.
- * Test source
- * ------------------------
- *  - unit/memory/hipMallocPitch.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEMPLATE_TEST_CASE("Unit_hipMallocPitch_SmallandBigChunks",
-    "[hipMallocPitch]", int, unsigned int, float) {
-  MemoryAllocDiffSizes<TestType>(0);
-}
-
-/**
- * Test Description
- * ------------------------
- *  - Perform a pitch allocation and perform memcpy 2D with all direction arguments:
- *    -# Host -> Device
- *    -# Device -> Device
- *    -# Device -> Host
- * Test source
- * ------------------------
- *  - unit/memory/hipMallocPitch.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEMPLATE_TEST_CASE("Unit_hipMallocPitch_Memcpy2D", ""
-                   , int, float, double) {
-  HIP_CHECK(hipSetDevice(0));
-  TestType  *A_h{nullptr}, *B_h{nullptr}, *C_h{nullptr}, *A_d{nullptr},
-            *B_d{nullptr};
-  size_t pitch_A = 0, pitch_B = 0;
-  size_t width{NUM_W * sizeof(TestType)};
-
-  // Allocating memory
-  HipTest::initArrays<TestType>(nullptr, nullptr, nullptr,
-                                  &A_h, &B_h, &C_h, NUM_W*NUM_H, false);
-  HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&A_d),
-                          &pitch_A, width, NUM_H));
-  HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&B_d),
-                          &pitch_B, width, NUM_H));
-
-  // Initialize the data
-  HipTest::setDefaultData<TestType>(NUM_W*NUM_H, A_h, B_h, C_h);
-
-  // Host to Device
-  HIP_CHECK(hipMemcpy2D(A_d, pitch_A, A_h, COLUMNS*sizeof(TestType),
-                        COLUMNS*sizeof(TestType), ROWS, hipMemcpyHostToDevice));
-
-  // Performs D2D on same GPU device
-  HIP_CHECK(hipMemcpy2D(B_d, pitch_B, A_d,
-                        pitch_A, COLUMNS*sizeof(TestType),
-                        ROWS, hipMemcpyDeviceToDevice));
-
-  // hipMemcpy2D Device to Host
-  HIP_CHECK(hipMemcpy2D(B_h, COLUMNS*sizeof(TestType), B_d, pitch_B,
-                        COLUMNS*sizeof(TestType), ROWS,
-                        hipMemcpyDeviceToHost));
-
-  // Validating the result
-  REQUIRE(HipTest::checkArray<TestType>(A_h, B_h, COLUMNS, ROWS) == true);
-
-
-  // DeAllocating the memory
-  HIP_CHECK(hipFree(A_d));
-  HIP_CHECK(hipFree(B_d));
-  HipTest::freeArrays<TestType>(nullptr, nullptr, nullptr,
-                                A_h, B_h, C_h, false);
-}
-
-/*
-This testcase verifies the hipMallocPitch API in multithreaded
-scenario by launching threads in parallel on multiple GPUs
-and verifies the hipMallocPitch API with small and big chunks data
-*/
-/**
- * Test Description
- * ------------------------
- *  - Launches trheads in parallel on all available devices.
- *  - Verifies that pitch can be allocated with small and big data chunks.
- * Test source
- * ------------------------
- *  - unit/memory/hipMallocPitch.cc
- * Test requirements
- * ------------------------
- *  - Multi-threaded device
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipMallocPitch_MultiThread", "") {
-  std::vector<std::thread> threadlist;
-  int devCnt = 0;
-
-  devCnt = HipTest::getDeviceCount();
-  for (int i = 0; i < devCnt; i++) {
-    threadlist.push_back(std::thread(threadFunc, i));
-  }
-
-  for (auto &t : threadlist) {
-    t.join();
-  }
-}
-
-/**
- * Test Description
- * ------------------------
- *  - Allocates pitched memory.
- *  - Launches the kernel and copies the data from allocated kernel variable
- *    to another kernel variable.
- *  - Validates the result.
- * Test source
- * ------------------------
- *  - unit/memory/hipMallocPitch.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEMPLATE_TEST_CASE("Unit_hipMallocPitch_KernelLaunch", ""
-                   , int, float, double) {
-  HIP_CHECK(hipSetDevice(0));
-  TestType  *A_h{nullptr}, *B_h{nullptr}, *C_h{nullptr}, *A_d{nullptr},
-            *B_d{nullptr};
-  size_t pitch_A = 0, pitch_B = 0;
-  size_t width{NUM_W * sizeof(TestType)};
-
-  // Allocating memory
-  HipTest::initArrays<TestType>(nullptr, nullptr, nullptr,
-                                  &A_h, &B_h, &C_h, NUM_W*NUM_H, false);
-  HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&A_d),
-                          &pitch_A, width, NUM_H));
-  HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&B_d),
-                          &pitch_B, width, NUM_H));
-
-  // Host to Device
-  HIP_CHECK(hipMemcpy2D(A_d, pitch_A, A_h, COLUMNS*sizeof(TestType),
-                        COLUMNS*sizeof(TestType), ROWS, hipMemcpyHostToDevice));
-
-
-  hipLaunchKernelGGL(copy_var<TestType>, dim3(1), dim3(1),
-          0, 0, static_cast<TestType*>(A_d),
-          static_cast<TestType*>(B_d), ROWS, pitch_A);
-  HIP_CHECK(hipGetLastError()); 
-
-
-  // hipMemcpy2D Device to Host
-  HIP_CHECK(hipMemcpy2D(B_h, COLUMNS*sizeof(TestType), B_d, pitch_B,
-                        COLUMNS*sizeof(TestType), ROWS,
-                        hipMemcpyDeviceToHost));
-
-  // Validating the result
-  validateResult(A_h, B_h, pitch_A);
-
-  // DeAllocating the memory
-  HIP_CHECK(hipFree(A_d));
-  HIP_CHECK(hipFree(B_d));
-  HipTest::freeArrays<TestType>(nullptr, nullptr, nullptr,
-                                A_h, B_h, C_h, false);
 }
 
 /**
@@ -516,6 +524,8 @@ TEMPLATE_TEST_CASE("Unit_hipMallocPitch_KernelLaunch", ""
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemAllocPitch_ValidatePitch") {
+  CHECK_IMAGE_SUPPORT
+
   size_t pitch = 0;
   hipDeviceptr_t ptr;
   hipExtent validExtent{generateExtent(AllocationApi::hipMemAllocPitch)};
@@ -564,6 +574,8 @@ TEST_CASE("Unit_hipMemAllocPitch_ValidatePitch") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemAllocPitch_Negative") {
+  CHECK_IMAGE_SUPPORT
+
   size_t pitch = 0;
   hipDeviceptr_t ptr{};
   unsigned int validElementSizeBytes{4};
@@ -639,6 +651,8 @@ TEST_CASE("Unit_hipMemAllocPitch_Negative") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMalloc3D_ValidatePitch") {
+  CHECK_IMAGE_SUPPORT
+
   hipPitchedPtr hipPitchedPtr;
   hipExtent validExtent{generateExtent(AllocationApi::hipMalloc3D)};
 
@@ -671,6 +685,8 @@ TEST_CASE("Unit_hipMalloc3D_ValidatePitch") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMalloc3D_Negative") {
+  CHECK_IMAGE_SUPPORT
+
   SECTION("Invalid ptr") {
     hipExtent validExtent{1, 1, 1};
     HIP_CHECK_ERROR(hipMalloc3D(nullptr, validExtent), hipErrorInvalidValue);
@@ -705,3 +721,4 @@ TEST_CASE("Unit_hipMalloc3D_Negative") {
   }
 #endif
 }
+

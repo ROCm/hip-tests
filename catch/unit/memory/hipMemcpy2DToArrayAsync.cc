@@ -58,6 +58,8 @@ THE SOFTWARE.
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemcpy2DToArrayAsync_Positive_Default") {
+  CHECK_IMAGE_SUPPORT
+
   using namespace std::placeholders;
 
   const auto stream_type = GENERATE(Streams::nullstream, Streams::perThread, Streams::created);
@@ -129,6 +131,8 @@ TEST_CASE("Unit_hipMemcpy2DToArrayAsync_Positive_Default") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemcpy2DToArrayAsync_Positive_Synchronization_Behavior") {
+  CHECK_IMAGE_SUPPORT
+
   using namespace std::placeholders;
   HIP_CHECK(hipDeviceSynchronize());
 
@@ -174,6 +178,8 @@ TEST_CASE("Unit_hipMemcpy2DToArrayAsync_Positive_Synchronization_Behavior") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemcpy2DToArrayAsync_Positive_ZeroWidthHeight") {
+  CHECK_IMAGE_SUPPORT
+
   using namespace std::placeholders;
   const auto width = 16;
   const auto height = 16;
@@ -240,6 +246,8 @@ TEST_CASE("Unit_hipMemcpy2DToArrayAsync_Positive_ZeroWidthHeight") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemcpy2DToArrayAsync_Negative_Parameters") {
+  CHECK_IMAGE_SUPPORT
+
   using namespace std::placeholders;
 
   const auto width = 32;

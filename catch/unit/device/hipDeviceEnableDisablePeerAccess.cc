@@ -35,14 +35,14 @@ THE SOFTWARE.
 /**
  * Test Description
  * ------------------------
- *  - Successfully enable peer access between each pair of devices.
- *  - Successfully disable peer access between each pair of devices.
+ *  - Enables peer access for each GPU pair.
+ *  - Disables peer access for each GPU pair.
  * Test source
  * ------------------------
  *  - unit/device/hipDeviceEnableDisablePeerAccess.cc
  * Test requirements
  * ------------------------
- *  - Device supports peer to peer access
+ *  - PeerToPeer supported
  *  - Multi-device
  *  - HIP_VERSION >= 5.2
  */
@@ -73,17 +73,18 @@ TEST_CASE("Unit_hipDeviceEnableDisablePeerAccess_positive") {
  * Test Description
  * ------------------------
  *  - Validates handling of invalid arguments:
- *    -# When peer device ID is not valid, -1 or out of bounds
+ *    -# When peer device ID is invalid (-1 or out of bounds)
  *      - Expected output: return `hipErrorInvalidDevice`
- *    -# When flag is not valid (-1)
+ *    -# When flag is invalid (-1)
  *      - Expected output: return `hipErrorInvalidValue`
  *    -# When peer access has already been enabled
- *      - Expected output: return `hipErrorPeerAccessAlreadyEnabled`
+ *      - Expected output: return `hipErrorPeerAccessAleadyEnabled`
  * Test source
  * ------------------------
  *  - unit/device/hipDeviceEnableDisablePeerAccess.cc
  * Test requirements
  * ------------------------
+ *  - Multi-device
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipDeviceEnablePeerAccess_negative") {
@@ -136,17 +137,18 @@ TEST_CASE("Unit_hipDeviceEnablePeerAccess_negative") {
  * Test Description
  * ------------------------
  *  - Validates handling of invalid arguments:
- *    -# When peer device ID is not valid, -1 or out of bounds
+ *    -# When peer device ID is invalid (-1 or out of bounds)
  *      - Expected output: return `hipErrorInvalidDevice`
  *    -# When peer access is not enabled
  *      - Expected output: return `hipErrorPeerAccessNotEnabled`
- *    -# When peer access has been disabled twice after enabling
+ *    -# When peer access is already disabled
  *      - Expected output: return `hipErrorPeerAccessNotEnabled`
  * Test source
  * ------------------------
  *  - unit/device/hipDeviceEnableDisablePeerAccess.cc
  * Test requirements
  * ------------------------
+ *  - Multi-device
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipDeviceDisablePeerAccess_negative") {

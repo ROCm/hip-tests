@@ -65,9 +65,6 @@ void HostKernelDouble(float* Hmm, float* hPtr, size_t n) {
   }
 }
 
-/*
-   This testcase verifies the concurrent access of hipMallocManaged Memory on host and device.
- */
 /**
  * Test Description
  * ------------------------
@@ -113,11 +110,6 @@ TEST_CASE("Unit_hipMallocManaged_HostDeviceConcurrent") {
   HIP_CHECK(hipFree(Hmm));
 }
 
-// The following Test case tests the following scenario:
-// A large chunk of hipMallocManaged() memory(Hmm) is created
-// Equal parts of Hmm is accessed and
-// kernel is launched on acessed chunk of hmm memory
-// and checks if there are any inconsistencies or access issues
 /**
  * Test Description
  * ------------------------
@@ -179,11 +171,6 @@ TEST_CASE("Unit_hipMallocManaged_MultiChunkSingleDevice") {
   delete[] Ah;
 }
 
-// The following Test case tests the following scenario:
-// A large chunk of hipMallocManaged() memory(Hmm) is created
-// Equal parts of Hmm is accessed on available gpus and
-// kernel is launched on acessed chunk of hmm memory
-// and checks if there are any inconsistencies or access issues
 /**
  * Test Description
  * ------------------------
@@ -255,8 +242,6 @@ TEST_CASE("Unit_hipMallocManaged_MultiChunkMultiDevice") {
   delete[] Ah;
 }
 
-// The following tests oversubscription hipMallocManaged() api
-// Currently disabled.
 /**
  * Test Description
  * ------------------------
@@ -278,15 +263,22 @@ TEST_CASE("Unit_hipMallocManaged_OverSubscription") {
     return;
   }
 
+  #if HT_AMD
+    int isPageableHMM = 0;
+    HIP_CHECK(hipDeviceGetAttribute(&isPageableHMM,
+                                    hipDeviceAttributePageableMemoryAccess, 0));
+    if (!isPageableHMM) {
+      SUCCEED("Running on a system  where all the memory requested in hipMallocManged "
+              "is allocated on the host.\nThis can cause instability because of out of memory failures.\n"
+              "Hence skipping the test with Pass result.\n");
+      return;
+    }
+  #endif
+
   void* A = nullptr;
   size_t total = 0, free = 0;
   HIP_CHECK(hipMemGetInfo(&free, &total));
-  // ToDo: In case of HMM, memory over-subscription is allowed.  Hence, relook
-  // into how out of memory can be tested.
-  // Demanding more mem size than available
-#if HT_AMD
-  HIP_CHECK_ERROR(hipMallocManaged(&A, (free + 1), hipMemAttachGlobal), hipErrorOutOfMemory);
-#endif
+  HIP_CHECK(hipMallocManaged(&A, (free + 1), hipMemAttachGlobal));
 }
 
 /**

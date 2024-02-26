@@ -93,16 +93,8 @@ TEST_CASE("Unit_hipMemcpyAsync_Positive_Synchronization_Behavior") {
   HIP_CHECK(hipDeviceSynchronize());
 
   SECTION("Host memory to device memory") {
-    // This behavior differs on NVIDIA and AMD, on AMD the hipMemcpy calls is synchronous with
-    // respect to the host
-#if HT_AMD
-    HipTest::HIP_SKIP_TEST(
-        "EXSWCPHIPT-127 - MemcpyAsync from host to device memory behavior differs on AMD and "
-        "Nvidia");
-    return;
-#endif
     MemcpyHtoDSyncBehavior(std::bind(hipMemcpyAsync, _1, _2, _3, hipMemcpyHostToDevice, nullptr),
-                           false);
+                           true);
   }
 
   SECTION("Device memory to pageable host memory") {
@@ -118,6 +110,11 @@ TEST_CASE("Unit_hipMemcpyAsync_Positive_Synchronization_Behavior") {
   SECTION("Device memory to device memory") {
     MemcpyDtoDSyncBehavior(std::bind(hipMemcpyAsync, _1, _2, _3, hipMemcpyDeviceToDevice, nullptr),
                            false);
+  }
+
+  SECTION("Device memory to device Memory No CU") {
+    MemcpyDtoDSyncBehavior(std::bind(hipMemcpyAsync, _1, _2, _3, hipMemcpyDeviceToDeviceNoCU,
+                            nullptr),false);
   }
 
   SECTION("Host memory to host memory") {

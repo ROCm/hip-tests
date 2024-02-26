@@ -24,6 +24,7 @@ THE SOFTWARE.
 #include <hip_array_common.hh>
 #include "hipArrayCommon.hh"
 #include "DriverContext.hh"
+#include <utils.hh>
 
 /**
  * @addtogroup hipFree hipFree
@@ -37,7 +38,6 @@ enum class FreeType { DevFree, ArrayFree, ArrayDestroy, HostFree };
 
 // Amount of time kernel should wait
 using namespace std::chrono_literals;
-const std::chrono::duration<uint64_t, std::milli> delay = 50ms;
 constexpr size_t numAllocs = 10;
 
 /**
@@ -58,91 +58,16 @@ TEST_CASE("Unit_hipFreeImplicitSyncDev") {
   size_t size_mult = GENERATE(1, 32, 64, 128, 256);
   HIP_CHECK(hipMalloc(&devPtr, sizeof(*devPtr) * size_mult));
 
-  HipTest::runKernelForDuration(delay);
-  // make sure device is busy
+  HipTest::BlockingContext b_context{nullptr};
+
+  b_context.block_stream();
+  REQUIRE(b_context.is_blocked());
+
   HIP_CHECK_ERROR(hipStreamQuery(nullptr), hipErrorNotReady);
+  b_context.unblock_stream();
+
   HIP_CHECK(hipFree(devPtr));
   HIP_CHECK(hipStreamQuery(nullptr));
-}
-
-/**
- * Test Description
- * ------------------------
- *  - Validates that freeing already freed memory
- *    returns `hipErrorInvalidValue`
- * Test source
- * ------------------------
- *  - unit/memory/hipFree.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipFreeDoubleDevice") {
-  size_t width = GENERATE(32, 512, 1024);
-  char* ptr{};
-  size_t size_mult = width;
-  HIP_CHECK(hipMalloc(&ptr, sizeof(char) * size_mult));
-
-  HIP_CHECK(hipFree(ptr));
-  HIP_CHECK_ERROR(hipFree(ptr), hipErrorInvalidValue);
-}
-
-/**
- * Test Description
- * ------------------------
- *  - Allocates and frees memory from multiple threads.
- *  - The test is run for various allocation sizes.
- * Test source
- * ------------------------
- *  - unit/memory/hipFree.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEMPLATE_TEST_CASE("Unit_hipFreeMultiTDev", "", char, int, float2, float4) {
-  std::vector<TestType*> ptrs(numAllocs);
-  size_t allocSize = sizeof(TestType) * GENERATE(1, 32, 64, 128);
-
-  for (auto& ptr : ptrs) {
-    HIP_CHECK(hipMalloc(&ptr, allocSize));
-  }
-
-  std::vector<std::thread> threads;
-
-  for (auto ptr : ptrs) {
-    threads.emplace_back(([ptr] {
-      HIP_CHECK_THREAD(hipFree(ptr));
-      HIP_CHECK_THREAD(hipStreamQuery(nullptr));
-    }));
-  }
-
-  for (auto& t : threads) {
-    t.join();
-  }
-  HIP_CHECK_THREAD_FINALIZE();
-}
-
-/**
- * Test Description
- * ------------------------
- *  - Validates handling of invalid arguments:
- *    -# When pointer to the variable is not valid
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When pointer is `nullptr`
- *      - Expected output: return `hipSuccess`
- * Test source
- * ------------------------
- *  - unit/memory/hipFree.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipFreeNegativeDev") {
-  SECTION("InvalidPtr") {
-    char value;
-    HIP_CHECK_ERROR(hipFree(&value), hipErrorInvalidValue);
-  }
-  SECTION("NullPtr") { HIP_CHECK(hipFree(nullptr)); }
 }
 
 /**
@@ -177,102 +102,16 @@ TEST_CASE("Unit_hipFreeImplicitSyncHost") {
 
   HIP_CHECK(hipHostMalloc(&hostPtr, sizeof(*hostPtr) * size_mult));
 
-  HipTest::runKernelForDuration(delay);
-  // make sure device is busy
+  HipTest::BlockingContext b_context{nullptr};
+
+  b_context.block_stream();
+  REQUIRE(b_context.is_blocked());
+
   HIP_CHECK_ERROR(hipStreamQuery(nullptr), hipErrorNotReady);
+  b_context.unblock_stream();
+
   HIP_CHECK(hipHostFree(hostPtr));
   HIP_CHECK(hipStreamQuery(nullptr));
-}
-
-/**
- * Test Description
- * ------------------------
- *  - Validate that freeing already freed memory returns an error
- *    - Expected output: return `hipErrorInvalidValue`
- * Test source
- * ------------------------
- *  - unit/memory/hipFree.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipFreeDoubleHost") {
-  size_t width = GENERATE(32, 512, 1024);
-  char* ptr{};
-  size_t size_mult = width;
-
-  HIP_CHECK(hipHostMalloc(&ptr, sizeof(char) * size_mult));
-
-  HIP_CHECK(hipHostFree(ptr));
-  HIP_CHECK_ERROR(hipHostFree(ptr), hipErrorInvalidValue);
-}
-
-/**
- * Test Description
- * ------------------------
- *  - Validate behaviour of the memory freeing when run from
- *    multiple threads.
- * Test source
- * ------------------------
- *  - unit/memory/hipFree.cc
- * Test requirements
- * ------------------------
- *  - Multi-threaded device
- *  - HIP_VERSION >= 5.2
- */
-TEMPLATE_TEST_CASE("Unit_hipFreeMultiTHost", "", char, int, float2, float4) {
-  std::vector<TestType*> ptrs(numAllocs);
-  size_t allocSize = sizeof(TestType) * GENERATE(1, 32, 64, 128);
-
-  for (auto& ptr : ptrs) {
-    HIP_CHECK(hipHostMalloc(&ptr, allocSize));
-  }
-
-  std::vector<std::thread> threads;
-
-  for (auto ptr : ptrs) {
-    threads.emplace_back(([ptr] {
-      HIP_CHECK_THREAD(hipHostFree(ptr));
-      HIP_CHECK_THREAD(hipStreamQuery(nullptr));
-    }));
-  }
-
-  for (auto& t : threads) {
-    t.join();
-  }
-  HIP_CHECK_THREAD_FINALIZE();
-}
-
-/**
- * Test Description
- * ------------------------
- *  - Validate handling of invalid arguments:
- *    -# When device pointer is `nullptr`
- *      - Expected output: return `hipSuccess`
- *    -# When device pointer is not valid
- *      - Expected output: return `hipErrorInvalidValue`
- *    -# When freeing host memory that was only registered
- *      - Expected output: return `hipErrorInvalidValue`
- * Test source
- * ------------------------
- *  - unit/memory/hipFree.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 5.2
- */
-TEST_CASE("Unit_hipFreeNegativeHost") {
-  SECTION("NullPtr") { HIP_CHECK(hipHostFree(nullptr)); }
-  SECTION("InvalidPtr") {
-    char hostPtr;
-    HIP_CHECK_ERROR(hipHostFree(&hostPtr), hipErrorInvalidValue);
-  }
-  SECTION("hipHostRegister") {
-    char* hostPtr = new char;
-    auto flag = GENERATE(hipHostRegisterDefault, hipHostRegisterPortable, hipHostRegisterMapped);
-    HIP_CHECK(hipHostRegister((void*)hostPtr, sizeof(char), flag));
-    HIP_CHECK_ERROR(hipHostFree(hostPtr), hipErrorInvalidValue);
-    delete hostPtr;
-  }
 }
 
 /**
@@ -288,6 +127,7 @@ TEST_CASE("Unit_hipFreeNegativeHost") {
  * Destroys an array.
  */
 
+#if HT_NVIDIA
 /**
  * Test Description
  * ------------------------
@@ -303,9 +143,11 @@ TEST_CASE("Unit_hipFreeNegativeHost") {
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-#if HT_NVIDIA
 TEMPLATE_TEST_CASE("Unit_hipFreeImplicitSyncArray", "", char, float, float2, float4) {
+  CHECK_IMAGE_SUPPORT
+
   using vec_info = vector_info<TestType>;
+  const std::chrono::duration<uint64_t, std::milli> delay = 50ms;
   DriverContext ctx;
 
 
@@ -317,14 +159,14 @@ TEMPLATE_TEST_CASE("Unit_hipFreeImplicitSyncArray", "", char, float, float2, flo
     hipChannelFormatDesc desc = hipCreateChannelDesc<TestType>();
 
     HIP_CHECK(hipMallocArray(&arrayPtr, &desc, width, height, hipArrayDefault));
-    HipTest::runKernelForDuration(delay);
+    LaunchDelayKernel(delay);
     // make sure device is busy
     HIP_CHECK_ERROR(hipStreamQuery(nullptr), hipErrorNotReady);
     HIP_CHECK(hipFreeArray(arrayPtr));
     HIP_CHECK(hipStreamQuery(nullptr));
   }
   SECTION("ArrayDestroy") {
-    hiparray cuArrayPtr{};
+    hipArray_t cuArrayPtr{};
 
     HIP_ARRAY_DESCRIPTOR cuDesc;
     cuDesc.Width = width;
@@ -332,7 +174,7 @@ TEMPLATE_TEST_CASE("Unit_hipFreeImplicitSyncArray", "", char, float, float2, flo
     cuDesc.Format = vec_info::format;
     cuDesc.NumChannels = vec_info::size;
     HIP_CHECK(hipArrayCreate(&cuArrayPtr, &cuDesc));
-    HipTest::runKernelForDuration(delay);
+    LaunchDelayKernel(delay);
     // make sure device is busy
     HIP_CHECK_ERROR(hipStreamQuery(nullptr), hipErrorNotReady);
     HIP_CHECK(hipArrayDestroy(cuArrayPtr));
@@ -341,6 +183,8 @@ TEMPLATE_TEST_CASE("Unit_hipFreeImplicitSyncArray", "", char, float, float2, flo
 }
 #else  // AMD
 TEMPLATE_TEST_CASE("Unit_hipFreeImplicitSyncArray", "", char, float, float2, float4) {
+  CHECK_IMAGE_SUPPORT
+
   hipArray_t arrayPtr{};
   hipExtent extent{};
   extent.width = GENERATE(32, 128, 256, 512, 1024);
@@ -348,9 +192,14 @@ TEMPLATE_TEST_CASE("Unit_hipFreeImplicitSyncArray", "", char, float, float2, flo
   hipChannelFormatDesc desc = hipCreateChannelDesc<TestType>();
 
   HIP_CHECK(hipMallocArray(&arrayPtr, &desc, extent.width, extent.height, hipArrayDefault));
-  HipTest::runKernelForDuration(delay);
-  // make sure device is busy
+  HipTest::BlockingContext b_context{nullptr};
+
+  b_context.block_stream();
+  REQUIRE(b_context.is_blocked());
+
   HIP_CHECK_ERROR(hipStreamQuery(nullptr), hipErrorNotReady);
+  b_context.unblock_stream();
+
   // Second free segfaults
   SECTION("ArrayDestroy") {
     HIP_CHECK(hipArrayDestroy(arrayPtr));
@@ -461,7 +310,7 @@ TEST_CASE("Unit_hipFreeDoubleArrayDestroy") {
   size_t height = GENERATE(0, 32, 512, 1024);
   DriverContext ctx{};
 
-  hiparray ArrayPtr{};
+  hipArray_t ArrayPtr{};
   HIP_ARRAY_DESCRIPTOR cuDesc;
   cuDesc.Width = width;
   cuDesc.Height = height;
@@ -472,8 +321,34 @@ TEST_CASE("Unit_hipFreeDoubleArrayDestroy") {
   HIP_CHECK_ERROR(hipArrayDestroy(ArrayPtr), hipErrorContextIsDestroyed);
 }
 
+#else  // AMD
+
+TEST_CASE("Unit_hipFreeDoubleArray") {
+  CHECK_IMAGE_SUPPORT
+
+  size_t width = GENERATE(32, 512, 1024);
+  size_t height = GENERATE(0, 32, 512, 1024);
+  hipArray_t arrayPtr{};
+  hipExtent extent{};
+  extent.width = width;
+  extent.height = height;
+  hipChannelFormatDesc desc = hipCreateChannelDesc<char>();
+
+  HIP_CHECK(hipMallocArray(&arrayPtr, &desc, extent.width, extent.height, hipArrayDefault));
+
+  SECTION("ArrayFree") {
+    HIP_CHECK(hipFreeArray(arrayPtr));
+    HIP_CHECK_ERROR(hipFreeArray(arrayPtr), hipErrorContextIsDestroyed);
+  }
+  SECTION("ArrayDestroy") {
+    HIP_CHECK(hipArrayDestroy(arrayPtr));
+    HIP_CHECK_ERROR(hipArrayDestroy(arrayPtr), hipErrorContextIsDestroyed);
+  }
+}
+
 #endif
 
+#if HT_NVIDIA
 /**
  * Test Description
  * ------------------------
@@ -489,7 +364,6 @@ TEST_CASE("Unit_hipFreeDoubleArrayDestroy") {
  * ------------------------
  *  - HIP_VERSION >= 5.2
  */
-#if HT_NVIDIA
 TEMPLATE_TEST_CASE("Unit_hipFreeMultiTArray", "", char, int, float2, float4) {
   using vec_info = vector_info<TestType>;
 
@@ -500,7 +374,7 @@ TEMPLATE_TEST_CASE("Unit_hipFreeMultiTArray", "", char, int, float2, float4) {
 
 
   SECTION("ArrayDestroy") {
-    std::vector<hiparray> ptrs(numAllocs);
+    std::vector<hipArray_t> ptrs(numAllocs);
     HIP_ARRAY_DESCRIPTOR cuDesc;
     cuDesc.Width = width;
     cuDesc.Height = height;
@@ -551,6 +425,8 @@ TEMPLATE_TEST_CASE("Unit_hipFreeMultiTArray", "", char, int, float2, float4) {
 #else
 
 TEMPLATE_TEST_CASE("Unit_hipFreeMultiTArray", "", char, int, float2, float4) {
+  CHECK_IMAGE_SUPPORT
+
   using vec_info = vector_info<TestType>;
 
   hipExtent extent{};
@@ -571,7 +447,7 @@ TEMPLATE_TEST_CASE("Unit_hipFreeMultiTArray", "", char, int, float2, float4) {
     }
   }
   SECTION("ArrayDestroy") {
-    std::vector<hiparray> cuArrayPtrs(numAllocs);
+    std::vector<hipArray_t> cuArrayPtrs(numAllocs);
 
     HIP_ARRAY_DESCRIPTOR cuDesc;
     cuDesc.Width = extent.width;

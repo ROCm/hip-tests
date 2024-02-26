@@ -54,6 +54,8 @@ static constexpr std::initializer_list<tupletype> tableItems {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemset2D_BasicFunctional") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr int memsetval = 0x24;
   constexpr size_t numH = 256;
   constexpr size_t numW = 256;
@@ -91,6 +93,60 @@ TEST_CASE("Unit_hipMemset2D_BasicFunctional") {
 /**
  * Test Description
  * ------------------------
+ *  - Sets 2D allocated pitch memory.
+ *  - Performs copy and compares the results.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemset2D.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_hipMemset2DAsync_BasicFunctional") {
+  CHECK_IMAGE_SUPPORT
+
+  constexpr int memsetval = 0x26;
+  constexpr size_t numH = 256;
+  constexpr size_t numW = 256;
+  size_t pitch_A;
+  size_t width = numW * sizeof(char);
+  size_t sizeElements = width * numH;
+  size_t elements = numW * numH;
+  char *A_d, *A_h;
+
+  HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&A_d), &pitch_A,
+                          width, numH));
+  A_h = reinterpret_cast<char*>(malloc(sizeElements));
+  REQUIRE(A_h != nullptr);
+
+  for (size_t i = 0; i < elements; i++) {
+      A_h[i] = 1;
+  }
+
+  hipStream_t stream;
+  HIP_CHECK(hipStreamCreate(&stream));
+  HIP_CHECK(hipMemset2DAsync(A_d, pitch_A, memsetval, numW, numH, stream));
+  HIP_CHECK(hipStreamSynchronize(stream));
+  HIP_CHECK(hipMemcpy2D(A_h, width, A_d, pitch_A, numW, numH,
+                       hipMemcpyDeviceToHost));
+
+  for (size_t i=0; i < elements; i++) {
+    if (A_h[i] != memsetval) {
+      INFO("Memset2DAsync mismatch at index:" << i << " computed:"
+                                     << A_h[i] << " memsetval:" << memsetval);
+      REQUIRE(false);
+    }
+  }
+
+  HIP_CHECK(hipFree(A_d));
+  HIP_CHECK(hipStreamDestroy(stream));
+  free(A_h);
+}
+
+
+/**
+ * Test Description
+ * ------------------------
  *  - Sets partial buffer with unique width and height.
  * Test source
  * ------------------------
@@ -100,6 +156,8 @@ TEST_CASE("Unit_hipMemset2D_BasicFunctional") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemset2D_UniqueWidthHeight") {
+  CHECK_IMAGE_SUPPORT
+
   int width2D, height2D;
   int memsetWidth, memsetHeight;
   char *A_d, *A_h;

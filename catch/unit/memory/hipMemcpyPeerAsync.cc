@@ -25,25 +25,22 @@ THE SOFTWARE.
  * @addtogroup hipMemcpyPeerAsync hipMemcpyPeerAsync
  * @{
  * @ingroup PeerToPeerTest
- * `hipMemcpyPeerAsync(void* dst, int dstDeviceId, const void* src, int srcDevice,
- * size_t sizeBytes, hipStream_t stream __dparm(0))` -
+ * `hipMemcpyPeerAsync(void* dst, int dstDeviceId, const void* src,
+ * int srcDevice, size_t sizeBytes, hipStream_t stream __dparm(0))` -
  * Copies memory from one device to memory on another device.
  */
 
 /**
  * Test Description
  * ------------------------
- *  - For each pair of devices:
- *    -# Allocate memory on both devices.
- *    -# Launch kernel on one device.
- *    -# Copy the results on the other device asynchronously.
- *    -# Compare results.
+ *  - Performs basic peer to peer async memcpy functionality between each pair of devices.
+ *  - Launches computation kernel.
  * Test source
  * ------------------------
  *  - unit/memory/hipMemcpyPeerAsync.cc
  * Test requirements
  * ------------------------
- *  - Device supports peer to peer access
+ *  - Peer access supported
  *  - Multi-device
  *  - HIP_VERSION >= 5.2
  */
@@ -104,13 +101,13 @@ TEST_CASE("Unit_hipMemcpyPeerAsync_Positive_Default") {
 /**
  * Test Description
  * ------------------------
- *  - Validate synchronization behaviour of the API.
+ *  - Checks synchronization behavior for peer async memcpy.
  * Test source
  * ------------------------
  *  - unit/memory/hipMemcpyPeerAsync.cc
  * Test requirements
  * ------------------------
- *  - Device supports peer to peer access
+ *  - Peer access supported
  *  - Multi-device
  *  - HIP_VERSION >= 5.2
  */
@@ -155,13 +152,13 @@ TEST_CASE("Unit_hipMemcpyPeerAsync_Positive_Synchronization_Behavior") {
 /**
  * Test Description
  * ------------------------
- *  - Validate that no data is coped when size is set to zero.
+ *  - Checks that no data is copied if size is set to 0.
  * Test source
  * ------------------------
  *  - unit/memory/hipMemcpyPeerAsync.cc
  * Test requirements
  * ------------------------
- *  - Device supports peer to peer access
+ *  - Peer access supported
  *  - Multi-device
  *  - HIP_VERSION >= 5.2
  */
@@ -223,15 +220,15 @@ TEST_CASE("Unit_hipMemcpyPeerAsync_Positive_ZeroSize") {
  * Test Description
  * ------------------------
  *  - Validates handling of invalid arguments:
- *    -# When destination pointer is `nullptr`
+ *    -# When output destination pointer is `nullptr`
  *      - Expected output: return `hipErrorInvalidValue`
  *    -# When source pointer is `nullptr`
  *      - Expected output: return `hipErrorInvalidValue`
- *    -# When copying more memory than allocated
+ *    -# When copying more than allocated
  *      - Expected output: return `hipErrorInvalidValue`
- *    -# When destination device ID is not valid, -1 or out of bounds
+ *    -# When destination device ID is not valid (out of bounds)
  *      - Expected output: return `hipErrorInvalidDevice`
- *    -# When source device ID is not valid, -1 or out of bounds
+ *    -# When source device ID is not valid (out of bounds)
  *      - Expected output: return `hipErrorInvalidDevice`
  *    -# When stream is not valid
  *      - Expected output: return `hipErrorContextIsDestroyed`
@@ -240,7 +237,7 @@ TEST_CASE("Unit_hipMemcpyPeerAsync_Positive_ZeroSize") {
  *  - unit/memory/hipMemcpyPeerAsync.cc
  * Test requirements
  * ------------------------
- *  - Device supports peer to peer access
+ *  - Peer access supported
  *  - Multi-device
  *  - HIP_VERSION >= 5.2
  */

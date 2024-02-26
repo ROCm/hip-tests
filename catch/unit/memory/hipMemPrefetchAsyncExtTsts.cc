@@ -382,7 +382,7 @@ TEST_CASE("Unit_hipMemPrefetchAsync_NonPageSz") {
   }
   HIP_CHECK(hipMemPrefetchAsync(Hmm, (NumElms * sizeof(int) + 8), 0, strm));
   HIP_CHECK(hipStreamSynchronize(strm));
-  MemPrftchAsyncKernel1<<<((NumElms + 2)/32 + 1), 32>>>(Hmm, (NumElms + 2));
+  MemPrftchAsyncKernel1<<<((NumElms + 2)/32 + 1), 32, 0, strm>>>(Hmm, (NumElms + 2));
   HIP_CHECK(hipStreamSynchronize(strm));
   for (int i = 0; i < (NumElms + 2); ++i) {
     if (Hmm[i] != (InitVal * InitVal)) {

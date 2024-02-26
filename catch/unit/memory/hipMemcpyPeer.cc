@@ -33,17 +33,14 @@ THE SOFTWARE.
 /**
  * Test Description
  * ------------------------
- *  - For each pair of devices:
- *    -# Allocate memory on both devices.
- *    -# Launch kernel on one device.
- *    -# Copy the results on the other device.
- *    -# Compare results.
+ *  - Performs basic peer to peer memcpy functionality between each pair of devices.
+ *  - Launches computation kernel.
  * Test source
  * ------------------------
  *  - unit/memory/hipMemcpyPeer.cc
  * Test requirements
  * ------------------------
- *  - Device supports peer to peer access
+ *  - Peer access supported
  *  - Multi-device
  *  - HIP_VERSION >= 5.2
  */
@@ -96,13 +93,13 @@ TEST_CASE("Unit_hipMemcpyPeer_Positive_Default") {
 /**
  * Test Description
  * ------------------------
- *  - Validate synchronization behaviour of the API.
+ *  - Checks synchronization behavior for peer memcpy.
  * Test source
  * ------------------------
  *  - unit/memory/hipMemcpyPeer.cc
  * Test requirements
  * ------------------------
- *  - Device supports peer to peer access
+ *  - Peer access supported
  *  - Multi-device
  *  - HIP_VERSION >= 5.2
  */
@@ -127,6 +124,7 @@ TEST_CASE("Unit_hipMemcpyPeer_Positive_Synchronization_Behavior") {
     LinearAllocGuard<int> src_alloc(LinearAllocs::hipMalloc, kPageSize);
     HIP_CHECK(hipSetDevice(dst_device));
     LinearAllocGuard<int> dst_alloc(LinearAllocs::hipMalloc, kPageSize);
+    LaunchDelayKernel(std::chrono::milliseconds{100}, nullptr);
 
     HIP_CHECK(hipSetDevice(src_device));
     LaunchDelayKernel(std::chrono::milliseconds{100}, nullptr);
@@ -143,13 +141,13 @@ TEST_CASE("Unit_hipMemcpyPeer_Positive_Synchronization_Behavior") {
 /**
  * Test Description
  * ------------------------
- *  - Validate that no data is coped when size is set to zero.
+ *  - Checks that no data is copied if size is set to 0.
  * Test source
  * ------------------------
  *  - unit/memory/hipMemcpyPeer.cc
  * Test requirements
  * ------------------------
- *  - Device supports peer to peer access
+ *  - Peer access supported
  *  - Multi-device
  *  - HIP_VERSION >= 5.2
  */
@@ -185,9 +183,14 @@ TEST_CASE("Unit_hipMemcpyPeer_Positive_ZeroSize") {
     VectorSet<<<block_count, thread_count, 0>>>(src_alloc.ptr(), set_value, element_count);
     HIP_CHECK(hipGetLastError());
 
-    constexpr int expected_value = 21;
-    std::fill_n(src_alloc.host_ptr(), element_count, expected_value);
+    constexpr int expected_value = 20;
+    HIP_CHECK(hipSetDevice(dst_device));
+    VectorSet<<<block_count, thread_count, 0>>>(dst_alloc.ptr(), expected_value, element_count);
+    HIP_CHECK(hipGetLastError());
+    HIP_CHECK(hipSetDevice(src_device));
 
+    constexpr int set_value_h = 21;
+    std::fill_n(result.host_ptr(), element_count, set_value_h);
     HIP_CHECK(hipMemcpyPeer(dst_alloc.ptr(), dst_device, src_alloc.ptr(), src_device, 0));
 
     HIP_CHECK(
@@ -205,22 +208,22 @@ TEST_CASE("Unit_hipMemcpyPeer_Positive_ZeroSize") {
  * Test Description
  * ------------------------
  *  - Validates handling of invalid arguments:
- *    -# When destination pointer is `nullptr`
+ *    -# When output destination pointer is `nullptr`
  *      - Expected output: return `hipErrorInvalidValue`
  *    -# When source pointer is `nullptr`
  *      - Expected output: return `hipErrorInvalidValue`
- *    -# When copying more memory than allocated
+ *    -# When copying more than allocated
  *      - Expected output: return `hipErrorInvalidValue`
- *    -# When destination device ID is not valid, -1 or out of bounds
+ *    -# When destination device ID is not valid (out of bounds)
  *      - Expected output: return `hipErrorInvalidDevice`
- *    -# When source device ID is not valid, -1 or out of bounds
+ *    -# When source device ID is not valid (out of bounds)
  *      - Expected output: return `hipErrorInvalidDevice`
  * Test source
  * ------------------------
  *  - unit/memory/hipMemcpyPeer.cc
  * Test requirements
  * ------------------------
- *  - Device supports peer to peer access
+ *  - Peer access supported
  *  - Multi-device
  *  - HIP_VERSION >= 5.2
  */

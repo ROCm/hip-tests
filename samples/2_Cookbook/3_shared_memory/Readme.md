@@ -7,7 +7,7 @@ Earlier we learned how to write our first hip program, in which we compute Matri
 As we mentioned earlier  that Memory bottlenecks is the main problem why we are not able to get the highest performance, therefore minimizing the latency for memory access plays prominent role in application optimization. In this tutorial, we'll learn how to use static shared memory and will explain the dynamic one latter.
 
 ## Requirement:
-For hardware requirement and software installation [Installation](https://github.com/ROCm-Developer-Tools/HIP/blob/master/INSTALL.md)
+For hardware requirement and software installation [Installation](https://github.com/ROCm/HIP/blob/develop/docs/how_to_guides/install.md)
 
 ## prerequiste knowledge:
 
@@ -28,15 +28,24 @@ Be careful while using shared memory, since all threads within the block can acc
 `  __syncthreads();`
 
 ## How to build and run:
-Use the make command and execute it using ./exe
-Use hipcc to build the application, which is using hcc on AMD and nvcc on nvidia.
+- Build the sample using cmake
+```
+$ mkdir build; cd build
+$ cmake .. -DCMAKE_PREFIX_PATH=/opt/rocm
+$ make
+```
+- Execute the sample
+```
+$ ./sharedMemory
+Device name Navi 14 [Radeon Pro W5500]
+PASSED!
+```
 
 ## More Info:
-- [HIP FAQ](https://github.com/ROCm-Developer-Tools/HIP/blob/master/docs/markdown/hip_faq.md)
-- [HIP Kernel Language](https://github.com/ROCm-Developer-Tools/HIP/blob/master/docs/markdown/hip_kernel_language.md)
-- [HIP Runtime API (Doxygen)](http://rocm-developer-tools.github.io/HIP)
-- [HIP Porting Guide](https://github.com/ROCm-Developer-Tools/HIP/blob/master/docs/markdown/hip_porting_guide.md)
-- [HIP Terminology](https://github.com/ROCm-Developer-Tools/HIP/blob/master/docs/markdown/hip_terms.md) (including Rosetta Stone of GPU computing terms across CUDA/HIP/HC/AMP/OpenL)
-- [HIPIFY](https://github.com/ROCm-Developer-Tools/HIPIFY/blob/master/README.md)
-- [Developer/CONTRIBUTING Info](https://github.com/ROCm-Developer-Tools/HIP/blob/master/CONTRIBUTING.md)
-- [Release Notes](https://github.com/ROCm-Developer-Tools/HIP/blob/master/RELEASE.md)
+- [HIP FAQ](https://github.com/ROCm/HIP/blob/develop/docs/user_guide/faq.md)
+- [HIP Kernel Language](https://github.com/ROCm/HIP/blob/develop/docs/reference/kernel_language.md)
+- [HIP Runtime API (Doxygen)](https://rocm.docs.amd.com/projects/HIP/en/latest/doxygen/html/index.html)
+- [HIP Porting Guide](https://github.com/ROCm/HIP/blob/develop/docs/user_guide/hip_porting_guide.md)
+- [HIP Terminology](https://github.com/ROCm/HIP/blob/develop/docs/reference/terms.md) (including comparing syntax for different compute terms across CUDA/HIP/OpenL)
+- [HIPIFY](https://github.com/ROCm/HIPIFY/blob/amd-staging/README.md)
+- [Developer/CONTRIBUTING Info](https://github.com/ROCm/HIP/blob/develop/docs/developer_guide/contributing.md)

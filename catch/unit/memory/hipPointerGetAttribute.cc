@@ -53,6 +53,8 @@ static __global__ void var_update(int* data) {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipPointerGetAttribute_MemoryTypes") {
+  CHECK_IMAGE_SUPPORT
+
   HIP_CHECK(hipSetDevice(0));
   size_t pitch_A;
   size_t width{NUM_W * sizeof(char)};
@@ -64,31 +66,26 @@ TEST_CASE("Unit_hipPointerGetAttribute_MemoryTypes") {
     HIP_CHECK(hipPointerGetAttribute(&datatype,
               HIP_POINTER_ATTRIBUTE_MEMORY_TYPE,
               reinterpret_cast<hipDeviceptr_t>(A_d)));
-#if HT_NVIDIA
-    REQUIRE(datatype == CU_MEMORYTYPE_DEVICE);
-#else
+
     REQUIRE(datatype == hipMemoryTypeDevice);
-#endif
+
   }
 #if HT_AMD
   SECTION("Malloc Array Allocation") {
-    hipArray *B_d;
+    hipArray_t B_d;
     hipChannelFormatDesc desc = hipCreateChannelDesc<char>();
     HIP_CHECK(hipMallocArray(&B_d, &desc, NUM_W, NUM_H, hipArrayDefault));
     HIP_CHECK(hipPointerGetAttribute(&datatype,
                                      HIP_POINTER_ATTRIBUTE_MEMORY_TYPE,
                                      reinterpret_cast<hipDeviceptr_t>(B_d)));
-#if HT_NVIDIA
-    REQUIRE(datatype == CU_MEMORYTYPE_ARRAY);
-#else
+
     REQUIRE(datatype == hipMemoryTypeArray);
-#endif
     HIP_CHECK(hipFreeArray(B_d));
   }
 
   SECTION("Malloc 3D Array Allocation") {
     int width = 10, height = 10, depth = 10;
-    hipArray *arr;
+    hipArray_t arr;
 
     hipChannelFormatDesc channelDesc = hipCreateChannelDesc(sizeof(float)*8,
         0, 0, 0, hipChannelFormatKindFloat);
@@ -97,11 +94,8 @@ TEST_CASE("Unit_hipPointerGetAttribute_MemoryTypes") {
     HIP_CHECK(hipPointerGetAttribute(&datatype,
                                      HIP_POINTER_ATTRIBUTE_MEMORY_TYPE,
                                      reinterpret_cast<hipDeviceptr_t>(arr)));
-#if HT_NVIDIA
-    REQUIRE(datatype == CU_MEMORYTYPE_ARRAY);
-#else
+
     REQUIRE(datatype == hipMemoryTypeArray);
-#endif
     HIP_CHECK(hipFreeArray(arr));
   }
 #endif
@@ -177,11 +171,9 @@ TEST_CASE("Unit_hipPointerGetAttribute_PeerGPU") {
       HIP_CHECK(hipPointerGetAttribute(&data,
                 HIP_POINTER_ATTRIBUTE_MEMORY_TYPE,
                 reinterpret_cast<hipDeviceptr_t>(A_d)));
-#if HT_NVIDIA
-      REQUIRE(data == CU_MEMORYTYPE_DEVICE);
-#else
+
       REQUIRE(data == hipMemoryTypeDevice);
-#endif
+
       HIP_CHECK(hipPointerGetAttribute(&data,
                 HIP_POINTER_ATTRIBUTE_DEVICE_ORDINAL,
                 reinterpret_cast<hipDeviceptr_t>(A_d)));

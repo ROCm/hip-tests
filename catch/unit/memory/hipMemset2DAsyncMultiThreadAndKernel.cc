@@ -64,6 +64,8 @@ void queueJobsForhipMemset2DAsync(char* A_d, char* A_h, size_t pitch,
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemset2DAsync_WithKernel") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr auto N = 4 * 1024 * 1024;
   constexpr auto blocksPerCU = 6;  // to hide latency
   constexpr auto threadsPerBlock = 256;
@@ -155,6 +157,8 @@ TEST_CASE("Unit_hipMemset2DAsync_WithKernel") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemset2DAsync_MultiThread") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr auto memPerThread = 200;
   constexpr int memsetval = 0x22;
   char *A_d, *A_h, *B_d, *B_h, *C_d;

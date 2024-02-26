@@ -44,6 +44,8 @@ THE SOFTWARE.
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemset3D_BasicFunctional") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr int memsetval = 0x22;
   constexpr size_t numH = 256;
   constexpr size_t numW = 256;
@@ -121,6 +123,8 @@ TEST_CASE("Unit_hipMemset3D_BasicFunctional") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMemset3DAsync_BasicFunctional") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr int memsetval = 0x22;
   constexpr size_t numH = 256;
   constexpr size_t numW = 256;

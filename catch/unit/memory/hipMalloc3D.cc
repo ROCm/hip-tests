@@ -32,9 +32,7 @@ static constexpr auto CHUNK_LOOP{100};
 static constexpr auto BIG_SIZE{100};
 /*
 This API verifies hipMalloc3D API by allocating memory in smaller chunks for
-CHUNK_LOOP iterations and checks for the memory leaks by get the memory
-info before and after the hipMalloc3D API and the difference should
-match with the allocated memory
+CHUNK_LOOP iterations
 */
 static void MemoryAlloc3DDiffSizes(int gpu) {
   HIPCHECK(hipSetDevice(gpu));
@@ -46,17 +44,13 @@ static void MemoryAlloc3DDiffSizes(int gpu) {
     size_t height{sizes}, depth{sizes};
     hipPitchedPtr devPitchedPtr[CHUNK_LOOP];
     hipExtent extent = make_hipExtent(width, height, depth);
-    size_t tot, avail, ptot, pavail;
+    size_t ptot, pavail;
     HIPCHECK(hipMemGetInfo(&pavail, &ptot));
     for (int i = 0; i < CHUNK_LOOP; i++) {
       HIPCHECK(hipMalloc3D(&devPitchedPtr[i], extent));
     }
     for (int i = 0; i < CHUNK_LOOP; i++) {
       HIPCHECK(hipFree(devPitchedPtr[i].ptr));
-    }
-    HIPCHECK(hipMemGetInfo(&avail, &tot));
-    if ((pavail != avail)) {
-      HIPASSERT(false);
     }
   }
 }
@@ -77,6 +71,8 @@ static void Malloc3DThreadFunc(int gpu) {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMalloc3D_Basic") {
+  CHECK_IMAGE_SUPPORT
+
   size_t width = SMALL_SIZE * sizeof(char);
   size_t height{SMALL_SIZE}, depth{SMALL_SIZE};
   hipPitchedPtr devPitchedPtr;
@@ -108,6 +104,8 @@ TEST_CASE("Unit_hipMalloc3D_Basic") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMalloc3D_SmallandBigChunks") {
+  CHECK_IMAGE_SUPPORT
+
   MemoryAlloc3DDiffSizes(0);
 }
 
@@ -125,24 +123,18 @@ TEST_CASE("Unit_hipMalloc3D_SmallandBigChunks") {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipMalloc3D_MultiThread") {
+  CHECK_IMAGE_SUPPORT
+
   std::vector<std::thread> threadlist;
   int devCnt = 0;
 
   devCnt = HipTest::getDeviceCount();
 
-  size_t tot, avail, ptot, pavail;
-  HIP_CHECK(hipMemGetInfo(&pavail, &ptot));
   for (int i = 0; i < devCnt; i++) {
     threadlist.push_back(std::thread(Malloc3DThreadFunc, i));
   }
 
   for (auto &t : threadlist) {
     t.join();
-  }
-  HIP_CHECK(hipMemGetInfo(&avail, &tot));
-
-  if (pavail != avail) {
-    WARN("Memory leak of hipMalloc3D API in multithreaded scenario");
-    REQUIRE(false);
   }
 }

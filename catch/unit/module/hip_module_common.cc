@@ -21,10 +21,10 @@ THE SOFTWARE.
 
 #include "hip_module_common.hh"
 
-#include <experimental/filesystem>
 #include <fstream>
 
 #include <hip_test_common.hh>
+#include <hip_test_filesystem.hh>
 #include <hip/hiprtc.h>
 
 ModuleGuard ModuleGuard::LoadModule(const char* fname) {
@@ -49,8 +49,8 @@ ModuleGuard ModuleGuard::LoadModuleDataRTC(const char* code) {
 
 // Load module into buffer instead of mapping file to avoid platform specific mechanisms
 std::vector<char> LoadModuleIntoBuffer(const char* path_string) {
-  std::experimental::filesystem::path p(path_string);
-  const auto file_size = std::experimental::filesystem::file_size(p);
+  fs::path p(path_string);
+  const auto file_size = fs::file_size(p);
   std::ifstream f(p, std::ios::binary | std::ios::in);
   REQUIRE(f);
   std::vector<char> empty_module(file_size);

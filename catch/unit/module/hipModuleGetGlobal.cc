@@ -186,7 +186,6 @@ TEST_CASE("Unit_hipModuleGetGlobal_Negative_Parameters") {
 }
 
 TEST_CASE("Unit_hipModuleGetGlobal_Negative_Hmod_Is_Nullptr") {
-  hipModule_t module = GetModule();
   hipDeviceptr_t global = 0;
   size_t global_size = 0;
 
@@ -204,8 +203,5 @@ TEST_CASE("Unit_hipModuleGetGlobal_Negative_Name_Is_Empty_String") {
 
 TEST_CASE("Unit_hipModuleGetGlobal_Negative_Dptr_And_Bytes_Are_Nullptr") {
   hipModule_t module = GetModule();
-  hipDeviceptr_t global = 0;
-  size_t global_size = 0;
-
   HIP_CHECK_ERROR(hipModuleGetGlobal(nullptr, nullptr, module, "int_var"), hipErrorInvalidValue);
 }

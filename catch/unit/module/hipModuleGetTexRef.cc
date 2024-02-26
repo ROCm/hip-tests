@@ -95,7 +95,6 @@ TEST_CASE("Unit_hipModuleGetTexRef_Negative_Parameters") {
 }
 
 TEST_CASE("Unit_hipModuleGetTexRef_Negative_Hmod_Is_Nullptr") {
-  hipModule_t module = GetModule();
   hipTexRef tex_ref = nullptr;
 
   HIP_CHECK_ERROR(hipModuleGetTexRef(&tex_ref, nullptr, "tex"), hipErrorInvalidResourceHandle);

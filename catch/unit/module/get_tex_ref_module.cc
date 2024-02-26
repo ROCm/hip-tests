@@ -21,4 +21,8 @@ THE SOFTWARE.
 
 #include <hip/hip_runtime_api.h>
 
+#if CUDA_VERSION < CUDA_12000
+
 texture<float, 2> tex;
+
+#endif // CUDA_VERSION < CUDA_12000

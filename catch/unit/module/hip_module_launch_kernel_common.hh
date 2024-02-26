@@ -27,13 +27,6 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 #include <utils.hh>
 
-inline int GetDeviceAttribute(const int device,
-                              const hipDeviceAttribute_t attr) {
-  int value = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&value, attr, device));
-  return value;
-}
-
 inline ModuleGuard InitModule() {
   HIP_CHECK(hipFree(nullptr));
   return ModuleGuard::LoadModule("launch_kernel_module.code");

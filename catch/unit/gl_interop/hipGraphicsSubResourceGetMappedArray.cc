@@ -26,6 +26,27 @@ THE SOFTWARE.
 
 #include "gl_interop_common.hh"
 
+/**
+ * @addtogroup hipGraphicsSubResourceGetMappedArray hipGraphicsSubResourceGetMappedArray
+ * @{
+ * @ingroup GLTest
+ * `hipGraphicsSubResourceGetMappedArray(hipArray_t* array, hipGraphicsResource_t resource,
+ * unsigned int arrayIndex, unsigned int mipLevel)` -
+ * Get an array through which to access a subresource of a mapped graphics resource.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Gets an array through which to access a subresource of a mapped graphics resource.
+ *  - Validates that the array is not `nullptr`.
+ * Test source
+ * ------------------------
+ *  - unit/gl_interop/hipGraphicsSubResourceGetMappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphicsSubResourceGetMappedArray_Positive_Basic") {
   GLContextScopeGuard gl_context;
 
@@ -48,6 +69,31 @@ TEST_CASE("Unit_hipGraphicsSubResourceGetMappedArray_Positive_Basic") {
   HIP_CHECK(hipGraphicsUnregisterResource(tex_resource));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When output pointer to the array is `nullptr`
+ *      - Expected output: return `hipSuccess`
+ *    -# When resource is not a texture
+ *      - Expected output: return `hipErrorNotMappedAsArray`
+ *    -# When resource is unregistered
+ *      - Exptected output: return `hipErrorContextIsDestroyed`
+ *    -# When resource is not mapped
+ *      - Expected output: return `hipErrorNotMapped`
+ *    -# When resource is unmapped
+ *      - Expected output: return `hipErrorNotMapped`
+ *    -# When array index is not valid
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When mip level is not valid
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/gl_interop/hipGraphicsSubResourceGetMappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphicsSubResourceGetMappedArray_Negative_Parameters") {
   GLContextScopeGuard gl_context;
 

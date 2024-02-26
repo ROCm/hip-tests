@@ -26,6 +26,15 @@ THE SOFTWARE.
 
 #include "gl_interop_common.hh"
 
+/**
+ * @addtogroup hipGraphicsGLRegisterImage hipGraphicsGLRegisterImage
+ * @{
+ * @ingroup GLTest
+ * `hipGraphicsGLRegisterImage(hipGraphicsResource** resource, GLuint image,
+ * GLenum target, unsigned int flags)` -
+ * Register a GL Image for interop and returns the corresponding graphic resource.
+ */
+
 namespace {
 constexpr std::array<unsigned int, 5> kFlags{
     hipGraphicsRegisterFlagsNone, hipGraphicsRegisterFlagsReadOnly,
@@ -33,6 +42,17 @@ constexpr std::array<unsigned int, 5> kFlags{
     hipGraphicsRegisterFlagsTextureGather};
 }  // anonymous namespace
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Registers a GL image for each supported flag.
+ * Test source
+ * ------------------------
+ *  - unit/gl_interop/hipGraphicsGLRegisterImage.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphicsGLRegisterImage_Positive_Basic") {
   GLContextScopeGuard gl_context;
 
@@ -47,6 +67,18 @@ TEST_CASE("Unit_hipGraphicsGLRegisterImage_Positive_Basic") {
   HIP_CHECK(hipGraphicsUnregisterResource(tex_resource));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Registers the same GL image twice.
+ *  - Stores the result in two different graphics resources.
+ * Test source
+ * ------------------------
+ *  - unit/gl_interop/hipGraphicsGLRegisterImage.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphicsGLRegisterImage_Positive_Register_Twice") {
   GLContextScopeGuard gl_context;
 
@@ -63,6 +95,27 @@ TEST_CASE("Unit_hipGraphicsGLRegisterImage_Positive_Register_Twice") {
   HIP_CHECK(hipGraphicsUnregisterResource(tex_resource_2));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When output pointer to the graphics resource is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When GL image is not valid
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When target is not valid - buffer instead of image
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When target does not match the object
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When flags are not valid
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/gl_interop/hipGraphicsGLRegisterImage.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphicsGLRegisterImage_Negative_Parameters") {
   GLContextScopeGuard gl_context;
 

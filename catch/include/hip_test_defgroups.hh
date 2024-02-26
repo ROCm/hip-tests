@@ -192,3 +192,10 @@ THE SOFTWARE.
  * This section describes tests for the Complex type functions.
  * @}
  */
+
+/**
+ * @defgroup GLTest Interop
+ * @{
+ * This section describes tests for the GL interop functions of HIP runtime API.
+ * @}
+ */

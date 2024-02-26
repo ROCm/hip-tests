@@ -26,6 +26,27 @@ THE SOFTWARE.
 
 #include "gl_interop_common.hh"
 
+/**
+ * @addtogroup hipGraphicsResourceGetMappedPointer hipGraphicsResourceGetMappedPointer
+ * @{
+ * @ingroup GLTest
+ * `hipGraphicsResourceGetMappedPointer(void** devPtr, size_t* size,
+ * hipGraphicsResource_t resource)` -
+ * Gets device accessible address of a graphics resource.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Gets device accessible address of a graphics resource.
+ *  - Validates that the device accessible address is not `nullptr`.
+ * Test source
+ * ------------------------
+ *  - unit/gl_interop/hipGraphicsResourceGetMappedPointer.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphicsResourceGetMappedPointer_Positive_Basic") {
   GLContextScopeGuard gl_context;
 
@@ -51,6 +72,22 @@ TEST_CASE("Unit_hipGraphicsResourceGetMappedPointer_Positive_Basic") {
   HIP_CHECK(hipGraphicsUnregisterResource(vbo_resource));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of different scenarios:
+ *    -# When output pointer to the device accessible address is `nullptr`.
+ *      - Expected output: return `hipSuccess`
+ *    -# When size is `nullptr`
+ *      - Expected output: return `hipSuccess`
+ *      - Device accessible address is not `nullptr`
+ * Test source
+ * ------------------------
+ *  - unit/gl_interop/hipGraphicsResourceGetMappedPointer.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphicsResourceGetMappedPointer_Positive_Parameters") {
   GLContextScopeGuard gl_context;
 
@@ -81,6 +118,25 @@ TEST_CASE("Unit_hipGraphicsResourceGetMappedPointer_Positive_Parameters") {
   HIP_CHECK(hipGraphicsUnregisterResource(vbo_resource));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When resource is non-pointer
+ *      - Expected output: return `hipErrorNotMappedAsPointer`
+ *    -# When resource is unregistered
+ *      - Expected output: return `hipErrorContextIsDestroyed`
+ *    -# When resource is not mapped
+ *      - Expected output: return `hipErrorNotMapped`
+ *    -# When resource is unmapped
+ *      - Expected output: return `hipErrorNotMapped`
+ * Test source
+ * ------------------------
+ *  - unit/gl_interop/hipGraphicsResourceGetMappedPointer.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphicsResourceGetMappedPointer_Negative_Parameters") {
   GLContextScopeGuard gl_context;
 

@@ -26,6 +26,28 @@ THE SOFTWARE.
 
 #include "gl_interop_common.hh"
 
+/**
+ * @addtogroup hipGraphicsMapResources hipGraphicsMapResources
+ * @{
+ * @ingroup GLTest
+ * `hipGraphicsMapResources(int count, hipGraphicsResource_t* resources,
+ * hipStream_t stream  __dparm(0) )` -
+ * Maps a graphics resource for hip access.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Maps graphics resources for HIP access:
+ *    - GL buffer
+ *    - GL image
+ * Test source
+ * ------------------------
+ *  - unit/gl_interop/hipGraphicsMapResources.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphicsMapResources_Positive_Basic") {
   GLContextScopeGuard gl_context;
 
@@ -51,6 +73,27 @@ TEST_CASE("Unit_hipGraphicsMapResources_Positive_Basic") {
   HIP_CHECK(hipGraphicsUnregisterResource(resources.at(1)));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When resources count is 0
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When resources array is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When resources are not registered
+ *      - Expected output: return `hipErrorInvalidHandle`
+ *    -# When resources are already mapped
+ *      - Expected output: return `hipErrorAlreadyMapped`
+ *    -# When the stream is not valid
+ *      - Expected output: return `hipErrorContextIsDestroyed`
+ * Test source
+ * ------------------------
+ *  - unit/gl_interop/hipGraphicsMapResources.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphicsMapResources_Negative_Parameters") {
   GLContextScopeGuard gl_context;
 

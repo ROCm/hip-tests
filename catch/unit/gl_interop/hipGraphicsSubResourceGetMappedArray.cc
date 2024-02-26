@@ -59,7 +59,7 @@ TEST_CASE("Unit_hipGraphicsSubResourceGetMappedArray_Positive_Basic") {
 
   HIP_CHECK(hipGraphicsMapResources(1, &tex_resource, 0));
 
-  hipArray* image_devptr = nullptr;
+  hipArray_t image_devptr = nullptr;
   HIP_CHECK(hipGraphicsSubResourceGetMappedArray(&image_devptr, tex_resource, 0, 0));
 
   REQUIRE(image_devptr != nullptr);
@@ -106,7 +106,7 @@ TEST_CASE("Unit_hipGraphicsSubResourceGetMappedArray_Negative_Parameters") {
 
   HIP_CHECK(hipGraphicsMapResources(1, &tex_resource, 0));
 
-  hipArray* image_devptr = nullptr;
+  hipArray_t image_devptr = nullptr;
 
   SECTION("array == nullptr") {
     HIP_CHECK(hipGraphicsSubResourceGetMappedArray(nullptr, tex_resource, 0, 0));

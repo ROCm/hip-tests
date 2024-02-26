@@ -26,7 +26,7 @@ __global__ void run_printf(int *count) {
   *count = printf("Hello World");
 }
 /**
-* @addtogroup printf
+* @addtogroup printf printf
 * @{
 * @ingroup PrintfTest
 * `int printf()` -

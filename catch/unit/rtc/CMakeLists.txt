@@ -16,6 +16,10 @@ set(AMD_TEST_SRC
     shfl.cc
     stdheaders.cc
     hiprtc_MathConstants_HeaderTst.cc
+    hiprtc_VectorTypes_HeaderTst.cc
+    hiprtc_MathFunctions_HeaderTst.cc
+    hiprtc_fp16_HeaderTst.cc
+    hiprtc_TextureTypes_HeaderTst.cc
 )
 
 add_custom_target(copyRtcHeaders ALL

@@ -230,10 +230,13 @@ float* funcToChkArray(hipArray_t array) {
  * - HIP_VERSION >= 5.6
  */
 TEST_CASE("Unit_hipArrayGetDescriptor_1D_2D_ArrayParameterChk") {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   for (int i = 0; i < numDevices; i++) {
     HIP_CHECK(hipSetDevice(i));
+    CHECK_IMAGE_SUPPORT
     #if HT_NVIDIA
     HIP_CHECK(hipInit(0));
     hipCtx_t ctx;
@@ -320,10 +323,13 @@ TEST_CASE("Unit_hipArrayGetDescriptor_1D_2D_ArrayParameterChk") {
  * - HIP_VERSION >= 5.6
  */
 TEST_CASE("Unit_hipArrayGetDescriptor_MultiThreadScenarioFor1D_2D_Array") {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   for (int i = 0; i < numDevices; i++) {
     HIP_CHECK(hipSetDevice(i));
+    CHECK_IMAGE_SUPPORT
     #if HT_NVIDIA
     HIP_CHECK(hipInit(0));
     hipCtx_t ctx;
@@ -366,10 +372,13 @@ TEST_CASE("Unit_hipArrayGetDescriptor_MultiThreadScenarioFor1D_2D_Array") {
  * - HIP_VERSION >= 5.6
  */
 TEST_CASE("Unit_hipArrayGetDescriptor_Host2Array_Array2Host") {
+  CHECK_IMAGE_SUPPORT
+
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   for (int k = 0; k < numDevices; k++) {
     HIP_CHECK(hipSetDevice(k));
+    CHECK_IMAGE_SUPPORT
     #if HT_NVIDIA
     HIP_CHECK(hipInit(0));
     hipCtx_t ctx;

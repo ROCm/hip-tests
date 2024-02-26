@@ -24,6 +24,31 @@ THE SOFTWARE.
 #include <hip/hip_runtime_api.h>
 #include <utils.hh>
 
+/**
+ * @addtogroup hipExtMallocWithFlags hipExtMallocWithFlags
+ * @{
+ * @ingroup MemoryTest
+ * `hipExtMallocWithFlags(void** ptr, size_t sizeBytes, unsigned int flags)` -
+ * Allocate memory on the default accelerator.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validate basic scenarios:
+ *    -# When flag is `hipDeviceMallocDefault`
+ *      - Expected output: return `hipSuccess`
+ *    -# When flag is `hipDeviceMallocFinegrained`
+ *      -Expected output: return `hipSuccess`
+ *    -# When flag is `hipMallocSignalMemory`
+ *      - Expected output: return `hipSuccess`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipExtMallocWithFlags.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipExtMallocWithFlags_Positive_Basic") {
   void* ptr = nullptr;
 
@@ -56,6 +81,18 @@ TEST_CASE("Unit_hipExtMallocWithFlags_Positive_Basic") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates allocation with zero size.
+ *  - Output address pointer is expected to be `nullptr`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipExtMallocWithFlags.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipExtMallocWithFlags_Positive_Zero_Size") {
   void* ptr = reinterpret_cast<void*>(0x1);
   const auto flag = GENERATE(hipDeviceMallocDefault, hipDeviceMallocFinegrained);
@@ -63,6 +100,17 @@ TEST_CASE("Unit_hipExtMallocWithFlags_Positive_Zero_Size") {
   REQUIRE(ptr == nullptr);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates alignment of the allocated memory.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipExtMallocWithFlags.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipExtMallocWithFlags_Positive_Alignment") {
   void *ptr1 = nullptr, *ptr2 = nullptr;
   const auto flag = GENERATE(hipDeviceMallocDefault, hipDeviceMallocFinegrained);
@@ -79,6 +127,35 @@ TEST_CASE("Unit_hipExtMallocWithFlags_Positive_Alignment") {
   HIP_CHECK(hipFree(ptr2));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When flags are not valid
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When flag is `hipDeviceMallocDefault` and output pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When flag is `hipDeviceMallocDefault` and allocation size is
+ *       `size_t` maximum
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When flag is `hipDeviceMallocFinegrained` and output pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When flag is `hipDeviceMallocFinegrained` and allocation size is
+ *       `size_t` maximum
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When flag is `hipMallocSignalMemory` and output pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When flag is `hipMallocSignalMemory` and allocation size is zero
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When flag is `hipMallocSignalMemory` and allocation size is not 8
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipExtMallocWithFlags.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipExtMallocWithFlags_Negative_Parameters") {
   SECTION("Invalid flags") {
     void* ptr = nullptr;

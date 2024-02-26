@@ -35,6 +35,14 @@ This testfile verifies the following scenarios of hipHostMalloc API
 #include <hip_test_context.hh>
 #include <hip_test_helper.hh>
 
+/**
+ * @addtogroup hipHostMalloc hipHostMalloc
+ * @{
+ * @ingroup MemoryTest
+ * `hipHostMalloc(void** ptr, size_t size, unsigned int flags)` -
+ * Allocate device accessible page locked host memory.
+ */
+
 #define SYNC_EVENT 0
 #define SYNC_STREAM 1
 #define SYNC_DEVICE 2
@@ -108,12 +116,21 @@ void CheckHostPointer(int numElements, int* ptr, unsigned eventFlags,
     HIP_CHECK(hipStreamDestroy(s));
     HIP_CHECK(hipEventDestroy(e));
 }
-/*
-This testcase performs the basic scenario of hipHostMalloc API
-Allocates the memory using hipHostMalloc API
-Launches the kernel and performs vector addition.
-validates thes result.
-*/
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Allocates the memory.
+ *  - Launches the kernel and performs vector addition.
+ *  - Validates the results.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipHostMalloc.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports host pinned memory
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipHostMalloc_Basic") {
   static constexpr auto LEN{1024 * 1024};
   static constexpr auto SIZE{LEN * sizeof(float)};
@@ -157,10 +174,21 @@ TEST_CASE("Unit_hipHostMalloc_Basic") {
     HIP_CHECK(hipHostFree(C_h));
   }
 }
-/*
-This testcase verifies the hipHostMalloc API by passing nullptr
-to the pointer variable
-*/
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When output pointer is `nullptr`
+ *      - Platform specific (AMD)
+ *      - Expected output: do not return `hipSuccess`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipHostMalloc.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipHostMalloc_Negative") {
 #if HT_AMD
   {
@@ -173,14 +201,22 @@ TEST_CASE("Unit_hipHostMalloc_Negative") {
   }
 #endif
 }
-/*
-This testcase verifies the hipHostMalloc API by
-1.Allocating memory using noncoherent flag
-2. Launches the kernel and modifies the variable
-   using different synchronization
-   techniquies
-3. validates the result.
-*/
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Allocates memory using noncoherent flag.
+ *  - Launches the kernel.
+ *  - Modifies the variable using different synchronization
+ *    techniques.
+ *  - Validates the result.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipHostMalloc.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipHostMalloc_NonCoherent") {
   int* A = nullptr;
   HIP_CHECK(hipHostMalloc(reinterpret_cast<void**>(&A),
@@ -194,14 +230,21 @@ TEST_CASE("Unit_hipHostMalloc_NonCoherent") {
                    SYNC_EVENT, ptrType);
 }
 
-/*
-This testcase verifies the hipHostMalloc API by
-1.Allocating memory using coherent flag
-2. Launches the kernel and modifies the variable
-   using different synchronization
-   techniquies
-3. validates the result.
-*/
+/**
+ * Test Description
+ * ------------------------
+ *  - Allocates memory using coherent flag.
+ *  - Launches the kernel.
+ *  - Modifies the variable using different synchronization
+ *    techniques.
+ *  - Validates the result.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipHostMalloc.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipHostMalloc_Coherent") {
   int* A = nullptr;
   if (hipHostMalloc(reinterpret_cast<void**>(&A), sizeBytes,
@@ -225,14 +268,21 @@ TEST_CASE("Unit_hipHostMalloc_Coherent") {
   }
 }
 
-/*
-This testcase verifies the hipHostMalloc API by
-1.Allocating memory using default flag
-2. Launches the kernel and modifies the variable
-   using different synchronization
-   techniquies
-3. validates the result.
-*/
+/**
+ * Test Description
+ * ------------------------
+ *  - Allocates memory using default flag.
+ *  - Launches the kernel.
+ *  - Modifies the variable using different synchronization
+ *    techniques.
+ *  - Validates the result.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipHostMalloc.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipHostMalloc_Default") {
   int* A = nullptr;
   HIP_CHECK(hipHostMalloc(reinterpret_cast<void**>(&A), sizeBytes));
@@ -242,6 +292,30 @@ TEST_CASE("Unit_hipHostMalloc_Default") {
   CheckHostPointer(numElements, A, 0, SYNC_EVENT, ptrType);
 }
 
+/**
+ * End doxygen group hipHostMalloc.
+ * @}
+ */
+
+
+/**
+ * @addtogroup hipHostGetDevicePointer hipHostGetDevicePointer
+ * @{
+ * @ingroup MemoryTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of passing `nullptr` for device pointer
+ *    - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipHostMalloc.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipHostGetDevicePointer_NullCheck") {
   int* d_a;
   HIP_CHECK(hipHostMalloc(reinterpret_cast<void**>(&d_a), sizeof(int)));

@@ -26,6 +26,15 @@ THE SOFTWARE.
 #include <utils.hh>
 #include <resource_guards.hh>
 
+/**
+ * @addtogroup hipMemPrefetchAsync hipMemPrefetchAsync
+ * @{
+ * @ingroup MemoryMTest
+ * `hipMemPrefetchAsync(const void* dev_ptr,
+ * size_t count, int device, hipStream_t stream __dparm(0))` -
+ * Prefetches memory to the specified destination device using HIP.
+ */
+
 std::vector<int> GetDevicesWithPrefetchSupport() {
   const auto device_count = HipTest::getDeviceCount();
   std::vector<int> supported_devices;
@@ -47,6 +56,20 @@ __global__ void MemPrefetchAsyncKernel(int* C_d, const int* A_d, size_t N) {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Prefetches memory to a device.
+ *  - Launches a kernel on said device and verifies results.
+ *  - The same is performed with prefetching to the host.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemPrefetchAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - At least one device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemPrefetchAsync_Basic") {
   const auto supported_devices = GetDevicesWithPrefetchSupport();
   if (supported_devices.empty()) {
@@ -76,6 +99,18 @@ TEST_CASE("Unit_hipMemPrefetchAsync_Basic") {
   ArrayFindIfNot(alloc1.ptr(), fill_value, count);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validate that prefetch is successful when synchronization is performed.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemPrefetchAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - At least one device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemPrefetchAsync_Sync_Behavior") {
   const auto supported_devices = GetDevicesWithPrefetchSupport();
   if (supported_devices.empty()) {
@@ -92,6 +127,19 @@ TEST_CASE("Unit_hipMemPrefetchAsync_Sync_Behavior") {
   HIP_CHECK(hipStreamSynchronize(sg.stream()));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validate that fertch correctly rounds down and rounds up
+ *    non-aligned pointer and pointer + increment respectively.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemPrefetchAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - At least one device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemPrefetchAsync_Rounding_Behavior") {
   auto supported_devices = GetDevicesWithPrefetchSupport();
   if (supported_devices.empty()) {
@@ -116,13 +164,38 @@ TEST_CASE("Unit_hipMemPrefetchAsync_Rounding_Behavior") {
   HIP_CHECK(hipMemRangeGetAttribute(&attribute, sizeof(attribute),
                                     hipMemRangeAttributeLastPrefetchLocation,
                                     reinterpret_cast<void*>(base), rounded_up));
-  REQUIRE(device == static_cast<int>(attribute));
+  REQUIRE(device == attribute);
   HIP_CHECK(hipMemRangeGetAttribute(&attribute, sizeof(attribute),
                                     hipMemRangeAttributeLastPrefetchLocation, alloc.ptr(),
                                     3 * kPageSize));
-  REQUIRE((rounded_up == 3 * kPageSize ? device : hipInvalidDeviceId) == static_cast<int>(attribute));
+  REQUIRE((rounded_up == 3 * kPageSize ? device : hipInvalidDeviceId) == attribute);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When prefetch pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pointer points to the non-managed memory
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When size in bytes to prefetch is zero
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When size in bytes to prefetch is larger than allocation size
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the device ID is not valid
+ *      - Expected output: return `hipErrorInvalidDevice`
+ *    -# When the stream is not valid
+ *      - Expected output: return `hipErrorContextIsDestroyed`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemPrefetchAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - At least one device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemPrefetchAsync_Negative_Parameters") {
   auto supported_devices = GetDevicesWithPrefetchSupport();
   if (supported_devices.empty()) {

@@ -25,16 +25,27 @@ THE SOFTWARE.
 #include "hipArrayCommon.hh"
 #include "utils.hh"
 
-/*
- * hipFreeMipmappedArray API test scenarios
- * 1. Check that hipFreeMipmappedArray implicitly synchronises the device.
- * 2. Perform multiple allocations and then call hipFreeMipmappedArray on each pointer concurrently (from unique
- * threads) for different memory types and different allocation sizes.
- * 3. Pass nullptr as argument and check that correct error code is returned.
- * 4. Call hipFreeMipmappedArray twice on the same pointer and check that the implementation handles the second
- * call correctly.
+/**
+ * @addtogroup hipFreeMipmappedArray hipFreeMipmappedArray
+ * @{
+ * @ingroup MemoryTest
+ * `hipFreeMipmappedArray(hipMipmappedArray_t mipmappedArray)` -
+ * Frees a mipmapped array on the device.
  */
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Frees an array when the device is busy.
+ *  - Uses query on null stream for synchronization status.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipFreeMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_hipFreeMipmappedArrayImplicitSyncArray", "", char, float) {
   hipMipmappedArray_t arrayPtr{};
   hipExtent extent{};
@@ -61,10 +72,36 @@ TEMPLATE_TEST_CASE("Unit_hipFreeMipmappedArrayImplicitSyncArray", "", char, floa
   HIP_CHECK(hipStreamQuery(nullptr));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when mipmapped array handle is `nullptr`
+ *    - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipFreeMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipFreeMipmappedArray_Negative_Nullptr") {
   HIP_CHECK_ERROR(hipFreeMipmappedArray(nullptr), hipErrorInvalidValue);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when free is called twice
+ *    - Expected output: return `hipErrorContextIsDestroyed`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipFreeMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipFreeMipmappedArray_Negative_DoubleFree") {
   hipMipmappedArray_t arrayPtr{};
   hipExtent extent{};
@@ -88,6 +125,19 @@ TEST_CASE("Unit_hipFreeMipmappedArray_Negative_DoubleFree") {
   HIP_CHECK_ERROR(hipFreeMipmappedArray(arrayPtr), hipErrorContextIsDestroyed);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Frees multiple arrays from multiple threads.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipFreeMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Multi-threaded device
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_hipFreeMipmappedArrayMultiTArray", "", char, int) {
   constexpr size_t numAllocs = 10;
   std::vector<std::thread> threads;

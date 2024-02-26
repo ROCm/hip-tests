@@ -125,9 +125,9 @@ TEST_CASE("Unit_hipDeviceEnablePeerAccess_negative") {
  * @addtogroup hipDeviceDisablePeerAccess hipDeviceDisablePeerAccess
  * @{
  * @ingroup PeerToPeerTest
- * hipDeviceDisablePeerAccess(int peerDeviceId)` -
- * Disable direct access from current device's virtual address space
- * to memory allocations physically located on a peer device.
+ * `hipDeviceDisablePeerAccess(int peerDeviceId)` -
+ * Disable direct access from current device's virtual address space to memory allocations
+ * physically located on a peer device.
  * ________________________
  * Test cases from other modules:
  *  - @ref Unit_hipDeviceEnableDisablePeerAccess_positive

@@ -21,10 +21,32 @@ THE SOFTWARE.
 
 #include "vulkan_test.hh"
 
-#if HT_AMD && 0
-constexpr bool enable_validation = false;
-#endif
+/**
+ * @addtogroup hipDestroyExternalMemory hipDestroyExternalMemory
+ * @{
+ * @ingroup MemoryTest
+ * `hipDestroyExternalMemory(hipExternalMemory_t extMem)` -
+ * Destroys an external memory object.
+ */
 
+constexpr bool enable_validation = false;
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When pointer to the external memory is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When external memory has already been destroyed
+ *      - Platform specific (AMD)
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/vulkan_interop/hipDestroyExternalMemory.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipDestroyExternalMemory_Vulkan_Negative_Parameters") {
   SECTION("extMem == nullptr") {
     HIP_CHECK_ERROR(hipDestroyExternalMemory(nullptr), hipErrorInvalidValue);

@@ -17,14 +17,15 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/*
-This testcase verifies the following scenario
-1. Allocating the memory and modifying it coherently
-*/
-
 #include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
 #include <hip_test_checkers.hh>
+
+/**
+ * @addtogroup hipHostMalloc hipHostMalloc
+ * @{
+ * @ingroup MemoryTest
+ */
 
 constexpr auto wait_sec = 5000;
 
@@ -33,34 +34,34 @@ __global__ void Kernel(float* hostRes, int clkRate) {
   hostRes[tid] = tid + 1;
   __threadfence_system();
   // expecting that the data is getting flushed to host here!
-  uint64_t start = clock64()/clkRate, cur;
+  uint64_t start = clock64() / clkRate, cur;
   if (clkRate > 1) {
-    do { cur = clock64()/clkRate-start;}while (cur < wait_sec);
+    do {
+      cur = clock64() / clkRate - start;
+    } while (cur < wait_sec);
   } else {
-    do { cur = clock64()/start;}while (cur < wait_sec);
+    do {
+      cur = clock64() / start;
+    } while (cur < wait_sec);
   }
 }
 
-__global__ void Kernel_gfx11(float* hostRes, int clkRate) {
-#if HT_AMD
-  int tid = threadIdx.x + blockIdx.x * blockDim.x;
-  hostRes[tid] = tid + 1;
-  __threadfence_system();
-  // expecting that the data is getting flushed to host here!
-  uint64_t start = wall_clock64()/clkRate, cur;
-  if (clkRate > 1) {
-    do { cur = wall_clock64()/clkRate-start;}while (cur < wait_sec);
-  } else {
-    do { cur = wall_clock64()/start;}while (cur < wait_sec);
-  }
-#endif
-}
-
+/**
+ * Test Description
+ * ------------------------
+ *  - Allocates the memory.
+ *  - Modifies it with coherent access.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemoryAllocateCoherent.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipHostMalloc_CoherentAccess") {
   int blocks = 2;
   float* hostRes;
-  HIP_CHECK(hipHostMalloc(&hostRes, blocks * sizeof(float),
-                hipHostMallocMapped));
+  HIP_CHECK(hipHostMalloc(&hostRes, blocks * sizeof(float), hipHostMallocMapped));
   hostRes[0] = 0;
   hostRes[1] = 0;
   int clkRate;
@@ -71,15 +72,15 @@ TEST_CASE("Unit_hipHostMalloc_CoherentAccess") {
   }
   std::cout << clkRate << std::endl;
   auto Kernel_used = IsGfx11() ? Kernel_gfx11 : Kernel;
-  hipLaunchKernelGGL(HIP_KERNEL_NAME(Kernel_used), dim3(1), dim3(blocks),
-                     0, 0, hostRes, clkRate);
+  hipLaunchKernelGGL(HIP_KERNEL_NAME(Kernel_used), dim3(1), dim3(blocks), 0, 0, hostRes, clkRate);
   HIP_CHECK(hipGetLastError());
   int eleCounter = 0;
   while (eleCounter < blocks) {
     // blocks until the value changes
-    while (hostRes[eleCounter] == 0) {printf("waiting for counter inc\n");}
+    while (hostRes[eleCounter] == 0) {
+      printf("waiting for counter inc\n");
+    }
     eleCounter++;
   }
-  HIP_CHECK(hipHostFree(reinterpret_cast<void *>(hostRes)));
+  HIP_CHECK(hipHostFree(reinterpret_cast<void*>(hostRes)));
 }
-

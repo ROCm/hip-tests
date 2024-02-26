@@ -23,6 +23,14 @@ THE SOFTWARE.
 #include "hip_array_common.hh"
 #include "hip_test_common.hh"
 
+/**
+ * @addtogroup hipArray3DCreate hipArray3DCreate
+ * @{
+ * @ingroup MemoryTest
+ * `hipArray3DCreate(hipArray** array, const HIP_ARRAY3D_DESCRIPTOR* pAllocateArray)` -
+ * Create a 3D array.
+ */
+
 namespace {
 void checkArrayIsExpected(const hipArray_t array, const HIP_ARRAY3D_DESCRIPTOR& expected_desc) {
 // hipArray3DGetDescriptor doesn't currently exist (EXSWCPHIPT-87)
@@ -48,6 +56,18 @@ void testInvalidDescription(HIP_ARRAY3D_DESCRIPTOR desc) {
 }
 }  // namespace
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling that 3D array is created successfully for
+ *    different types of data and supported flags.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipArray3DCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_hipArray3DCreate_happy", "", char, uchar2, uint2, int4, short4, float,
                    float2, float4) {
   CHECK_IMAGE_SUPPORT
@@ -88,6 +108,20 @@ TEMPLATE_TEST_CASE("Unit_hipArray3DCreate_happy", "", char, uchar2, uint2, int4,
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validate that array 3D is created successfully for different
+ *    types of data when its width/height/depth are set to maximal size.
+ *  - Maximal size corresponds to maximal texture width/height/width.
+ *  - Test can fail with `hipErrorOutMemory`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipArray3DCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_hipArray3DCreate_MaxTexture", "", int, uint4, short, ushort2,
                    unsigned char, float, float4) {
   CHECK_IMAGE_SUPPORT
@@ -209,7 +243,18 @@ constexpr HIP_ARRAY3D_DESCRIPTOR defaultDescriptor(unsigned int flags, size_t si
   return desc;
 }
 
-// Providing the array pointer as nullptr should return an error
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when the array is `nullptr`
+ *    - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipArray3DCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipArray3DCreate_Negative_NullArrayPtr") {
   CHECK_IMAGE_SUPPORT
 
@@ -219,7 +264,18 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_NullArrayPtr") {
   HIP_CHECK_ERROR(hipArray3DCreate(nullptr, &desc), hipErrorInvalidValue);
 }
 
-// Providing the description pointer as nullptr should return an error
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when array descriptor is `nullptr`
+ *    - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipArray3DCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipArray3DCreate_Negative_NullDescPtr") {
   CHECK_IMAGE_SUPPORT
 
@@ -228,8 +284,18 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_NullDescPtr") {
   HIP_CHECK_ERROR(hipArray3DCreate(&array, nullptr), hipErrorInvalidValue);
 }
 
-
-// Zero width arrays are not allowed
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when width is zero
+ *    - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipArray3DCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipArray3DCreate_Negative_ZeroWidth") {
   CHECK_IMAGE_SUPPORT
 
@@ -243,7 +309,18 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_ZeroWidth") {
   testInvalidDescription(desc);
 }
 
-// Zero height arrays are only allowed for 1D arrays and layered arrays
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when height is zero
+ *    - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipArray3DCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipArray3DCreate_Negative_ZeroHeight") {
   CHECK_IMAGE_SUPPORT
 
@@ -265,7 +342,18 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_ZeroHeight") {
   }
 }
 
-// Arrays must be created with a valid data format
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when channel descriptor format is not valid
+ *    - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipArray3DCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipArray3DCreate_Negative_InvalidFormat") {
   CHECK_IMAGE_SUPPORT
 
@@ -281,7 +369,18 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_InvalidFormat") {
   testInvalidDescription(desc);
 }
 
-// An array must have either 1,2, or 4 channels
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when channel number in descriptor is not valid
+ *    - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipArray3DCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipArray3DCreate_Negative_NumChannels") {
   CHECK_IMAGE_SUPPORT
 
@@ -293,7 +392,18 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_NumChannels") {
   testInvalidDescription(desc);
 }
 
-// Using invalid flags should result in an error
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when flag values in descriptor are not valid:
+ *    - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipArray3DCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipArray3DCreate_Negative_InvalidFlags") {
   CHECK_IMAGE_SUPPORT
 
@@ -319,8 +429,19 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_InvalidFlags") {
   testInvalidDescription(desc);
 }
 
-
-// hipArray3DCreate should handle the max numeric value gracefully.
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when height/width/depth values are set to maximal
+ *    numerical values
+ *    - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipArray3DCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipArray3DCreate_Negative_NumericLimit") {
   CHECK_IMAGE_SUPPORT
 
@@ -332,7 +453,20 @@ TEST_CASE("Unit_hipArray3DCreate_Negative_NumericLimit") {
   testInvalidDescription(desc);
 }
 
-// texture gather arrays may only be 2D
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when descriptor for array with flag set to texture gather
+ *    is set to represent 1D or 3D array for various types, which is not valid.
+ *    - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipArray3DCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - Platform specific (AMD)
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_hipArray3DCreate_Negative_Non2DTextureGather", "", char, uint2, int4,
                    float2, float4) {
   CHECK_IMAGE_SUPPORT

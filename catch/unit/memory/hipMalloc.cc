@@ -23,6 +23,30 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip/hip_runtime_api.h>
 
+/**
+ * @addtogroup hipMalloc hipMalloc
+ * @{
+ * @ingroup MemoryTest
+ * `hipMalloc(void** ptr, size_t size)` -
+ * Allocate memory on the default accelerator.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Allocate memory with several allocation sizes:
+ *    -# 10
+ *    -# page_size / 2
+ *    -# page_size
+ *    -# 3 * page_size / 2
+ *    -# 2 * page_size
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMalloc.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMalloc_Positive_Basic") {
   constexpr size_t page_size = 4096;
   void* ptr = nullptr;
@@ -34,12 +58,34 @@ TEST_CASE("Unit_hipMalloc_Positive_Basic") {
   HIP_CHECK(hipFree(ptr));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Allocate memory with size zero.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMalloc.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMalloc_Positive_Zero_Size") {
   void* ptr = reinterpret_cast<void*>(0x1);
   HIP_CHECK(hipMalloc(&ptr, 0));
   REQUIRE(ptr == nullptr);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validate alignment of the allocated memory.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMalloc.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMalloc_Positive_Alignment") {
   void *ptr1 = nullptr, *ptr2 = nullptr;
   HIP_CHECK(hipMalloc(&ptr1, 1));
@@ -50,6 +96,21 @@ TEST_CASE("Unit_hipMalloc_Positive_Alignment") {
   HIP_CHECK(hipFree(ptr2));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validate handling of invalid arguments:
+ *    -# When output pointer to the address pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the allocation size is max size of the `size_t`
+ *      - Expected output: return `hipErrorOutOfMemory`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMalloc.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMalloc_Negative_Parameters") {
   SECTION("ptr == nullptr") { HIP_CHECK_ERROR(hipMalloc(nullptr, 4096), hipErrorInvalidValue); }
   SECTION("size == max size_t") {

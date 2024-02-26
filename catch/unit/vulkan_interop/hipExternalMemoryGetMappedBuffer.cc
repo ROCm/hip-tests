@@ -21,10 +21,33 @@ THE SOFTWARE.
 
 #include "vulkan_test.hh"
 
+/**
+ * @addtogroup hipExternalMemoryGetMappedBuffer hipExternalMemoryGetMappedBuffer
+ * @{
+ * @ingroup MemoryTest
+ * `hipExternalMemoryGetMappedBuffer(void **devPtr, hipExternalMemory_t extMem,
+ * const hipExternalMemoryBufferDesc *bufferDesc)` -
+ * Maps a buffer onto an imported memory object.
+ */
+
 constexpr bool enable_validation = false;
 
 template <typename T> __global__ void Set(T* ptr, const T val) { ptr[threadIdx.x] = val; }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Imports external memory into a buffer.
+ *  - Gets mapped buffer from the external memory.
+ *  - Launches kernel.
+ *  - Validates results.
+ * Test source
+ * ------------------------
+ *  - unit/vulkan_interop/hipExternalMemoryGetMappedBuffer.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipExternalMemoryGetMappedBuffer_Vulkan_Positive_Read_Write") {
   VulkanTest vkt(enable_validation);
   using type = uint8_t;
@@ -69,6 +92,21 @@ TEST_CASE("Unit_hipExternalMemoryGetMappedBuffer_Vulkan_Positive_Read_Write") {
 }
 
 // Disabled on AMD due to defect - EXSWHTEC-175
+/**
+ * Test Description
+ * ------------------------
+ *  - Imports external memory into a buffer.
+ *  - Gets mapped buffer from the external memory with offset.
+ *  - Launches kernel.
+ *  - Validates results.
+ * Test source
+ * ------------------------
+ *  - unit/vulkan_interop/hipExternalMemoryGetMappedBuffer.cc
+ * Test requirements
+ * ------------------------
+ *  - Platform specific (NVIDIA)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipExternalMemoryGetMappedBuffer_Vulkan_Positive_Read_Write_With_Offset") {
   VulkanTest vkt(enable_validation);
   using type = uint8_t;
@@ -104,6 +142,29 @@ TEST_CASE("Unit_hipExternalMemoryGetMappedBuffer_Vulkan_Positive_Read_Write_With
   HIP_CHECK(hipDestroyExternalMemory(hip_ext_memory));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When device pointer is `nullptr`
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When buffer descriptor pointer is `nullptr`
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When buffer descriptor flags are not zero (non-default)
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When bufferDesc.offset + bufferDesc.size > hipExternalMemHandleDesc.size
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/vulkan_interop/hipExternalMemoryGetMappedBuffer.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipExternalMemoryGetMappedBuffer_Vulkan_Negative_Parameters") {
   VulkanTest vkt(enable_validation);
   const auto vk_storage = vkt.CreateMappedStorage<int>(1, VK_BUFFER_USAGE_TRANSFER_DST_BIT, true);
@@ -116,9 +177,7 @@ TEST_CASE("Unit_hipExternalMemoryGetMappedBuffer_Vulkan_Negative_Parameters") {
 
   hipExternalMemoryBufferDesc external_mem_buffer_desc = {};
   external_mem_buffer_desc.size = vk_storage.size;
-#if HT_NVIDIA
   void* hip_dev_ptr = nullptr;
-#endif
 
 // Disabled on AMD due to defect - EXSWHTEC-176
 #if HT_NVIDIA

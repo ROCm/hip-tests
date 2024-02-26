@@ -17,17 +17,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/*
-hipMallocMipmappedArray API test scenarios
-1. Basic Functionality
-2. Negative Scenarios
-3. Allocating Small and big chunk data
-4. Multithreaded scenario
-*/
-
 #include <array>
 #include <hip_test_common.hh>
 #include "hipArrayCommon.hh"
+
+/**
+ * @addtogroup hipMallocMipmappedArray hipMallocMipmappedArray
+ * @{
+ * @ingroup MemoryTest
+ * `hipMallocMipmappedArray(hipMipmappedArray_t *mipmappedArray,
+ * const struct hipChannelFormatDesc* desc, struct hipExtent extent,
+ * unsigned int numLevels, unsigned int flags __dparm(0))` -
+ * Allocate a mipmapped array on the device.
+ */
 
 static constexpr auto ARRAY_SIZE{4};
 static constexpr auto BIG_ARRAY_SIZE{100};
@@ -74,17 +76,38 @@ static void MallocMipmappedArray_DiffSizes(int gpu) {
     }
   }
 }
-
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that mipmapped array can be created correctly when multiple arrays
+ *    of small and big chunks of float data are allocated.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMallocMipmappedArray_DiffSizes") {
   MallocMipmappedArray_DiffSizes(0);
   HIP_CHECK_THREAD_FINALIZE();
 }
 
-/*
-This testcase verifies the hipMallocMipmappedArray API in multithreaded
-scenario by launching threads in parallel on multiple GPUs
-and verifies the hipMallocMipmappedArray API with small and big chunks data
-*/
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that mipmapped array can be created correctly when multiple arrays
+ *    of small and big chunks of float data are allocated.
+ *  - Executes in multiple threads on separate devices.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMallocMipmappedArray_MultiThread") {
   std::vector<std::thread> threadlist;
   int devCnt = 0;
@@ -130,7 +153,19 @@ void checkMipmappedArrayIsExpected(hipArray_t level_array,
 #endif
 }
 }  // namespace
-
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that mipmapped array allocation is working correctly for different
+ *    types of data and supported flags.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_happy", "", char, uint2, int4, short4, float) {
   hipMipmappedArray_t array;
   const auto desc = hipCreateChannelDesc<TestType>();
@@ -184,7 +219,19 @@ hipExtent makeMipmappedExtent(unsigned int flag, size_t s) {
   return make_hipExtent(s, s, s);
 }
 
-// Providing the array pointer as nullptr should return an error
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when output pointer to mipmapped array is `nullptr`
+ *    - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NullArrayPtr") {
   hipChannelFormatDesc desc = hipCreateChannelDesc<float4>();
   unsigned int numLevels = 1;
@@ -196,7 +243,19 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NullArrayPtr") {
       hipErrorInvalidValue);
 }
 
-// Providing the description pointer as nullptr should return an error
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when descriptor is `nullptr`
+ *    - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NullDescPtr") {
   constexpr size_t s = 6;  // 6 to keep cubemap happy
   unsigned int numLevels = 1;
@@ -209,7 +268,19 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NullDescPtr") {
       hipErrorInvalidValue);
 }
 
-// Zero width arrays are not allowed
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when array width is zero
+ *    - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_ZeroWidth") {
   constexpr size_t s = 6;  // 6 to keep cubemap happy
   unsigned int numLevels = 1;
@@ -222,7 +293,19 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_ZeroWidth") {
                   hipErrorInvalidValue);
 }
 
-// Zero height arrays are only allowed for 1D arrays and layered arrays
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when array height is zero
+ *    - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_ZeroHeight") {
   constexpr size_t s = 6;  // 6 to keep cubemap happy
   unsigned int numLevels = 1;
@@ -241,6 +324,19 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_ZeroHeight") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when flag values in descriptor are invalid
+ *    - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_InvalidFlags") {
   constexpr size_t s = 6;  // 6 to keep cubemap happy
   unsigned int numLevels = 1;
@@ -282,12 +378,42 @@ void testInvalidDescriptionMipmapped(hipChannelFormatDesc desc) {
       expectedError);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when channel format descriptor
+ *    is not valid
+ *    - Expected output (AMD): return `hipErrorInvalidValue`
+ *    - Expected output (NVIDIA): return `hipErrorUnknown`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_InvalidFormat") {
   hipChannelFormatDesc desc = hipCreateChannelDesc<float4>();
   desc.f = GENERATE(hipChannelFormatKindNone, 0xBEEF);
   testInvalidDescriptionMipmapped(desc);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when there is a channel after a zero channel
+ *    is set as parameter
+ *    - Expected output (AMD): return `hipErrorInvalidValue`
+ *    - Expected output (NVIDIA): return `hipErrorUnknown`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_BadChannelLayout") {
   const int bits = GENERATE(8, 16, 32);
   const hipChannelFormatKind formatKind =
@@ -309,6 +435,20 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_BadChannelLayout") {
   testInvalidDescriptionMipmapped(desc);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when descriptor is set to 8-bit float channels
+ *    - Expected output (AMD): return `hipErrorInvalidValue`
+ *    - Expected output (NVIDIA): return `hipErrorUnknown`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_8BitFloat") {
   hipChannelFormatDesc desc = GENERATE(hipCreateChannelDesc(8, 0, 0, 0, hipChannelFormatKindFloat),
                                        hipCreateChannelDesc(8, 8, 0, 0, hipChannelFormatKindFloat),
@@ -317,6 +457,20 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_8BitFloat") {
   testInvalidDescriptionMipmapped(desc);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when channel sizes are different
+ *    - Expected output (AMD): return `hipErrorInvalidValue`
+ *    - Expected output (NVIDIA): return `hipErrorUnknown`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_DifferentChannelSizes") {
   const int bitsX = GENERATE(8, 16, 32);
   const int bitsY = GENERATE(8, 16, 32);
@@ -340,6 +494,20 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_DifferentChannelSizes") {
   testInvalidDescriptionMipmapped(desc);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when channel sizes in descriptor are not valid
+ *    - Expected output (AMD): return `hipErrorInvalidValue`
+ *    - Expected output (NVIDIA): return `hipErrorUnknown`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_BadChannelSize") {
   const int badBits = GENERATE(-1, 0, 10, 100);
   const hipChannelFormatKind formatKind =
@@ -351,8 +519,20 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_BadChannelSize") {
   testInvalidDescriptionMipmapped(desc);
 }
 
-
-// hipMallocMipmappedArray should handle the max numeric value gracefully.
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when width/height size are equal to a maximal possible
+ *    numerical value
+ *    - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NumericLimit") {
   hipMipmappedArray_t arrayPtr;
   unsigned int numLevels = 1;
@@ -365,7 +545,21 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NumericLimit") {
       hipErrorInvalidValue);
 }
 
-// texture gather arrays are only allowed to be 2D
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when descriptor for array with flag set to texture gather
+ *    is set to represent 1D or 3D array for various types, which is not valid.
+ *    - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Platform specific (NVIDIA)
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_Negative_Non2DTextureGather", "", char, uchar2,
                    float2) {
 #if HT_AMD
@@ -384,6 +578,19 @@ TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_Negative_Non2DTextureGather", "
                   hipErrorInvalidValue);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling when number of levels in channel are not valid
+ *    - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NumLevels") {
   hipMipmappedArray_t array;
   constexpr size_t size = 6;
@@ -396,6 +603,40 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NumLevels") {
       hipErrorInvalidValue);
 }
 
+/**
+ * End doxygen group hipMallocMipmappedArray.
+ * @}
+ */
+
+/**
+ * @addtogroup hipGetMipmappedArrayLevel hipGetMipmappedArrayLevel
+ * @{
+ * @ingroup MemoryTest
+ * `hipGetMipmappedArrayLevel(hipArray_t *levelArray,
+ * hipMipmappedArray_const_t mipmappedArray, unsigned int level)` -
+ * Gets a mipmap level of a HIP mipmapped array.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipMallocMipmappedArray_happy
+ *  - @ref Unit_hipMallocMipmappedArray_MaxTexture
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When level is not valid
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When mipmapped array is `nullptr`
+ *      - Expected output: return `hipErrorInvalidResourceHandle`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMallocMipmappedArray.cc
+ * Test requirements
+ * ------------------------
+ *  - Host specific (WINDOWS)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGetMipmappedArrayLevel_Negative") {
   constexpr size_t s = 6;
   unsigned int numLevels = 1;

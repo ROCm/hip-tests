@@ -23,6 +23,34 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <utils.hh>
 
+/**
+ * @addtogroup hipHostGetDevicePointer hipHostGetDevicePointer
+ * @{
+ * @ingroup MemoryTest
+ * `hipHostGetDevicePointer(void** devPtr, void* hstPtr, unsigned int flags)` -
+ * Get Device pointer from Host Pointer allocated through `hipHostMalloc`.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When output device pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When host pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When host pointer points to non-pinned memory
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When flags are not default (non-zero)
+ *      -Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipHostGetDevicePointer.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports mapping of host memory
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipHostGetDevicePointer_Negative") {
   int* hPtr{nullptr};
   int* dPtr{nullptr};
@@ -61,6 +89,25 @@ TEST_CASE("Unit_hipHostGetDevicePointer_Negative") {
 
 template <typename T> __global__ void set(T* ptr, T val) { *ptr = val; }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates basic use-case scenarios:
+ *    -# When set the value on device and get device pointer
+ *      - Check that host memory pointer has been updated accordingly
+ *        to device pointer
+ *      - Expected output: return `hipSuccess`
+ *    -# When set the value on device, using registered stack memory
+ *      - Check that value is equal within both pointers
+ *      - Expected output: return `hipSuccess`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipHostGetDevicePointer.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports mapping of host memory
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipHostGetDevicePointer_UseCase") {
   if(!DeviceAttributesSupport(0, hipDeviceAttributeCanMapHostMemory)) {
     HipTest::HIP_SKIP_TEST("Device does not support mapping host memory"); 

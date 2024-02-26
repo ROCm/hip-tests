@@ -25,6 +25,42 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 #include <utils.hh>
 
+/**
+ * @addtogroup hipMemcpyAsync hipMemcpyAsync
+ * @{
+ * @ingroup MemoryTest
+ * `hipMemcpyAsync(void* dst, const void* src, size_t sizeBytes,
+ * hipMemcpyKind kind, hipStream_t stream __dparm(0))` -
+ * Copy data from src to dst asynchronously.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipMemcpy_MultiThread_AllAPIs
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validate basic device to host behaviour with Device to Host and Default kind.
+ *  - Following copy scenarios are considered:
+ *    -# Device to Host
+ *    -# Device to Host with default kind
+ *    -# Host to Device
+ *    -# Host to Device with default kind
+ *    -# Host to Host
+ *    -# Host to Host with default kind
+ *    -# Device to Device
+ *      - Peer access enabled
+ *      - Peer access disabled
+ *    -# Device to Device with default kind
+ *      - Peer access enabled
+ *      - Peer access disabled
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyAsync_Positive_Basic") {
   using namespace std::placeholders;
   const auto stream_type = GENERATE(Streams::nullstream, Streams::perThread, Streams::created);
@@ -34,6 +70,24 @@ TEST_CASE("Unit_hipMemcpyAsync_Positive_Basic") {
   MemcpyWithDirectionCommonTests<true>(std::bind(hipMemcpyAsync, _1, _2, _3, _4, stream));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that the API is asynchronous regarding to:
+ *    -# Copying from pageable or pinned host memory to device memory
+ *      - Platform specific (NVIDIA)
+ *    -# Copying from device memory to pageable or pinned host memory
+ *  - Validates that the API is asynchronous regarding to:
+ *    -# Copying from device memory to device memory
+ *    -# Copying from pageable or pinned host memory to pageable or pinned
+ *       host memory
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyAsync_Positive_Synchronization_Behavior") {
   using namespace std::placeholders;
   HIP_CHECK(hipDeviceSynchronize());
@@ -69,6 +123,30 @@ TEST_CASE("Unit_hipMemcpyAsync_Positive_Synchronization_Behavior") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When the destination pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When the source pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When memcpy kind is not valid (-1)
+ *      - Expected output: return `hipErrorInvalidMemcpyDirection`
+ *    -# When stream is not valid
+ *      - Expected output: return `hipErrorContextIsDestroyed`
+ *  - Perform handling for following directions:
+ *    -# Host to device
+ *    -# Device to host
+ *    -# Host to host
+ *    -# Device to device
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyAsync_Negative_Parameters") {
   using namespace std::placeholders;
   constexpr auto InvalidStream = [] {

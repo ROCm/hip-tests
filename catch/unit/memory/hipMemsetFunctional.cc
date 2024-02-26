@@ -17,17 +17,6 @@
  * THE SOFTWARE.
  */
 
-/**
- * Testcase Scenarios:
- * For hipMemset, hipMemsetD8, hipMemsetD16, hipMemsetD32, hipMemset2D, hipMemset3D and all async
- * counterparts
- * 1) (ZeroValue)  - Test setting a specified range to zero.
- * 2) (SmallSize)  - Test setting a unique memset value for small sizes.
- * 3) (ZeroSize)   - Test that trying to set memory with a zero dimension does not fail and doesn't
- *                   affect the memory.
- * 4) (PartialSet) - Test setting a partial range of total allocated memory and
- *                   ensure the full range isn't affected.
- */
 #include <hip_test_common.hh>
 
 constexpr size_t FULL_DIM = 10;
@@ -202,6 +191,25 @@ void partialMemsetTest(T valA, T valB, size_t count, size_t offset, MemsetType m
   HIP_CHECK(hipFree(devPtr));
 }
 
+/**
+ * @addtogroup hipMemset hipMemset
+ * @{
+ * @ingroup MemoryTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Sets a full region of memory with an initial value.
+ *  - Sets a smaller subregion with another value.
+ *  - Checks that the memset API do not write outside of a subregion of data.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemsetFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemsetFunctional_PartialSet_1D") {
   auto widthOffset = GENERATE(8, 16, 32, 64, 128, 256, 512, 1024);
   SECTION("hipMemset - Partial Set") {
@@ -280,6 +288,23 @@ void checkMemset2D(T value, size_t width, size_t height, bool async = false, siz
   HIP_CHECK(hipStreamDestroy(stream));
 }
 
+/**
+ * @addtogroup hipMemset2D hipMemset2D
+ * @{
+ * @ingroup MemoryTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates the case when zero value is set for width and height.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemsetFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemsetFunctional_ZeroValue_2D") {
   CHECK_IMAGE_SUPPORT
 
@@ -290,6 +315,17 @@ TEST_CASE("Unit_hipMemsetFunctional_ZeroValue_2D") {
   SECTION("hipMemset2DAsync - Zero Value") { checkMemset2D(memsetVal, width, height, true); }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates the case when small size for width and height is set.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemsetFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemsetFunctional_SmallSize_2D") {
   CHECK_IMAGE_SUPPORT
 
@@ -298,6 +334,17 @@ TEST_CASE("Unit_hipMemsetFunctional_SmallSize_2D") {
   SECTION("hipMemset2DAsync - Small Size") { checkMemset2D(memsetVal, 1, 1, true); }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates the case when zero value is set for width and height.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemsetFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemsetFunctional_ZeroSize_2D") {
   CHECK_IMAGE_SUPPORT
 
@@ -380,6 +427,19 @@ void partialMemsetTest2D(T valA, T valB, size_t width, size_t height, size_t wid
   HIP_CHECK(hipFree(devPtr));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Sets a full region of memory with an initial value.
+ *  - Sets a smaller subregion with another value.
+ *  - Checks that the memset API do not write outside of the subregion data.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemsetFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemsetFunctional_PartialSet_2D") {
   CHECK_IMAGE_SUPPORT
 
@@ -394,6 +454,11 @@ TEST_CASE("Unit_hipMemsetFunctional_PartialSet_2D") {
     }
   }
 }
+
+/**
+ * End doxygen group hipMemset2D.
+ * @}
+ */
 
 // Helper function that copies the device data to the host and returns a unique_ptr to that data.
 template <typename T>
@@ -494,18 +559,57 @@ void check_memset_3D(std::string sectionStr, size_t width, size_t height, size_t
   }
 }
 
+/**
+ * @addtogroup hipMemset3D hipMemset3D
+ * @{
+ * @ingroup MemoryTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates the case when zero value is set for width, height and depth.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemsetFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemsetFunctional_ZeroValue_3D") {
   CHECK_IMAGE_SUPPORT
 
   check_memset_3D("Zero Value", 128, 128, 10, 0);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates the case when small size for width, height and depth is set.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemsetFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemsetFunctional_SmallSize_3D") {
   CHECK_IMAGE_SUPPORT
 
   check_memset_3D("Small Size", 1, 1, 1, 0x42);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates the case when zero value is set for width, height and depth.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemsetFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemsetFunctional_ZeroSize_3D") {
   CHECK_IMAGE_SUPPORT
 
@@ -558,6 +662,19 @@ void partialMemsetTest3D(T valA, T valB, size_t width, size_t height, size_t dep
   HIP_CHECK(hipFree(devPitchedPtr.ptr));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Sets a full region of memory with an initial value.
+ *  - Sets a smaller subregion with another value.
+ *  - Checks that the memset API do not write outside of the subregion data.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemsetFunctional.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemsetFunctional_PartialSet_3D") {
   CHECK_IMAGE_SUPPORT
 

@@ -21,6 +21,31 @@ THE SOFTWARE.
 
 #include "vulkan_test.hh"
 
+/**
+ * @addtogroup hipDestroyExternalSemaphore hipDestroyExternalSemaphore
+ * @{
+ * @ingroup MemoryTest
+ * `hipDestroyExternalSemaphore(hipExternalSemaphore_t extSem)` -
+ * Destroys an external semaphore object and releases any references to the underlying resource.
+ * Any outstanding signals or waits must have completed before the semaphore is destroyed.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When pointer to the external semaphore is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When semaphore has already been destroyed:
+ *      - Platform specific (AMD)
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/vulkan_interop/hipDestroyExternalSemaphore.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipDestroyExternalSemaphore_Vulkan_Negative_Parameters") {
   SECTION("extSem == nullptr") {
     HIP_CHECK_ERROR(hipDestroyExternalSemaphore(nullptr), hipErrorInvalidValue);

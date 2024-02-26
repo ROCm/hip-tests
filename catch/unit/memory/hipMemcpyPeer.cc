@@ -16,7 +16,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-
 #include <hip/hip_runtime_api.h>
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
@@ -179,9 +178,9 @@ TEST_CASE("Unit_hipMemcpyPeer_Positive_ZeroSize") {
     const auto element_count = allocation_size / sizeof(*src_alloc.ptr());
     constexpr auto thread_count = 1024;
     const auto block_count = element_count / thread_count + 1;
-    constexpr int set_value_s = 22;
+    constexpr int set_value = 22;
     HIP_CHECK(hipSetDevice(src_device));
-    VectorSet<<<block_count, thread_count, 0>>>(src_alloc.ptr(), set_value_s, element_count);
+    VectorSet<<<block_count, thread_count, 0>>>(src_alloc.ptr(), set_value, element_count);
     HIP_CHECK(hipGetLastError());
 
     constexpr int expected_value = 20;

@@ -17,20 +17,6 @@
    THE SOFTWARE.
  */
 
-/* Test Case Description:
-   Scenario 1: The  test validates if fine grain
-   behavior is observed or not with memory allocated using hipHostMalloc()
-   Scenario 2: The test validates if fine grain
-   behavior is observed or not with memory allocated using hipMallocManaged()
-   Scenario 3: The test validates if memory access is fine
-   with memory allocated using hipMallocManaged() and CoarseGrain Advise
-   Scenario 4: The test validates if memory access is fine
-   with memory allocated using hipMalloc() and CoarseGrain Advise
-   Scenario 5: The test validates if fine grain
-   behavior is observed or not with memory allocated using
-   hipExtMallocWithFlags()*/
-
-
 #include <hip_test_common.hh>
 #include <chrono>
 
@@ -92,11 +78,26 @@ static void TstCoherency(int* ptr, bool hmmMem) {
   }
 }
 
-/* Test case description: The following test validates if fine grain
-   behavior is observed or not with memory allocated using hipHostMalloc()*/
-// The following tests are disabled for Nvidia as they are not consistently
-// passing
 #if HT_AMD
+/**
+ * @addtogroup hipHostMalloc hipHostMalloc
+ * @{
+ * @ingroup MemoryTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates if fine grain behaviour is observed or not with memory allocated
+ *    using this API.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemCoherencyTst.cc
+ * Test requirements
+ * ------------------------
+ *  - Platform specific (AMD)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipHostMalloc_CoherentTst") {
   int *Ptr = nullptr, SIZE = sizeof(int);
   bool HmmMem = false;
@@ -117,14 +118,32 @@ TEST_CASE("Unit_hipHostMalloc_CoherentTst") {
   HIP_CHECK(hipHostFree(Ptr));
   REQUIRE(YES_COHERENT);
 }
+/**
+ * End doxygen group hipHostMalloc.
+ * @}
+ */
 #endif
 
-
-/* Test case description: The following test validates if fine grain
-   behavior is observed or not with memory allocated using hipMallocManaged()*/
-// The following tests are disabled for Nvidia as they are not consistently
-// passing
+/**
+ * @addtogroup hipMallocManaged hipMallocManaged
+ * @{
+ * @ingroup MemoryMTest
+ */
 #if HT_AMD
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates if fine grain behaviour is observed or not with memory allocated
+ *    using this API.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemCoherencyTst.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - Platform specific (AMD)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMallocManaged_CoherentTst") {
   int *Ptr = nullptr, SIZE = sizeof(int), managed = 0;
   bool HmmMem = true;
@@ -153,6 +172,19 @@ TEST_CASE("Unit_hipMallocManaged_CoherentTst") {
 
 /* Test case description: The following test validates if memory access is fine
    with memory allocated using hipMallocManaged() and CoarseGrain Advise*/
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates if memory access is fine grained with memory allocates using
+ *    this API and coarse grain advice.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemCoherencyTst.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMallocManaged_CoherentTstWthAdvise") {
   int *Ptr = nullptr, SIZE = sizeof(int), managed = 0;
   YES_COHERENT = false;
@@ -190,11 +222,30 @@ TEST_CASE("Unit_hipMallocManaged_CoherentTstWthAdvise") {
   }
 }
 
+/**
+ * End doxygen group hipMallocManaged.
+ * @}
+ */
 
-/* Test case description: The following test validates if memory allocated
-   using hipMalloc() are of type Coarse Grain*/
-// The following tests are disabled for Nvidia as they are not applicable
 #if HT_AMD
+/**
+ * @addtogroup hipMalloc hipMalloc
+ * @{
+ * @ingroup MemoryTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates if memory allocated using this API are of type coarse grain.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemCoherencyTst.cc
+ * Test requirements
+ * ------------------------
+ *  - Platform specific (AMD)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMalloc_CoherentTst") {
   int *Ptr = nullptr, SIZE = sizeof(int);
   uint32_t svm_attrib = 0;
@@ -209,11 +260,33 @@ TEST_CASE("Unit_hipMalloc_CoherentTst") {
   HIP_CHECK(hipFree(Ptr));
   REQUIRE(IfTstPassed);
 }
+/**
+ * End doxygen group hipMalloc.
+ * @}
+ */
 #endif
-/* Test case description: The following test validates if fine grain
-   behavior is observed or not with memory allocated using
-   hipExtMallocWithFlags()*/
+
 #if HT_AMD
+/**
+ * @addtogroup hipExtMallocWithFlags hipExtMallocWithFlags
+ * @{
+ * @ingroup MemoryTest
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates if fine grain behaviour is observed or not with memory allocated
+ *    using this API.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemCoherencyTst.cc
+ * Test requirements
+ * ------------------------
+ *  - Device supports managed memory management
+ *    or pageable memory access
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipExtMallocWithFlags_CoherentTst") {
   int *Ptr = nullptr, SIZE = sizeof(int), InitVal = 9, Pageable = 0, managed = 0, finegrain = 0;
   bool FineGrain = true;
@@ -265,5 +338,8 @@ TEST_CASE("Unit_hipExtMallocWithFlags_CoherentTst") {
            "device attribute. Hence skipping the test with Pass result.\n");
   }
 }
+/**
+ * End doxygen group hipExtMallocWithFlags.
+ * @}
+ */
 #endif
-

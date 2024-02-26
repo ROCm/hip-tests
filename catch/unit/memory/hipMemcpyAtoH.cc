@@ -24,6 +24,28 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 #include <utils.hh>
 
+/**
+ * @addtogroup hipMemcpyAtoH hipMemcpyAtoH
+ * @{
+ * @ingroup MemoryTest
+ * `hipMemcpyAtoH(void* dst, hipArray* srcArray, size_t srcOffset, size_t count)` -
+ * Copies data between host and device.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates basic behaviour for copying memory from device array
+ *    to the host.
+ *  - The test is run for a various sizes, host allocation types and flag
+ *    combinations.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyAtoH.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyAtoH_Positive_Default") {
   CHECK_IMAGE_SUPPORT
 
@@ -35,6 +57,18 @@ TEST_CASE("Unit_hipMemcpyAtoH_Positive_Default") {
   MemcpyAtoHShell<false, int>(std::bind(hipMemcpyAtoH, _1, _2, 0, allocation_size), width);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that API synchronizes regarding to host when copying from
+ *    pageable or pinned host memory to device memory.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyAtoH.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyAtoH_Positive_Synchronization_Behavior") {
   CHECK_IMAGE_SUPPORT
 
@@ -51,11 +85,22 @@ TEST_CASE("Unit_hipMemcpyAtoH_Positive_Synchronization_Behavior") {
 }
 
 /*
-This testcase verifies size 0 check of hipMemcpyAtoH API
 Excluded the testcase for amd,as there is already a bug raised
 SWDEV-274683
 */
 #if HT_NVIDIA
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that nothing will be copied if count is set to zero.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyAtoH.cc
+ * Test requirements
+ * ------------------------
+ *  - Platfom specific (NVIDIA)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyAtoH_Positive_ZeroCount") {
   CHECK_IMAGE_SUPPORT
 
@@ -80,6 +125,27 @@ TEST_CASE("Unit_hipMemcpyAtoH_Positive_ZeroCount") {
 }
 #endif
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When destination pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When source pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When offset is greater than allocated size
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When count is greater than allocated size
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When 2D array is allocated
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipMemcpyAtoH.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipMemcpyAtoH_Negative_Parameters") {
   CHECK_IMAGE_SUPPORT
 

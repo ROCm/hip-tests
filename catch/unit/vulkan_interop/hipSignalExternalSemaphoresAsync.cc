@@ -21,8 +21,33 @@ THE SOFTWARE.
 
 #include "vulkan_test.hh"
 
+/**
+ * @addtogroup hipSignalExternalSemaphoresAsync hipSignalExternalSemaphoresAsync
+ * @{
+ * @ingroup MemoryTest
+ * `hipSignalExternalSemaphoresAsync(const hipExternalSemaphore_t* extSemArray,
+ * const hipExternalSemaphoreSignalParams* paramsArray,
+ * unsigned int numExtSems, hipStream_t stream)` -
+ * Signals a set of external semaphore objects.
+ */
+
 constexpr bool enable_validation = false;
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates two host visible Vulkan buffers.
+ *  - Adds a buffer copy command which will copy from one buffer to another.
+ *  - Creates an external Vulkan binary semaphore.
+ *  - Createas a Vulkan fence and signals semaphore asynchronously.
+ *  - Waits for the operation to finish successfully.
+ * Test source
+ * ------------------------
+ *  - unit/vulkan_interop/hipSignalExternalSemaphoresAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Binary_Semaphore") {
   VulkanTest vkt(enable_validation);
 
@@ -69,6 +94,20 @@ TEST_CASE("Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Binary_Semaphor
 
 // Timeline semaphores unsupported on AMD
 #if HT_NVIDIA
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates an external Vulkan timeline semaphore.
+ *  - Imports the semapthore and signals.
+ *  - Waits for the operation to finish successfully.
+ * Test source
+ * ------------------------
+ *  - unit/vulkan_interop/hipSignalExternalSemaphoresAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - Platfom specific (NVIDIA)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Timeline_Semaphore") {
   VulkanTest vkt(enable_validation);
   constexpr uint64_t signal_value = 2;
@@ -93,6 +132,21 @@ TEST_CASE("Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Timeline_Semaph
   HIP_CHECK(hipDestroyExternalSemaphore(hip_ext_semaphore));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates two host visible Vulkan buffers.
+ *  - Adds a buffer copy command which will copy from one buffer to another.
+ *  - Creates multiple external Vulkan binary semaphores.
+ *  - Createas a Vulkan fence and signals semaphores.
+ *  - Waits for the operations to finish successfully.
+ * Test source
+ * ------------------------
+ *  - unit/vulkan_interop/hipSignalExternalSemaphoresAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Multiple_Semaphores") {
   VulkanTest vkt(enable_validation);
 
@@ -169,6 +223,25 @@ TEST_CASE("Unit_hipSignalExternalSemaphoresAsync_Vulkan_Positive_Multiple_Semaph
 }
 #endif
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When external semaphore array is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When array parameters are `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When flags are not zero (non-default)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When stream is not valid
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/vulkan_interop/hipSignalExternalSemaphoresAsync.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipSignalExternalSemaphoresAsync_Vulkan_Negative_Parameters") {
   VulkanTest vkt(enable_validation);
   hipExternalSemaphoreSignalParams signal_params = {};

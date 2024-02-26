@@ -20,14 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/*
-Following scenarios are verified for hipPointerGetAttributes API
-1. Run through a couple simple cases to test lookups host pointer arithmetic
-2. Allocates memory across all devices withing the specified size range
-3. Allocates tiny memory across all devices
-4. Multi-threaded test with many simul allocs.
-
-*/
 #include <inttypes.h>
 #include <hip_test_common.hh>
 #include <hip_test_defgroups.hh>
@@ -37,15 +29,17 @@ Following scenarios are verified for hipPointerGetAttributes API
 #include <vector>
 #include <iostream>
 #include <string>
-size_t Nbytes = 0;
-constexpr size_t N{1000000};
+
 /**
  * @addtogroup hipPointerGetAttributes hipPointerGetAttributes
  * @{
  * @ingroup MemoryTest
- * `hipError_t  hipPointerGetAttributes (hipPointerAttribute_t *attributes, const void *ptr)` -
- * Queries the memory pointer attributes.
+ * `hipPointerGetAttributes(hipPointerAttribute_t* attributes, const void* ptr)` -
+ * Return attributes for the specified pointer.
  */
+
+size_t Nbytes = 0;
+constexpr size_t N{1000000};
 
 //=================================================================================================
 // Utility Functions:
@@ -219,11 +213,16 @@ void clusterAllocs(int numAllocs, size_t minSize, size_t maxSize) {
     }
   }
 }
+
 /**
  * Test Description
  * ------------------------
- * - Run through a couple simple cases to test lookups host pointer arithmetic
-// specified size range
+ *  - Runs through a couple simple cases to test lookups and pointer arithmetic.
+ *  - Tests functionality of following types of memory:
+ *    -# Device memory
+ *    -# Device visible host memory
+ *    -# OS memory
+ * Test source
  * ------------------------
  *  - unit/memory/hipPointerGetAttributes.cc
  * Test requirements
@@ -317,6 +316,19 @@ TEST_CASE("Unit_hipPointerGetAttributes_Basic") {
  *  - HIP_VERSION >= 5.7
  */
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Performs a couple of large allocations.
+ *  - Randomly determines whether the allocation is performed on the device or host.
+ *  - The size of the allocation is a random number between min_size and max_size bytes.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipPointerGetAttributes.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipPointerGetAttributes_ClusterAlloc") {
   srand(0x100);
   printf("\n=============================================\n");
@@ -334,6 +346,19 @@ TEST_CASE("Unit_hipPointerGetAttributes_ClusterAlloc") {
  *  - HIP_VERSION >= 5.7
  */
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Performs many small allocations.
+ *  - Randomly determines whether the allocation is performed on the device or host.
+ *  - The size of the allocation is a random number between min_size and max_size bytes.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipPointerGetAttributes.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipPointerGetAttributes_TinyClusterAlloc") {
   srand(0x200);
   printf("\n=============================================\n");
@@ -377,6 +402,22 @@ TEST_CASE("Unit_hipPointerGetAttributes_MultiThread") {
  *  - HIP_VERSION >= 5.7
  */
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When output pointer to the attributes is `nullptr`
+ *      - Platform specific (AMD)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When address pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipPointerGetAttributes.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipPointerGetAttributes_Negative") {
 #if HT_AMD  // Nvidia crashed in hipPointerGetAttributes on nullptr
   SECTION("Invalid Attributes Pointer") {
@@ -398,13 +439,17 @@ TEST_CASE("Unit_hipPointerGetAttributes_Negative") {
 /**
  * Test Description
  * ------------------------
- *  - Run this test for all devices for DeviceMemory,
- *    HostMemory and MappedMemory
+ *  - Get address pointer attributes for each device and memory type:
+ *    -# Device Memory
+ *    -# Host Memory
+ *    -# Mapped Memory
+ *  - Require valid values of attributes.
  * Test source
  * ------------------------
  *  - unit/memory/hipPointerGetAttributes.cc
  * Test requirements
  * ------------------------
+ *  - Multi-device
  *  - HIP_VERSION >= 6.0
  */
 TEST_CASE("Unit_hipPointerGetAttributes_GpuIter") {

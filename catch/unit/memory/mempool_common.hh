@@ -29,7 +29,6 @@ constexpr hipMemPoolProps kPoolProps = {
 constexpr auto wait_ms = 500;
 }  // anonymous namespace
 
-
 template <typename T> __global__ void kernel_500ms(T* host_res, int clk_rate) {
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
   host_res[tid] = tid + 1;
@@ -87,7 +86,7 @@ template <typename F> void MallocMemPoolAsync_OneAlloc(F malloc_func, const MemP
   HIP_CHECK(malloc_func(reinterpret_cast<void**>(&alloc_mem), allocation_size, mempool.mempool(),
                         stream.stream()));
 
-  int blocks = 1024;
+  int blocks = 16;
   int clk_rate;
   hipMemPoolAttr attr;
   if (IsGfx11()) {
@@ -154,7 +153,7 @@ void MallocMemPoolAsync_TwoAllocs(F malloc_func, const MemPools mempool_type) {
   HIP_CHECK(malloc_func(reinterpret_cast<void**>(&alloc_mem2), allocation_size, mempool.mempool(),
                         stream.stream()));
 
-  int blocks = 1024;
+  int blocks = 16;
   int clk_rate;
   hipMemPoolAttr attr;
   if (IsGfx11()) {

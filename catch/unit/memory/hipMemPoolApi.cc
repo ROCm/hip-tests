@@ -39,6 +39,7 @@ constexpr hipMemPoolProps kPoolProps = {
     0
   },
   nullptr,
+  0,
   {0}
 };
 

@@ -44,6 +44,7 @@ static hipMemPoolProps CreateMemPoolProps(const int device_id, const hipMemAlloc
       device_id
     },
     nullptr,
+    0,
     {0}
   };
 

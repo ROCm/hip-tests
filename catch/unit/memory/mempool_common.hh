@@ -24,7 +24,7 @@
 
 namespace {
 constexpr hipMemPoolProps kPoolProps = {
-    hipMemAllocationTypePinned, hipMemHandleTypeNone, {hipMemLocationTypeDevice, 0}, nullptr, {0}};
+    hipMemAllocationTypePinned, hipMemHandleTypeNone, {hipMemLocationTypeDevice, 0}, nullptr,0, {0}};
 
 constexpr auto wait_ms = 500;
 }  // anonymous namespace

@@ -320,3 +320,19 @@ add_custom_target(package_test COMMAND ${CMAKE_COMMAND} .
     COMMAND cpack
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 endif()
+
+# Doxygen documentation
+# check if doxygen is installed
+find_package(Doxygen)
+if(DOXYGEN_FOUND)
+    # Configure Doxyfile with proper paths
+    set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/DoxyfileTests)
+    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/DoxyfileTests.out)
+    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+
+    add_custom_target(build_docs
+        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+        COMMENT "Generating test plan documentation with Doxygen")
+else()
+    message(STATUS "Doxygen was not found. Building test plan documentation will not be available")
+endif()

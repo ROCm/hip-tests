@@ -165,6 +165,7 @@ THE SOFTWARE.
  * @{
  * This section describes the tests for Stream Ordered Memory Allocator functions of HIP runtime
  * API.
+ * @}
  */
 
 /**

@@ -273,12 +273,12 @@ TEST_CASE("Unit_hipMemPoolSetAccess_Negative_Parameters") {
 #endif
   SECTION("Count > num_device") {
     HIP_CHECK_ERROR(hipMemPoolSetAccess(mempool.mempool(), &desc, (num_dev + 1)),
-                    hipErrorNotSupported);
+                    hipErrorInvalidDevice);
   }
 
   SECTION("Passing invalid desc location type") {
     desc.location.type = hipMemLocationTypeInvalid;
-    HIP_CHECK_ERROR(hipMemPoolSetAccess(mempool.mempool(), &desc, 1), hipErrorNotSupported);
+    HIP_CHECK_ERROR(hipMemPoolSetAccess(mempool.mempool(), &desc, 1), hipErrorInvalidValue);
     desc.location.type = hipMemLocationTypeDevice;
   }
 

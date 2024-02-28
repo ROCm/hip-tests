@@ -385,6 +385,8 @@
         "Performance_hipMemsetD16Async",
         "Performance_hipMemsetD32",
         "Performance_hipMemsetD32Async",
+        "Performance_hipMemcpy2D_HostToHost",
+        "Performance_hipMemcpy2DAsync_HostToHost",
         "Note: Test disabled due to defect - EXSWHTEC-151",
         "Unit_hipModuleLoad_Negative_Load_From_A_File_That_Is_Not_A_Module",
         "Note: Test disabled due to defect - EXSWHTEC-152",

@@ -43,6 +43,7 @@ endif()
 if(HIP_PLATFORM MATCHES "amd")
   set(AMD_SRC
       hipExtLaunchKernelGGL.cc
+      hipSetupArgument.cc
   )
   set(TEST_SRC ${TEST_SRC} ${AMD_SRC})
 endif()

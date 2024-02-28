@@ -26,7 +26,7 @@ hip-tests releases are typically naming convention for each ROCM release to help
 
 ### Build HIP catch tests
 
-For building HIP from sources, please check instructions on [HIP page] (https://github.com/ROCm/HIP/blob/develop/docs/developer_guide/build.md)
+For building HIP from sources, please check instructions on [HIP page] (https://rocm.docs.amd.com/projects/HIP/en/latest/developer_guide/build.html)
 
 HIP catch tests can be built via the following instructions,
 

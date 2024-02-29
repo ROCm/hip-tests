@@ -442,6 +442,10 @@
         "Unit_Thread_Block_Tile_Shfl_Positive_Basic - float",
         "Unit_Thread_Block_Tile_Shfl_Positive_Basic - double",
         "Unit_Thread_Block_Tile_Getters_Positive_Basic",
+        "SWDEV-446588 - Disable graph multi gpu testcases until graph has support for it",
+        "Unit_hipGraphExecUpdate_Negative_MultiDevice_Context_Changed",
+        "Unit_hipGraphMem_Alloc_Free_NodeGetParams_Functional_MultiDevice",
+        "Unit_hipGraphUpload_Functional_multidevice_test",
     #endif
         "End of json"
     ]

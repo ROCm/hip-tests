@@ -312,7 +312,6 @@
         "Unit_hipMemcpy2D_Positive_Synchronization_Behavior",
         "Unit_hipMemcpyAsync_Positive_Synchronization_Behavior",
         "Unit_hipDrvMemcpy3D_Positive_Synchronization_Behavior",
-        "Unit_Thread_Block_Tile_Dynamic_Getters_Positive_Basic",
         "Unit_hipFuncSetCacheConfig_Negative_Not_Supported",
         "Unit_hipFuncSetSharedMemConfig_Negative_Not_Supported",
         "Unit_hipFuncSetAttribute_Positive_MaxDynamicSharedMemorySize_Not_Supported",

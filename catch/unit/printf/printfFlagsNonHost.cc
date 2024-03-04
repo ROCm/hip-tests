@@ -18,7 +18,7 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 #include <hip_test_process.hh>
-#include <hip_test_defgroups.hh>
+ 
 
 /**
 * @addtogroup printf printf

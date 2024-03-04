@@ -20,7 +20,6 @@ THE SOFTWARE.
 #include <hip_test_checkers.hh>
 #include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
-#include <hip_test_defgroups.hh>
 
 #include "stream_capture_common.hh"
 
@@ -367,7 +366,7 @@ TEST_CASE("Unit_hipStreamUpdateCaptureDependencies_Positive_Parameters") {
   const hipStreamUpdateCaptureDependenciesFlags flag =
       GENERATE(hipStreamAddCaptureDependencies, hipStreamSetCaptureDependencies);
 
-  HIP_CHECK(hipStreamBeginCapture(stream, captureMode)); //hipStreamCaptureModeGlobal));
+  HIP_CHECK(hipStreamBeginCapture(stream, captureMode));  // hipStreamCaptureModeGlobal));
 
   HIP_CHECK(hipStreamUpdateCaptureDependencies(stream, nullptr, 0, flag));
 

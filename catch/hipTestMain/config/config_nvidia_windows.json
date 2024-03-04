@@ -44,6 +44,7 @@
         "Performance_hipMemsetD32",
         "Performance_hipMemsetD32Async",
         "Unit_hipMemcpyParam2D_Positive_Synchronization_Behavior",
-        "Unit_hipMemcpy_Positive_Synchronization_Behavior"
+        "Unit_hipMemcpy_Positive_Synchronization_Behavior",
+        "Unit_hipMemMapArrayAsync_Positive_Basic"
     ]
 }

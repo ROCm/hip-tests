@@ -93,7 +93,13 @@ if(HIP_PLATFORM MATCHES "amd")
       hipMemAddressFree.cc
       hipMemAddressReserve.cc
       hipMemRelease.cc
-      hipMemGetAllocationPropertiesFromHandle.cc)
+      hipMemGetAllocationPropertiesFromHandle.cc
+      hipArray.cc)
+  if(UNIX)
+    # Should be compiled for NVIDIA as well after EXSWHTEC-346 is addressed
+    # For windows build error occurs undefined symbol: hipPointerSetAttribute
+    set(TEST_SRC ${TEST_SRC} hipPointerSetAttribute.cc)
+  endif()
 else()
   set(TEST_SRC ${TEST_SRC} hipGetSymbolSizeAddress.cc)
 endif()
@@ -161,9 +167,17 @@ set(TEST_SRC
     hipStreamAttachMemAsync.cc
     hipMemRangeGetAttributes_old.cc
     hipMemGetAddressRange.cc
-    hipArrayGetDescriptor.cc
     hipMallocMipmappedArray.cc
     hipFreeMipmappedArray.cc)
+
+if(HIP_PLATFORM MATCHES "amd")
+  set(TEST_SRC
+      ${TEST_SRC}
+      # Below 3 tests should be compiled for NVIDIA as well after EXSWHTEC-349 is addressed
+      hipArrayGetInfo.cc
+      hipArrayGetDescriptor.cc
+      hipArray3DGetDescriptor.cc)
+endif()
 
 set(NOT_FOR_MI200_AND_ABOVE_TEST hipMallocArray.cc hipArrayCreate.cc) # tests not for MI200+
 set(MI200_AND_ABOVE_TARGETS gfx90a gfx940 gfx941 gfx942)
@@ -179,7 +193,6 @@ function(CheckRejectedArchs OFFLOAD_ARCH_STR_LOCAL)
     endif()        # CMAKE_MATCH_COUNT
   endforeach()   # OFFLOAD_ARCH_LIST
 endfunction()  # CheckAcceptedArchs
-
 if(HIP_PLATFORM MATCHES "amd")
   if (DEFINED OFFLOAD_ARCH_STR)
     CheckRejectedArchs(${OFFLOAD_ARCH_STR})

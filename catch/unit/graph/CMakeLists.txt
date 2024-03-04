@@ -148,10 +148,26 @@ set(TEST_SRC
   hipGraphKernelNodeGetAttribute.cc
   hipGraphKernelNodeSetAttribute.cc
   hipGraphMemAllocNodeGetParams.cc
-  hipDrvGraphAddMemcpyNode.cc
   hipGraphAddMemAllocNode.cc
   hipGraphAddMemFreeNode.cc
+  hipDrvGraphMemcpyNodeGetParams.cc
+  hipDrvGraphMemcpyNodeSetParams.cc
+  hipDeviceSetGraphMemAttribute.cc
+  hipDeviceGetGraphMemAttribute.cc
+  hipDeviceGraphMemTrim.cc
 )
+
+if(HIP_PLATFORM MATCHES "amd")
+  set(AMD_SRC
+    # hipGraphAddNode, hipGraphNodeParams, hipMemcpyNodeParams are not mapped to Nvidia
+    hipGraphAddNode.cc
+    # hipDrvGraphAddMemsetNode, HIP_MEMSET_NODE_PARAMS are not mapped to Nvidia
+    hipDrvGraphAddMemsetNode.cc
+    # hipDrvGraphAddMemcpyNode not mapped to Nvidia
+    hipDrvGraphAddMemcpyNode.cc
+  )
+  set(TEST_SRC ${TEST_SRC} ${AMD_SRC})
+endif()
 
 add_custom_target(add_Kernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/add_Kernel.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../graph/add_Kernel.code -I${HIP_PATH}/include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 

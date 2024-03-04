@@ -76,3 +76,4 @@ template <class T> bool CheckDimensions(unsigned int device, T kernel, dim3 bloc
 
   return true;
 }
+

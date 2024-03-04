@@ -170,7 +170,7 @@ inline bool DeviceAttributesSupport(const int device, Attributes... attributes) 
   return (... && DeviceAttributeSupport(device, attributes));
 }
 
-inline int GetDeviceAttribute(int device, const hipDeviceAttribute_t attr) {
+inline int GetDeviceAttribute(const hipDeviceAttribute_t attr, int device) {
   int value = 0;
   HIP_CHECK(hipDeviceGetAttribute(&value, attr, device));
   return value;

@@ -24,22 +24,26 @@ THE SOFTWARE.
 
 #include <numeric>
 
+#include <cmd_options.hh>
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
 #include <hip/hip_cooperative_groups.h>
-#include <cmd_options.hh>
 
-enum class AtomicScopes { device, system };
+enum class AtomicScopes { device, system, builtin };
 
-template <typename T, AtomicScopes scope> __device__ T perform_atomic_exch(T* address, T val) {
+template <typename T, AtomicScopes scope, int memory_scope = __HIP_MEMORY_SCOPE_AGENT>
+__device__ T perform_atomic_exch(T* address, T val) {
   if constexpr (scope == AtomicScopes::device) {
     return atomicExch(address, val);
   } else if (scope == AtomicScopes::system) {
     return atomicExch_system(address, val);
+  } else if (scope == AtomicScopes::builtin) {
+    return __hip_atomic_exchange(address, val, __ATOMIC_RELAXED, memory_scope);
   }
 }
 
-template <typename T, bool use_shared_mem, AtomicScopes scope>
+template <typename T, bool use_shared_mem, AtomicScopes scope,
+          int memory_scope = __HIP_MEMORY_SCOPE_AGENT>
 __global__ void atomic_exch_kernel_compile_time(T* const global_mem, T* const old_vals) {
   __shared__ T shared_mem;
 
@@ -52,7 +56,7 @@ __global__ void atomic_exch_kernel_compile_time(T* const global_mem, T* const ol
     __syncthreads();
   }
 
-  old_vals[tid] = perform_atomic_exch<T, scope>(mem, static_cast<T>(tid + 1));
+  old_vals[tid] = perform_atomic_exch<T, scope, memory_scope>(mem, static_cast<T>(tid + 1));
 
   if constexpr (use_shared_mem) {
     __syncthreads();
@@ -67,7 +71,16 @@ __host__ __device__ T* pitched_offset(T* const ptr, const unsigned int pitch,
   return reinterpret_cast<T*>(byte_ptr + idx * pitch);
 }
 
-template <typename T, bool use_shared_mem, AtomicScopes scope>
+__device__ void generate_memory_traffic(uint8_t* const begin_addr, uint8_t* const end_addr) {
+  for (volatile uint8_t* addr = begin_addr; addr != end_addr; ++addr) {
+    uint8_t val = *addr;
+    val ^= 0xAB;
+    *addr = val;
+  }
+}
+
+template <typename T, bool use_shared_mem, AtomicScopes scope,
+          int memory_scope = __HIP_MEMORY_SCOPE_AGENT>
 __global__ void atomic_exch_kernel(T* const global_mem, T* const old_vals, const unsigned int width,
                                    const unsigned pitch, const T base_val = 0) {
   extern __shared__ uint8_t shared_mem[];
@@ -84,8 +97,18 @@ __global__ void atomic_exch_kernel(T* const global_mem, T* const old_vals, const
     __syncthreads();
   }
 
-  old_vals[tid] = perform_atomic_exch<T, scope>(pitched_offset(mem, pitch, tid % width),
-                                                base_val + static_cast<T>(tid + width));
+  const auto n = cooperative_groups::this_grid().size() - width;
+
+  T* atomic_addr = pitched_offset(mem, pitch, tid % width);
+
+  if (tid < n) {
+    old_vals[tid] = perform_atomic_exch<T, scope, memory_scope>(
+        pitched_offset(mem, pitch, tid % width), base_val + static_cast<T>(tid + width));
+  } else {
+    uint8_t* const begin_addr = reinterpret_cast<uint8_t*>(atomic_addr + 1);
+    uint8_t* const end_addr = reinterpret_cast<uint8_t*>(atomic_addr) + pitch;
+    generate_memory_traffic(begin_addr, end_addr);
+  }
 
   if constexpr (use_shared_mem) {
     __syncthreads();
@@ -255,14 +278,16 @@ class AtomicExchCRTP {
   }
 };
 
-template <typename T, bool use_shared_mem, AtomicScopes scope>
+template <typename T, bool use_shared_mem, AtomicScopes scope,
+          int memory_scope = __HIP_MEMORY_SCOPE_AGENT>
 class AtomicExch
     : public AtomicExchCRTP<AtomicExch<T, use_shared_mem, scope>, T, use_shared_mem, scope> {
  public:
   void LaunchKernel(const unsigned int shared_mem_size, const hipStream_t stream, T* const mem,
                     T* const old_vals, const T base_val, const AtomicExchParams& p) const {
-    atomic_exch_kernel<T, use_shared_mem, scope><<<p.blocks, p.threads, shared_mem_size, stream>>>(
-        mem, old_vals, p.width, p.pitch, base_val);
+    atomic_exch_kernel<T, use_shared_mem, scope, memory_scope>
+        <<<p.blocks, p.threads, shared_mem_size, stream>>>(mem, old_vals, p.width, p.pitch,
+                                                           base_val);
   }
 
   void ValidateResults(std::vector<T>& old_vals) const {
@@ -281,23 +306,39 @@ inline dim3 GenerateAtomicExchBlockDimensions() {
   return GENERATE_COPY(dim3(sm_count), dim3(sm_count + sm_count / 2));
 }
 
-template <typename TestType, AtomicScopes scope>
+template <typename TestType, AtomicScopes scope, int memory_scope = __HIP_MEMORY_SCOPE_AGENT>
 void AtomicExchSingleDeviceSingleKernelTest(const unsigned int width, const unsigned int pitch) {
   AtomicExchParams params;
   params.num_devices = 1;
   params.kernel_count = 1;
-  params.threads = GenerateAtomicExchThreadDimensions();
+  if constexpr (scope == AtomicScopes::builtin && memory_scope == __HIP_MEMORY_SCOPE_SINGLETHREAD) {
+    params.threads = 1;
+  } else if constexpr (scope == AtomicScopes::builtin &&
+                       memory_scope == __HIP_MEMORY_SCOPE_WAVEFRONT) {
+    int warp_size = 0;
+    HIP_CHECK(hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, 0));
+    params.threads = dim3(warp_size);
+  } else {
+    params.threads = GenerateAtomicExchThreadDimensions();
+  }
   params.width = width;
   params.pitch = pitch;
 
   SECTION("Global memory") {
-    params.blocks = GenerateAtomicExchBlockDimensions();
+    if constexpr (scope == AtomicScopes::builtin &&
+                  (memory_scope == __HIP_MEMORY_SCOPE_SINGLETHREAD ||
+                   memory_scope == __HIP_MEMORY_SCOPE_WAVEFRONT ||
+                   memory_scope == __HIP_MEMORY_SCOPE_WORKGROUP)) {
+      params.blocks = dim3(1);
+    } else {
+      params.blocks = GenerateAtomicExchBlockDimensions();
+    }
     using LA = LinearAllocs;
     for (const auto alloc_type :
          {LA::hipMalloc, LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister}) {
       params.alloc_type = alloc_type;
       DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
-        AtomicExch<TestType, false, scope>().run(params);
+        AtomicExch<TestType, false, scope, memory_scope>().run(params);
       }
     }
   }
@@ -305,7 +346,7 @@ void AtomicExchSingleDeviceSingleKernelTest(const unsigned int width, const unsi
   SECTION("Shared memory") {
     params.blocks = dim3(1);
     params.alloc_type = LinearAllocs::hipMalloc;
-    AtomicExch<TestType, true, scope>().run(params);
+    AtomicExch<TestType, true, scope, memory_scope>().run(params);
   }
 }
 

@@ -421,6 +421,11 @@ class MemPoolGuard {
   ~MemPoolGuard() {
     if (mempool_type_ == MemPools::created) {
       static_cast<void>(hipMemPoolDestroy(mempool_));
+    } else {
+      // Reset max states for default mem pool, so subtests won't fail
+      uint64_t value = 0;
+      HIP_CHECK(hipMemPoolSetAttribute(mempool_, hipMemPoolAttrUsedMemHigh, &value));
+      HIP_CHECK(hipMemPoolSetAttribute(mempool_, hipMemPoolAttrReservedMemHigh, &value));
     }
   }
 

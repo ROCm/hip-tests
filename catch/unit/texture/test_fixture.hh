@@ -34,6 +34,7 @@ template <typename TestType> struct TextureTestParams {
   size_t layers;
   size_t num_subdivisions;
   hipTextureDesc tex_desc;
+  bool cubemap;
 
   size_t Size() const {
     return extent.width * (extent.height ?: 1) * (extent.depth ?: 1) * (layers ?: 1);
@@ -52,6 +53,10 @@ template <typename TestType> struct TextureTestParams {
   size_t Height() const { return extent.height; }
 
   size_t Depth() const { return extent.depth; }
+
+  unsigned int Flags() const {
+    return (Layered() ? hipArrayLayered : 0u) | (cubemap ? hipArrayCubemap : 0u);
+  }
 
   hipExtent LayeredExtent() const {
     return Layered() ? make_hipExtent(Width(), Height(), layers) : extent;
@@ -94,19 +99,25 @@ template <typename TestType> struct TextureTestParams {
     tex_desc.addressMode[0] = address_mode_x;
     if (extent.height) tex_desc.addressMode[1] = address_mode_y;
     if (extent.depth) tex_desc.addressMode[2] = address_mode_z;
+
+    tex_desc.mipmapFilterMode = tex_desc.filterMode;
   }
 };
 
-template <typename TestType, bool normalized_read = false> struct TextureTestFixture {
+template <typename TestType, bool normalized_read = false, bool mipmap = false>
+struct TextureTestFixture {
   using VecType = vec4<TestType>;
   using OutType = std::conditional_t<normalized_read, vec4<float>, VecType>;
+  template <typename T>
+  using ArrayAllocGuardType =
+      std::conditional_t<mipmap, MipmappedArrayAllocGuard<T>, ArrayAllocGuard<T>>;
 
   TextureTestParams<TestType> params;
   hipResourceDesc res_desc;
 
   LinearAllocGuard<VecType> host_alloc;
   TextureReference<VecType> tex_h;
-  ArrayAllocGuard<VecType> tex_alloc_d;
+  ArrayAllocGuardType<VecType> tex_alloc_d;
   TextureGuard tex;
   LinearAllocGuard<OutType> out_alloc_d;
   std::vector<OutType> out_alloc_h;
@@ -115,7 +126,7 @@ template <typename TestType, bool normalized_read = false> struct TextureTestFix
       : params{p},
         host_alloc{LinearAllocs::hipHostMalloc, sizeof(VecType) * params.Size()},
         tex_h{host_alloc.ptr(), params.extent, params.layers},
-        tex_alloc_d{params.LayeredExtent(), params.Layered() ? hipArrayLayered : 0u},
+        tex_alloc_d{params.LayeredExtent(), params.Flags()},
         tex{ResDesc(), &params.tex_desc},
         out_alloc_d{LinearAllocs::hipMalloc, sizeof(OutType) * params.NumIters()},
         out_alloc_h(params.NumIters()) {}
@@ -127,7 +138,12 @@ template <typename TestType, bool normalized_read = false> struct TextureTestFix
     }
 
     hipMemcpy3DParms memcpy_params = {};
-    memcpy_params.dstArray = tex_alloc_d.ptr();
+    memset(&memcpy_params, 0, sizeof(hipMemcpy3DParms));
+    if constexpr (mipmap) {
+      memcpy_params.dstArray = tex_alloc_d.GetLevel(0);
+    } else {
+      memcpy_params.dstArray = tex_alloc_d.ptr();
+    }
     memcpy_params.extent = params.LayeredExtent();
     memcpy_params.extent.height = memcpy_params.extent.height ?: 1;
     memcpy_params.extent.depth = memcpy_params.extent.depth ?: 1;
@@ -137,8 +153,13 @@ template <typename TestType, bool normalized_read = false> struct TextureTestFix
     HIP_CHECK(hipMemcpy3D(&memcpy_params));
 
     memset(&res_desc, 0, sizeof(res_desc));
-    res_desc.resType = hipResourceTypeArray;
-    res_desc.res.array.array = tex_alloc_d.ptr();
+    if constexpr (mipmap) {
+      res_desc.resType = hipResourceTypeMipmappedArray;
+      res_desc.res.mipmap.mipmap = tex_alloc_d.ptr();
+    } else {
+      res_desc.resType = hipResourceTypeArray;
+      res_desc.res.array.array = tex_alloc_d.ptr();
+    }
     return &res_desc;
   }
 

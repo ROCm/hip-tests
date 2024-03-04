@@ -47,6 +47,8 @@ void findAPICallInFile(HipAPI& hip_api, std::string test_module_file) {
   std::string api_member{"." + hip_api.getName() + "("};
   std::string api_newline{"  " + hip_api.getName() + "("};
   std::string api_templated{" " + hip_api.getName() + "<"};
+  std::string api_kernel_def_macro{"_KERNEL_DEF(" + hip_api.getName()};
+  std::string api_test_def_macro{"_TEST_DEF(" + hip_api.getName()};
 
   std::string api_restriction{hip_api.getFileRestriction()};
   bool found_restriction{false};
@@ -66,7 +68,9 @@ void findAPICallInFile(HipAPI& hip_api, std::string test_module_file) {
         (line.find(api_member) != std::string::npos) ||
         (line.find(api_newline) != std::string::npos) ||
         (line.find(hip_api.getName() + "(") == 0) ||
-        (line.find(api_templated) != std::string::npos)) {
+        (line.find(api_templated) != std::string::npos) ||
+        (line.find(api_kernel_def_macro) != std::string::npos) ||
+        (line.find(api_test_def_macro) != std::string::npos)) {
       if (api_restriction == "" || found_restriction) {
         hip_api.addFileOccurrence(FileOccurrence(test_module_file, line_number));
       }
@@ -135,6 +139,8 @@ void findAPITestCaseInFileByAPIName(HipAPI& hip_api, std::string test_module_fil
   std::string line;
 
   std::string test_case_definition{"TEST_CASE("};
+  std::string test_def_macro{"_TEST_DEF("};
+  std::string test_def_impl_macro{"_TEST_DEF_IMPL("};
   std::string test_case{"None"};
 
   while (std::getline(test_module_file_handler, line)) {
@@ -145,6 +151,14 @@ void findAPITestCaseInFileByAPIName(HipAPI& hip_api, std::string test_module_fil
       test_case = test_case.substr(0, test_case.find("\""));
       if (test_case.find("_" + hip_api.getName() + "_") != std::string::npos) {
         hip_api.addTestCase(TestCaseOccurrence{test_case, test_module_file, line_number});
+      }
+    } else if ((line.find(test_def_macro) != std::string::npos) ||
+               (line.find(test_def_impl_macro) != std::string::npos)) {
+      test_case = line.substr(line.find("(") + 1);
+      test_case = test_case.substr(0, test_case.find(","));
+      if (test_case == hip_api.getName() || test_case == hip_api.getName() + "_wrapper") {
+        hip_api.addTestCase(TestCaseOccurrence{"Unit_Device_" + test_case + "_Accuracy_Positive",
+                                               test_module_file, line_number});
       }
     }
   }
@@ -187,6 +201,7 @@ std::vector<HipAPI> extractHipAPIs(std::string& hip_api_header_file,
   of code shall not be considered.
   */
   std::string hip_api_prefix{"hip"};
+  std::string hip_api_prefix_builtin{"__hip"};
   std::string group_definition{"@defgroup"};
   std::string add_group_definition{"@addtogroup"};
   std::string start_of_api_groups{"HIP API"};
@@ -277,7 +292,11 @@ std::vector<HipAPI> extractHipAPIs(std::string& hip_api_header_file,
       Remove all spaces if they exist in the parsed string, e.g.,
       hipError_t hipDeviceSetLimit ( enum hipLimit_t limit, size_t value );.
       */
-      std::string api_name{api_name_no_brackets.substr(api_name_no_brackets.rfind(hip_api_prefix))};
+      auto api_name_pos = api_name_no_brackets.rfind(hip_api_prefix_builtin);
+      if (api_name_pos == std::string::npos) {
+        api_name_pos = api_name_no_brackets.rfind(hip_api_prefix);
+      }
+      std::string api_name{api_name_no_brackets.substr(api_name_pos)};
       api_name.erase(std::remove(api_name.begin(), api_name.end(), ' '), api_name.end());
 
       if (!api_group_names_tracker.empty()) {

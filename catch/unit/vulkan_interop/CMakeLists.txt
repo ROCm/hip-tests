@@ -10,6 +10,19 @@ set(TEST_SRC
     hipDestroyExternalSemaphore.cc
    )
 
+if(UNIX)
+    set(TEST_SRC ${TEST_SRC}
+      hipGraphAddExternalSemaphoresSignalNode.cc
+      hipGraphAddExternalSemaphoresWaitNode.cc
+      hipGraphExternalSemaphoresSignalNodeGetParams.cc
+      hipGraphExternalSemaphoresSignalNodeSetParams.cc
+      hipGraphExecExternalSemaphoresSignalNodeSetParams.cc
+      hipGraphExternalSemaphoresWaitNodeSetParams.cc
+      hipGraphExternalSemaphoresWaitNodeGetParams.cc
+      hipGraphExecExternalSemaphoresWaitNodeSetParams.cc
+    )
+endif()
+
 if(WIN32)
   set(Vulkan_LIBRARY $ENV{VULKAN_SDK}/Lib/vulkan-l)
 else()

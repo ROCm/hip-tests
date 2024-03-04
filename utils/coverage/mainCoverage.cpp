@@ -47,6 +47,7 @@ int main(int argc, char** argv) {
   std::cout << "Number of detected HIP APIs from " << hip_api_header_file << ": " << hip_apis.size()
             << std::endl;
 
+  api_group_names.push_back("Runtime Compilation");
   std::vector<HipAPI> hip_rtc_apis{extractHipAPIs(hip_rtc_header_file, api_group_names, true)};
   std::cout << "Number of detected HIP APIs from " << hip_rtc_header_file << ": "
             << hip_rtc_apis.size() << std::endl;

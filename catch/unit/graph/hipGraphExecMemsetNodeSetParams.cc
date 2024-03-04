@@ -21,7 +21,6 @@ THE SOFTWARE.
 
 #include <functional>
 
-#include <hip_test_defgroups.hh>
 #include <hip_test_common.hh>
 
 #include "graph_memset_node_test_common.hh"
@@ -46,7 +45,7 @@ THE SOFTWARE.
  * which also constitutes a test for said API.
  * The test is repeated for all valid element sizes(1,
  * 2, 4), and several allocations of different width(height is always 1 because only 1D memset nodes
- * can be updated), both on host and device 
+ * can be updated), both on host and device
  * Test source
  * ------------------------
  *    - unit/graph/hipGraphExecMemsetNodeSetParams.cc

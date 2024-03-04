@@ -25,6 +25,15 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 #include <utils.hh>
 
+static bool operator==(__half x, __half y) {
+  // __heq doesn't have a __host__ version
+  return static_cast<__half_raw>(x).x == static_cast<__half_raw>(y).x;
+}
+static bool operator!=(__half x, __half y) { return static_cast<__half_raw>(x).x != static_cast<__half_raw>(y).x; }
+
+static bool operator==(__half2 x, __half2 y) { return __hbeq2(x, y); }
+static bool operator!=(__half2 x, __half2 y) { return !(__hbeq2(x, y)); }
+
 template <typename Derived, typename T> class WarpShflTest {
  public:
   WarpShflTest() : warp_size_{get_warp_size()} {}
@@ -81,6 +90,16 @@ template <typename Derived, typename T> class WarpShflTest {
         std::generate_n(input, grid_.thread_count_, [] {
           return static_cast<T>(
               GenerateRandomReal(std::numeric_limits<T>().min(), std::numeric_limits<T>().max()));
+        });
+      } else if constexpr (std::is_same_v<__half, T>) {
+        std::generate_n(input, grid_.thread_count_, [] {
+          return __float2half(GenerateRandomReal(std::numeric_limits<float>().min(),
+                                                 std::numeric_limits<float>().max()));
+        });
+      } else if constexpr (std::is_same_v<__half2, T>) {
+        std::generate_n(input, grid_.thread_count_, [] {
+          return __float2half2_rn(GenerateRandomReal(std::numeric_limits<float>().min(),
+                                                     std::numeric_limits<float>().max()));
         });
       } else {
         std::generate_n(input, grid_.thread_count_, [] {

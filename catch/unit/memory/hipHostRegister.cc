@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip_test_helper.hh>
 #include <hip_test_process.hh>
-#include <hip_test_defgroups.hh>
+ 
 #include <utils.hh>
 
 #define OFFSET 128

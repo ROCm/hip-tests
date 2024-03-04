@@ -61,19 +61,19 @@ TEST_CASE("Unit_hipLaunchCooperativeKernel_Positive_Parameters") {
   }
 
   SECTION("blockDim.x == maxBlockDimX") {
-    const unsigned int x = GetDeviceAttribute(0, hipDeviceAttributeMaxBlockDimX);
+    const unsigned int x = GetDeviceAttribute(hipDeviceAttributeMaxBlockDimX, 0);
     HIP_CHECK(hipLaunchCooperativeKernel(reinterpret_cast<void*>(kernel), dim3{1, 1, 1},
                                          dim3{x, 1, 1}, nullptr, 0, nullptr));
   }
 
   SECTION("blockDim.y == maxBlockDimY") {
-    const unsigned int y = GetDeviceAttribute(0, hipDeviceAttributeMaxBlockDimY);
+    const unsigned int y = GetDeviceAttribute(hipDeviceAttributeMaxBlockDimY, 0);
     HIP_CHECK(hipLaunchCooperativeKernel(reinterpret_cast<void*>(kernel), dim3{1, 1, 1},
                                          dim3{y, 1, 1}, nullptr, 0, nullptr));
   }
 
   SECTION("blockDim.z == maxBlockDimZ") {
-    const unsigned int z = GetDeviceAttribute(0, hipDeviceAttributeMaxBlockDimZ);
+    const unsigned int z = GetDeviceAttribute(hipDeviceAttributeMaxBlockDimZ, 0);
     HIP_CHECK(hipLaunchCooperativeKernel(reinterpret_cast<void*>(kernel), dim3{1, 1, 1},
                                          dim3{z, 1, 1}, nullptr, 0, nullptr));
   }
@@ -128,28 +128,28 @@ TEST_CASE("Unit_hipLaunchCooperativeKernel_Negative_Parameters") {
   }
 
   SECTION("blockDim.x > maxBlockDimX") {
-    const unsigned int x = GetDeviceAttribute(0, hipDeviceAttributeMaxBlockDimX) + 1u;
+    const unsigned int x = GetDeviceAttribute(hipDeviceAttributeMaxBlockDimX, 0) + 1u;
     HIP_CHECK_ERROR(hipLaunchCooperativeKernel(reinterpret_cast<void*>(kernel), dim3{1, 1, 1},
                                                dim3{x, 1, 1}, nullptr, 0, nullptr),
                     hipErrorInvalidConfiguration);
   }
 
   SECTION("blockDim.y > maxBlockDimY") {
-    const unsigned int y = GetDeviceAttribute(0, hipDeviceAttributeMaxBlockDimY) + 1u;
+    const unsigned int y = GetDeviceAttribute(hipDeviceAttributeMaxBlockDimY, 0) + 1u;
     HIP_CHECK_ERROR(hipLaunchCooperativeKernel(reinterpret_cast<void*>(kernel), dim3{1, 1, 1},
                                                dim3{1, y, 1}, nullptr, 0, nullptr),
                     hipErrorInvalidConfiguration);
   }
 
   SECTION("blockDim.z > maxBlockDimZ") {
-    const unsigned int z = GetDeviceAttribute(0, hipDeviceAttributeMaxBlockDimZ) + 1u;
+    const unsigned int z = GetDeviceAttribute(hipDeviceAttributeMaxBlockDimZ, 0) + 1u;
     HIP_CHECK_ERROR(hipLaunchCooperativeKernel(reinterpret_cast<void*>(kernel), dim3{1, 1, 1},
                                                dim3{1, 1, z}, nullptr, 0, nullptr),
                     hipErrorInvalidConfiguration);
   }
 
   SECTION("blockDim.x * blockDim.y * blockDim.z > maxThreadsPerBlock") {
-    const unsigned int max = GetDeviceAttribute(0, hipDeviceAttributeMaxThreadsPerBlock);
+    const unsigned int max = GetDeviceAttribute(hipDeviceAttributeMaxThreadsPerBlock, 0);
     const unsigned int dim = std::ceil(std::cbrt(max));
     HIP_CHECK_ERROR(hipLaunchCooperativeKernel(reinterpret_cast<void*>(kernel), dim3{1, 1, 1},
                                                dim3{dim, dim, dim}, nullptr, 0, nullptr),
@@ -163,7 +163,7 @@ TEST_CASE("Unit_hipLaunchCooperativeKernel_Negative_Parameters") {
     HIP_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor(&max_blocks,
                                                            reinterpret_cast<void*>(kernel), 1, 0));
     const unsigned int multiproc_count =
-        GetDeviceAttribute(0, hipDeviceAttributeMultiprocessorCount);
+        GetDeviceAttribute(hipDeviceAttributeMultiprocessorCount, 0);
     const unsigned int dim = std::ceil(std::cbrt(max_blocks * multiproc_count));
     HIP_CHECK_ERROR(hipLaunchCooperativeKernel(reinterpret_cast<void*>(kernel), dim3{dim, dim, dim},
                                                dim3{1, 1, 1}, nullptr, 0, nullptr),
@@ -171,7 +171,7 @@ TEST_CASE("Unit_hipLaunchCooperativeKernel_Negative_Parameters") {
   }
 
   SECTION("sharedMemBytes > maxSharedMemoryPerBlock") {
-    const unsigned int max = GetDeviceAttribute(0, hipDeviceAttributeMaxSharedMemoryPerBlock) + 1u;
+    const unsigned int max = GetDeviceAttribute(hipDeviceAttributeMaxSharedMemoryPerBlock, 0) + 1u;
     HIP_CHECK_ERROR(hipLaunchCooperativeKernel(reinterpret_cast<void*>(kernel), dim3{1, 1, 1},
                                                dim3{1, 1, 1}, nullptr, max, nullptr),
                     hipErrorCooperativeLaunchTooLarge);

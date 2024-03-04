@@ -53,6 +53,67 @@ set(TEST_SRC
     hipMipmappedArrayGetLevel.cc
 )
 
+# tests not for MI200+
+set(NOT_FOR_MI200_AND_ABOVE_TEST
+    tex1Dfetch.cc
+    tex1D.cc
+    tex1DLayered.cc
+    tex1DGrad.cc
+    tex1DLayeredGrad.cc
+    tex1DLayeredLod.cc
+    tex1DLod.cc
+    tex3D.cc
+    tex3DLod.cc
+    tex3DGrad.cc
+    texCubemap.cc
+    texCubemapLod.cc
+    texCubemapGrad.cc
+    texCubemapLayered.cc
+    texCubemapLayeredLod.cc
+    texCubemapLayeredGrad.cc
+    tex2Dgather.cc
+    tex2D.cc
+    tex2DLayered.cc
+    tex2DGrad.cc
+    tex2DLayeredGrad.cc
+    tex2DLod.cc
+    tex2DLayeredLod.cc
+    tex3D.cc
+    tex3DLod.cc
+    tex3DGrad.cc
+)
+set(MI200_AND_ABOVE_TARGETS gfx90a gfx940 gfx941 gfx942)
+function(CheckRejectedArchs OFFLOAD_ARCH_STR_LOCAL)
+  set(ARCH_CHECK -1 PARENT_SCOPE)
+  string(REGEX MATCHALL "--offload-arch=gfx[0-9a-z]+" OFFLOAD_ARCH_LIST ${OFFLOAD_ARCH_STR_LOCAL})
+  foreach(OFFLOAD_ARCH IN LISTS OFFLOAD_ARCH_LIST)
+    string(REGEX MATCHALL "--offload-arch=(gfx[0-9a-z]+)" matches ${OFFLOAD_ARCH})
+    if (CMAKE_MATCH_COUNT EQUAL 1)
+      if (CMAKE_MATCH_1 IN_LIST MI200_AND_ABOVE_TARGETS)
+        set(ARCH_CHECK 1 PARENT_SCOPE)
+      endif()         # CMAKE_MATCH_1
+    endif()        # CMAKE_MATCH_COUNT
+  endforeach()   # OFFLOAD_ARCH_LIST
+endfunction()  # CheckAcceptedArchs
+
+if(HIP_PLATFORM MATCHES "amd")
+  if (DEFINED OFFLOAD_ARCH_STR)
+    CheckRejectedArchs(${OFFLOAD_ARCH_STR})
+  elseif(DEFINED $ENV{HCC_AMDGPU_TARGET})
+    CheckRejectedArchs($ENV{HCC_AMDGPU_TARGET})
+  else()
+    set(ARCH_CHECK -1)
+  endif()
+  if(${ARCH_CHECK} EQUAL -1)
+    message(STATUS "Adding test: ${NOT_FOR_MI200_AND_ABOVE_TEST}")
+    set(TEST_SRC ${TEST_SRC} ${NOT_FOR_MI200_AND_ABOVE_TEST})
+  else()
+    message(STATUS "Removing test: ${NOT_FOR_MI200_AND_ABOVE_TEST}")
+  endif()
+else()
+  set(TEST_SRC ${TEST_SRC} ${NOT_FOR_MI200_AND_ABOVE_TEST})
+endif()
+
 if(WIN32)
 set(TEST_SRC
     ${TEST_SRC}

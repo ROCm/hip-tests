@@ -26,6 +26,10 @@ THE SOFTWARE.
 
 #include "fixed_point.hh"
 
+#if defined(_WIN64)
+typedef __int64 ssize_t;
+#endif // _WIN64
+
 template <typename TexelType> class TextureReference {
  public:
   TextureReference(TexelType* alloc, hipExtent extent, size_t layers)
@@ -33,6 +37,42 @@ template <typename TexelType> class TextureReference {
 
   TexelType Tex1D(float x, const hipTextureDesc& tex_desc) const {
     return Tex1DLayered(x, 0, tex_desc);
+  }
+
+  TexelType Tex2DGather(float x, float y, int comp, const hipTextureDesc& tex_desc) const {
+    x = tex_desc.normalizedCoords ? x * extent_.width : x;
+    y = tex_desc.normalizedCoords ? y * extent_.height : y;
+
+    const auto [i, alpha] = GetLinearFilteringParams(x);
+    const auto [j, beta] = GetLinearFilteringParams(y);
+
+    const auto T_i0j0 = Sample(i, j, 0, tex_desc.addressMode);
+    const auto T_i1j0 = Sample(i + 1.0f, j, 0, tex_desc.addressMode);
+    const auto T_i0j1 = Sample(i, j + 1.0f, 0, tex_desc.addressMode);
+    const auto T_i1j1 = Sample(i + 1.0f, j + 1.0f, 0, tex_desc.addressMode);
+
+    const auto IndexVec4 = [](auto vec, int comp) {
+      switch (comp) {
+        case 0:
+          return vec.x;
+        case 1:
+          return vec.y;
+        case 2:
+          return vec.z;
+        case 3:
+          return vec.w;
+        default:
+          throw std::invalid_argument("Invalid gather comp");
+      }
+    };
+
+    TexelType texel;
+    texel.x = IndexVec4(T_i0j1, comp);
+    texel.y = IndexVec4(T_i1j1, comp);
+    texel.z = IndexVec4(T_i1j0, comp);
+    texel.w = IndexVec4(T_i0j0, comp);
+
+    return texel;
   }
 
   TexelType Tex2D(float x, float y, const hipTextureDesc& tex_desc) const {
@@ -47,6 +87,64 @@ template <typename TexelType> class TextureReference {
       return Sample(floorf(x), floorf(y), floorf(z), tex_desc.addressMode);
     } else if (tex_desc.filterMode == hipFilterModeLinear) {
       return LinearFiltering(x, y, z, tex_desc.addressMode);
+    } else {
+      throw std::invalid_argument("Invalid hipFilterMode value");
+    }
+  }
+
+  TexelType TexCubemap(float x, float y, float z, const hipTextureDesc& tex_desc) const {
+    x = tex_desc.normalizedCoords ? x * extent_.width : x;
+    y = tex_desc.normalizedCoords ? y * extent_.height : y;
+    z = tex_desc.normalizedCoords ? z * extent_.depth : z;
+
+    int face;
+    float m, s, t;
+
+    if (std::abs(x) > std::abs(y) && std::abs(x) > std::abs(z)) {
+      if (x >= 0) {
+        face = 0;
+        m = x;
+        s = -z;
+        t = -y;
+      } else {
+        face = 1;
+        m = -x;
+        s = z;
+        t = -y;
+      }
+    } else if (std::abs(y) >= std::abs(x) && std::abs(y) > std::abs(z)) {
+      if (y >= 0) {
+        face = 2;
+        m = y;
+        s = x;
+        t = z;
+      } else {
+        face = 3;
+        m = -y;
+        s = x;
+        t = -z;
+      }
+    } else {
+      if (z >= 0) {
+        face = 4;
+        m = z;
+        s = x;
+        t = -y;
+      } else {
+        face = 5;
+        m = -z;
+        s = -x;
+        t = -y;
+      }
+    }
+
+    float coord1 = (s / m + 1) / 2;
+    float coord2 = (t / m + 1) / 2;
+
+    if (tex_desc.filterMode == hipFilterModePoint) {
+      return Sample(roundf(coord1), roundf(coord2), face, tex_desc.addressMode);
+    } else if (tex_desc.filterMode == hipFilterModeLinear) {
+      return LinearFiltering(coord1, coord2, face, tex_desc.addressMode);
     } else {
       throw std::invalid_argument("Invalid hipFilterMode value");
     }

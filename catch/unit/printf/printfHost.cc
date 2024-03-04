@@ -19,7 +19,7 @@
    THE SOFTWARE.
  */
 #include <hip_test_common.hh>
-#include <hip_test_defgroups.hh>
+ 
 
 // Kernel Function
 __global__ void run_printf(int *count) {

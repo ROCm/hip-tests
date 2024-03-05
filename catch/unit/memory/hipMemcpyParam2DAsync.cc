@@ -65,6 +65,7 @@ TEST_CASE("Unit_hipMemcpyParam2DAsync_Positive_Basic") {
 }
 
 TEST_CASE("Unit_hipMemcpyParam2DAsync_Positive_Synchronization_Behavior") {
+  CHECK_IMAGE_SUPPORT
   using namespace std::placeholders;
 
   constexpr bool async = true;
@@ -100,6 +101,7 @@ TEST_CASE("Unit_hipMemcpyParam2DAsync_Positive_Synchronization_Behavior") {
 }
 
 TEST_CASE("Unit_hipMemcpyParam2DAsync_Positive_Parameters") {
+  CHECK_IMAGE_SUPPORT
   constexpr bool async = true;
   Memcpy2DZeroWidthHeight<async>(MemcpyParam2DAdapter<async>());
 }
@@ -115,6 +117,7 @@ TEST_CASE("Unit_hipMemcpyParam2DAsync_Positive_Array") {
 }
 
 TEST_CASE("Unit_hipMemcpyParam2DAsync_Negative_Parameters") {
+  CHECK_IMAGE_SUPPORT
   constexpr bool async = true;
 
   constexpr size_t cols = 128;

@@ -249,6 +249,7 @@ TEST_CASE("Unit_hipMemPoolSetGetAccess_Positive_P2P") {
  *  - HIP_VERSION >= 6.0
  */
 TEST_CASE("Unit_hipMemPoolSetAccess_Negative_Parameters") {
+  CHECK_IMAGE_SUPPORT
   int device_id = 0;
   HIP_CHECK(hipSetDevice(device_id));
 

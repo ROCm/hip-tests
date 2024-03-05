@@ -52,6 +52,7 @@ THE SOFTWARE.
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddMemcpyNode_Positive_Basic") {
+  CHECK_IMAGE_SUPPORT
   constexpr bool async = false;
 
   SECTION("Device to host") { Memcpy3DDeviceToHostShell<async>(Memcpy3DWrapper<async, true>); }

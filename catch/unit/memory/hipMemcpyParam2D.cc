@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <utils.hh>
 
 TEST_CASE("Unit_hipMemcpyParam2D_Positive_Basic") {
+  CHECK_IMAGE_SUPPORT
   constexpr bool async = false;
 
 #if HT_NVIDIA  // Disabled on AMD due to defect - EXSWHTEC-236
@@ -79,6 +80,7 @@ TEST_CASE("Unit_hipMemcpyParam2D_Positive_Synchronization_Behavior") {
 }
 
 TEST_CASE("Unit_hipMemcpyParam2D_Positive_Parameters") {
+  CHECK_IMAGE_SUPPORT
   constexpr bool async = false;
   Memcpy2DZeroWidthHeight<async>(MemcpyParam2DAdapter<async>());
 }
@@ -94,6 +96,7 @@ TEST_CASE("Unit_hipMemcpyParam2D_Positive_Array") {
 }
 
 TEST_CASE("Unit_hipMemcpyParam2D_Negative_Parameters") {
+  CHECK_IMAGE_SUPPORT
   constexpr size_t cols = 128;
   constexpr size_t rows = 128;
 

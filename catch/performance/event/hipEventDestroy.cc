@@ -52,3 +52,8 @@ TEST_CASE("Performance_hipEventDestroy") {
   HipEventDestroyBenchmark benchmark;
   benchmark.Run();
 }
+
+/**
+ * End doxygen group event.
+ * @}
+ */

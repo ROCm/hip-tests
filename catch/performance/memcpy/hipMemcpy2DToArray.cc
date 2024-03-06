@@ -125,3 +125,8 @@ TEST_CASE("Performance_hipMemcpy2DToArray_DeviceToDevice_EnablePeerAccess") {
   const auto width = GENERATE(4_KB, 8_KB, 16_KB);
   RunBenchmark(width, 32, hipMemcpyDeviceToDevice, true);
 }
+
+/**
+ * End doxygen group memcpy.
+ * @}
+ */

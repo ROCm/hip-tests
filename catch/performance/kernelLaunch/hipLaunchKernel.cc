@@ -116,3 +116,8 @@ TEST_CASE("Performance_hipLaunchKernel") {
     SECTION("event-based timing") { RunBenchmark<KernelType::kLarge, kTimerTypeEvent>(sync); }
   }
 }
+
+/**
+ * End doxygen group kernelLaunch.
+ * @}
+ */

@@ -347,4 +347,10 @@ TEST_CASE("Unit_hipEventCreateWithFlags_DefaultFlg_CohHstMem") {
     eMemoryToTest::eCoherentHostMemory, hipEventDefault);
   }
 }
+
+/**
+ * End doxygen group hipEventCreateWithFlags.
+ * @}
+ */
+
 #endif

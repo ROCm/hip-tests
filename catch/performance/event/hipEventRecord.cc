@@ -71,3 +71,8 @@ TEST_CASE("Performance_hipEventRecord") {
     RunBenchmark(stream.stream());
   }
 }
+
+/**
+ * End doxygen group event.
+ * @}
+ */

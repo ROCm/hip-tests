@@ -51,3 +51,8 @@ TEST_CASE("Unit_hipEventCreate_Positive") {
 
   HIP_CHECK(hipEventDestroy(event));
 }
+
+/**
+ * End doxygen group hipEventCreate.
+ * @}
+ */

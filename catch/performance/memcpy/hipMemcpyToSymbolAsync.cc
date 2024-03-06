@@ -114,3 +114,8 @@ TEST_CASE("Performance_hipMemcpyToSymbolAsync_WithOffset") {
   size_t offset = GENERATE_REF(0, size / 2);
   RunBenchmark(array.data() + offset, sizeof(int) * (size - offset), offset * sizeof(int));
 }
+
+/**
+ * End doxygen group memcpy.
+ * @}
+ */

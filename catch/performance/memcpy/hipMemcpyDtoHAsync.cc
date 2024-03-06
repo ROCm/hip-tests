@@ -73,3 +73,8 @@ TEST_CASE("Performance_hipMemcpyDtoHAsync") {
   const auto host_allocation_type = GENERATE(LinearAllocs::malloc, LinearAllocs::hipHostMalloc);
   RunBenchmark(host_allocation_type, device_allocation_type, allocation_size);
 }
+
+/**
+ * End doxygen group memcpy.
+ * @}
+ */

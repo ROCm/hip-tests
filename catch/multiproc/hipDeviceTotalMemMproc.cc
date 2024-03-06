@@ -169,4 +169,9 @@ TEST_CASE("Unit_hipDeviceTotalMem_MaskedDevices") {
   }
 }
 
+/**
+ * End doxygen group hipDeviceTotalMem.
+ * @}
+ */
+
 #endif

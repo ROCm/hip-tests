@@ -68,3 +68,8 @@ TEST_CASE("Performance_hipEventSynchronize") {
   const auto flag = GENERATE(hipEventDefault, hipEventBlockingSync);
   RunBenchmark(flag);
 }
+
+/**
+ * End doxygen group event.
+ * @}
+ */

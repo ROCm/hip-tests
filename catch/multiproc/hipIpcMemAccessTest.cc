@@ -271,4 +271,9 @@ TEST_CASE("Unit_hipIpcMemAccess_ParameterValidation") {
   HIP_CHECK(hipFree(Ad));
 }
 
+/**
+ * End doxygen group hipIpcOpenMemHandle.
+ * @}
+ */
+
 #endif

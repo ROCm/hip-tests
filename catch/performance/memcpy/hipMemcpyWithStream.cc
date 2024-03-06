@@ -190,3 +190,8 @@ TEST_CASE("Performance_hipMemcpyWithStream_DeviceToDevice_EnablePeerAccess") {
   const auto dst_allocation_type = LinearAllocs::hipMalloc;
   RunBenchmark(dst_allocation_type, src_allocation_type, allocation_size, hipMemcpyDeviceToDevice, true);
 }
+
+/**
+ * End doxygen group memcpy.
+ * @}
+ */

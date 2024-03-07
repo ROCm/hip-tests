@@ -16,16 +16,33 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/*
-Testcase Scenarios :
-Unit_hipStreamWaitEvent_Negative - Test unsuccessful hipStreamWaitEvent when either event or flags are invalid
-Unit_hipStreamWaitEvent_UninitializedStream_Negative - Test unsuccessful hipStreamWaitEvent when stream is uninitialized
-Unit_hipStreamWaitEvent_Default - Test simple waiting for an event with hipStreamWaitEvent api
-Unit_hipStreamWaitEvent_DifferentStreams - Test waiting for an event on a different stream with hipStreamWaitEvent api
-*/
 
 #include <hip_test_common.hh>
 #include <utils.hh>
+
+/**
+ * @addtogroup hipStreamWaitEvent hipStreamWaitEvent
+ * @{
+ * @ingroup StreamTest
+ * `hipStreamWaitEvent(hipStream_t stream, hipEvent_t event, unsigned int flags)` -
+ * Make the specified compute stream wait for an event.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When event handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidResourceHandle`
+ *    -# When flags are not valid
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/stream/hipStreamWaitEvent.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipStreamWaitEvent_Negative") {
   enum class StreamTestType { NullStream = 0, StreamPerThread, CreatedStream };
 
@@ -67,6 +84,19 @@ TEST_CASE("Unit_hipStreamWaitEvent_Negative") {
 
  /* Test removed for Nvidia devices because it returns unexpected error */
 #if !HT_NVIDIA
+/**
+ * Test Description
+ * ------------------------
+ *  - Waits for event on stream that has not been initialized
+ *    - Expected output: return `hipErrorContextIsDestroyed`
+ * Test source
+ * ------------------------
+ *  - unit/stream/hipStreamWaitEvent.cc
+ * Test requirements
+ * ------------------------
+ *  - Platform specific (AMD)
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipStreamWaitEvent_UninitializedStream_Negative") {
   hipStream_t stream{reinterpret_cast<hipStream_t>(0xFFFF)};
   hipEvent_t event{nullptr};
@@ -104,6 +134,17 @@ TEST_CASE("Unit_hipStreamWaitEvent_Default") {
   HIP_CHECK(hipEventDestroy(waitEvent));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Create multiple dependant kernels and synchronize between them with streams and waiting on events.
+ * Test source
+ * ------------------------
+ *  - unit/stream/hipStreamWaitEvent.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipStreamWaitEvent_DifferentStreams") {
   hipStream_t blockedStreamA{nullptr}, streamBlockedOnStreamA{nullptr}, unblockingStream{nullptr};
   hipEvent_t waitEvent{nullptr};

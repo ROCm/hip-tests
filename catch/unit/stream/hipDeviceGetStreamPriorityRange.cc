@@ -19,13 +19,28 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/*
-Testcase Scenarios :
-Unit_hipDeviceGetStreamPriorityRange_Default - Check if device stream piority range is valid
-*/
 
 #include <hip_test_common.hh>
 
+/**
+ * @addtogroup hipDeviceGetStreamPriorityRange hipDeviceGetStreamPriorityRange
+ * @{
+ * @ingroup StreamTest
+ * `hipDeviceGetStreamPriorityRange(int* leastPriority, int* greatestPriority)` -
+ * Returns numerical values that correspond to the least and greatest stream priority.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Checks that the low and high priority limits are valid.
+ * Test source
+ * ------------------------
+ *  - unit/stream/hipDeviceGetStreamPriorityRange.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipDeviceGetStreamPriorityRange_Default") {
   int priority_low = 0;
   int priority_high = 0;

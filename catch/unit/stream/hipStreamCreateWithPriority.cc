@@ -59,11 +59,11 @@ __global__ void memcpy_kernel(T* dst, T* src, size_t n) {
   }
 }
 
-/**
- * Scenario: Create a stream for all available priority levels
- * and queue tasks in each of these streams and default stream.
- * Validate the calculated results.
- */
+/*
+Scenario: Create a stream for all available priority levels
+and queue tasks in each of these streams and default stream.
+Validate the calculated results.
+*/
 void funcTestsForAllPriorityLevelsWrtNullStrm(unsigned int flags,
                                         bool deviceSynchronize) {
   int priority;
@@ -170,10 +170,10 @@ void funcTestsForAllPriorityLevelsWrtNullStrm(unsigned int flags,
   free(C_h);
 }
 
-/**
- * Scenario: Queue tasks in each of these streams and default stream.
- * Validate the calculated results.
- */
+/*
+Scenario: Queue tasks in each of these streams and default stream.
+Validate the calculated results.
+*/
 void queueTasksInStreams(std::vector<hipStream_t> *stream,
                          const int arrsize) {
   size_t size = MEMCPYSIZE2 * sizeof(int);
@@ -242,13 +242,13 @@ void queueTasksInStreams(std::vector<hipStream_t> *stream,
   g_thTestPassed &= static_cast<int>(isPassed);
 }
 
-/**
- * Scenario:
- * Common streams used across multiple threads:Create a stream for each
- * priority level (flag = hipStreamDefault/hipStreamNonBlocking)
- * and 1 default stream.
- * Launch memcpy and kernel tasks on these streams from multiple threads
- * (use 16 threads). Validate all the results.
+/*
+Scenario:
+Common streams used across multiple threads:Create a stream for each
+priority level (flag = hipStreamDefault/hipStreamNonBlocking)
+and 1 default stream.
+Launch memcpy and kernel tasks on these streams from multiple threads
+(use 16 threads). Validate all the results.
 */
 bool runFuncTestsForAllPriorityLevelsMultThread(unsigned int flags) {
   bool TestPassed = true;
@@ -807,24 +807,29 @@ void TestForMultipleStreamWithPriority(void) {
 /**
  * Test Description
  * ------------------------
- *    - Create streams with default flag for all available priority levels and
- * queue tasks in each of these streams, perform device synchronize and validate
- * behavior.
- *    - Create streams with non-blocking flag for all available priority levels
- * and queue tasks in each of these streams, perform stream synchronize and
- * validate behavior.
- *    - Create streams with default flag for all available priority levels and
- * queue tasks in each of these streams, perform stream synchronize and validate
- * behavior.
- *    - Create streams with non-blocking flag for all available priority levels
- * and queue tasks in each of these streams, perform device synchronize and validate
- * behavior.
+ *  - Test following scenarios:
+ *    -# Default flag and device synchronize
+ *      - Create streams with default flag for all available priority levels
+ *      - Queue tasks in each of these streams
+ *      - Perform device synchronize and validate behavior
+ *    -# Stream non-blocking flag and stream synchronize
+ *      - Create streams with non-blocking flag for all available priority levels
+ *      - Queue tasks in each of these streams
+ *      - Perform stream synchronize and validate behavior
+ *    -# Default flag and stream synchronize
+ *      - Create streams with default flag for all available priority levels
+ *      - Queue tasks in each of these streams
+ *      - Perform stream synchronize and validate behavior
+ *    -# Stream non-blocking flag and device synchronize
+ *      - Create streams with non-blocking flag for all available priority levels
+ *      - Queue tasks in each of these streams
+ *      - Perform device synchronize and validate behavior
  * Test source
  * ------------------------
- *    - catch\unit\stream\hipStreamCreateWithPriority.cc
+ *  - unit/stream/hipStreamCreateWithPriority.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamCreateWithPriority_FunctionalForAllPriorities") {
   SECTION("Default flag and device synchronize") {
@@ -851,14 +856,15 @@ TEST_CASE("Unit_hipStreamCreateWithPriority_FunctionalForAllPriorities") {
 /**
  * Test Description
  * ------------------------
- *    - Create a stream for each priority level with default flag, Launch
- * memcpy and kernel tasks on these streams from multiple threads. Validate
- * all the results.
+ *  - Create a stream for each priority level with default flag
+ *  - Launch memcpy and kernel tasks on these streams from multiple threads
+ *  - Validate all the results
+ * Test source
  * ------------------------
- *    - catch\unit\stream\hipStreamCreateWithPriority.cc
+ *  - unit/stream/hipStreamCreateWithPriority.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamCreateWithPriority_MulthreadDefaultflag") {
   bool TestPassed = true;
@@ -870,14 +876,15 @@ TEST_CASE("Unit_hipStreamCreateWithPriority_MulthreadDefaultflag") {
 /**
  * Test Description
  * ------------------------
- *    - Create a stream for each priority level with non-blocking flag, Launch
- * memcpy and kernel tasks on these streams from multiple threads. Validate all
- * the results.
+ *  - Create a stream for each priority level with non-blocking flag
+ *  - Launch memcpy and kernel tasks on these streams from multiple threads
+ *  - Validate all the results
+ * Test source
  * ------------------------
- *    - catch\unit\stream\hipStreamCreateWithPriority.cc
+ *  - unit/stream/hipStreamCreateWithPriority.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamCreateWithPriority_MulthreadNonblockingflag") {
   bool TestPassed = true;
@@ -889,13 +896,17 @@ TEST_CASE("Unit_hipStreamCreateWithPriority_MulthreadNonblockingflag") {
 /**
  * Test Description
  * ------------------------
- *    - Validates functionality of hipStreamCreateWithPriority when stream = nullptr
- *    - Validates functionality of hipStreamCreateWithPriority when flag = 0xffffffff
+ *  - Validates handling of invalid arguments:
+ *    -# Output pointer to the stream is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# Flag is invalid (0xFFFFFFFF)
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
  * ------------------------
- *    - catch\unit\stream\hipStreamCreateWithPriority.cc
+ *  - unit/stream/hipStreamCreateWithPriority.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamCreateWithPriority_NegTst") {
   hipStream_t stream{nullptr};
@@ -982,13 +993,15 @@ TEST_CASE("Unit_hipStreamCreateWithPriority_CheckPriorityVal") {
 /**
  * Test Description
  * ------------------------
- *    - Validate stream priorities with event after classifying them as low,
- * medium and high.
+ *  - Launches lots of kernels on three priority streams: low, normal, high.
+ *  - Validates that the higher priority lower the execution time.
+ *  - Execution time is tracked with recording events on streams.
+ * Test source
  * ------------------------
- *    - catch\unit\stream\hipStreamCreateWithPriority.cc
+ *  - unit/stream/hipStreamCreateWithPriority.cc
  * Test requirements
  * ------------------------
- *    - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipStreamCreateWithPriority_ValidateWithEvents") {
   bool TestPassed = true;

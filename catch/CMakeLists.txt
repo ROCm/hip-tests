@@ -303,6 +303,12 @@ add_subdirectory(perftests ${CATCH_BUILD_DIR}/perftests)
 add_subdirectory(multiproc ${CATCH_BUILD_DIR}/multiproc)
 add_subdirectory(performance ${CATCH_BUILD_DIR}/performance)
 
+add_custom_target(gen_coverage
+                  COMMAND ${CMAKE_MAKE_PROGRAM} default_target
+                  COMMAND ./generateHipAPICoverage ${HIP_PATH}/include
+                  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../utils/coverage
+                  COMMENT "Generating Test Coverage Report")
+
 cmake_policy(POP)
 
 # packaging the tests

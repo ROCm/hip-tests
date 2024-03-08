@@ -12,9 +12,17 @@
 #
 # Note: log 2 of 4096 is 12.
 #
-  .type __hip_fatbin,@object
-  .section .hip_fatbin,"a",@progbits
-  .globl __hip_fatbin
+  .protected __hip_gpubin_handle_
+  .type __hip_gpubin_handle_,@object
+  .section .hip_gpubin_handle,"aw"
+  .globl __hip_gpubin_handle_
   .p2align 12
-__hip_fatbin:
+__hip_gpubin_handle_:
+  .zero 8
+
+  .type __hip_fatbin_,@object
+  .section .hip_fatbin,"a",@progbits
+  .globl __hip_fatbin_
+  .p2align 12
+__hip_fatbin_:
   .incbin "offload_bundle.hipfb"

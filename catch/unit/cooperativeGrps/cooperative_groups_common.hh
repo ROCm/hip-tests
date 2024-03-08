@@ -23,11 +23,7 @@ THE SOFTWARE.
 #include <hip/hip_cooperative_groups.h>
 
 namespace {
-#if (!__GFX8__ && !__GFX9__) || HT_NVIDIA
 constexpr size_t kWarpSize = 32;
-#else
-constexpr size_t kWarpSize = 64;
-#endif
 constexpr int kMaxGPUs = 8;
 }  // namespace
 
@@ -58,6 +54,7 @@ static __device__ void busy_wait(unsigned long long wait_period) {
     last_clock = cur_clock;
   }
 }
+
 
 template <class T> bool CheckDimensions(unsigned int device, T kernel, dim3 blocks, dim3 threads) {
   hipDeviceProp_t props;

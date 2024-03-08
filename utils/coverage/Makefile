@@ -26,8 +26,10 @@ OBJ=generateHipAPICoverage
 default_target: all
 .PHONY : default_target
 
-all: ${SRC}
-	${CC} ${CPPFLAGS} $^ -o ${OBJ}
+all: ${OBJ}
+
+${OBJ}: ${SRC}
+	@${CC} ${CPPFLAGS} $^ -o ${OBJ}
 
 clean:
 	rm -f ${OBJ}

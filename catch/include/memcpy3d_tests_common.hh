@@ -595,7 +595,7 @@ void Memcpy3DZeroWidthHeightDepth(F memcpy_func, const hipStream_t stream = null
 }
 
 constexpr auto MemTypeHost() {
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
   return hipMemoryTypeHost;
 #else
   return CU_MEMORYTYPE_HOST;
@@ -603,7 +603,7 @@ constexpr auto MemTypeHost() {
 }
 
 constexpr auto MemTypeDevice() {
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
   return hipMemoryTypeDevice;
 #else
   return CU_MEMORYTYPE_DEVICE;
@@ -611,7 +611,7 @@ constexpr auto MemTypeDevice() {
 }
 
 constexpr auto MemTypeArray() {
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
   return hipMemoryTypeArray;
 #else
   return CU_MEMORYTYPE_ARRAY;
@@ -619,7 +619,7 @@ constexpr auto MemTypeArray() {
 }
 
 constexpr auto MemTypeUnified() {
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
   return hipMemoryTypeUnified;
 #else
   return CU_MEMORYTYPE_UNIFIED;

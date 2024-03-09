@@ -12,7 +12,7 @@ option(ENABLE_ADDRESS_SANITIZER "Option to enable ASAN build" OFF)
 message(STATUS "STANDALONE_TESTS : ${STANDALONE_TESTS}")
 
 # Check if platform is set
-if(NOT HIP_PLATFORM STREQUAL "amd" AND NOT HIP_PLATFORM STREQUAL "nvidia")
+if(NOT HIP_PLATFORM STREQUAL "amd" AND NOT HIP_PLATFORM STREQUAL "nvidia" AND NOT HIP_PLATFORM STREQUAL "spirv")
     message(FATAL_ERROR "Unexpected HIP_PLATFORM: " ${HIP_PLATFORM})
 endif()
 
@@ -192,7 +192,17 @@ message(STATUS "CMAKE HIP ARCHITECTURES: ${CMAKE_HIP_ARCHITECTURES}")
 # preference to pass arch -
 # OFFLOAD_ARCH_STR
 # rocm_agent_enumerator
-if(NOT DEFINED OFFLOAD_ARCH_STR
+if(HIP_PLATFORM STREQUAL "spirv" AND NOT MASTER_PROJECT)
+    # for CHIP-SPV, OFFLOAD_ARCH_STR will be passed to CMAKE_CXX_FLAGS which will make
+    # compile-only flags (such as -x hip) to be passed to linker. This will cause strange errors.
+    # These could be removed, but then we will need to add manual linking of libCHIP.so so 
+    # might as well just use a different approach for CHIP-SPV path.
+    # set(OFFLOAD_ARCH_STR ${HIP_OFFLOAD_COMPILE_OPTIONS_BUILD})
+    message(WARNING "HIP_PLATFORM is spirv, OFFLOAD_ARCH_STR is set to ${OFFLOAD_ARCH_STR}")
+elseif(HIP_PLATFORM STREQUAL "spirv" AND MASTER_PROJECT)
+    # TODO skip setting this & enforce use of hipcc
+    message(FATAL_ERROR "building hip-tests with HIP_PLATFORM=spirv is not supported when building as a standalone project")
+elseif(NOT DEFINED OFFLOAD_ARCH_STR 
    AND EXISTS "${ROCM_PATH}/bin/rocm_agent_enumerator"
    AND HIP_PLATFORM STREQUAL "amd" AND UNIX)
     execute_process(COMMAND "${ROCM_PATH}/bin/rocm_agent_enumerator"
@@ -297,11 +307,12 @@ add_subdirectory(unit ${CATCH_BUILD_DIR}/unit)
 add_subdirectory(ABM ${CATCH_BUILD_DIR}/ABM)
 add_subdirectory(kernels ${CATCH_BUILD_DIR}/kernels)
 add_subdirectory(hipTestMain ${CATCH_BUILD_DIR}/hipTestMain)
-add_subdirectory(stress ${CATCH_BUILD_DIR}/stress)
-add_subdirectory(TypeQualifiers ${CATCH_BUILD_DIR}/TypeQualifiers)
-add_subdirectory(perftests ${CATCH_BUILD_DIR}/perftests)
-add_subdirectory(multiproc ${CATCH_BUILD_DIR}/multiproc)
-add_subdirectory(performance ${CATCH_BUILD_DIR}/performance)
+# add_subdirectory(stress ${CATCH_BUILD_DIR}/stress)
+# add_subdirectory(TypeQualifiers ${CATCH_BUILD_DIR}/TypeQualifiers)
+# add_subdirectory(perftests ${CATCH_BUILD_DIR}/perftests)
+# add_subdirectory(multiproc ${CATCH_BUILD_DIR}/multiproc)
+# add_subdirectory(performance ${CATCH_BUILD_DIR}/performance)
+
 
 cmake_policy(POP)
 

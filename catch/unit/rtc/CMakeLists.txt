@@ -25,6 +25,7 @@ set(AMD_TEST_SRC
     hipRtcComplexHeader.cc
     hipRtcPtrdiff_t.cc
     hiprtc_Bitcode_UndefinedFn.cc
+    hiprtc_bfloat16_HeaderTst.cc
 )
 
 add_custom_target(copyRtcHeaders ALL

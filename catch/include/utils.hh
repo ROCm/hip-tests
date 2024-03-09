@@ -69,6 +69,23 @@ static inline void ArrayAllOf(const T* arr, uint32_t count, F value_gen) {
   }
 }
 
+template <typename T>
+static inline void ArrayInRange(const T* arr, uint32_t count,const T minval,const T maxval) {
+  for (auto i = 0u; i < count; ++i) {
+    if(arr[i] < minval)
+    {
+      INFO("Mismatch at index: " << i);
+      REQUIRE(arr[i] > minval);
+    }
+    else if(arr[i] > maxval)
+    {
+      INFO("Mismatch at index: " << i);
+      REQUIRE(arr[i] < maxval);
+    }
+  }
+}
+
+
 template <typename T, typename F>
 void PitchedMemoryVerify(T* const ptr, const size_t pitch, const size_t width, const size_t height,
                          const size_t depth, F expected_value_generator) {

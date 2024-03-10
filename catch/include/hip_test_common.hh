@@ -276,7 +276,9 @@ static inline void HIP_SKIP_TEST(char const* const reason) noexcept {
  *
  * @return constexpr std::tuple<FArgs...> the expected arguments of the kernel.
  */
-template <typename... FArgs> std::tuple<FArgs...> getExpectedArgs(void(FArgs...)){};
+// template <typename... FArgs> std::tuple<FArgs...> getExpectedArgs(void(FArgs...)){};
+template <typename... FArgs>
+std::tuple<FArgs...> getExpectedArgs(void(*)(FArgs...)) {};
 
 /**
  * @brief Asserts that the types of the arguments of a function match exactly with the types in the
@@ -289,10 +291,18 @@ template <typename... FArgs> std::tuple<FArgs...> getExpectedArgs(void(FArgs...)
  * @tparam F the kernel function
  * @tparam Args the parameters that will be passed to the kernel.
  */
-template <typename F, typename... Args> void validateArguments(F f, Args...) {
-  using expectedArgsTuple = decltype(getExpectedArgs(f));
-  static_assert(std::is_same<expectedArgsTuple, std::tuple<Args...>>::value,
-                "Kernel arguments types must match exactly!");
+// template <typename F, typename... Args> void validateArguments(F f, Args...) {
+//   using expectedArgsTuple = decltype(getExpectedArgs(f));
+//   static_assert(std::is_same<expectedArgsTuple, std::tuple<Args...>>::value,
+//                 "Kernel arguments types must match exactly!");
+// }
+template <typename F, typename... Args>
+void validateArguments(F f, Args&&... args) {
+    using expectedArgsTuple = decltype(getExpectedArgs(f));
+    using providedArgsTuple = std::tuple<Args...>;
+
+    static_assert(std::is_same<expectedArgsTuple, providedArgsTuple>::value,
+                  "Kernel arguments types must match exactly!");
 }
 
 /**
@@ -311,12 +321,35 @@ template <typename F, typename... Args> void validateArguments(F f, Args...) {
  * @param stream
  * @param packedArgs A list of kernel arguments to be forwarded.
  */
-template <typename... Typenames, typename K, typename Dim, typename... Args>
-void launchKernel(K kernel, Dim numBlocks, Dim numThreads, std::uint32_t memPerBlock,
-                  hipStream_t stream, Args&&... packedArgs) {
+// template <typename... Typenames, typename K, typename Dim, typename... Args>
+// void launchKernel(K kernel, Dim numBlocks, Dim numThreads, std::uint32_t memPerBlock,
+//                   hipStream_t stream, Args&&... packedArgs) {
+// #ifndef RTC_TESTING
+//   validateArguments(kernel, packedArgs...);
+//   kernel<<<numBlocks, numThreads, memPerBlock, stream>>>(std::forward<Args>(packedArgs)...);
+// #else
+//   launchRTCKernel<Typenames...>(kernel, numBlocks, numThreads, memPerBlock, stream,
+//                                 std::forward<Args>(packedArgs)...);
+// #endif
+//   HIP_CHECK(hipGetLastError());
+// }
+
+template <typename... Typenames, typename Kernel, typename Dim, typename... Args>
+void launchKernel(Kernel kernel, Dim numBlocks, Dim numThreads, std::uint32_t memPerBlock, hipStream_t stream, Args&&... args) {
 #ifndef RTC_TESTING
-  validateArguments(kernel, packedArgs...);
-  kernel<<<numBlocks, numThreads, memPerBlock, stream>>>(std::forward<Args>(packedArgs)...);
+    // Define a stateless, capture-free lambda that matches the kernel's signature.
+    auto kernelWrapperLambda = [] (Args... args) {
+        // This lambda is intentionally left empty as it's used solely for type validation.
+    };
+
+    // Convert the lambda to a function pointer.
+    void (*kernelWrapper)(Args...) = kernelWrapperLambda;
+
+    // Use the wrapper function pointer to validate arguments.
+    validateArguments(kernelWrapper, std::forward<Args>(args)...);
+
+    // Launch the kernel directly with the provided arguments.
+    kernel<<<numBlocks, numThreads, memPerBlock, stream>>>(std::forward<Args>(args)...);
 #else
   launchRTCKernel<Typenames...>(kernel, numBlocks, numThreads, memPerBlock, stream,
                                 std::forward<Args>(packedArgs)...);

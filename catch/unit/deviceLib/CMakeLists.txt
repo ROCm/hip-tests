@@ -35,6 +35,7 @@ set(TEST_SRC
     syncthreadsor.cc
     deviceAllocation.cc
     Atomic_func.cc
+    hfloat2half.cc
     DoublePrecisionIntrinsics.cc
     DoublePrecisionMathDevice.cc
     DoublePrecisionMathHost.cc

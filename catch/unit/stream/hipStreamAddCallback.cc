@@ -31,7 +31,7 @@ Testcase Scenarios :
 
 #define UNUSED(expr) do { (void)(expr); } while (0)
 
-#ifdef __HIP_PLATFORM_AMD__
+#if HT_AMD || HT_SPIRV
 #define HIPRT_CB
 #endif
 

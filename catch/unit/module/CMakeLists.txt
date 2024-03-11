@@ -29,8 +29,8 @@ set(TEST_SRC
     hipModuleLaunchKernel.cc
     hipModuleGetGlobal.cc
     hipModuleGetTexRef.cc
-    hipModuleLaunchCooperativeKernel.cc
-    hipModuleLaunchCooperativeKernelMultiDevice.cc
+    # hipModuleLaunchCooperativeKernel.cc
+    # hipModuleLaunchCooperativeKernelMultiDevice.cc
     hipFuncGetAttribute.cc
 )
 

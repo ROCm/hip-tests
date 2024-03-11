@@ -163,7 +163,7 @@ void MemcpyToSymbolCommonNegative(F f, const void* symbol, void* src, size_t cou
 #endif
 }
 
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
 #define SYMBOL(expr) &HIP_SYMBOL(expr)
 #else
 #define SYMBOL(expr) HIP_SYMBOL(expr)

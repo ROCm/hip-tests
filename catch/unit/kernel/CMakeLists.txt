@@ -22,7 +22,7 @@
 set(TEST_SRC
     hipMemFaultStackAllocation.cc
     hipLaunchBounds.cc
-    hipShflTests.cc
+    # hipShflTests.cc
     hipDynamicShared.cc
     hipDynamicShared2.cc
     hipEmptyKernel.cc

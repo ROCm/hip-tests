@@ -4,7 +4,7 @@ set(TEST_SRC
     printfLength.cc
     printfSpecifiers.cc
     printfFlagsNonHost.cc
-    printfSpecifiersNonHost.cc
+    # printfSpecifiersNonHost.cc # compiler crash in ::lowerTextureFunctions
     printfHost.cc
 )
 
@@ -51,14 +51,15 @@ endif()
 
 # Standalone exes
 add_executable(printfFlags_exe EXCLUDE_FROM_ALL printfFlags_exe.cc)
-add_executable(printfLength_exe EXCLUDE_FROM_ALL printfLength_exe.cc)
-add_executable(printfSpecifiers_exe EXCLUDE_FROM_ALL printfSpecifiers_exe.cc)
+# add_executable(printfLength_exe EXCLUDE_FROM_ALL printfLength_exe.cc)
+# add_executable(printfSpecifiers_exe EXCLUDE_FROM_ALL printfSpecifiers_exe.cc)
 add_executable(printfFlagsNonHost_exe EXCLUDE_FROM_ALL printfFlagsNonHost_exe.cc)
-add_executable(printfSpecifiersNonHost_exe EXCLUDE_FROM_ALL printfSpecifiersNonHost_exe.cc)
+# add_executable(printfSpecifiersNonHost_exe EXCLUDE_FROM_ALL printfSpecifiersNonHost_exe.cc)
+# Unhandled constant expr: ptr addrspace(4) inttoptr (i64 -1144570581550241922 to ptr addrspace(4))
 
 add_dependencies(build_tests printfFlags_exe)
-add_dependencies(build_tests printfLength_exe)
-add_dependencies(build_tests printfSpecifiers_exe)
+# add_dependencies(build_tests printfLength_exe)
+# add_dependencies(build_tests printfSpecifiers_exe)
 add_dependencies(build_tests printfFlagsNonHost_exe)
-add_dependencies(build_tests printfSpecifiersNonHost_exe)
+# add_dependencies(build_tests printfSpecifiersNonHost_exe)
 

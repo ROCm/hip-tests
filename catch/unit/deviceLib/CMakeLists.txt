@@ -33,7 +33,6 @@ set(TEST_SRC
     syncthreadsand.cc
     syncthreadscount.cc
     syncthreadsor.cc
-    deviceAllocation.cc
     Atomic_func.cc
     DoublePrecisionIntrinsics.cc
     DoublePrecisionMathDevice.cc
@@ -46,26 +45,28 @@ set(TEST_SRC
     SimpleAtomicsTest.cc
     hipTestAtomicAdd.cc
     hipStdComplex.cc
-    hipTestClock.cc
     hip_trig.cc
     hipDeviceMemcpy.cc
     hipTestIncludeMath.cc
     hipTestDotFunctions.cc
     hipTestDeviceSymbol.cc
-    hipTestNew.cc
     hipThreadFence.cc
     hipTestDevice.cc
     hipTestDeviceLimit.cc
-    hipTestDeviceDouble.cc
-    hipTestHost.cc
 )
 if(HIP_PLATFORM MATCHES "nvidia")
   set_source_files_properties(hipTestHost.cc PROPERTIES COMPILE_OPTIONS "--expt-relaxed-constexpr")
 endif()
 
-if(UNIX)
+if(UNIX AND NOT HIP_PLATFORM MATCHES "spirv")
     set(TEST_SRC ${TEST_SRC}
-        deviceAllocation.cc)
+        deviceAllocation.cc # unsupported device-side malloc
+        hipTestNew.cc # unsupported device-side new
+        hipTestClock.cc # unsupported __clock() and __clock64()
+        hipTestDeviceDouble.cc # SPIR-V Translator: InvalidBitWidth: Invalid bit width in input: 128
+        hipTestHost.cc # SPIR-V Translator: InvalidBitWidth: Invalid bit width in input: 128
+        )
+
 endif()
 
 # AMD only tests
@@ -181,11 +182,13 @@ endif()
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests
                       LINKER_LIBS hiprtc)
-elseif(HIP_PLATFORM MATCHES "nvidia")
+elseif(HIP_PLATFORM MATCHES "nvidia" OR HIP_PLATFORM MATCHES "spirv")
     hip_add_exe_to_target(NAME UnitDeviceTests
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests
-                      COMPILE_OPTIONS --Wno-deprecated-declarations)
+                      COMPILE_OPTIONS -Wno-deprecated-declarations) #--Wno-deprecated-declarations unrecognized clang++
 endif()
 
-add_dependencies(build_tests kerDevAllocMultCO.code kerDevWriteMultCO.code kerDevFreeMultCO.code kerDevAllocSingleKer.code)
+if (NOT HIP_PLATFORM MATCHES "spirv")
+  add_dependencies(build_tests kerDevAllocMultCO.code kerDevWriteMultCO.code kerDevFreeMultCO.code kerDevAllocSingleKer.code)
+endif()

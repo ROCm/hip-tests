@@ -29,7 +29,7 @@ multiple Threads.
 #include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
 
-#ifdef __HIP_PLATFORM_AMD__
+#if HT_AMD || HT_SPIRV
 #define HIPRT_CB
 #endif
 

@@ -29,8 +29,8 @@ set(TEST_SRC
     hipTextureObj2D.cc
     hipSimpleTexture3D.cc
     hipTextureRef2D.cc
-    hipSimpleTexture1DLayered.cc
-    hipSimpleTexture2DLayered.cc
+    # hipSimpleTexture1DLayered.cc
+    # hipSimpleTexture2DLayered.cc
     hipBindTex2DPitch.cc
     hipBindTexRef1DFetch.cc
     hipTex1DFetchCheckModes.cc

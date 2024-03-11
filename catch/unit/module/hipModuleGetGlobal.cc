@@ -32,6 +32,16 @@ THE SOFTWARE.
 #include "hip_module_common.hh"
 #include "hipModuleGetGlobal.hh"
 
+/**
+ * @addtogroup hipModuleGetGlobal hipModuleGetGlobal
+ * @{
+ * @ingroup ModuleTest
+ * `hipModuleGetGlobal(hipDeviceptr_t* dptr, size_t* bytes, 
+ * hipModule_t hmod, const char* name)` -
+ * Returns a global pointer from a module.
+ * Returns in *dptr and *bytes the pointer and size of the global of name name located in module hmod.
+ */
+
 template <typename T, size_t N>
 static void HipModuleGetGlobalTest(hipModule_t module, const std::string global_name) {
   constexpr auto size = N * sizeof(T);
@@ -82,6 +92,22 @@ static inline hipModule_t GetModule() {
   return mg.module();
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that the API returns correct size and a usable
+ *    pointer to the requested symbol that can be array or scalar:
+ *    -# int
+ *    -# float
+ *    -# char
+ *    -# double
+ * Test source
+ * ------------------------
+ *  - unit/module/hipModuleGetGlobal.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipModuleGetGlobal_Positive_Basic") {
   hipModule_t module = GetModule();
 
@@ -94,6 +120,21 @@ TEST_CASE("Unit_hipModuleGetGlobal_Positive_Basic") {
   SECTION("double") { HIP_MODULE_GET_GLOBAL_TEST(double, module); }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates positive handling of `nullptr` arguments:
+ *    -# When the device pointer is `nullptr`
+ *      - Expected output: return `hipSuccess`
+ *    -# When the bytes pointer is `nullptr`
+ *      - Expected output: return `hipSuccess`
+ * Test source
+ * ------------------------
+ *  - unit/module/hipModuleGetGlobal.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipModuleGetGlobal_Positive_Parameters") {
   hipModule_t module = GetModule();
   hipDeviceptr_t global = 0;
@@ -108,6 +149,27 @@ TEST_CASE("Unit_hipModuleGetGlobal_Positive_Parameters") {
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When device pointer and bytes pointer are `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When module pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidResourceHandle`
+ *    -# When module name pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When module name is an empty string
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When module name is for module that does not exist
+ *      - Expected output: return `hipErrorNotFound`
+ * Test source
+ * ------------------------
+ *  - unit/module/hipModuleGetGlobal.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipModuleGetGlobal_Negative_Parameters") {
   hipModule_t module = GetModule();
   hipDeviceptr_t global = 0;

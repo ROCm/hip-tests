@@ -22,6 +22,26 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip/hip_runtime_api.h>
 
+/**
+ * @addtogroup hipModuleLoad hipModuleLoad
+ * @{
+ * @ingroup ModuleTest
+ * `hipModuleLoad(hipModule_t* module, const char* fname)` -
+ * Loads code object from file into a `hipModule_t`.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Loads module from the file.
+ *  - Verifies that the loaded module is not `nullptr`.
+ * Test source
+ * ------------------------
+ *  - unit/module/hipModuleLoad.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipModuleLoad_Positive_Basic") {
   HIP_CHECK(hipFree(nullptr));
   hipModule_t module = nullptr;
@@ -30,6 +50,27 @@ TEST_CASE("Unit_hipModuleLoad_Positive_Basic") {
   HIP_CHECK(hipModuleUnload(module));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When otput pointer to the module is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When module file name is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When module file name is an empty string
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When module file with the specified name does not exist
+ *      - Expected output: return `hipErrorFileNotFound`
+ *    -# When the file is not a module file
+ *      - Expected output: return `hipErrorInvalidImage`
+ * Test source
+ * ------------------------
+ *  - unit/module/hipModuleLoad.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipModuleLoad_Negative_Parameters") {
   HIP_CHECK(hipFree(nullptr));
   hipModule_t module;

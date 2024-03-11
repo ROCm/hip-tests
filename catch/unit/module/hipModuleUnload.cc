@@ -22,12 +22,50 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip/hip_runtime_api.h>
 
+/**
+ * @addtogroup hipModuleUnload hipModuleUnload
+ * @{
+ * @ingroup ModuleTest
+ * `hipModuleUnload(hipModule_t module)` -
+ * Frees the module.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipModuleLoad_Positive_Basic
+ *  - @ref Unit_hipModuleLoadData_Positive_Basic
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When module is `nullptr`
+ *      - Expected output: return `hipErrorInvalidResourceHandle`
+ * Test source
+ * ------------------------
+ *  - unit/module/hipModuleUnload.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipModuleUnload_Negative_Module_Is_Nullptr") {
   HIP_CHECK(hipFree(nullptr));
 
   HIP_CHECK_ERROR(hipModuleUnload(nullptr), hipErrorInvalidResourceHandle);
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When module is already unloaded
+ *      - Expected output: return `hipErrorNotFound`
+ * Test source
+ * ------------------------
+ *  - unit/module/hipModuleUnload.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipModuleUnload_Negative_Double_Unload") {
   HIP_CHECK(hipFree(nullptr));
 

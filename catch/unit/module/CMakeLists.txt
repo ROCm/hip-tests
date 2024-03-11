@@ -29,8 +29,8 @@ set(TEST_SRC
     hipModuleLaunchKernel.cc
     hipModuleGetGlobal.cc
     hipModuleGetTexRef.cc
-    # hipModuleLaunchCooperativeKernel.cc
-    # hipModuleLaunchCooperativeKernelMultiDevice.cc
+    hipModuleLaunchCooperativeKernel.cc
+    hipModuleLaunchCooperativeKernelMultiDevice.cc
     hipFuncGetAttribute.cc
 )
 
@@ -154,7 +154,7 @@ endif()
 
 if(HIP_PLATFORM MATCHES "amd")
     set(RTCLIB "hiprtc")
-else()
+elseif(HIP_PLATFORM MATCHES "nvidia")
     set(RTCLIB "nvrtc")
 endif()
 hip_add_exe_to_target(NAME ModuleTest

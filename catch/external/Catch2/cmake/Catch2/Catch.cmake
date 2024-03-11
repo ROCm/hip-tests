@@ -284,7 +284,7 @@ function(hip_add_exe_to_target_compile_time_detection)
       add_executable(${_EXE_NAME} EXCLUDE_FROM_ALL ${SRC_NAME} ${COMMON_SHARED_SRC} $<TARGET_OBJECTS:Main_Object>)
       if(HIP_PLATFORM STREQUAL "amd")
           target_link_libraries(${_EXE_NAME} hiprtc)
-      else()
+      elseif(HIP_PLATFORM STREQUAL "nvidia")
           target_link_libraries(${_EXE_NAME} nvrtc)
       endif()
     endif()
@@ -358,8 +358,6 @@ function(hip_add_exe_to_target)
       get_filename_component(_EXE_NAME ${SRC_NAME} NAME_WLE)
     endif()
 
-
-
     # Create shared lib of all tests
     if(NOT RTC_TESTING)
       add_executable(${_EXE_NAME} EXCLUDE_FROM_ALL ${SRC_NAME} ${COMMON_SHARED_SRC} $<TARGET_OBJECTS:Main_Object> $<TARGET_OBJECTS:KERNELS>)
@@ -370,8 +368,7 @@ function(hip_add_exe_to_target)
       elseif(HIP_PLATFORM STREQUAL "nvidia")
         target_link_libraries(${_EXE_NAME} nvrtc)
       elseif(HIP_PLATFORM STREQUAL "spirv")
-        message(FATAL_ERROR "RTC path for SPIRV not yet checked")
-        target_link_libraries(${_EXE_NAME} spirv)
+        # nothing extra needed for chipStar
       else()
         message(FATAL_ERROR "Unsupported HIP_PLATFORM: ${HIP_PLATFORM}")
       endif()
@@ -395,15 +392,6 @@ function(hip_add_exe_to_target)
 
     if(DEFINED _LINKER_LIBS)
       target_link_libraries(${_EXE_NAME} ${_LINKER_LIBS})
-    endif()
-
-    # link against CHIP-SPV
-    # Required because CHIP-SPV path is not using OFFLOAD_ARCH_STR
-    # see hip-tests/CMakeLists.txt
-    if(NOT MASTER_PROJECT AND HIP_PLATFORM STREQUAL "spirv")
-      # target_compile_options(${_EXE_NAME} PRIVATE -mllvm -amdgpu-early-inline-all=true)
-      target_compile_options(${_EXE_NAME} PRIVATE ${HIP_OFFLOAD_COMPILE_OPTIONS_BUILD_})
-      target_link_libraries(${_EXE_NAME} CHIP)
     endif()
 
     # Add dependency on build_tests to build it on this custom target

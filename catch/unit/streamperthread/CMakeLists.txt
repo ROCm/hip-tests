@@ -4,8 +4,8 @@ set(TEST_SRC
   hipStreamPerThread_Event.cc
   hipStreamPerThread_MultiThread.cc
   hipStreamPerThread_DeviceReset.cc
-#   hipStreamPerThrdTsts.cc # cooperative_groups;
-#   hipStreamPerThrdCompilerOptn.cc # cooperative_groups
+  hipStreamPerThrdTsts.cc
+  hipStreamPerThrdCompilerOptn.cc
 )
 
 if(HIP_PLATFORM MATCHES "amd")

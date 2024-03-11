@@ -22,7 +22,6 @@
 set(TEST_SRC
     hipMemFaultStackAllocation.cc
     hipLaunchBounds.cc
-    # hipShflTests.cc
     hipDynamicShared.cc
     hipDynamicShared2.cc
     hipEmptyKernel.cc
@@ -38,6 +37,11 @@ set(TEST_SRC
 if(UNIX)
   set(TEST_SRC ${TEST_SRC}
       hipPrintfKernel.cc)
+endif()
+
+if(NOT HIP_PLATFORM MATCHES "spirv")
+  #error: call to '__shfl' is ambiguous
+  set(TEST_SRC ${TEST_SRC} hipShflTests.cc)
 endif()
 
 # only for AMD

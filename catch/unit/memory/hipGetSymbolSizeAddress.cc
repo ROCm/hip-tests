@@ -76,7 +76,7 @@ static void HipGetSymbolSizeAddressTest(const void* symbol) {
   ArrayFindIfNot(read_buffer.data(), expected_value, read_buffer.size());
 }
 
-#if HT_AMD || HT_SPIRV || HT_SPIRV
+#if HT_AMD || HT_SPIRV
 #define SYMBOL(expr) &HIP_SYMBOL(expr)
 #else
 #define SYMBOL(expr) HIP_SYMBOL(expr)

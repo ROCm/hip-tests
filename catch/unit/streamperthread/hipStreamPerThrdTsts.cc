@@ -50,7 +50,7 @@ THE SOFTWARE.
 #include "hip/hip_cooperative_groups.h"
 using namespace std::chrono;
 using namespace cooperative_groups;
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
 #define HIPRT_CB
 #endif
 

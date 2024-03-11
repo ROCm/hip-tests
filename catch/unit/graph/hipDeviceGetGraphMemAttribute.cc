@@ -205,6 +205,294 @@ TEST_CASE("Unit_hipDeviceGetGraphMemAttribute_Negative_Parameters") {
 }
 
 /**
+* Test Description
+* ------------------------
+*  - Functional Test for APIs
+*  - hipDeviceGetGraphMemAttribute
+*  - hipDeviceSetGraphMemAttribute
+*  - hipDeviceGraphMemTrim
+*   Scenarios - for api hipDeviceGetGraphMemAttribute
+*   Create a graph node using hipGraphAddMemAllocNode and corresponding
+*   hipGraphAddMemFreeNode to graph and launch and execute it.
+*   1) Check memory footprint check before launching graph.
+*   2) Check memory footprint check after launching and before destroying graph.
+*   3) Check memory footprint check after destroying graph.
+*   4) Test all those scenarios for all devices available.
+*
+*   Scenarios - for api hipDeviceSetGraphMemAttribute
+*   Create a graph node using hipGraphAddMemAllocNode and corresponding
+*   hipGraphAddMemFreeNode to graph and launch and execute it.
+*   1) Check memory footprint check after destroying graph and
+*      after Trim api call and reset to 0.
+*   2) Test all those scenarios for all devices available.
+*
+*   Scenarios - for api hipDeviceGraphMemTrim
+*   Create a graph node using hipGraphAddMemAllocNode and corresponding
+*   hipGraphAddMemFreeNode to graph and launch and execute it.
+*   1) Check memory footprint check after destroying graph and after Trim api call.
+*   2) Test all those scenarios for all devices available.
+*
+* Test source
+* ------------------------
+*  - /unit/graph/hipDeviceGetGraphMemAttribute.cc
+* Test requirements
+* ------------------------
+*  - HIP_VERSION >= 6.1
+*/
+
+static void Unit_hipDeviceGetGraphMemAttribute_Functional(
+                                               unsigned deviceId = 0) {
+  int mem_pool_support = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&mem_pool_support,
+            hipDeviceAttributeMemoryPoolsSupported, 0));
+  if (!mem_pool_support) {
+    HipTest::HIP_SKIP_TEST("Runtime doesn't support Memory Pool."
+                            " Skip the test case.");
+    return;
+  }
+
+  constexpr size_t Nbytes = 512 * 1024 *1024;
+  hipGraph_t graph;
+  hipGraphExec_t graphExec;
+  hipStream_t stream;
+  hipGraphNode_t allocNodeA, freeNodeA;
+  hipMemAllocNodeParams allocParams;
+
+  HIP_CHECK(hipSetDevice(deviceId));
+
+  HIP_CHECK(hipDeviceGraphMemTrim(deviceId));
+
+  HIP_CHECK(hipGraphCreate(&graph, 0));
+  HIP_CHECK(hipStreamCreate(&stream));
+
+  memset(&allocParams, 0, sizeof(allocParams));
+  allocParams.bytesize = Nbytes;
+  allocParams.poolProps.allocType = hipMemAllocationTypePinned;
+  allocParams.poolProps.location.id = deviceId;
+  allocParams.poolProps.location.type = hipMemLocationTypeDevice;
+
+  HIP_CHECK(hipGraphAddMemAllocNode(&allocNodeA, graph, nullptr,
+                                      0, &allocParams));
+  REQUIRE(allocParams.dptr != nullptr);
+  HIP_CHECK(hipGraphAddMemFreeNode(&freeNodeA, graph, &allocNodeA, 1,
+                      reinterpret_cast<void *>(allocParams.dptr)));
+
+  int value = -1;
+  SECTION("Memory footprint check before launching graph") {
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrUsedMemCurrent, &value));
+    REQUIRE(value == 0);
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrUsedMemHigh, &value));
+    REQUIRE(value == 0);
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrReservedMemCurrent, &value));
+    REQUIRE(value == 0);
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrReservedMemHigh, &value));
+    REQUIRE(value == 0);
+  }
+
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+
+  HIP_CHECK(hipGraphLaunch(graphExec, stream));
+  HIP_CHECK(hipStreamSynchronize(stream));
+
+  value = -1;
+  SECTION("Memory footprint check after launching & before delete graph") {
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrUsedMemCurrent, &value));
+    REQUIRE(value == Nbytes);
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrUsedMemHigh, &value));
+    REQUIRE(value == Nbytes);
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrReservedMemCurrent, &value));
+    REQUIRE(value == Nbytes);
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrReservedMemHigh, &value));
+    REQUIRE(value == Nbytes);
+  }
+
+  HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipGraphExecDestroy(graphExec));
+  HIP_CHECK(hipStreamDestroy(stream));
+
+  value = -1;
+  SECTION("Memory footprint check after destroying graph") {
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrUsedMemCurrent, &value));
+    REQUIRE(value == Nbytes);
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrUsedMemHigh, &value));
+    REQUIRE(value == Nbytes);
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrReservedMemCurrent, &value));
+    REQUIRE(value == Nbytes);
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrReservedMemHigh, &value));
+    REQUIRE(value == Nbytes);
+  }
+
+  HIP_CHECK(hipDeviceGraphMemTrim(deviceId));
+
+  value = -1;
+  SECTION("Memory footprint check after destroying graph & Trim api call") {
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrUsedMemCurrent, &value));
+    REQUIRE(value == 0);
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrUsedMemHigh, &value));
+    REQUIRE(value == Nbytes);
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrReservedMemCurrent, &value));
+    REQUIRE(value == 0);
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrReservedMemHigh, &value));
+    REQUIRE(value == Nbytes);
+  }
+
+  value = 0;
+  HIP_CHECK(hipDeviceSetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrUsedMemHigh, &value));
+  HIP_CHECK(hipDeviceSetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrReservedMemHigh, &value));
+
+  value = -1;
+  SECTION("Memory footprint check after destroying graph and"
+                        " after Trim api call and reset to 0") {
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrUsedMemCurrent, &value));
+    REQUIRE(value == 0);
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrUsedMemHigh, &value));
+    REQUIRE(value == 0);
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrReservedMemCurrent, &value));
+    REQUIRE(value == 0);
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
+                         hipGraphMemAttrReservedMemHigh, &value));
+    REQUIRE(value == 0);
+  }
+}
+
+TEST_CASE("Unit_hipDeviceGetGraphMemAttribute_Functional") {
+  Unit_hipDeviceGetGraphMemAttribute_Functional();
+}
+
+TEST_CASE("Unit_hipDeviceGetGraphMemAttribute_Functional_Multi_Device") {
+  int numDevices = 0;
+  HIP_CHECK(hipGetDeviceCount(&numDevices));
+
+  if (numDevices > 0) {
+    for ( int i = 0; i < numDevices; ++i ) {
+      Unit_hipDeviceGetGraphMemAttribute_Functional(i);
+    }
+  } else {
+    HipTest::HIP_SKIP_TEST("Skipped test as there is no device to test.");
+  }
+}
+
+/**
+* Test Description
+* ------------------------
+*  - Negative Test for API - hipDeviceGetGraphMemAttribute
+*  1) Pass device id as negative value.
+*  2) Pass device id which don't exist as INT_MAX.
+*  3) Pass hipGraphMemAttributeType other than existing (4 type) in this structure
+*  4) Pass value of footprint pointer as nullptr.
+* Test source
+* ------------------------
+*  - /unit/graph/hipDeviceGetGraphMemAttribute.cc
+* Test requirements
+* ------------------------
+*  - HIP_VERSION >= 6.1
+*/
+
+TEST_CASE("Unit_hipDeviceGetGraphMemAttribute_Negative") {
+  int value = 0;
+  hipError_t ret;
+  SECTION("Pass device id as negative value") {
+    ret = hipDeviceGetGraphMemAttribute(-1,
+                           hipGraphMemAttrUsedMemCurrent, &value);
+    REQUIRE(ret == hipErrorInvalidDevice);
+  }
+  SECTION("Pass device id which don't exist as INT_MAX") {
+    ret = hipDeviceGetGraphMemAttribute(INT_MAX,
+                           hipGraphMemAttrUsedMemCurrent, &value);
+    REQUIRE(ret == hipErrorInvalidDevice);
+  }
+  SECTION("Pass hipGraphMemAttributeType other than existing 4 type") {
+    ret = hipDeviceGetGraphMemAttribute(0,
+                           hipGraphMemAttributeType(99), &value);
+    REQUIRE(ret == hipErrorInvalidValue);  }
+  SECTION("Pass value of footprint pointer as nullptr") {
+    ret = hipDeviceGetGraphMemAttribute(0,
+                           hipGraphMemAttrUsedMemCurrent, nullptr);
+    REQUIRE(ret == hipErrorInvalidValue);
+  }
+}
+
+/**
+* Test Description
+* ------------------------
+*  - Negative Test for API - hipDeviceSetGraphMemAttribute
+*  1) Pass device id as negative value.
+*  2) Pass device id which don't exist as INT_MAX.
+*  3) Pass hipGraphMemAttributeType as hipGraphMemAttrUsedMemCurrent
+*  4) Pass hipGraphMemAttributeType as hipGraphMemAttrReservedMemCurrent
+*  5) Pass value of footprint pointer as nullptr
+*  6) Pass value of footprint pointer as negative value address
+* Test source
+* ------------------------
+*  - /unit/graph/hipDeviceGetGraphMemAttribute.cc
+* Test requirements
+* ------------------------
+*  - HIP_VERSION >= 6.1
+*/
+
+TEST_CASE("Unit_hipDeviceSetGraphMemAttribute_Negative") {
+  int value = 0;
+  hipError_t ret;
+  SECTION("Pass device id as negative value") {
+    ret = hipDeviceSetGraphMemAttribute(-3,
+                           hipGraphMemAttrUsedMemCurrent, &value);
+    REQUIRE(ret == hipErrorInvalidDevice);
+  }
+  SECTION("Pass device id which don't exist as INT_MAX") {
+    ret = hipDeviceSetGraphMemAttribute(INT_MAX,
+                           hipGraphMemAttrUsedMemCurrent, &value);
+    REQUIRE(ret == hipErrorInvalidDevice);
+  }
+  SECTION("Pass hipGraphMemAttributeType as hipGraphMemAttrUsedMemCurrent") {
+    ret = hipDeviceSetGraphMemAttribute(0,
+                           hipGraphMemAttrUsedMemCurrent, &value);
+    REQUIRE(ret == hipErrorInvalidValue);
+  }
+  SECTION("Pass GraphMemAttributeType as hipGraphMemAttrReservedMemCurrent") {
+    ret = hipDeviceSetGraphMemAttribute(0,
+                           hipGraphMemAttrReservedMemCurrent, &value);
+    REQUIRE(ret == hipErrorInvalidValue);
+  }
+  SECTION("Pass value of footprint pointer as nullptr.") {
+    ret = hipDeviceSetGraphMemAttribute(0,
+                           hipGraphMemAttrUsedMemCurrent, nullptr);
+    REQUIRE(ret == hipErrorInvalidValue);
+  }
+  SECTION("Pass value of footprint pointer as negative value address.") {
+    value = -1;
+    ret = hipDeviceSetGraphMemAttribute(0,
+                           hipGraphMemAttrUsedMemCurrent, &value);
+    REQUIRE(ret == hipErrorInvalidValue);
+  }
+  SECTION("Pass value of footprint pointer as -1.") {
+    ret = hipDeviceSetGraphMemAttribute(0, hipGraphMemAttrUsedMemCurrent,
+                                        reinterpret_cast<void *>(-1));
+    REQUIRE(ret == hipErrorInvalidValue);
+  }
+}
+
+/**
 * End doxygen group GraphTest.
 * @}
 */

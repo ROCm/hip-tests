@@ -132,7 +132,21 @@ option(RTC_TESTING "Run tests using HIP RTC to compile the kernels" OFF)
 if (RTC_TESTING)
     add_definitions(-DRTC_TESTING=ON)
 endif()
-add_definitions(-DKERNELS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/kernels/")
+
+# The following does not work
+# add_definitions(-DKERNELS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/kernels/")
+# In file included from /space/pvelesko/chipStar/hip-tests-update/hip-tests/catch/hipTestMain/main.cc:3:
+# In file included from /space/pvelesko/chipStar/hip-tests-update/hip-tests/catch/./include/hip_test_common.hh:37:
+# /space/pvelesko/chipStar/hip-tests-update/hip-tests/catch/./include/hip_test_rtc.hh:110:36: error: use of undeclared identifier 'tests'
+# <command line>:1:68: note: expanded from macro 'KERNELS_PATH'
+#     1 | #define KERNELS_PATH /space/pvelesko/chipStar/hip-tests-update/hip-tests/catch/kernels/
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/kernels_path.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/kernels_path.h"
+)
+
+# Include the generated header file directory
+include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 set(CATCH_BUILD_DIR catch_tests)
 execute_process(COMMAND ${CMAKE_COMMAND} -E

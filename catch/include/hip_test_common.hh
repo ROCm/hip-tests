@@ -34,6 +34,9 @@ THE SOFTWARE.
 #include <mutex>
 #include <cstdlib>
 #include <thread>
+// Had to add this include to make the code compile
+// error: use of undeclared identifier 'launchRTCKernel'
+#include "hip_test_rtc.hh"
 
 #define HIP_PRINT_STATUS(status) INFO(hipGetErrorName(status) << " at line: " << __LINE__);
 
@@ -352,7 +355,7 @@ void launchKernel(Kernel kernel, Dim numBlocks, Dim numThreads, std::uint32_t me
     kernel<<<numBlocks, numThreads, memPerBlock, stream>>>(std::forward<Args>(args)...);
 #else
   launchRTCKernel<Typenames...>(kernel, numBlocks, numThreads, memPerBlock, stream,
-                                std::forward<Args>(packedArgs)...);
+                                std::forward<Args>(args)...);
 #endif
   HIP_CHECK(hipGetLastError());
 }

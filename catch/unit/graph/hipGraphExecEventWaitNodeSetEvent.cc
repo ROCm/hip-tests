@@ -17,43 +17,20 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
-Testcase Scenarios :
- 1) Create a graph1 with event record nodes as follows:
-    MemcpyH2DNode --> kernel1(x*x) --> event_record_node(event1)
-    Instantiate graph1.
-    Create a graph2 with event record nodes as follows:
-    event_wait_node(event1) --> MemcpyD2HNode.Instantiate graph2.
-    Change the event in event_record_node in graph1 to event2 using
-    hipGraphExecEventRecordNodeSetEvent.
-    Change the event in event_wait_node in graph2 to event2 using
-    hipGraphExecEventWaitNodeSetEvent.Execute graph1 and then graph2.
-    Verify the result matches with x*x.
- 2) Scenario to verify that hipGraphExecEventWaitNodeSetEvent does not
-    impact the graph and changes only the executable graph.
-    Create an event wait node with event1 and add it to graph. Instantiate
-    the graph to create an executable graph. Change the event in the
-    executable graph to event2. Verify that the event wait node still
-    contains event1.
- 3) Negative Scenarios
-    - Input executable graph is nullptr.
-    - Input node is nullptr.
-    - Input set event is nullptr.
-    - Input executable graph is uninitialized.
-    - Input node is uninitialized.
-    - Input set event is uninitialized.
-    - Graph does not contain event wait node.
-    - Pass memset node as input node.
-    - Pass event record node as input node.
-*/
-
 #include <hip_test_checkers.hh>
 #include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
 
 /**
- * Kernel Functions to perform square and introduce delay in device.
+ * @addtogroup hipGraphExecEventWaitNodeSetEvent hipGraphExecEventWaitNodeSetEvent
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphExecEventWaitNodeSetEvent(hipGraphExec_t hGraphExec,
+ * hipGraphNode_t hNode, hipEvent_t event)` -
+ * Sets the event for an event record node in the given graphExec.
  */
+
+// Kernel Functions to perform square and introduce delay in device.
 static __global__ void sqr_ker_func(int* a, int* b, size_t N, int clockrate, size_t delayMs) {
   int tx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
   if (tx < N) b[tx] = a[tx] * a[tx];
@@ -75,7 +52,25 @@ static __global__ void sqr_ker_func_gfx11(int* a, int* b, size_t N, int clockrat
 }
 
 /**
- * Scenario 1: Test to validate setting different events in executable graph.
+ * Test Description
+ * ------------------------
+ *  - Create a graph with event record nodes as follows:
+ *    -# Launch kernel.
+ *    -# Record event.
+ *  - Instantiate graph.
+ *  - Create another graph with event record nodes as follows:
+ *    -# Create wait event node on event
+ *  - Instantiate the second graph.
+ *  - Change the event in first graph to the second event
+ *  - Change the event in second graph to the second event
+ *  - Execute both graphs.
+ *  - Verify the kernel results match.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphExecEventWaitNodeSetEvent.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecEventWaitNodeSetEvent_SetAndVerifyMemory") {
   constexpr size_t gridSize = 64;
@@ -199,8 +194,20 @@ TEST_CASE("Unit_hipGraphExecEventWaitNodeSetEvent_SetAndVerifyMemory") {
 }
 
 /**
- * Scenario 2: Test to validate setting a different event in an executable
- * graph does not impact the original graph and nodes.
+ * Test Description
+ * ------------------------
+ *  - Scenario to verify that event set does not
+ *    impact the graph and changes only the executable graph.
+ *  - Create an event wait node with first event and add it to graph.
+ *  - Instantiate the graph to create an executable graph.
+ *  - Change the event in the executable graph to the second event.
+ *  - Verify that the event wait node still contains first event.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphExecEventWaitNodeSetEvent.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecEventWaitNodeSetEvent_VerifyEventNotChanged") {
   hipGraph_t graph;
@@ -224,7 +231,33 @@ TEST_CASE("Unit_hipGraphExecEventWaitNodeSetEvent_VerifyEventNotChanged") {
 }
 
 /**
- * Scenario 3: Negative and Parameter Tests.
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When executable graph handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pointer to the event is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When executable graph is not initialized
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node is not initialized
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When event is not initialized
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When event wait node does not exist
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node is memset node
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node is record wait node
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphExecEventWaitNodeSetEvent.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecEventWaitNodeSetEvent_Negative") {
   hipGraph_t graph;

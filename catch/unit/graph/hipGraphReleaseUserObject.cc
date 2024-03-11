@@ -25,11 +25,34 @@ THE SOFTWARE.
 #include "user_object_common.hh"
 
 /**
- * Negative Test for API - hipGraphReleaseUserObject
- 1) Pass graph as nullptr
- 2) Pass User Object as nullptr
- 3) Pass initialRefcount as 0
- 4) Pass initialRefcount as INT_MAX
+ * @addtogroup hipGraphReleaseUserObject hipGraphReleaseUserObject
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphReleaseUserObject(hipGraph_t graph, hipUserObject_t object, unsigned int count
+ * __dparm(1))` - Release user object from graphs.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipGraphRetainUserObject_Functional_2
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When graph handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When used object handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When count is zero
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When count is INT_MAX
+ *      - Expected output: return `hipSuccess`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphReleaseUserObject.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphReleaseUserObject_Negative") {
   hipGraph_t graph;

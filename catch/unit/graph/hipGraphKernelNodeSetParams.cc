@@ -19,24 +19,41 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
-Test Case Scenarios :
-Negative -
-1) Pass node as nullptr and verify api returns error code.
-2) Pass pNodeParams as nullptr and verify api returns error code.
-Functional -
-1) Add kernel node to graph with certain kernel params, now update the kernel
-   node params with set and check taking effect after launching graph.
-2) Add kernel node to graph with certain kernel params, now get kernel node parameters
-   with hipGraphKernelNodeGetParams, then update the kernel node params with
-   hipGraphKernelNodeSetParams, finally check taking effect after launching graph.
-*/
-
 #include <hip_test_checkers.hh>
 #include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
 
-/* Test verifies hipGraphKernelNodeSetParams API Negative scenarios.
+/**
+ * @addtogroup hipGraphKernelNodeSetParams hipGraphKernelNodeSetParams
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphKernelNodeSetParams(hipGraphNode_t node, const hipKernelNodeParams* pNodeParams)` -
+ * Sets a kernel node's parameters.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When node handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pointer to the node params is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node params func data member is `nullptr`
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidDeviceFunction`
+ *    -# When node params kernel params data member is `nullptr`
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node is not a kernel node
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphKernelNodeSetParams.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphKernelNodeSetParams_Negative") {
   constexpr int N = 1024;
@@ -99,7 +116,20 @@ TEST_CASE("Unit_hipGraphKernelNodeSetParams_Negative") {
 }
 
 /**
- * Functional Test for API Set Kernel Params
+ * Test Description
+ * ------------------------
+ *  - Add kernel node to graph with certain kernel params.
+ *  - Update the kernel node params with set.
+ *  - Check taking effect after launching graph.
+ *  - Add kernel note to graph with certain kernel params.
+ *  - Get kernel node params, update kernel node params.
+ *  - Check taking effect after launching graph.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphKernelNodeSetParams.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphKernelNodeSetParams_Functional") {
   constexpr size_t N = 1024;
@@ -264,6 +294,17 @@ class GraphKernelNodeGetSetParam {
   }
 };
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic functional test that sets and gets node params.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphKernelNodeSetParams.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphKernelNodeGetSetParams_Functional") {
   hipGraph_t* graph;
   hipStream_t streamForGraph;

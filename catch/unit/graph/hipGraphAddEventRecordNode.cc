@@ -17,41 +17,6 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
-Testcase Scenarios :
- 1) Simple Scenario: Create an event node and add it to graph.
-Instantiate and Launch the Graph. Wait for the event to complete.
-The operation must succeed without any failures.
- 2) Add different kinds of nodes to graph and add dependencies to nodes.
-Create an event record node at the end. Instantiate and Launch the Graph.
-Wait for the event to complete. Verify the results. Event is created using
-hipEventCreate.
- 3) Add different kinds of nodes to graph and add dependencies to nodes.
-Create event record nodes at the beginning and end. Instantiate and Launch
-the Graph. Wait for the event to complete. Verify the results. Also verify
-the elapsed time. Events are created using hipEventCreate.
- 4) Add different kinds of nodes to graph and add dependencies to nodes.
-Create an event record node at the end.  Instantiate and Launch graph.
-Wait for the event to complete. Verify the results. Event is created
-using hipEventCreateWithFlags (for different flag values).
- 5) Create event record node at the beginning with
-flag = hipEventDisableTiming, a memset node and event record nodes at the
-end. Instantiate and Launch the Graph. Wait for the event to complete.
-Verify that hipEventElapsedTime() returns error.
- 6) Validate scenario 2 by running the graph multiple times in a loop
-(100 times) after instantiation.
- 7) Validate that no error is reported when numDeps <= dependencies length
- 8) Negative Scenarios
-    - Output node is a nullptr.
-    - Input graph is a nullptr.
-    - Input dependencies is a nullptr.
-    - Node in dependency is from different graph
-    - Invalid numNodes
-    - Duplicate node in dependencies
-    - Input event is a nullptr.
-    - Input graph is uninitialized.
-    - Input event is uninitialized.
-*/
 #include <functional>
 
 #include <hip_test_checkers.hh>
@@ -61,8 +26,26 @@ Verify that hipEventElapsedTime() returns error.
 #include "graph_tests_common.hh"
 
 /**
- * Scenario 1: Create s simple graph with just one event record
- * node and instantiate and launch the graph.
+ * @addtogroup hipGraphAddEventRecordNode hipGraphAddEventRecordNode
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphAddEventRecordNode(hipGraphNode_t* pGraphNode,
+ * hipGraph_t graph, const hipGraphNode_t* pDependencies,
+ * size_t numDependencies, hipEvent_t event)` -
+ * Creates an event record node and adds it to a graph.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates a simple graph with just one event record node.
+ *  - Instantiates the graph and launches it without errors.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphAddEventRecordNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddEventRecordNode_Functional_Simple") {
   hipGraph_t graph;
@@ -198,7 +181,19 @@ static void validateAddEventRecordNode(bool measureTime, bool withFlags, int nst
 }
 
 /**
- * Scenario 2: Validate event record nodes created without flags.
+ * Test Description
+ * ------------------------
+ *  - Add different kinds of nodes to graph and add dependencies to nodes.
+ *  - Create an event record node at the end.
+ *  - Instantiate and launch the graph.
+ *  - Wait for the event to complete.
+ *  - Verify the results.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphAddEventRecordNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddEventRecordNode_Functional_WithoutFlags") {
   // Create events without flags using hipEventCreate and
@@ -207,7 +202,20 @@ TEST_CASE("Unit_hipGraphAddEventRecordNode_Functional_WithoutFlags") {
 }
 
 /**
- * Scenario 3: Validate elapsed time between 2 recorded events.
+ * Test Description
+ * ------------------------
+ *  - Add different kinds of nodes to graph and add dependencies to nodes.
+ *  - Create event record nodes at the beginning and end.
+ *  - Instantiate and launch the graph.
+ *  - Wait for the event to complete.
+ *  - Verify the results.
+ *  - Also verify the elapsed time.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphAddEventRecordNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddEventRecordNode_Functional_ElapsedTime") {
   // Create events without flags using hipEventCreate and
@@ -216,8 +224,22 @@ TEST_CASE("Unit_hipGraphAddEventRecordNode_Functional_ElapsedTime") {
 }
 
 /**
- * Scenario 4: Validate event record nodes created with different
- * event flags.
+ * Test Description
+ * ------------------------
+ *  - Add different kinds of nodes to graph and add dependencies to nodes.
+ *  - Create an event record nodes with flags at the end.
+ *    -# When flag is `hipEventDefault`
+ *    -# When flag is `hipEventBlockingSync`
+ *    -# When flag is `hipEventDisableTiming`
+ *  - Instantiate and launch graph.
+ *  - Wait for the event to complete.
+ *  - Verify the results.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphAddEventRecordNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddEventRecordNode_Functional_WithFlags") {
   // Create events with different flags using hipEventCreate and
@@ -236,15 +258,36 @@ TEST_CASE("Unit_hipGraphAddEventRecordNode_Functional_WithFlags") {
 }
 
 /**
- * Scenario 5: Validate hipGraphAddEventRecordNode by executing graph
- * 100 times in a loop.
+ * Test Description
+ * ------------------------
+ *  - Validate scenario @ref Unit_hipGraphAddEventRecordNode_Functional_WithoutFlags
+ *    by running the graph multiple times in a loop
+ * (100 times) after instantiation.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphAddEventRecordNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddEventRecordNode_MultipleRun") {
   validateAddEventRecordNode(false, false, 100);
 }
 
 /**
- * Scenario 6: Validate hipGraphAddEventRecordNode with time disabled events.
+ * Test Description
+ * ------------------------
+ *  - Create event record node at the beginning with flag `hipEventDisableTiming`.
+ *  - Add a memset node and event record nodes at the end.
+ *  - Instantiate and launch the graph.
+ *  - Wait for the event to complete.
+ *  - Verify that elapsed time returns error.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphAddEventRecordNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddEventRecordNode_Functional_TimingDisabled") {
   constexpr size_t Nbytes = 1024;
@@ -297,7 +340,21 @@ TEST_CASE("Unit_hipGraphAddEventRecordNode_Functional_TimingDisabled") {
 }
 
 /**
- * Scenario 7: Positive parameter tests
+ * Test Description
+ * ------------------------
+ *  - Validate several positive scenarios:
+ *    -# When number of dependencies is zero, and dependencies are `nullptr`
+ *      - Expected output: returned number for dependencies count is equal to 0
+ *    -# When number of dependencies is less than total lenght
+ *      - Expected output: returned number of dependencies count equal to 1
+ *    -# When number of dependencies is equal to the total length
+ *      - Expected output: returned number of depencencies is equal to the total length
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphAddEventRecordNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddEventRecordNode_Positive_Parameters") {
   hipGraph_t graph;
@@ -336,7 +393,35 @@ TEST_CASE("Unit_hipGraphAddEventRecordNode_Positive_Parameters") {
 }
 
 /**
- * Scenario 8: All negative tests
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When graph handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node dependencies are `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When dependencies are not `nullptr` and the size is not zero
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node in dependency is from different graph
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When number of nodes is not valid (0)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When duplicate node in dependencies
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node event handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When graph is not initialized
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When event is not initialized
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphAddEventRecordNode.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddEventRecordNode_Negative") {
   using namespace std::placeholders;

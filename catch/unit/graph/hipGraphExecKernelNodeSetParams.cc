@@ -19,25 +19,47 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
-Test Case Scenarios :
-Negative -
-1) Pass hGraphExec as nullptr and verify api returns error code.
-2) Pass node as nullptr and verify api returns error code.
-3) Pass NodeParams as un-initialized structure object and verify api returns error code.
-4) Pass pNodeParams as nullptr and verify api returns error code.
-5) Pass NodeParams:func data member as nullptr and verify api returns error code.
-Functional -
-1) Instantiate a graph with kernel node, obtain executable graph and update
-   the kernel node params with set and check it is taking effect.
-*/
-
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 #include <hip_test_kernels.hh>
 
 /**
- * Negative Test for API hipGraphExecKernelNodeSetParams
+ * @addtogroup hipGraphExecKernelNodeSetParams hipGraphExecKernelNodeSetParams
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphExecKernelNodeSetParams(hipGraphExec_t hGraphExec, hipGraphNode_t node,
+ * const hipKernelNodeParams* pNodeParams)` -
+ * Sets the parameters for a kernel node in the given graphExec.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When graph exec handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When graph node handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node params pointer is `nullptr`
+ *      - Platform specific (AMD)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node params func data member is `nullptr`
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidDeviceFunction`
+ *    -# When node params kernel params data member is `nullptr`
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node is not a kernel node
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node is not instantiated
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphExecKernelNodeSetParams.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecKernelNodeSetParams_Negative") {
   constexpr size_t N = 1024;
@@ -126,7 +148,18 @@ TEST_CASE("Unit_hipGraphExecKernelNodeSetParams_Negative") {
 }
 
 /**
- * Functional Test for API Exec Kernel Params
+ * Test Description
+ * ------------------------
+ *  - Instantiates a graph with kernel node.
+ *  - Obtains executable graph.
+ *  - Updates the kernel node params with set.
+ *  - Checks its taking effect.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphExecKernelNodeSetParams.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecKernelNodeSetParams_Functional") {
   constexpr size_t N = 1024;

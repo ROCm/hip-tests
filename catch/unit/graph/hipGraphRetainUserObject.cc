@@ -27,7 +27,12 @@ THE SOFTWARE.
 #include "user_object_common.hh"
 
 /**
- * Functional Test for API - hipGraphRetainUserObject
+ * @addtogroup hipGraphRetainUserObject hipGraphRetainUserObject
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphRetainUserObject(hipGraph_t graph, hipUserObject_t object,
+ * unsigned int count __dparm(1), unsigned int flags __dparm(0))` -
+ * Retain user object for graphs.
  */
 
 /* 1) Create GraphUserObject and retain it by calling hipGraphRetainUserObject
@@ -47,6 +52,27 @@ static void hipGraphRetainUserObject_Functional_1(void* object, void destroyObj(
   HIP_CHECK(hipGraphDestroy(graph));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Create user object successfully.
+ *  - Release it with no errors.
+ *  - Perform action for different objects:
+ *    -# When object is int
+ *      - Expected output: return `hipSuccess`
+ *    -# When object is float
+ *      - Expected output: return `hipSuccess`
+ *    -# When object is class instance
+ *      - Expected output: return `hipSuccess`
+ *    -# When object is struct instance
+ *      - Expected output: return `hipSuccess`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphRetainUserObject.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphRetainUserObject_Functional_1") {
   SECTION("Called with int Object") {
     int* object = new int();
@@ -72,6 +98,19 @@ TEST_CASE("Unit_hipGraphRetainUserObject_Functional_1") {
 
 /* 2) Create UserObject and GraphUserObject and retain using custom reference
       count and release it by calling hipGraphReleaseUserObject with count. */
+/**
+ * Test Description
+ * ------------------------
+ *  - Create user object and graph user object.
+ *  - Retain graph using custom reference count.
+ *  - Release it by calling release function with count.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphRetainUserObject.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphRetainUserObject_Functional_2") {
   constexpr size_t N = 1024;
   constexpr size_t Nbytes = N * sizeof(int);
@@ -143,13 +182,27 @@ TEST_CASE("Unit_hipGraphRetainUserObject_Functional_2") {
 }
 
 /**
- * Negative Test for API - hipGraphRetainUserObject
- 1) Pass graph as nullptr
- 2) Pass User Object as nullptr
- 3) Pass initialRefcount as 0
- 4) Pass initialRefcount as INT_MAX
- 5) Pass flag as 0
- 6) Pass flag as INT_MAX
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When graph handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When user object handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When count is zero
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When count is INT_MAX
+ *      - Expected output: return `hipSuccess`
+ *    -# When flag is zero
+ *      - Expected output: return `hipSuccess`
+ *    -# When flag is INT_MAX
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphRetainUserObject.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphRetainUserObject_Negative") {
   hipGraph_t graph;
@@ -187,6 +240,25 @@ TEST_CASE("Unit_hipGraphRetainUserObject_Negative") {
   HIP_CHECK(hipGraphDestroy(graph));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Create user object from float.
+ *  - Retain graph object with reference count 2.
+ *    - Expected output: return `hipSuccess`
+ *  - Release graph object with reference count greater than 2.
+ *    - Expected output: return `hipSuccess`
+ *  - Retain graph object with reference count 8.
+ *    - Expected output: return `hipSuccess`
+ *  - Release graph object with reference count 1.
+ *    - Expected output: return `hipSuccess`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphRetainUserObject.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphRetainUserObject_Negative_Basic") {
   hipGraph_t graph;
   HIP_CHECK(hipGraphCreate(&graph, 0));
@@ -215,6 +287,25 @@ TEST_CASE("Unit_hipGraphRetainUserObject_Negative_Basic") {
   HIP_CHECK(hipGraphDestroy(graph));
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Create user object from `nullptr`.
+ *  - Retain graph object with reference count 2.
+ *    - Expected output: return `hipSuccess`
+ *  - Release graph object with reference count greater than 2.
+ *    - Expected output: return `hipSuccess`
+ *  - Retain graph object with reference count 8.
+ *    - Expected output: return `hipSuccess`
+ *  - Release graph object with reference count 1.
+ *    - Expected output: return `hipSuccess`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphRetainUserObject.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphRetainUserObject_Negative_Null_Object") {
   hipGraph_t graph;
   HIP_CHECK(hipGraphCreate(&graph, 0));

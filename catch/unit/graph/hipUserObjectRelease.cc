@@ -25,10 +25,35 @@ THE SOFTWARE.
 #include "user_object_common.hh"
 
 /**
- * Negative Test for API - hipUserObjectRelease
- 1) Pass User Object as nullptr
- 2) Pass initialRefcount as 0
- 3) Pass initialRefcount as INT_MAX
+ * @addtogroup hipUserObjectRelease hipUserObjectRelease
+ * @{
+ * @ingroup GraphTest
+ * `hipUserObjectRelease(hipUserObject_t object, unsigned int count __dparm(1))` -
+ * Release number of references to resource.
+ * ________________________
+ * Test cases from other modules:
+ *  - @ref Unit_hipUserObjectCreate_Functional_1
+ *  - @ref Unit_hipUserObjectCreate_Functional_2
+ *  - @ref Unit_hipUserObjectCreate_Functional_3
+ *  - @ref Unit_hipUserObjectCreate_Functional_4
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When user object handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When ref count is zero
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When ref count is INT_MAX
+ *      - Expected output: return `hipSuccess`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipUserObjectRelease.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipUserObjectRelease_Negative") {
   int* object = new int();

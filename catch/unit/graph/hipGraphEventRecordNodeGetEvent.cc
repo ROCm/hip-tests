@@ -17,26 +17,19 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
-Testcase Scenarios :
- 1) Validate that the event returned by hipGraphEventRecordNodeGetEvent matches
-with the event set in hipGraphAddEventRecordNode.
- 2) Negative Scenarios
-    - Input node is a nullptr.
-    - Output event is a nullptr.
-    - Input node is an empty node.
-    - Input node is a memset node.
-    - Input node is event wait node
-    - Input node is an uninitialized node.
-*/
-
 #include <hip_test_checkers.hh>
 #include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
 
 /**
- * Local Function to set and get event record node property.
+ * @addtogroup hipGraphEventRecordNodeGetEvent hipGraphEventRecordNodeGetEvent
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphEventRecordNodeGetEvent(hipGraphNode_t node, hipEvent_t* event_out)` -
+ * Returns the event associated with an event record node.
  */
+
+// Local Function to set and get event record node property.
 static void validateEventRecordNodeGetEvent(unsigned flag) {
   hipGraph_t graph;
   HIP_CHECK(hipGraphCreate(&graph, 0));
@@ -53,7 +46,18 @@ static void validateEventRecordNodeGetEvent(unsigned flag) {
 }
 
 /**
- * Scenario: Validate scenario 1 for different event flags.
+ * Test Description
+ * ------------------------
+ *  - Validate that the event returned  matches with the event that is previously set.
+ *    -# When flag is `hipEventDefault`
+ *    -# When flag is `hipEventBlockingSync`
+ *    -# When flag is `hipEventDisableTiming`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphEventRecordNodeGetEvent.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphEventRecordNodeGetEvent_Functional") {
   // Create event nodes with different flags and validate with
@@ -72,7 +76,27 @@ TEST_CASE("Unit_hipGraphEventRecordNodeGetEvent_Functional") {
 }
 
 /**
- * Scenario 2: Negative tests.
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When node handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When output pointer to the event is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When input node is empty node
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When input node is memset node
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When input node is a wait node
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When input node is not initialized node
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphEventRecordNodeGetEvent.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphEventRecordNodeGetEvent_Negative") {
   hipGraph_t graph;

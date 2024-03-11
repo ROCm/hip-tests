@@ -17,53 +17,43 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
-Testcase Scenarios :
- 1) Create a graph with event record nodes as follows:
-    event_record_start_node(event1) --> MemcpyH2DNode --> kernel -->
-    MemcpyD2HNode --> event_record_stop_node(event2).Instantiate the graph.
-    Set a different event 'event3' in event_record_stop_node using
-    hipGraphExecEventRecordNodeSetEvent. Launch the graph. Verify the
-    hipGraphExecEventRecordNodeSetEvent functionality by measuring the
-    time difference between event2 & event1 and between event3 and
-    event1.
- 2) Scenario to verify that hipGraphExecEventRecordNodeSetEvent does not
-    impact the graph and changes only the executable graph.
-    Create an event record node with event1 and add it to graph. Instantiate
-    the graph to create an executable graph. Change the event in the
-    executable graph to event2. Verify that the event record node still
-    contains event1.
-  3) Scenario to verify that hipGraphExecEventRecordNodeSetEvent can set event
-     created on different device. Create an event record node with event1 and add it to graph.
-     Instantiate the graph to create an executable graph. Call the API to change the event in the
-     executable graph to event2 which has been created on different device. Verify that graph can be
-     launched and no error is reported.
-  4) Negative Scenarios
-    - Input executable graph is a nullptr.
-    - Input node is a nullptr.
-    - Input event to set is a nullptr.
-    - Input executable graph is uninitialized.
-    - Input node is uninitialized.
-    - Input event is uninitialized.
-    - Event record node does not exist in graph.
-    - Input node is a memset node.
-    - Input node is a event wait node.
-*/
-
 #include <hip_test_checkers.hh>
 #include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
 
 /**
- * Kernel Functions to copy.
+ * @addtogroup hipGraphExecEventRecordNodeSetEvent hipGraphExecEventRecordNodeSetEvent
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphExecEventRecordNodeSetEvent(hipGraphExec_t hGraphExec,
+ * hipGraphNode_t hNode, hipEvent_t event)` -
+ * Sets the event for an event record node in the given graphExec.
  */
+
+// Kernel Functions to copy.
 static __global__ void copy_ker_func(int* a, int* b, size_t N) {
   int tx = blockIdx.x * blockDim.x + threadIdx.x;
   if (tx < N) b[tx] = a[tx];
 }
 
 /**
- * Scenario 1: Functional scenario (See description Above)
+ * Test Description
+ * ------------------------
+ *  - Create a graph with event record nodes as follows:
+ *    -# Record event on start node.
+ *    -# Launch kernel.
+ *    -# Record event on stop node.
+ *  - Instantiate the graph.
+ *  - Set a different event for stop node.
+ *  - Launch the graph.
+ *  - Verify the set functionality by measuring the time difference
+ *    between start and stop event.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphExecEventRecordNodeSetEvent.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecEventRecordNodeSetEvent_Functional") {
   constexpr size_t gridSize = 512;
@@ -159,8 +149,20 @@ TEST_CASE("Unit_hipGraphExecEventRecordNodeSetEvent_Functional") {
 }
 
 /**
- * Scenario 2: This test verifies that changes to executable graph does
- * not impact the original graph.
+ * Test Description
+ * ------------------------
+ *  - Scenario to verify that event set does not
+ *    impact the graph and changes only the executable graph.
+ *  - Create an event record node with event and add it to graph.
+ *  - Instantiate the graph to create an executable graph.
+ *  - Change the event in the executable graph to the new event.
+ *  - Verify that the event record node still contains first event.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphExecEventRecordNodeSetEvent.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecEventRecordNodeSetEvent_VerifyEventNotChanged") {
   hipGraph_t graph;
@@ -184,8 +186,22 @@ TEST_CASE("Unit_hipGraphExecEventRecordNodeSetEvent_VerifyEventNotChanged") {
 }
 
 /**
- * Scenario 3: This test verifies event in node of the executable graph can be changed to event on
- * different device
+ * Test Description
+ * ------------------------
+ *  - Scenario to verify that hipGraphExecEventRecordNodeSetEvent can set event created on different
+ * device.
+ *  - Create an event record node with event1 and add it to graph.
+ *  - Instantiate the graph to create an executable graph.
+ *  - Call the API to change the event in the executable graph to the event which has been created
+ * on different device.
+ *  - Verify that graph can be launched and no error is reported.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphExecEventRecordNodeSetEvent.cc
+ * Test requirements
+ * ------------------------
+ *  - Multi-device
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecEventRecordNodeSetEvent_Positive_DifferentDevices") {
   const auto device_count = HipTest::getDeviceCount();
@@ -225,7 +241,33 @@ TEST_CASE("Unit_hipGraphExecEventRecordNodeSetEvent_Positive_DifferentDevices") 
 }
 
 /**
- * Scenario 4: Negative Parameter Tests
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When executable graph handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pointer to the event is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When executable graph is not initialized
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node is not initialized
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When event is not initialized
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When event record node does not exist
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node is memset node
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node is event wait node
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphExecEventRecordNodeSetEvent.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecEventRecordNodeSetEvent_Negative") {
   hipGraph_t graph;

@@ -17,42 +17,48 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/*
-hipGraphInstantiateWithFlags(hipGraphExec_t* pGraphExec, hipGraph_t graph, unsigned long long flags);
-Testcase Scenarios of hipGraphInstantiateWithFlags API:
-Negative:
-1) Pass nullptr to pGraphExec
-2) Pass nullptr to graph
-4) Pass invalid flag
-Functional:
-1) Create dependencies graph and instantiate the graph
-2) Create graph in one GPU device and instantiate, launch in peer GPU device
-3) Create stream capture graph and instantite the graph
-4) Create stream capture graph in one GPU device  and instantite the graph launch
-   in peer GPU device
-Mapping is missing for NVIDIA platform hence skipping the testcases
-*/
-
-
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 #include <hip_test_kernels.hh>
 
+/**
+ * @addtogroup hipGraphInstantiateWithFlags hipGraphInstantiateWithFlags
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphInstantiateWithFlags(hipGraphExec_t* pGraphExec,
+ * hipGraph_t graph, unsigned long long flags)` -
+ * Creates an executable graph from a graph.
+ */
+
 constexpr size_t N = 1000000;
-/* This test covers the negative scenarios of
-   hipGraphInstantiateWithFlags API */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When output pointer to the executable graph is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When graph handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When flag is not valid
+ *      - Expected output: do not return `hipSuccess`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphInstantiateWithFlags.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphInstantiateWithFlags_Negative") {
   SECTION("Passing nullptr pGraphExec") {
     hipGraph_t graph;
     HIP_CHECK(hipGraphCreate(&graph, 0));
-    REQUIRE(hipGraphInstantiateWithFlags(nullptr,
-                                         graph, 0) == hipErrorInvalidValue);
+    REQUIRE(hipGraphInstantiateWithFlags(nullptr, graph, 0) == hipErrorInvalidValue);
   }
 
   SECTION("Passing nullptr to graph") {
     hipGraphExec_t graphExec;
-    REQUIRE(hipGraphInstantiateWithFlags(&graphExec,
-                                         nullptr, 0) == hipErrorInvalidValue);
+    REQUIRE(hipGraphInstantiateWithFlags(&graphExec, nullptr, 0) == hipErrorInvalidValue);
   }
 
   SECTION("Passing Invalid flag") {
@@ -63,9 +69,9 @@ TEST_CASE("Unit_hipGraphInstantiateWithFlags_Negative") {
   }
 }
 /*
-This function verifies the following scenarios
-1. Creates dependency graph, Instantiates the graph with flags and verifies it
-2. Creates graph on one GPU-1 device and instantiates the graph on peer GPU device
+  This function verifies the following scenarios
+    1. Creates dependency graph, Instantiates the graph with flags and verifies it
+    2. Creates graph on one GPU-1 device and instantiates the graph on peer GPU device
 */
 void GraphInstantiateWithFlags_DependencyGraph(bool ctxt_change = false) {
   constexpr size_t N = 1024;
@@ -96,8 +102,7 @@ void GraphInstantiateWithFlags_DependencyGraph(bool ctxt_change = false) {
   memsetParams.elementSize = sizeof(char);
   memsetParams.width = Nbytes;
   memsetParams.height = 1;
-  HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph, nullptr, 0,
-                                                              &memsetParams));
+  HIP_CHECK(hipGraphAddMemsetNode(&memset_A, graph, nullptr, 0, &memsetParams));
 
   memset(&memsetParams, 0, sizeof(memsetParams));
   memsetParams.dst = reinterpret_cast<void*>(B_d);
@@ -106,37 +111,33 @@ void GraphInstantiateWithFlags_DependencyGraph(bool ctxt_change = false) {
   memsetParams.elementSize = sizeof(char);
   memsetParams.width = Nbytes;
   memsetParams.height = 1;
-  HIP_CHECK(hipGraphAddMemsetNode(&memset_B, graph, nullptr, 0,
-                                                              &memsetParams));
+  HIP_CHECK(hipGraphAddMemsetNode(&memset_B, graph, nullptr, 0, &memsetParams));
 
-  void* kernelArgs1[] = {&C_d, &memsetVal, reinterpret_cast<void *>(&NElem)};
-  kernelNodeParams.func =
-                       reinterpret_cast<void *>(HipTest::memsetReverse<int>);
+  void* kernelArgs1[] = {&C_d, &memsetVal, reinterpret_cast<void*>(&NElem)};
+  kernelNodeParams.func = reinterpret_cast<void*>(HipTest::memsetReverse<int>);
   kernelNodeParams.gridDim = dim3(blocks);
   kernelNodeParams.blockDim = dim3(threadsPerBlock);
   kernelNodeParams.sharedMemBytes = 0;
   kernelNodeParams.kernelParams = reinterpret_cast<void**>(kernelArgs1);
   kernelNodeParams.extra = nullptr;
-  HIP_CHECK(hipGraphAddKernelNode(&memsetKer_C, graph, nullptr, 0,
-                                                        &kernelNodeParams));
+  HIP_CHECK(hipGraphAddKernelNode(&memsetKer_C, graph, nullptr, 0, &kernelNodeParams));
 
-  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_A, graph, nullptr, 0, A_d, A_h,
-                                   Nbytes, hipMemcpyHostToDevice));
-  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_B, graph, nullptr, 0, B_d, B_h,
-                                   Nbytes, hipMemcpyHostToDevice));
+  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_A, graph, nullptr, 0, A_d, A_h, Nbytes,
+                                    hipMemcpyHostToDevice));
+  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D_B, graph, nullptr, 0, B_d, B_h, Nbytes,
+                                    hipMemcpyHostToDevice));
 
-  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyD2H_C, graph, nullptr, 0, C_h, C_d,
-                                   Nbytes, hipMemcpyDeviceToHost));
+  HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyD2H_C, graph, nullptr, 0, C_h, C_d, Nbytes,
+                                    hipMemcpyDeviceToHost));
 
-  void* kernelArgs2[] = {&A_d, &B_d, &C_d, reinterpret_cast<void *>(&NElem)};
-  kernelNodeParams.func = reinterpret_cast<void *>(HipTest::vectorADD<int>);
+  void* kernelArgs2[] = {&A_d, &B_d, &C_d, reinterpret_cast<void*>(&NElem)};
+  kernelNodeParams.func = reinterpret_cast<void*>(HipTest::vectorADD<int>);
   kernelNodeParams.gridDim = dim3(blocks);
   kernelNodeParams.blockDim = dim3(threadsPerBlock);
   kernelNodeParams.sharedMemBytes = 0;
   kernelNodeParams.kernelParams = reinterpret_cast<void**>(kernelArgs2);
   kernelNodeParams.extra = nullptr;
-  HIP_CHECK(hipGraphAddKernelNode(&kernel_vecAdd, graph, nullptr, 0,
-                                                        &kernelNodeParams));
+  HIP_CHECK(hipGraphAddKernelNode(&kernel_vecAdd, graph, nullptr, 0, &kernelNodeParams));
 
   // Create dependencies
   HIP_CHECK(hipGraphAddDependencies(graph, &memset_A, &memcpyH2D_A, 1));
@@ -163,9 +164,9 @@ void GraphInstantiateWithFlags_DependencyGraph(bool ctxt_change = false) {
 }
 
 /*
-This function verifies the following scenarios
-1. Creates stream capture graph, Instantiates the graph with flags and verifies it
-2. Creates graph on one GPU-1 device and instantiates the graph on peer GPU device
+  This function verifies the following scenarios
+    1. Creates stream capture graph, Instantiates the graph with flags and verifies it
+    2. Creates graph on one GPU-1 device and instantiates the graph on peer GPU device
 */
 void GraphInstantiateWithFlags_StreamCapture(bool deviceContextChg = false) {
   float *A_d, *C_d;
@@ -182,7 +183,7 @@ void GraphInstantiateWithFlags_StreamCapture(bool deviceContextChg = false) {
 
   // Fill with Phi + i
   for (size_t i = 0; i < N; i++) {
-      A_h[i] = 1.618f + i;
+    A_h[i] = 1.618f + i;
   }
   HIP_CHECK(hipMalloc(&A_d, Nbytes));
   HIP_CHECK(hipMalloc(&C_d, Nbytes));
@@ -199,8 +200,8 @@ void GraphInstantiateWithFlags_StreamCapture(bool deviceContextChg = false) {
   HIP_CHECK(hipMemcpyAsync(A_d, A_h, Nbytes, hipMemcpyHostToDevice, stream));
 
   HIP_CHECK(hipMemsetAsync(C_d, 0, Nbytes, stream));
-  hipLaunchKernelGGL(HipTest::vector_square, dim3(blocks),
-                              dim3(threadsPerBlock), 0, stream, A_d, C_d, N);
+  hipLaunchKernelGGL(HipTest::vector_square, dim3(blocks), dim3(threadsPerBlock), 0, stream, A_d,
+                     C_d, N);
   HIP_CHECK(hipMemcpyAsync(C_h, C_d, Nbytes, hipMemcpyDeviceToHost, stream));
 
   HIP_CHECK(hipStreamEndCapture(stream, &graph));
@@ -236,20 +237,38 @@ void GraphInstantiateWithFlags_StreamCapture(bool deviceContextChg = false) {
   HIP_CHECK(hipFree(A_d));
   HIP_CHECK(hipFree(C_d));
 }
-/*
-This testcase verifies hipGraphInstantiateWithFlags API
-by creating dependency graph and instantiate, launching and verifying
-the result
-*/
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates dependency graph.
+ *  - Instantiates it and launches it.
+ *  - Verifies the results.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphInstantiateWithFlags.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphInstantiateWithFlags_DependencyGraph") {
   GraphInstantiateWithFlags_DependencyGraph();
 }
 
-/*
-This testcase verifies hipGraphInstantiateWithFlags API
-by creating dependency graph on GPU-0 and instantiate, launching and verifying
-the result on GPU-1
-*/
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates dependency graph on the device 0.
+ *  - Instantiates it and launches it.
+ *  - Verifies the result on the device 1.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphInstantiateWithFlags.cc
+ * Test requirements
+ * ------------------------
+ *  - Multi-device
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphInstantiateWithFlags_DependencyGraphDeviceCtxtChg") {
   int numDevices = 0;
   int canAccessPeer = 0;
@@ -266,11 +285,19 @@ TEST_CASE("Unit_hipGraphInstantiateWithFlags_DependencyGraphDeviceCtxtChg") {
   }
 }
 
-/*
-This testcase verifies hipGraphInstantiateWithFlags API
-by creating capture graph and instantiate, launching and verifying
-the result
-*/
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates capture graph.
+ *  - Instantiates it and launches it.
+ *  - Verifies the results.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphInstantiateWithFlags.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphInstantiateWithFlags_StreamCapture") {
   int numDevices = 0;
   int canAccessPeer = 0;
@@ -287,11 +314,20 @@ TEST_CASE("Unit_hipGraphInstantiateWithFlags_StreamCapture") {
   }
 }
 
-/*
-This testcase verifies hipGraphInstantiateWithFlags API
-by creating capture graph on GPU-0 and instantiate, launching and verifying
-the result on GPU-1
-*/
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates capture graph on the device 0.
+ *  - Instantiates it and launches it.
+ *  - Verifies the result on the device 1.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphInstantiateWithFlags.cc
+ * Test requirements
+ * ------------------------
+ *  - Multi-device
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphInstantiateWithFlags_StreamCaptureDeviceContextChg") {
   int numDevices = 0;
   int canAccessPeer = 0;
@@ -336,14 +372,13 @@ TEST_CASE("Unit_hipGraphInstantiateWithFlags_FlagAutoFreeOnLaunch_check") {
   allocParam.poolProps.location.id = 0;
   allocParam.poolProps.location.type = hipMemLocationTypeDevice;
 
-  HIP_CHECK(hipGraphAddMemAllocNode(&allocNodeA, graph, nullptr,
-                                    0, &allocParam));
+  HIP_CHECK(hipGraphAddMemAllocNode(&allocNodeA, graph, nullptr, 0, &allocParam));
   REQUIRE(allocParam.dptr != nullptr);
-  int *A_d = reinterpret_cast<int *>(allocParam.dptr);
+  int* A_d = reinterpret_cast<int*>(allocParam.dptr);
 
   // Instantiate with Flag and launch the graph
-  HIP_CHECK(hipGraphInstantiateWithFlags(&graphExec, graph,
-                    hipGraphInstantiateFlagAutoFreeOnLaunch));
+  HIP_CHECK(
+      hipGraphInstantiateWithFlags(&graphExec, graph, hipGraphInstantiateFlagAutoFreeOnLaunch));
 
   HIP_CHECK(hipGraphLaunch(graphExec, stream));
   HIP_CHECK(hipStreamSynchronize(stream));

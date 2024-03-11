@@ -19,28 +19,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
-Test Case Scenarios of hipGraphExecHostNodeSetParams API:
-
-Functional:
-1. Creates graph, Adds HostNode, update hostNode params using hipGraphExecHostNodeSetParams API
-   and validates the result
-2. Create graph, Add Graph nodes and clones the graph. Add Host node to the cloned graph, update
-   hostNode params using hipGraphExecHostNodeSetParams API and validate the result
-
-Negative:
-
-1) Pass hGraphExec as nullptr and verify api doesn't crash, returns error code.
-2) Pass node as nullptr and verify api doesn't crash, returns error code.
-3) Pass pNodeParams as nullptr and verify api doesn't crash, returns error code.
-3) Pass hipHostNodeParams::hipHostFn_t as nullptr and verify api doesn't crash, returns error code.
-4) Pass uninitialized host params and verify api doesn't crash, returns error code.
-5) Pass uninitialized graph and verify api doesn't crash, returns error code.
-6) Pass nullptr to host func and verify api doesn't crash, returns error code.
-*/
-
 #include <hip_test_checkers.hh>
 #include <hip_test_common.hh>
+
+/**
+ * @addtogroup hipGraphExecHostNodeSetParams hipGraphExecHostNodeSetParams
+ * @{
+ * @ingroup GraphTest
+ * `hipGraphExecHostNodeSetParams(hipGraphExec_t hGraphExec, hipGraphNode_t node,
+ * const hipHostNodeParams* pNodeParams)` -
+ * Sets the parameters for a host node in the given graphExec.
+ */
 
 #define SIZE 1024
 
@@ -58,10 +47,32 @@ void callbackfunc_setparams(void* B_h) {
   }
 }
 
-/*
-This test case verifies the negative scenarios of
-hipGraphExecHostNodeSetParams API
-*/
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When graph exec handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When host node params pointer is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When graph handle is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When host params function data member is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When host params are not initialized
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node is not a host node
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When node is not instantiated
+ *      - Expected output: return `hipErrorInvalidValue`
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphExecHostNodeSetParams.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphExecHostNodeSetParams_Negative") {
   constexpr size_t N = 1024;
   constexpr size_t Nbytes = N * sizeof(int);
@@ -129,7 +140,7 @@ TEST_CASE("Unit_hipGraphExecHostNodeSetParams_Negative") {
                     hipErrorInvalidValue);
   }
 
-#if HT_NVIDIA // segfaults on AMD
+#if HT_NVIDIA  // segfaults on AMD
   SECTION("node is not a host node") {
     HIP_CHECK_ERROR(hipGraphExecHostNodeSetParams(graphExec, empty_node, &sethostParams),
                     hipErrorInvalidValue);
@@ -148,12 +159,21 @@ TEST_CASE("Unit_hipGraphExecHostNodeSetParams_Negative") {
   HIP_CHECK(hipStreamDestroy(streamForGraph));
 }
 
-/*
-This test case verifies hipGraphExecHostNodeSetParams API in cloned graph
-Creates graph, Add graph nodes and clone the graph
-Add HostNode to the cloned graph,update the host params using
-hipGraphExecHostNodeSetParams API and validates the result
-*/
+/**
+ * Test Description
+ * ------------------------
+ *  - Verifies API behaviour in a cloned graph.
+ *  - Creates graph and adds graph nodes.
+ *  - Clones the graph and adds host node to the cloned graph.
+ *  - Update the host params using set API.
+ *  - Validates the result.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphExecHostNodeSetParams.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphExecHostNodeSetParams_ClonedGraphWithHostNode") {
   constexpr size_t N = 1024;
   constexpr size_t Nbytes = N * sizeof(int);
@@ -210,12 +230,19 @@ TEST_CASE("Unit_hipGraphExecHostNodeSetParams_ClonedGraphWithHostNode") {
   HIP_CHECK(hipStreamDestroy(streamForGraph));
 }
 
-/*
-This test case verifies the following scenario
-Create graph, Adds host node to the graph,
-updates the host params using hipGraphExecHostNodeSetParams API
-and validates the result
-*/
+/**
+ * Test Description
+ * ------------------------
+ *  - Creates graph and adds host node to the graph.
+ *  - Updates the host params using set functionality.
+ *  - Validates the result.
+ * Test source
+ * ------------------------
+ *  - unit/graph/hipGraphExecHostNodeSetParams.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipGraphExecHostNodeSetParams_BasicFunc") {
   constexpr size_t N = 1024;
   constexpr size_t Nbytes = N * sizeof(int);

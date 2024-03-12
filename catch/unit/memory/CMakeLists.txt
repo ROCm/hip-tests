@@ -82,18 +82,7 @@ if(HIP_PLATFORM MATCHES "amd")
       hipMemCoherencyTst.cc
       hipExtMallocWithFlags.cc
       hipMallocMngdMultiThread.cc
-      hipArray.cc
       hipMemVmm.cc
-      hipMemCreate.cc
-      hipMemMap.cc
-      hipMemGetAllocationGranularity.cc
-      hipMemSetGetAccess.cc
-      hipMemRetainAllocationHandle.cc
-      hipMemUnmap.cc
-      hipMemAddressFree.cc
-      hipMemAddressReserve.cc
-      hipMemRelease.cc
-      hipMemGetAllocationPropertiesFromHandle.cc
       hipArray.cc
       hipMemcpyDeviceToDeviceNoCU.cc)
   if(UNIX)

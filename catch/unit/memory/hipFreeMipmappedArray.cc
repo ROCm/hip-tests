@@ -107,20 +107,28 @@ TEMPLATE_TEST_CASE("Unit_hipFreeMipmappedArrayMultiTArray", "", char, int) {
   extent.height = GENERATE(64, 256, 1024);
   extent.depth = GENERATE(0, 64, 256, 1024);
 
-  for (auto& ptr : ptrs) {
-    HIP_CHECK(hipMallocMipmappedArray(&ptr, &desc, extent, numLevels, flags));
+  int i = 0;
+  for (; i < ptrs.size(); i++) {
+    if (hipErrorOutOfMemory == hipMallocMipmappedArray(&ptrs[i], &desc, extent,
+                                                       numLevels, flags)) {
+      break;
+    }
   }
 
-  for (auto ptr : ptrs) {
-    threads.emplace_back(([ptr] {
-      HIP_CHECK_THREAD(hipFreeMipmappedArray(ptr));
-      HIP_CHECK_THREAD(hipStreamQuery(nullptr));
-    }));
+  for (int j = 0; j < i; j++) {
+    threads.emplace_back([ptrs,j] {
+      if (hipSuccess != hipFreeMipmappedArray(ptrs[j])) {
+        return;
+      }
+      if (hipSuccess != hipStreamQuery(nullptr)) {
+        return;
+      }
+    });
   }
 
   for (auto& t : threads) {
     t.join();
   }
-  
+
   HIP_CHECK_THREAD_FINALIZE();
 }

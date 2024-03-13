@@ -192,6 +192,7 @@ static inline bool IsGfx11() {
   std::cout << "Have to be either Nvidia or AMD platform, asserting" << std::endl;
   assert(false);
 #endif
+  return false;
 }
 
 

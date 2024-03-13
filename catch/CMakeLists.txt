@@ -60,9 +60,11 @@ message(STATUS "ROCM_PATH: ${ROCM_PATH}")
 set(CMAKE_CXX_COMPILER "${HIP_PATH}/bin/hipcc${EXT}")
 set(CMAKE_C_COMPILER "${HIP_PATH}/bin/hipcc${EXT}")
 set(HIPCONFIG_EXECUTABLE "${HIP_PATH}/bin/hipconfig${EXT}")
-execute_process(COMMAND ${HIPCONFIG_EXECUTABLE} --version
-                OUTPUT_VARIABLE HIP_VERSION
-                OUTPUT_STRIP_TRAILING_WHITESPACE)
+if (NOT DEFINED HIP_VERSION)
+    execute_process(COMMAND ${HIPCONFIG_EXECUTABLE} --version
+                    OUTPUT_VARIABLE HIP_VERSION
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif()
 
 # enforce c++17
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++17")

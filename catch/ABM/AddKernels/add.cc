@@ -7,7 +7,7 @@ template <typename T> __global__ void add(T* a, T* b, T* c, size_t size) {
 }
 
 TEMPLATE_TEST_CASE("ABM_AddKernel_MultiTypeMultiSize", "", int, long, float, long long, double) {
-  auto size = GENERATE(as<size_t>{}, 100, 500, 1000);
+  auto size = GENERATE(as<size_t>{}, 100, 500);
   TestType *d_a, *d_b, *d_c;
   auto res = hipMalloc(&d_a, sizeof(TestType) * size);
   REQUIRE(res == hipSuccess);

@@ -25,6 +25,9 @@ THE SOFTWARE.
 #include <hip/hip_cooperative_groups.h>
 #include <hip/hip_fp16.h>
 
+#define MASK_SHIFT(x, n) \
+  (x & (static_cast<uint64_t>(1) << n)) >> n
+
 const unsigned long long Every5thBit = 0x1084210842108421;
 const unsigned long long Every9thBit = 0x8040201008040201;
 const unsigned long long Every5thBut9th = Every5thBit & ~Every9thBit;
@@ -37,7 +40,6 @@ inline __device__ bool deactivate_thread(const uint64_t* const active_masks) {
   const auto warps_per_block = (block.size() + warpSize - 1) / warpSize;
   const auto block_rank = (blockIdx.z * gridDim.y + blockIdx.y) * gridDim.x + blockIdx.x;
   const auto idx = block_rank * warps_per_block + block.thread_rank() / warpSize;
-
   return !(active_masks[idx] & (static_cast<uint64_t>(1) << warp.thread_rank()));
 }
 

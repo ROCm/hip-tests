@@ -31,18 +31,14 @@
 #include <thread>
 #include <chrono>
 
-constexpr hipMemPoolProps kPoolProps = {
-  hipMemAllocationTypePinned,
-  hipMemHandleTypeNone,
-  {
-    hipMemLocationTypeDevice,
-    0
-  },
-  nullptr,
-  0,
-  {0}
+static hipMemPoolProps kPoolProps;
+void initMemPoolProps() {
+  kPoolProps.allocType = hipMemAllocationTypePinned;
+  kPoolProps.handleTypes = hipMemHandleTypeNone;
+  kPoolProps.location.type = hipMemLocationTypeDevice;
+  kPoolProps.location.id = 0;
+  kPoolProps.win32SecurityAttributes = nullptr;
 };
-
 /*
    This testcase verifies HIP Mem Pool API basic scenario - supported on all devices
  */
@@ -101,7 +97,7 @@ TEST_CASE("Unit_hipMemPoolApi_Basic") {
     0
   };
   HIP_CHECK(hipMemPoolGetAccess(&flags, mem_pool, &location));
-
+  initMemPoolProps();
   HIP_CHECK(hipMemPoolCreate(&mem_pool, &kPoolProps));
   HIP_CHECK(hipMallocFromPoolAsync(reinterpret_cast<void**>(&B), numElements * sizeof(float), mem_pool, stream));
   HIP_CHECK(hipMemPoolDestroy(mem_pool));
@@ -146,7 +142,7 @@ TEST_CASE("Unit_hipMemPoolApi_BasicAlloc") {
     SUCCEED("Runtime doesn't support Memory Pool. Skip the test case.");
     return;
   }
-
+  initMemPoolProps();
   hipMemPool_t mem_pool;
   HIP_CHECK(hipMemPoolCreate(&mem_pool, &kPoolProps));
 
@@ -234,7 +230,7 @@ TEST_CASE("Unit_hipMemPoolApi_BasicTrim") {
     SUCCEED("Runtime doesn't support Memory Pool. Skip the test case.");
     return;
   }
-
+  initMemPoolProps();
   hipMemPool_t mem_pool;
   HIP_CHECK(hipMemPoolCreate(&mem_pool, &kPoolProps));
 
@@ -322,7 +318,7 @@ TEST_CASE("Unit_hipMemPoolApi_BasicReuse") {
     SUCCEED("Runtime doesn't support Memory Pool. Skip the test case.");
     return;
   }
-
+  initMemPoolProps();
   hipMemPool_t mem_pool;
   HIP_CHECK(hipMemPoolCreate(&mem_pool, &kPoolProps));
 
@@ -398,7 +394,7 @@ TEST_CASE("Unit_hipMemPoolApi_Opportunistic") {
     SUCCEED("Runtime doesn't support Memory Pool. Skip the test case.");
     return;
   }
-
+  initMemPoolProps();
   hipMemPool_t mem_pool;
   HIP_CHECK(hipMemPoolCreate(&mem_pool, &kPoolProps));
 

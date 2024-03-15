@@ -47,12 +47,12 @@ static inline bool CheckMemPoolSupport(const int device) {
 
 static inline hipMemPool_t CreateMemPool(const int device) {
   hipMemPoolProps kPoolProps;
+  memset(&kPoolProps, 0, sizeof(kPoolProps));
   kPoolProps.allocType = hipMemAllocationTypePinned;
   kPoolProps.handleTypes = hipMemHandleTypeNone;
   kPoolProps.location.type = hipMemLocationTypeDevice;
   kPoolProps.location.id = device;
   kPoolProps.win32SecurityAttributes = nullptr;
-  memset(kPoolProps.reserved, 0, sizeof(kPoolProps.reserved));
 
   hipMemPool_t mem_pool;
   HIP_CHECK(hipMemPoolCreate(&mem_pool, &kPoolProps));

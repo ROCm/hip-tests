@@ -36,18 +36,13 @@ static int AreMemPoolsSupported(int device_id) {
 }
 
 static hipMemPoolProps CreateMemPoolProps(const int device_id, const hipMemAllocationHandleType handle_type) {
-  hipMemPoolProps kPoolProps = {
-    hipMemAllocationTypePinned,
-    handle_type,
-    {
-      hipMemLocationTypeDevice,
-      device_id
-    },
-    nullptr,
-    0,
-    {0}
-  };
-
+  hipMemPoolProps kPoolProps;
+  memset(&kPoolProps, 0, sizeof(kPoolProps));
+  kPoolProps.allocType = hipMemAllocationTypePinned;
+  kPoolProps.handleTypes = handle_type;
+  kPoolProps.location.type = hipMemLocationTypeDevice;
+  kPoolProps.location.id = device_id;
+  kPoolProps.win32SecurityAttributes = nullptr;
   return kPoolProps;
 }
 

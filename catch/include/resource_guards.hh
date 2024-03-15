@@ -404,12 +404,12 @@ class MemPoolGuard {
         break;
       case MemPools::created:
         hipMemPoolProps pool_props;
+        memset(&pool_props, 0, sizeof(pool_props));
         pool_props.allocType = hipMemAllocationTypePinned;
         pool_props.handleTypes = handle_type_;
         pool_props.location.type = hipMemLocationTypeDevice;
         pool_props.location.id = device_;
         pool_props.win32SecurityAttributes = nullptr;
-        memset(pool_props.reserved, 0, sizeof(pool_props.reserved));
 
         HIP_CHECK(hipMemPoolCreate(&mempool_, &pool_props));
     }

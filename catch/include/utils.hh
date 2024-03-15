@@ -150,10 +150,10 @@ __global__ void Iota(T* const out, size_t pitch, size_t w, size_t h, size_t d) {
 
 inline void LaunchDelayKernel(const std::chrono::milliseconds interval, const hipStream_t stream = nullptr) {
   int ticks_per_ms = 0;
-  #if HT_AMD || HT_SPIRV
+  #if HT_AMD
   HIPCHECK(hipDeviceGetAttribute(&ticks_per_ms, hipDeviceAttributeWallClockRate, 0));
   #endif
-  #if HT_NVIDIA
+  #if HT_NVIDIA || HT_SPIRV
   HIPCHECK(hipDeviceGetAttribute(&ticks_per_ms, hipDeviceAttributeClockRate, 0));
   #endif
   Delay<<<1, 1, 0, stream>>>(interval.count(), ticks_per_ms);

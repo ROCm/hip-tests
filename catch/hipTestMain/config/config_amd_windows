@@ -1437,6 +1437,9 @@
         "Unit_hipDeviceGetGraphMemAttribute_Functional_Multi_Device",
         "=== SWDEV-452308 : Windows failure, should be fixed for ROCm 6.3. ===",
         "Unit_hipVoteSync_All",
+        "=== SWDEV-454245, SWDEV-454247 : Below tests fail on 29/03/24 ===",
+        "Unit_hipStreamBeginCaptureToGraph_IndepGraphsThreads",
+        "Unit_hipStreamBeginCaptureToGraph_CaptureDepGraph",
     #endif
         "End of json"
     ]

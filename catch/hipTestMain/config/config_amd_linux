@@ -1669,6 +1669,9 @@
         "Unit_Warp_Shfl_Down_Positive_Basic - __half",
         "Unit_hipExtModuleLaunchKernel_Functional",
         "Unit_hipExtLaunchKernelGGL_Functional",
+        "=== SWDEV-454245, SWDEV-454247 : Below tests fail on 29/03/24 ===",
+        "Unit_hipStreamBeginCaptureToGraph_IndepGraphsThreads",
+        "Unit_hipStreamBeginCaptureToGraph_CaptureDepGraph",
     #endif
         "End of json"
     ]

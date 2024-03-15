@@ -39,28 +39,28 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code
                    -o get_function_module.code
                    -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
                    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/get_function_module.cc)
-add_custom_target(get_function_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code)
+add_custom_target(get_function_module DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/launch_kernel_module.code
                    COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} --std=c++17 ${CMAKE_CURRENT_SOURCE_DIR}/launch_kernel_module.cc
                    -o launch_kernel_module.code
                    -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
                    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/launch_kernel_module.cc)
-add_custom_target(launch_kernel_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/launch_kernel_module.code)
+add_custom_target(launch_kernel_module DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/launch_kernel_module.code)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/get_global_test_module.code
                    COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} --std=c++17 ${CMAKE_CURRENT_SOURCE_DIR}/get_global_test_module.cc
                    -o get_global_test_module.code
                    -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
                    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/get_global_test_module.cc)
-add_custom_target(get_global_test_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/get_global_test_module.code)
+add_custom_target(get_global_test_module DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/get_global_test_module.code)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/get_tex_ref_module.code
                    COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} --std=c++17 ${CMAKE_CURRENT_SOURCE_DIR}/get_tex_ref_module.cc
                    -o get_tex_ref_module.code
                    -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
                    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/get_tex_ref_module.cc)
-add_custom_target(get_tex_ref_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/get_tex_ref_module.code)
+add_custom_target(get_tex_ref_module DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/get_tex_ref_module.code)
 
 # Note to pass arch use format like -DOFFLOAD_ARCH_STR="--offload-arch=gfx900  --offload-arch=gfx906"
 # having space at the start/end of OFFLOAD_ARCH_STR can cause build failures
@@ -101,7 +101,6 @@ add_custom_target(copiousArgKernel.code
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copiousArgKernel.code
                   -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
-
 add_custom_target(copiousArgKernel0.code
                   COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
                   -mllvm -amdgpu-kernarg-preload-count=0

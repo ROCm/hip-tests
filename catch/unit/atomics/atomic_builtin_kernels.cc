@@ -21,7 +21,6 @@ THE SOFTWARE.
 */
 
 #include <hip_test_common.hh>
-#include <resource_guards.hh>
 
 constexpr int kMemOrder = __ATOMIC_RELAXED;
 constexpr int kMemScope = __HIP_MEMORY_SCOPE_SYSTEM;

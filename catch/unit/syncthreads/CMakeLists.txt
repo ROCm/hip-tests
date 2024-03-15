@@ -38,18 +38,27 @@ hip_add_exe_to_target(NAME SyncthreadsTest
                       LINKER_LIBS hiprtc)
 endif()
 
-# Below tests fail in PSDB
+if(UNIX)
+file(GLOB NEGATIVE_TEST_SRC
+     "__syncthreads_count_negative_kernels.cc"
+     "__syncthreads_and_negative_kernels.cc"
+     "__syncthreads_or_negative_kernels.cc"
+    )
+
+file(COPY ${NEGATIVE_TEST_SRC} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src)
+
 #add_test(NAME Unit___syncthreads_count_Negative_Parameters
-#         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-#         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+#         COMMAND ${Python3_EXECUTABLE} ../compileAndCaptureOutput.py
+#         ./src ${HIP_PLATFORM} ${HIP_PATH}
 #         __syncthreads_count_negative_kernels.cc 2)
 #
 #add_test(NAME Unit___syncthreads_and_Negative_Parameters
-#         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-#         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+#         COMMAND ${Python3_EXECUTABLE} ../compileAndCaptureOutput.py
+#         ./src ${HIP_PLATFORM} ${HIP_PATH}
 #         __syncthreads_and_negative_kernels.cc 2)
 #
 #add_test(NAME Unit___syncthreads_or_Negative_Parameters
-#         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-#         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+#         COMMAND ${Python3_EXECUTABLE} ../compileAndCaptureOutput.py
+#         ./src ${HIP_PLATFORM} ${HIP_PATH}
 #         __syncthreads_or_negative_kernels.cc 2)
+endif()

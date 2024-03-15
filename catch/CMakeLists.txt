@@ -282,6 +282,20 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/catchInfo.txt ${_catch
 set(_subdirs ${_autogen} "subdirs(..)\n")
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/CTestTestfile.cmake ${_subdirs})
 
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+
+# copy python script and headers to catch test package
+set(CATCH_INCLUDE_DIR include)
+execute_process(COMMAND ${CMAKE_COMMAND} -E
+                make_directory ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/${CATCH_INCLUDE_DIR})
+
+file(COPY ./unit/compileAndCaptureOutput.py
+            DESTINATION  ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/unit )
+
+file(COPY ./include/hip_test_common.hh DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/${CATCH_INCLUDE_DIR})
+file(COPY ./include/hip_test_context.hh DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/${CATCH_INCLUDE_DIR})
+file(COPY ./external/Catch2/catch.hpp DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/${CATCH_INCLUDE_DIR})
+
 # Enable device lambda on nvidia platforms
 if(HIP_PLATFORM STREQUAL "nvidia")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --extended-lambda")

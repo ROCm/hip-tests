@@ -37,13 +37,20 @@ elseif(HIP_PLATFORM MATCHES "amd")
                           LINKER_LIBS hiprtc)
 endif()
 
-# Below tests fail in PSDB
+if(UNIX)
+file(GLOB NEGATIVE_TEST_SRC
+     "static_assert_kernels_positive.cc"
+     "static_assert_kernels_negative.cc")
+
+file(COPY ${NEGATIVE_TEST_SRC} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src)
+
 #add_test(NAME Unit_StaticAssert_Positive_Basic
-#         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-#         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+#         COMMAND ${Python3_EXECUTABLE} ../compileAndCaptureOutput.py
+#         ./src ${HIP_PLATFORM} ${HIP_PATH}
 #         static_assert_kernels_positive.cc 2)
 #
 #add_test(NAME Unit_StaticAssert_Negative_Basic
-#         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-#         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+#         COMMAND ${Python3_EXECUTABLE} ../compileAndCaptureOutput.py
+#         ./src ${HIP_PLATFORM} ${HIP_PATH}
 #         static_assert_kernels_negative.cc 2)
+endif()

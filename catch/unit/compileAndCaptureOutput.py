@@ -21,6 +21,7 @@
 import subprocess
 import sys
 import unittest
+import os
 
 class CompileAndCapture(unittest.TestCase):
   path = None
@@ -41,11 +42,14 @@ class CompileAndCapture(unittest.TestCase):
     self.assertTrue(self.platform == 'amd' or self.platform == 'nvidia')
 
   def test(self):
+    if os.name == 'nt':
+        hipcc = self.hip_path + '/bin/hipcc.bat'
+    else:
+        hipcc = self.hip_path + '/bin/hipcc'
+
     compiler_args = [
-      self.hip_path + '/bin/hipcc',
-      '-I' + self.path + '/../../external/Catch2',
-      '-I' + self.path + '/../../include',
-      '-I' + self.path + '/../../external/picojson',
+      hipcc,
+      '-I' + self.path + '/../../../include',
       '-c',
       self.path + '/' + self.file,
       ]

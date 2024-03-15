@@ -8,6 +8,12 @@ project(hiptests)
 
 option(ENABLE_ADDRESS_SANITIZER "Option to enable ASAN build" OFF)
 option(BUILD_SHARED_LIBS "Option for testing shared libraries" ON)
+
+option(TEST_CLOCK_CYCLE "Option to use clock64" OFF)
+if (TEST_CLOCK_CYCLE)
+    add_definitions(-DTEST_CLOCK_CYCLE)
+endif()
+
 # flag to generate standalone exe per src file.
 message(STATUS "STANDALONE_TESTS : ${STANDALONE_TESTS}")
 

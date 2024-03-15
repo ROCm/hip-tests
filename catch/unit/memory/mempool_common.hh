@@ -81,14 +81,14 @@ template <typename T> __global__ void kernel_500ms_gfx11(T* host_res, int clk_ra
   host_res[tid] = tid + 1;
   __threadfence_system();
   // expecting that the data is getting flushed to host here!
-  uint64_t start = wall_clock64() / clk_rate, cur;
+  uint64_t start = clock_function() / clk_rate, cur;
   if (clk_rate > 1) {
     do {
-      cur = wall_clock64() / clk_rate - start;
+      cur = clock_function() / clk_rate - start;
     } while (cur < wait_ms);
   } else {
     do {
-      cur = wall_clock64() / start;
+      cur = clock_function() / start;
     } while (cur < wait_ms);
   }
 #endif

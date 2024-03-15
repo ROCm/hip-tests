@@ -23,15 +23,19 @@
 set(TEST_SRC
     hip_hc_8pk.cc
 )
-
 hip_add_exe_to_target(NAME HipSpecificTest
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests
                       LINKER_LIBS hiprtc
                       PROPERTY CXX_STANDARD 17)
+if(UNIX)
+file(GLOB NEGATIVE_TEST_SRC
+     "hip_hc_8pk_negative_kernels.cc" )
 
-# This test fails in PSDB
+file(COPY ${NEGATIVE_TEST_SRC} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src)
+
 #add_test(NAME Unit_Device__hip_hc_8pk_Negative
-#         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-#         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+#         COMMAND ${Python3_EXECUTABLE} ../compileAndCaptureOutput.py
+#         ./src ${HIP_PLATFORM} ${HIP_PATH}
 #         hip_hc_8pk_negative_kernels.cc 90)
+endif()

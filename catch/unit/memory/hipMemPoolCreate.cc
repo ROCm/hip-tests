@@ -56,12 +56,12 @@ TEST_CASE("Unit_hipMemPoolCreate_Negative_Parameter") {
   HIP_CHECK(hipGetDeviceCount(&num_dev));
 
   hipMemPoolProps pool_props;
+  memset(&pool_props, 0, sizeof(pool_props));
   pool_props.allocType = hipMemAllocationTypePinned;
   pool_props.handleTypes = hipMemHandleTypeNone;
   pool_props.location.type = hipMemLocationTypeDevice;
   pool_props.location.id = 0;
   pool_props.win32SecurityAttributes = nullptr;
-  memset(pool_props.reserved, 0, sizeof(pool_props.reserved));
 
   hipMemPool_t mem_pool = nullptr;
 
@@ -100,21 +100,27 @@ TEST_CASE("Unit_hipMemPoolCreate_With_maxSize") {
     return;
   }
   hipMemPoolProps pool_props;
+  memset(&pool_props, 0, sizeof(pool_props));
   pool_props.allocType = hipMemAllocationTypePinned;
   pool_props.handleTypes = hipMemHandleTypeNone;
   pool_props.location.type = hipMemLocationTypeDevice;
   pool_props.location.id = 0;
   pool_props.win32SecurityAttributes = nullptr;
+#if HT_AMD
   pool_props.maxSize = 1024 * 1024 * 1024;
-  memset(pool_props.reserved, 0, sizeof(pool_props.reserved));
-
+#endif
   float *A = nullptr, *B = nullptr;
   hipStream_t stream;
   HIP_CHECK(hipStreamCreate(&stream));
   hipMemPool_t mem_pool = nullptr;
   HIP_CHECK(hipMemPoolCreate(&mem_pool, &pool_props));
   HIP_CHECK(hipMallocFromPoolAsync (reinterpret_cast<void**>(&A), 1024 * 1024 * 512, mem_pool, stream));
-  HIP_CHECK_ERROR(hipMallocFromPoolAsync (reinterpret_cast<void**>(&B), 1024 * 1024 * 513, mem_pool, stream), hipErrorMemoryAllocation);
+#if HT_AMD
+  HIP_CHECK_ERROR(hipMallocFromPoolAsync (reinterpret_cast<void**>(&B), 1024 * 1024 * 513, mem_pool,
+                                          stream), hipErrorOutOfMemory);
+#else
+  HIP_CHECK(hipMallocFromPoolAsync (reinterpret_cast<void**>(&B), 1024 * 1024 * 513, mem_pool, stream));
+#endif
   HIP_CHECK(hipMemPoolDestroy(mem_pool));
   HIP_CHECK(hipStreamDestroy(stream));
 }
@@ -127,12 +133,12 @@ TEST_CASE("Unit_hipMemPoolCreate_Without_maxSize") {
     return;
   }
   hipMemPoolProps pool_props;
+  memset(&pool_props, 0, sizeof(pool_props));
   pool_props.allocType = hipMemAllocationTypePinned;
   pool_props.handleTypes = hipMemHandleTypeNone;
   pool_props.location.type = hipMemLocationTypeDevice;
   pool_props.location.id = 0;
   pool_props.win32SecurityAttributes = nullptr;
-  memset(pool_props.reserved, 0, sizeof(pool_props.reserved));
 
   float *A = nullptr, *B = nullptr;
   hipStream_t stream;

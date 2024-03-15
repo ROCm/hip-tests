@@ -35,6 +35,12 @@ THE SOFTWARE.
 #include <cstdlib>
 #include <thread>
 
+#ifdef TEST_CLOCK_CYCLE
+#define clock_function() clock64()
+#else
+#define clock_function() wall_clock64()
+#endif
+
 #define HIP_PRINT_STATUS(status) INFO(hipGetErrorName(status) << " at line: " << __LINE__);
 
 // Not thread-safe

@@ -1447,9 +1447,6 @@
         "Unit_Coalesced_Group_Sync_Positive_Basic - uint8_t",
         "Unit_Coalesced_Group_Sync_Positive_Basic - uint16_t",
         "Unit_Coalesced_Group_Sync_Positive_Basic - uint32_t",
-        "Unit_Warp_Ballot_Positive_Basic",
-        "Unit_Warp_Vote_Any_Positive_Basic",
-        "Unit_Warp_Vote_All_Positive_Basic",
         "=== SWDEV-443630 - Below tests failed in stress test on 19/01/23 ===",
         "Unit_hipGetSetDevice_MultiThreaded",
     #endif
@@ -1536,9 +1533,6 @@
         "Unit_Coalesced_Group_Sync_Positive_Basic - uint8_t",
         "Unit_Coalesced_Group_Sync_Positive_Basic - uint16_t",
         "Unit_Coalesced_Group_Sync_Positive_Basic - uint32_t",
-        "Unit_Warp_Ballot_Positive_Basic",
-        "Unit_Warp_Vote_Any_Positive_Basic",
-        "Unit_Warp_Vote_All_Positive_Basic",
         "=== SWDEV-439298: Below test failing in CQE staging ===",
         "Unit_hipCGMultiGridGroupType_Barrier",
         "=== SWDEV-443630 : Below test failed in stress test on 19/01/24 ===",
@@ -1580,6 +1574,10 @@
         "Unit_safeAtomicMin_Positive_SameAddress - float",
         "=== SWDEV-454220 : Below test hanged in stress test on 22/03/24 ===",
         "Unit_hipExtLaunchKernel_Positive_Basic",
+        "=== Below tests fail in stress test 03/29/24 ===",
+        "Unit_Warp_Ballot_Positive_Basic",
+        "Unit_Warp_Vote_Any_Positive_Basic",
+        "Unit_Warp_Vote_All_Positive_Basic",
     #endif
     #if defined NAVI21
         "=== SWDEV-445961: These tests hang in PSDB stress test on 09/02/2024 ===",

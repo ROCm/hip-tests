@@ -77,6 +77,7 @@ static void RunBenchmark(size_t width, size_t height, hipMemcpyKind kind,
  */
 TEST_CASE("Performance_hipMemcpy2DToArray_HostToDevice") {
   CHECK_IMAGE_SUPPORT
+
   const auto width = GENERATE(4_KB, 8_KB, 16_KB);
   RunBenchmark(width, 32, hipMemcpyHostToDevice);
 }
@@ -98,6 +99,7 @@ TEST_CASE("Performance_hipMemcpy2DToArray_HostToDevice") {
  */
 TEST_CASE("Performance_hipMemcpy2DToArray_DeviceToDevice_DisablePeerAccess") {
   CHECK_IMAGE_SUPPORT
+
   const auto width = GENERATE(4_KB, 8_KB, 16_KB);
   RunBenchmark(width, 32, hipMemcpyDeviceToDevice);
 }
@@ -121,6 +123,7 @@ TEST_CASE("Performance_hipMemcpy2DToArray_DeviceToDevice_DisablePeerAccess") {
  */
 TEST_CASE("Performance_hipMemcpy2DToArray_DeviceToDevice_EnablePeerAccess") {
   CHECK_IMAGE_SUPPORT
+
   if (HipTest::getDeviceCount() < 2) {
     HipTest::HIP_SKIP_TEST("This test requires 2 GPUs. Skipping.");
     return;

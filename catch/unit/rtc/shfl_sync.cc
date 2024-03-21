@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2024 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -34,12 +34,13 @@ THE SOFTWARE.
 #include "shfl.hh"
 
 static constexpr auto shfl {
-R"(
+  R"(
 template <typename T>
 __global__ void shflUpSum(T* a, int size) {
   T val = a[threadIdx.x];
+  auto all_threads = __activemask();
   for (unsigned int i = size / 2; i > 0; i /= 2) {
-    val += __shfl_up(val, i, size);
+    val += __shfl_up_sync(all_threads, val, i, size);
   }
   a[threadIdx.x] = val;
 }
@@ -47,8 +48,9 @@ __global__ void shflUpSum(T* a, int size) {
 template <typename T>
 __global__ void shflDownSum(T* a, int size) {
   T val = a[threadIdx.x];
+  auto all_threads = __activemask();
   for (int i = size / 2; i > 0; i /= 2) {
-    val += __shfl_down(val, i, size);
+    val += __shfl_down_sync(all_threads, val, i, size);
   }
   a[threadIdx.x] = val;
 }
@@ -56,19 +58,21 @@ __global__ void shflDownSum(T* a, int size) {
 template <typename T>
 __global__ void shflXorSum(T* a, int size) {
   T val = a[threadIdx.x];
-  for (int i = size/2; i > 0; i /= 2)
-    val += __shfl_xor(val, i, size);
+  auto all_threads = __activemask();
+  for (int i = size/2; i > 0; i /= 2) {
+    val += __shfl_xor_sync(all_threads, val, i, size);
+  }
   a[threadIdx.x] = val;
 }
 )"};
 
 template <typename T>
-void runTestShfl(int option) {
+void runTestShflSync(int option) {
   using namespace std;
   hiprtcProgram prog;
   hiprtcCreateProgram(&prog,      // prog
                       shfl,       // buffer
-                      "shfl.cu",  // name
+                      "shfl_sync.cu",  // name
                       0, nullptr, nullptr);
 
   string str;
@@ -85,8 +89,8 @@ void runTestShfl(int option) {
   }
 
   hiprtcAddNameExpression(prog, str.c_str());
-
-  hiprtcResult compileResult{hiprtcCompileProgram(prog, 0, 0)};
+  const char* options[] = { "-DHIP_ENABLE_WARP_SYNC_BUILTINS" };
+  hiprtcResult compileResult{hiprtcCompileProgram(prog, 1, options)};
   size_t logSize;
   HIPRTC_CHECK(hiprtcGetProgramLogSize(prog, &logSize));
   if (logSize) {
@@ -150,8 +154,8 @@ void runTestShfl(int option) {
 
 }
 
-TEST_CASE("Unit_hiprtc_half_shuffle") {
-  runTestShfl<__half>(1);
-  runTestShfl<__half>(2);
-  runTestShfl<__half>(3);
+TEST_CASE("Unit_hiprtc_half_shuffle_sync") {
+  runTestShflSync<__half>(1);
+  runTestShflSync<__half>(2);
+  runTestShflSync<__half>(3);
 }

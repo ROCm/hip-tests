@@ -170,6 +170,21 @@ static void initHipCtx(hipCtx_t* pcontext) {
 #define HIP_ARRAY hipArray_t
 #endif
 
+static inline int getWarpSize() {
+#if HT_NVIDIA
+  return 32;
+#elif HT_AMD
+  int device = -1;
+  int warpSize = -1;
+  HIP_CHECK(hipGetDevice(&device));
+  HIP_CHECK(hipDeviceGetAttribute(&warpSize, hipDeviceAttributeWarpSize, device));
+  return warpSize;
+#else
+  std::cout<<"Have to be either Nvidia or AMD platform, asserting"<<std::endl;
+  assert(false);
+#endif
+}
+
 static inline bool IsGfx11() {
 #if HT_NVIDIA
   return false;

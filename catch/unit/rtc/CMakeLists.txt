@@ -15,6 +15,7 @@ set(AMD_TEST_SRC
     hipRtcBfloat16.cc
     linker.cc
     shfl.cc
+    shfl_sync.cc
     stdheaders.cc
     hiprtc_MathConstants_HeaderTst.cc
     hiprtc_VectorTypes_HeaderTst.cc

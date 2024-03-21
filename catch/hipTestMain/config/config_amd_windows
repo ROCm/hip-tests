@@ -1435,6 +1435,8 @@
         "=== SWDEV-453453 : Below tests failed in stress test on 22/03/24 ===",
         "Unit_hipDeviceGetGraphMemAttribute_Functional",
         "Unit_hipDeviceGetGraphMemAttribute_Functional_Multi_Device",
+        "=== SWDEV-452308 : Windows failure, should be fixed for ROCm 6.3. ===",
+        "Unit_hipVoteSync_All",
     #endif
         "End of json"
     ]

@@ -11,6 +11,18 @@ if(HIP_PLATFORM MATCHES "amd")
     warp_shfl_xor.cc
     warp_shfl_up.cc
     warp_shfl_down.cc
+    hipShflUpDownTest.cc
+    hipShflTests.cc
+    # FIXME: The tests for sync intrinsics are temporarily disabled on CUDA
+    # because they depend on __match_any_sync, which is not available on older
+    # NVIDIA devices. (SWDEV-453145)
+    hipMatchSyncAllTests.cc
+    hipMatchSyncAnyTests.cc
+    hipShflSyncDownTests.cc
+    hipShflSyncUpTests.cc
+    hipShflSyncXorTests.cc
+    hipShflSyncTests.cc
+    hipVoteSyncTests.cc
   )
 endif()
 

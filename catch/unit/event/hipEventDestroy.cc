@@ -150,3 +150,8 @@ TEST_CASE("Unit_hipEventDestroy_Negative") {
   }
 }
 #endif
+
+/**
+* End doxygen group EventTest.
+* @}
+*/

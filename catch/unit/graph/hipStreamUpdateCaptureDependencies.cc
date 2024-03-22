@@ -469,3 +469,8 @@ TEST_CASE("Unit_hipStreamUpdateCaptureDependencies_Negative_Parameters") {
 
   HIP_CHECK(hipGraphDestroy(graph));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

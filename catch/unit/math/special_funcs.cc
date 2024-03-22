@@ -1115,3 +1115,8 @@ TEST_CASE("Unit_Device_jn_Accuracy_Limited_Positive") {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_Device_jn_jnf_Negative_RTC") { NegativeTestRTCWrapper<8>(kJn); }
+
+/**
+* End doxygen group MathTest.
+* @}
+*/

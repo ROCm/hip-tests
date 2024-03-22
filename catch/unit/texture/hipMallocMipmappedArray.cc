@@ -115,3 +115,8 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_Parameters") {
   }
 #endif
 }
+
+/**
+* End doxygen group TextureTest.
+* @}
+*/

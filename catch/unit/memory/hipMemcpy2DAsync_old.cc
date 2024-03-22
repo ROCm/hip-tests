@@ -560,3 +560,8 @@ TEST_CASE("Unit_hipMemcpy2DAsync_multiDevice_Basic_Size_Test") {
     }
   }
 }
+
+/**
+* End doxygen group MemcpyTest.
+* @}
+*/

@@ -74,3 +74,8 @@ TEST_CASE("Unit_kernel_chkConstantViaKernel") {
   HIP_CHECK(hipFree(Ad));
 }
 
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

@@ -100,3 +100,8 @@ TEST_CASE("Unit_kernel_LaunchBounds_Functional") {
   free(A_h);
   free(C_h);
 }
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

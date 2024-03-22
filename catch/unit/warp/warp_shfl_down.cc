@@ -119,3 +119,8 @@ TEMPLATE_TEST_CASE("Unit_Warp_Shfl_Down_Positive_Basic", "", int, unsigned int, 
     WarpShflDown<TestType>().run(true);
   }
 }
+
+/**
+* End doxygen group DeviceLanguageTest.
+* @}
+*/

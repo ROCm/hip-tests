@@ -167,3 +167,8 @@ TEST_CASE("Unit_hipApiDynamicLoad") {
   free(A_h);
   free(C_h);
 }
+
+/**
+* End doxygen group DynamicLoading.
+* @}
+*/

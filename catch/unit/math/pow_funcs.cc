@@ -453,3 +453,8 @@ TEMPLATE_TEST_CASE("Unit_Device_scalbln_Accuracy_Positive", "", float, double) {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_Device_scalbln_scalblnf_Negative_RTC") { NegativeTestRTCWrapper<8>(kScalbln); }
+
+/**
+* End doxygen group MathTest.
+* @}
+*/

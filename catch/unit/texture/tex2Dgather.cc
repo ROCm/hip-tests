@@ -102,3 +102,8 @@ TEMPLATE_TEST_CASE("Unit_tex2Dgather_Positive_ReadModeElementType", "", char, un
     REQUIRE(ref_val.w == fixture.out_alloc_h[i].w);
   }
 }
+
+/**
+* End doxygen group TextureTest.
+* @}
+*/

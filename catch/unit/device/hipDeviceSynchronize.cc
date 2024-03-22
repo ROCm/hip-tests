@@ -158,3 +158,8 @@ TEST_CASE("Unit_hipDeviceSynchronize_Functional") {
   HIP_CHECK(hipDeviceSynchronize());
   REQUIRE(NUM_ITERS == A[NUM_STREAMS - 1][0] - 1);
 }
+
+/**
+* End doxygen group DeviceTest.
+* @}
+*/

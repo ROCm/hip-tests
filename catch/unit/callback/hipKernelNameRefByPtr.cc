@@ -103,3 +103,8 @@ TEST_CASE("Unit_hipKernelNameRefByPtr_Negative_KernelNullptr") {
     REQUIRE(hipKernelNameRefByPtr(kernel_ptr, stream_guard.stream()) == nullptr);
   }
 }
+
+/**
+* End doxygen group CallbackTest.
+* @}
+*/

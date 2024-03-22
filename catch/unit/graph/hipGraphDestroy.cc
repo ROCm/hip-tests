@@ -63,3 +63,8 @@ TEST_CASE("Unit_hipGraphDestroy_Positive_Basic") {
 TEST_CASE("Unit_hipGraphDestroy_Negative_Parameters") {
   HIP_CHECK_ERROR(hipGraphDestroy(static_cast<hipGraph_t>(nullptr)), hipErrorInvalidValue);
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

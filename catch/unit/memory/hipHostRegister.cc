@@ -984,3 +984,8 @@ TEMPLATE_TEST_CASE("Unit_hipHostRegister_Negative", "", int, float, double) {
     HIP_CHECK_ERROR(hipHostRegister(hostPtr, 0, 0), hipErrorInvalidValue);
   }
 }
+
+/**
+* End doxygen group MemoryTest.
+* @}
+*/

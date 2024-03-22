@@ -104,3 +104,8 @@ __global__ void vectorADD(T __restrict__* A_d, T* B_d, T* C_d, size_t N) {
 TEST_CASE("Unit_hipLanguageExtensions") {
   REQUIRE(true);
 }
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

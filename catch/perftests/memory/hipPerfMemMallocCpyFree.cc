@@ -142,3 +142,8 @@ TEST_CASE("Perf_hipPerfMemMallocCpyFree_test") {
     REQUIRE(true == hipPerfMemMallocCpyFree_test());
   }
 }
+
+/**
+* End doxygen group perfMemoryTest.
+* @}
+*/

@@ -827,3 +827,8 @@ TEST_CASE("Unit_hipGraphExecUpdate_Functional_KernelFunction_Changed") {
   HIP_CHECK(hipGraphDestroy(graph2));
   HIP_CHECK(hipStreamDestroy(stream));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

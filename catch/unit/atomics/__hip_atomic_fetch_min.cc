@@ -185,3 +185,8 @@ TEMPLATE_TEST_CASE("Unit___hip_atomic_fetch_min_Positive_Workgroup_Scattered_Add
     }
   }
 }
+
+/**
+* End doxygen group AtomicsTest.
+* @}
+*/

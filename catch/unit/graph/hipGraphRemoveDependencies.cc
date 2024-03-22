@@ -494,3 +494,8 @@ TEST_CASE("Unit_hipGraphRemoveDependencies_Negative_Parameters") {
   HIP_CHECK(hipEventDestroy(event_end));
   HIP_CHECK(hipEventDestroy(event_start));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

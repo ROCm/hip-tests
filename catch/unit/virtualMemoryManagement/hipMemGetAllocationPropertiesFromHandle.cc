@@ -115,3 +115,8 @@ TEST_CASE("Unit_hipMemGetAllocationPropertiesFromHandle_Negative") {
 
   HIP_CHECK(hipMemRelease(handle));
 }
+
+/**
+* End doxygen group VirtualMemoryManagementTest.
+* @}
+*/

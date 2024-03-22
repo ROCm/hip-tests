@@ -348,3 +348,8 @@ TEMPLATE_TEST_CASE("Unit_Thread_Block_Sync_Positive_Basic", "", uint8_t, uint16_
   SECTION("Global memory") { ThreadBlockSyncTest<true, TestType>(); }
   SECTION("Shared memory") { ThreadBlockSyncTest<false, TestType>(); }
 }
+
+/**
+* End doxygen group DeviceLanguageTest.
+* @}
+*/

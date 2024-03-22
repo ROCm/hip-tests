@@ -235,3 +235,8 @@ TEST_CASE("Unit_hipStreamGetDevice_NullStream") {
   }
 }
 #endif
+
+/**
+* End doxygen group StreamTest.
+* @}
+*/

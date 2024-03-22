@@ -95,3 +95,8 @@ TEST_CASE("Unit_hipGetDeviceCount_HideDevices") {
 TEST_CASE("Print_Out_Device_Count") {
   std::cout << "Device Count: " << HipTest::getDeviceCount() << std::endl;
 }
+
+/**
+* End doxygen group DeviceTest.
+* @}
+*/

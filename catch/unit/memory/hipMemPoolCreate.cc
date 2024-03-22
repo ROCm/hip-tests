@@ -150,3 +150,8 @@ TEST_CASE("Unit_hipMemPoolCreate_Without_maxSize") {
   HIP_CHECK(hipMemPoolDestroy(mem_pool));
   HIP_CHECK(hipStreamDestroy(stream));
 }
+
+/**
+* End doxygen group StreamOTest.
+* @}
+*/

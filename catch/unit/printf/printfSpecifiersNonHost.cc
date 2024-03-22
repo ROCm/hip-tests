@@ -114,3 +114,8 @@ x
   REQUIRE(0 == proc.run());
   REQUIRE(proc.getOutput() == reference);
 }
+
+/**
+* End doxygen group PrintfTest.
+* @}
+*/

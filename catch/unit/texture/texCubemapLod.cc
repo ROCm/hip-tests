@@ -201,3 +201,8 @@ TEMPLATE_TEST_CASE("Unit_texCubemapLod_Positive_ReadModeNormalizedFloat", "", ch
     }
   }
 }
+
+/**
+* End doxygen group TextureTest.
+* @}
+*/

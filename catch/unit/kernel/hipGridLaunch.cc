@@ -115,3 +115,8 @@ TEST_CASE("Unit_hipGridLaunch") {
   }
 #endif
 }
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

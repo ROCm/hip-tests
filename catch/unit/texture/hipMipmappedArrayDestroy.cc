@@ -69,3 +69,8 @@ TEST_CASE("Unit_hipMipmappedArrayDestroy_Negative_Parameters") {
     HIP_CHECK_ERROR(hipMipmappedArrayDestroy(array), hipErrorContextIsDestroyed);
   }
 }
+
+/**
+* End doxygen group TextureTest.
+* @}
+*/

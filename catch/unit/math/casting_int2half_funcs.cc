@@ -446,3 +446,8 @@ TEST_CASE("Unit_Device___ushort_as_half_Accuracy_Positive") {
   Float16 (*ref)(unsigned short) = type2_as_type1_ref<Float16, unsigned short>;
   CastIntBruteForceTest(__ushort_as_half_kernel, ref, EqValidatorBuilderFactory<Float16>());
 }
+
+/**
+* End doxygen group MathTest.
+* @}
+*/

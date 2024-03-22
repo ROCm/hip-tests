@@ -99,3 +99,8 @@ TEST_CASE("Unit_kernel_chkGlobalArrAndGlobalVaribleViaKernelFn") {
   runTestConstantGlobalVar();
   runTestGlobalArray();
 }
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

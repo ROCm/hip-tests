@@ -429,3 +429,8 @@ TEST_CASE("Perf_hipPerfMemset_test") {
     async = true;
   }
 }
+
+/**
+* End doxygen group perfMemoryTest.
+* @}
+*/

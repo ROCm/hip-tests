@@ -196,3 +196,8 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_Negative_Parameters") {
   }
 #endif
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

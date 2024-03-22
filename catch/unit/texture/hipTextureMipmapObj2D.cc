@@ -502,3 +502,8 @@ TEMPLATE_TEST_CASE("Unit_hipTextureMipmapObj2D_Check - hipReadModeElementType fl
                          hipAddressModeBorder>(67, 131, -0.3, -0.67);
   }
 }
+
+/**
+* End doxygen group TextureTest.
+* @}
+*/

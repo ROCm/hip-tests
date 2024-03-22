@@ -292,3 +292,8 @@ TEST_CASE("Unit_hipMemcpyDeviceToDeviceNoCU_Memcpy_Kernel_InParallel") {
   HIP_CHECK(hipFree(Bd));
   HIP_CHECK(hipFree(Cd));
 }
+
+/**
+* End doxygen group MemoryTest.
+* @}
+*/

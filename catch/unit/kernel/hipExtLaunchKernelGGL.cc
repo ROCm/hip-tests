@@ -131,3 +131,8 @@ TEST_CASE("Unit_hipExtLaunchKernelGGL") {
     testMixData();
   }
 }
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

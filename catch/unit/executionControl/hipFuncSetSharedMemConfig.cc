@@ -104,3 +104,8 @@ TEST_CASE("Unit_hipFuncSetSharedMemConfig_Negative_Not_Supported") {
       hipFuncSetSharedMemConfig(reinterpret_cast<void*>(kernel), hipSharedMemBankSizeDefault),
       hipErrorNotSupported);
 }
+
+/**
+* End doxygen group ExecutionTest.
+* @}
+*/

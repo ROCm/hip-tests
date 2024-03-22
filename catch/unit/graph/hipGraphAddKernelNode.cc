@@ -464,3 +464,8 @@ TEST_CASE("Unit_hipGraphAddKernelNode_moduleLoadKernelFn_streamCapture") {
 }
 #endif
 
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

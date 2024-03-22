@@ -235,3 +235,8 @@ TEST_CASE("Unit_Rtc_HipComplex_header") {
   delete[] compiler_options;
   delete[] result_h;
 }
+
+/**
+* End doxygen group hiprtcHeadersTest.
+* @}
+*/

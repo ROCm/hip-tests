@@ -130,3 +130,8 @@ TEMPLATE_TEST_CASE("Unit___hip_atomic_fetch_add_Positive_Workgroup", "", int, un
     }
   }
 }
+
+/**
+* End doxygen group AtomicsTest.
+* @}
+*/

@@ -949,3 +949,8 @@ TEST_CASE("Unit_hipStreamEndCapture_later_and_addEmptyNode") {
   HIP_CHECK(hipStreamDestroy(stream));
 }
 
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

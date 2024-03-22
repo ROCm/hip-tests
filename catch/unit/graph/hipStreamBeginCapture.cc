@@ -1478,3 +1478,8 @@ TEST_CASE("Unit_hipStreamBeginCapture_StreamSync_OngoingCapture_MThread") {
     HIP_CHECK(hipGraphDestroy(graph));
   }
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

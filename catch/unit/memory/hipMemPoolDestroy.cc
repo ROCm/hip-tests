@@ -76,3 +76,8 @@ TEST_CASE("Unit_hipMemPoolDestroy_Negative_Parameter") {
     HIP_CHECK_ERROR(hipMemPoolDestroy(default_mem_pool), hipErrorInvalidValue);
   }
 }
+
+/**
+* End doxygen group StreamOTest.
+* @}
+*/

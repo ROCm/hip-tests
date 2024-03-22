@@ -651,3 +651,8 @@ TEST_CASE("Unit_Multi_Grid_Group_Positive_Sync") {
   };
   ArrayAllOf(global_arr.ptr(), num_devices, f);
 }
+
+/**
+* End doxygen group DeviceLanguageTest.
+* @}
+*/

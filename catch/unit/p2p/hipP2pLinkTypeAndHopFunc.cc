@@ -349,3 +349,8 @@ TEST_CASE("Unit_hipP2pLinkTypeAndHopFunc") {
     printf("This test is skipped due to non linux environment.\n");
 #endif
 }
+
+/**
+* End doxygen group p2pTest.
+* @}
+*/

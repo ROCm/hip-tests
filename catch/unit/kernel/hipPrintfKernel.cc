@@ -65,3 +65,8 @@ TEST_CASE("Unit_kernel_ChkPrintf") {
     delete [] data;
   }
 }
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

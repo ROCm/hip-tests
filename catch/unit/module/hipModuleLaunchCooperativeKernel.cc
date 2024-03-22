@@ -209,3 +209,8 @@ TEST_CASE("Unit_hipModuleLaunchCooperativeKernel_Negative_Parameters") {
   }
 #endif
 }
+
+/**
+* End doxygen group ModuleTest.
+* @}
+*/

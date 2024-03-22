@@ -289,3 +289,8 @@ TEST_CASE("Unit_hipGraphAddMemcpyNode_Negative_Parameters") {
                   make_hipPos(0, 0, 0), extent, hipMemcpyDeviceToDevice);
   }
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

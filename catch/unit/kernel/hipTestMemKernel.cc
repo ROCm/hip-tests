@@ -246,3 +246,8 @@ TEST_CASE("Unit_kernel_MemoryOperationsViaKernels") {
     HIP_CHECK(hipFree(Cd));
   }
 }
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

@@ -79,3 +79,8 @@ TEST_CASE("Performance_hipMemsetAsync") {
                                         LinearAllocs::hipMallocManaged);
   RunBenchmark(allocation_type, size);
 }
+
+/**
+* End doxygen group PerformanceTest.
+* @}
+*/

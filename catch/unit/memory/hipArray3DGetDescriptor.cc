@@ -86,3 +86,8 @@ TEST_CASE("Unit_hipArray3DGetDescriptor_Negative_Parameters") {
     HIP_CHECK_ERROR(hipArray3DGetDescriptor(&desc, array.ptr()), hipErrorInvalidHandle);
   }
 }
+
+/**
+* End doxygen group MemoryTest.
+* @}
+*/

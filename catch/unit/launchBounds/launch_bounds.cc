@@ -171,3 +171,8 @@ TEST_CASE("Unit_Kernel_Launch_bounds_Negative_Parameters_RTC") {
   REQUIRE(error_count > 0);
   HIPRTC_CHECK_ERROR(result, HIPRTC_ERROR_COMPILATION);
 }
+
+/**
+* End doxygen group DeviceLanguageTest.
+* @}
+*/

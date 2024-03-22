@@ -175,3 +175,8 @@ TEST_CASE("Unit_hipEventRecord_Negative") {
     }
   }
 }
+
+/**
+* End doxygen group EventTest.
+* @}
+*/

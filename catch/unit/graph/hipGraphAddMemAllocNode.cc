@@ -456,3 +456,8 @@ TEST_CASE("Unit_hipGraphAddMemAllocNode_Positive_FreeSeparateGraph") {
   HIP_CHECK(hipGraphExecDestroy(graph_exec1));
   HIP_CHECK(hipGraphExecDestroy(graph_exec2));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

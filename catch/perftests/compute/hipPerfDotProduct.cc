@@ -365,3 +365,8 @@ TEST_CASE("Perf_hipPerfDotProduct") {
   HIP_CHECK(hipFree(workspace));
   }
 }
+
+/**
+* End doxygen group perfComputeTest.
+* @}
+*/

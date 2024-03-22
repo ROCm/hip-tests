@@ -214,3 +214,8 @@ TEST_CASE("Unit_hipTextureMipmapRef2D_Negative_Parameters") {
 #endif
 }
 #endif
+
+/**
+* End doxygen group TextureTest.
+* @}
+*/

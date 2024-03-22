@@ -205,3 +205,8 @@ void runTests(int64_t numElements) {
 TEST_CASE("Unit_hipEvent") {
   runTests(10000000);
 }
+
+/**
+* End doxygen group EventTest.
+* @}
+*/

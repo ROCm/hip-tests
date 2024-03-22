@@ -107,3 +107,8 @@ TEMPLATE_TEST_CASE("Unit_atomicAnd_system_Positive_Peer_GPUs_Scattered_Addresses
     }
   }
 }
+
+/**
+* End doxygen group AtomicsTest.
+* @}
+*/

@@ -82,3 +82,8 @@ TEST_CASE("Unit_hipGraphMemsetNodeGetParams_Negative_Parameters") {
   }
 #endif
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

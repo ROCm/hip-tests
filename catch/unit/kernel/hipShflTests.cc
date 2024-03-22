@@ -175,3 +175,8 @@ TEST_CASE("Unit_hipShflTests") {
   SECTION("run test for unsigned int") { runTest<unsigned int>(); }
   SECTION("run test for uint64_t") { runTest<uint64_t>(); }
 }
+
+/**
+* End doxygen group ShflTest.
+* @}
+*/

@@ -73,3 +73,8 @@ TEST_CASE("Performance_hipMemset3DAsync") {
   const auto width = GENERATE(4_KB, 4_MB, 16_MB);
   RunBenchmark(width, 16, 4);
 }
+
+/**
+* End doxygen group PerformanceTest.
+* @}
+*/

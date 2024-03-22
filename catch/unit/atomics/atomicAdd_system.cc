@@ -175,3 +175,8 @@ TEMPLATE_TEST_CASE("Unit_atomicAdd_system_Positive_Host_And_Peer_GPUs", "", int,
     }
   }
 }
+
+/**
+* End doxygen group AtomicsTest.
+* @}
+*/

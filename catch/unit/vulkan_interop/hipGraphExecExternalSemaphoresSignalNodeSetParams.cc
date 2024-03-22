@@ -192,3 +192,8 @@ TEST_CASE("Unit_hipGraphExecExternalSemaphoresSignalNodeSetParams_Vulkan_Negativ
   HIP_CHECK(hipGraphExecDestroy(graph_exec));
   HIP_CHECK(hipGraphDestroy(graph));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

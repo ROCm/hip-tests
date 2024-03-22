@@ -69,3 +69,8 @@ TEST_CASE("Unit_hipInit_Negative") {
   HIP_CHECK_ERROR(hipInit(invalid_flag), hipErrorInvalidValue);
 }
 
+
+/**
+* End doxygen group DriverTest.
+* @}
+*/

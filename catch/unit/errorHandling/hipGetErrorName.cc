@@ -79,3 +79,8 @@ TEST_CASE("Unit_hipGetErrorName_Negative_Parameters") {
   REQUIRE_THAT(error_string, Catch::Equals("hipErrorUnknown"));
 #endif
 }
+
+/**
+* End doxygen group ErrorTest.
+* @}
+*/

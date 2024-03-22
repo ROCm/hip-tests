@@ -173,3 +173,8 @@ TEST_CASE("Unit_hipDeviceGetName_PartialFill") {
   REQUIRE(*strEnd == 0);
   REQUIRE(std::all_of(strEnd+1, end, [](char& c) { return c == fillValue; }));
 }
+
+/**
+* End doxygen group DriverTest.
+* @}
+*/

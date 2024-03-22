@@ -152,3 +152,8 @@ TEST_CASE("Perf_hipPerfDevMemReadSpeed_test") {
     REQUIRE(true == hipPerfDevMemReadSpeed_test());
   }
 }
+
+/**
+* End doxygen group perfMemoryTest.
+* @}
+*/

@@ -595,3 +595,8 @@ TEST_CASE("Unit_Device___double_as_longlong_Positive") {
 TEST_CASE("Unit_Device___double_as_longlong_Negative_RTC") {
   NegativeTestRTCWrapper<3>(kDoubleAsLonglong);
 }
+
+/**
+* End doxygen group MathTest.
+* @}
+*/

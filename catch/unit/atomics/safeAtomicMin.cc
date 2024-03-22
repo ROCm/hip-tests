@@ -173,3 +173,8 @@ TEMPLATE_TEST_CASE("Unit_safeAtomicMin_Positive_Multi_Kernel_Scattered_Addresses
     }
   }
 }
+
+/**
+* End doxygen group AtomicsTest.
+* @}
+*/

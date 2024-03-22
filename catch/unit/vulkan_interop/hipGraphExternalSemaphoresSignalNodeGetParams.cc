@@ -94,3 +94,8 @@ TEST_CASE("Unit_hipGraphExternalSemaphoresSignalNodeGetParams_Negative_Parameter
   }
 #endif
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

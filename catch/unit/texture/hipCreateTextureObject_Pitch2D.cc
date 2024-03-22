@@ -250,3 +250,8 @@ TEST_CASE("Unit_hipCreateTextureObject_Pitch2DResource") {
   HIP_CHECK(hipFree(devPtrA));
 }
 
+
+/**
+* End doxygen group TextureTest.
+* @}
+*/

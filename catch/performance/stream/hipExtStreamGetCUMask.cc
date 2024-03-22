@@ -65,3 +65,8 @@ static void RunBenchmark() {
 TEST_CASE("Performance_hipExtStreamGetCUMask") {
   RunBenchmark();
 }
+
+/**
+* End doxygen group PerformanceTest.
+* @}
+*/

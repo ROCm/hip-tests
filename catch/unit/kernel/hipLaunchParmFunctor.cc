@@ -457,3 +457,8 @@ TEST_CASE("Unit_hipLaunchParmFunctor") {
     FunctorTests.TestForFunctorContainInStructObj();
   }
 }
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

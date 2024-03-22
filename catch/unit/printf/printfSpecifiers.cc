@@ -175,3 +175,8 @@ TEST_CASE("Unit_Printf_Negative_Parameters_RTC") {
   HIPRTC_CHECK_ERROR(result, HIPRTC_ERROR_COMPILATION);
   REQUIRE(error_count == expected_error_count);
 }
+
+/**
+* End doxygen group PrintfTest.
+* @}
+*/

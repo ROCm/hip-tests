@@ -135,3 +135,8 @@ TEST_CASE("Unit_hipIpcGetMemHandle_Negative_Out_Of_Bound_Pointer") {
                   hipErrorInvalidValue);
   HIP_CHECK(hipFree(reinterpret_cast<void*>(ptr)));
 }
+
+/**
+* End doxygen group DeviceTest.
+* @}
+*/

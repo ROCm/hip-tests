@@ -256,3 +256,8 @@ TEST_CASE("Perf_hipPerfBufferCopySpeed_test") {
     REQUIRE(true == hipPerfBufferCopySpeed_test(1));
   }
 }
+
+/**
+* End doxygen group perfMemoryTest.
+* @}
+*/

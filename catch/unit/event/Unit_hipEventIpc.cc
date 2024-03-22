@@ -122,3 +122,8 @@ TEST_CASE("Unit_hipEventIpc") {
     HipTest::checkVectorADD(A_h, B_h, C_h, N, true);
 
 }
+
+/**
+* End doxygen group EventTest.
+* @}
+*/

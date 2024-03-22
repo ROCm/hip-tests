@@ -835,3 +835,8 @@ TEST_CASE("Unit_hipMemcpy3DAsync_Basic_Size_Test") {
     }
   }
 }
+
+/**
+* End doxygen group MemoryTest.
+* @}
+*/

@@ -115,3 +115,8 @@ TEST_CASE("Unit_hipDeviceSetGraphMemAttribute_Negative_Parameters") {
                     hipErrorInvalidValue);
   }
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

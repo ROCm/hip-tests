@@ -558,3 +558,8 @@ TEST_CASE("Unit_hipPointerGetAttributes_GpuIter_Unregistered_Memory") {
     free(ptr3);
   }
 }
+
+/**
+* End doxygen group MemoryTest.
+* @}
+*/

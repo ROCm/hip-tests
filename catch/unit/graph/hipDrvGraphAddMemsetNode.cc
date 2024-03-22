@@ -670,3 +670,8 @@ TEST_CASE("Unit_hipDrvGraphAddMemsetNode_hipMallocManaged") {
   HIP_CHECK(hipCtxPopCurrent(&context));
   HIP_CHECK(hipCtxDestroy(context));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

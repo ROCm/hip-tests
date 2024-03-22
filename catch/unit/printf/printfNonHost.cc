@@ -205,3 +205,8 @@ TEST_CASE("Unit_NonHost_Printf_BufferAvailability") {
   HIP_CHECK(hipFree(count_d));
 }
 
+
+/**
+* End doxygen group PrintfTest.
+* @}
+*/

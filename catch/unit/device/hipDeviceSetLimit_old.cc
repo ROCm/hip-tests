@@ -101,3 +101,8 @@ TEST_CASE("Unit_hipDeviceSetLimit_SetGet") {
     static_cast<hipLimit_t>(0xffff), value/2));
   }
 }
+
+/**
+* End doxygen group DeviceTest.
+* @}
+*/

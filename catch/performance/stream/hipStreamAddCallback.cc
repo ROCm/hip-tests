@@ -59,3 +59,8 @@ static void RunBenchmark() {
 TEST_CASE("Performance_hipStreamAddCallback") {
   RunBenchmark();
 }
+
+/**
+* End doxygen group PerformanceTest.
+* @}
+*/

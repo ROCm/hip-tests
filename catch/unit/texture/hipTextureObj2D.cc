@@ -124,3 +124,8 @@ TEST_CASE("Unit_hipTextureObj2D_Check") {
   HIP_CHECK(hipFreeArray(hipArray));
   free(hData);
 }
+
+/**
+* End doxygen group TextureTest.
+* @}
+*/

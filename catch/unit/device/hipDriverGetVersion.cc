@@ -67,3 +67,8 @@ TEST_CASE("Unit_hipDriverGetVersion_Negative") {
   HIP_CHECK_ERROR(hipDriverGetVersion(nullptr), hipErrorInvalidValue);
 }
 
+
+/**
+* End doxygen group DriverTest.
+* @}
+*/

@@ -642,3 +642,8 @@ TEST_CASE("Unit_hipDrvMemcpy3DAsync_multiDevice_Basic_Size_Test") {
     }
   }
 }
+
+/**
+* End doxygen group MemoryTest.
+* @}
+*/

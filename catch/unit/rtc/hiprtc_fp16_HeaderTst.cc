@@ -353,3 +353,8 @@ TEST_CASE("Unit_Rtc_fp16_header") {
   delete [] result_h;
   REQUIRE(true);
 }
+
+/**
+* End doxygen group hiprtcHeaders.
+* @}
+*/

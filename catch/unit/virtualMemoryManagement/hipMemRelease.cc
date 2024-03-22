@@ -44,3 +44,8 @@ THE SOFTWARE.
 TEST_CASE("Unit_hipMemRelease_negative") {
   SECTION("Nullptr to handle") { REQUIRE(hipMemRelease(nullptr) == hipErrorInvalidValue); }
 }
+
+/**
+* End doxygen group VirtualMemoryManagementTest.
+* @}
+*/

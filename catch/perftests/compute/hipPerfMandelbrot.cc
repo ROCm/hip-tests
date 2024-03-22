@@ -657,3 +657,8 @@ TEST_CASE("Perf_hipPerfMandelbrot") {
     mandelbrotCompute.printResults();
   }
 }
+
+/**
+* End doxygen group perfComputeTest.
+* @}
+*/

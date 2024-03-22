@@ -180,3 +180,8 @@ TEST_CASE("Unit_hipLaunchHostFunc_Positive_Thread") {
   HIP_CHECK(hipGraphExecDestroy(graphExec));
   HIP_CHECK(hipGraphDestroy(graph));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

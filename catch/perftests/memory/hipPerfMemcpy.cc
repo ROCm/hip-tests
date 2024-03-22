@@ -254,3 +254,8 @@ TEST_CASE("Perf_hipPerfMemcpy_test") {
     }
   }
 }
+
+/**
+* End doxygen group perfMemoryTest.
+* @}
+*/

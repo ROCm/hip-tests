@@ -1012,3 +1012,8 @@ TEST_CASE("Unit_hipLaunchParm") {
   HIP_CHECK(hipHostFree(result_h));
   HIP_CHECK(hipFree(result_d));
 }
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

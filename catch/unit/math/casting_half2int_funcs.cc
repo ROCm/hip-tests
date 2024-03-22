@@ -438,3 +438,8 @@ TEST_CASE("Unit_Device___half_as_ushort_Accuracy_Positive") {
   CastUnaryHalfPrecisionTest(__half_as_ushort_kernel, ref,
                              EqValidatorBuilderFactory<unsigned short>());
 }
+
+/**
+* End doxygen group MathTest.
+* @}
+*/

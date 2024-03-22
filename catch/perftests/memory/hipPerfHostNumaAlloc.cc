@@ -188,3 +188,8 @@ TEST_CASE("Perf_hipPerfHostNumaAlloc_test") {
                           hipHostMallocMapped | hipHostMallocNumaUser,
                "Testing hipHostMallocMapped | hipHostMallocNumaUser......."));
 }
+
+/**
+* End doxygen group perfMemoryTest.
+* @}
+*/

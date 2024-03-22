@@ -417,3 +417,8 @@ TEST_CASE("Unit_Device___half22float2_Accuracy_Positive") {
   UnaryHalfPrecisionTest(__half22float2_kernel, __half22float2_ref,
                          Float2ValidatorBuilderFactory(EqValidatorBuilderFactory<float>()));
 }
+
+/**
+* End doxygen group MathTest.
+* @}
+*/

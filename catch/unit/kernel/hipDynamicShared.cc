@@ -162,3 +162,8 @@ TEST_CASE("Unit_hipDynamicShared") {
     testExternShared<double>(65536, 64);
   }
 }
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

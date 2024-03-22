@@ -338,3 +338,8 @@ TEMPLATE_TEST_CASE("Unit_surfCubemapLayered_Positive_ReadWrite", "", char, uchar
   const int height = GENERATE(131, 263);
   runTestRW<TestType>(width, height);
 }
+
+/**
+* End doxygen group SurfaceTest.
+* @}
+*/

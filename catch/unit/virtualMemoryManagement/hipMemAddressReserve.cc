@@ -148,3 +148,8 @@ TEST_CASE("Unit_hipMemAddressReserve_Negative") {
     REQUIRE(hipMemAddressReserve(&ptrA, (size_mem - 1), 0, 0, 0) == hipErrorMemoryAllocation);
   }
 }
+
+/**
+* End doxygen group VirtualMemoryManagementTest.
+* @}
+*/

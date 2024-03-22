@@ -260,3 +260,8 @@ TEST_CASE("Perf_hipPerfSharedMemReadSpeed_test") {
     REQUIRE(true == hipPerfSharedMemReadSpeed_test());
   }
 }
+
+/**
+* End doxygen group perfMemoryTest.
+* @}
+*/

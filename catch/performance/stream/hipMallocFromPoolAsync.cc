@@ -80,3 +80,8 @@ TEST_CASE("Performance_hipMallocFromPoolAsync") {
   size_t array_size = GENERATE(4_KB, 4_MB, 16_MB);
   RunBenchmark(array_size);
 }
+
+/**
+* End doxygen group PerformanceTest.
+* @}
+*/

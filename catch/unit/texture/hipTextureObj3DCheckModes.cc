@@ -220,3 +220,8 @@ TEST_CASE("Unit_hipTextureObj3DCheckModes") {
     runTest<hipAddressModeBorder, hipFilterModeLinear, true>(256, 256, 256, 12.5, 0.01, -9.9);
   }
 }
+
+/**
+* End doxygen group TextureTest.
+* @}
+*/

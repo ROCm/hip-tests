@@ -118,3 +118,8 @@ TEST_CASE("Unit_Warp_Ballot_Positive_Basic") {
     WarpBallot().run(true);
   }
 }
+
+/**
+* End doxygen group DeviceLanguageTest.
+* @}
+*/

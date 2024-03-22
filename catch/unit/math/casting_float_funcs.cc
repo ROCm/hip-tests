@@ -438,3 +438,8 @@ TEST_CASE("Unit_Device___float_as_uint_Positive") {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_Device___float_as_uint_Negative_RTC") { NegativeTestRTCWrapper<3>(kFloatAsUint); }
+
+/**
+* End doxygen group MathTest.
+* @}
+*/

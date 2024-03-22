@@ -147,3 +147,8 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_Negative_Parameters") {
                     hipErrorOutOfMemory);
   }
 }
+
+/**
+* End doxygen group StreamOTest.
+* @}
+*/

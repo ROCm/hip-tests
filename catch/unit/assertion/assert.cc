@@ -122,3 +122,8 @@ TEST_CASE("Unit_Assert_Positive_Basic_KernelFail") {
   REQUIRE(abort_raised_flag == 0);
 #endif
 }
+
+/**
+* End doxygen group DeviceLanguageTest.
+* @}
+*/

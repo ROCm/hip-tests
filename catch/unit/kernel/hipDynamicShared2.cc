@@ -87,3 +87,8 @@ TEST_CASE("Unit_hipDynamicShared2") {
   delete[] A;
   delete[] B;
 }
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

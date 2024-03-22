@@ -355,3 +355,8 @@ TEST_CASE("Unit_VectorOperators_Negative_Parameters_RTC") {
   VectorTypesRTCWrapper<96>(kCalculateAssignLongLong);
 }
 #endif  // HT_AMD
+
+/**
+* End doxygen group VectorTypeTest.
+* @}
+*/

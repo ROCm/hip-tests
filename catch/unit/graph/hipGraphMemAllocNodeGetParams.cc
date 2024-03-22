@@ -428,3 +428,8 @@ TEST_CASE("Unit_hipGraphMem_Alloc_Free_NodeGetParams_Negative") {
   HIP_CHECK(hipStreamDestroy(stream));
   HIP_CHECK(hipDeviceGraphMemTrim(0));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

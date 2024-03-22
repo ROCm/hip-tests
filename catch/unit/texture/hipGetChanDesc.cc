@@ -95,3 +95,8 @@ TEST_CASE("Unit_hipGetChannelDesc_Negative_Parameters") {
 
   HIP_CHECK(hipFreeArray(hip_array));
 }
+
+/**
+* End doxygen group TextureTest.
+* @}
+*/

@@ -163,3 +163,8 @@ TEST_CASE("Unit_hipMemPoolTrimTo_Positive_Basic") {
 
   HIP_CHECK(hipFreeAsync(reinterpret_cast<void*>(alloc_mem2), stream.stream()));
 }
+
+/**
+* End doxygen group StreamOTest.
+* @}
+*/

@@ -660,3 +660,8 @@ TEST_CASE("Unit_hipDrvGraphAddMemcpyNode_Negative_Parameters") {
   HIP_CHECK(hipCtxPopCurrent(&context));
   HIP_CHECK(hipCtxDestroy(context));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

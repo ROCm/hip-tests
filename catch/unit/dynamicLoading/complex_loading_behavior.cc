@@ -145,3 +145,8 @@ TEST_CASE("Unit_dynamic_loading_device_kernels_from_library") {
 
   REQUIRE(testResult == true);
 }
+
+/**
+* End doxygen group DynamicLoading.
+* @}
+*/

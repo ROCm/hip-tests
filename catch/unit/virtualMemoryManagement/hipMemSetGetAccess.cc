@@ -1490,3 +1490,8 @@ TEST_CASE("Unit_hipMemSetAccess_negative") {
   HIP_CHECK(hipMemAddressFree(ptrA, size_mem));
   HIP_CHECK(hipMemRelease(handle));
 }
+
+/**
+* End doxygen group VirtualMemoryManagementTest.
+* @}
+*/

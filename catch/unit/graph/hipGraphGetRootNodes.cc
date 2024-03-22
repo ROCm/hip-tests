@@ -265,3 +265,8 @@ TEST_CASE("Unit_hipGraphGetRootNodes_Negative_Parameters") {
   HIP_CHECK(hipEventDestroy(event_start));
   free(nodes);
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

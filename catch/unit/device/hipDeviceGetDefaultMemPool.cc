@@ -91,3 +91,8 @@ TEST_CASE("Unit_hipDeviceGetDefaultMemPool_Negative_Parameters") {
                     hipErrorInvalidDevice);
   }
 }
+
+/**
+* End doxygen group DeviceTest.
+* @}
+*/

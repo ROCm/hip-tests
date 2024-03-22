@@ -159,3 +159,8 @@ TEST_CASE("Unit_hipGraphMemcpyNodeSetParamsToSymbol_Negative_Parameters") {
 
   HIP_CHECK(hipGraphDestroy(graph));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

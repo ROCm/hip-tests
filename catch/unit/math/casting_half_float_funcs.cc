@@ -245,3 +245,8 @@ TEST_CASE("Unit_Device___half2float_Accuracy_Positive") {
   float (*ref)(Float16) = __half2float_ref;
   UnaryHalfPrecisionTest(__half2float_kernel, ref, EqValidatorBuilderFactory<float>());
 }
+
+/**
+* End doxygen group MathTest.
+* @}
+*/

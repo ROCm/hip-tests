@@ -543,3 +543,8 @@ TEST_CASE("Unit_hipArrayGetDescriptor_Negative_Parameters") {
 
   static_cast<void>(hipArrayDestroy(ptr));
 }
+
+/**
+* End doxygen group MemoryTest.
+* @}
+*/

@@ -72,3 +72,8 @@ TEST_CASE("Performance_hipStreamGetPriority") {
   Streams stream_type = GENERATE(Streams::nullstream, Streams::created);
   RunBenchmark(stream_type);
 }
+
+/**
+* End doxygen group PerformanceTest.
+* @}
+*/

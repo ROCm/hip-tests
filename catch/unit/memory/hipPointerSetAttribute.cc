@@ -106,3 +106,8 @@ TEST_CASE("Unit_hipPointerSetAttribute_Negative_Parameters") {
                     hipErrorInvalidDevicePointer);
   }
 }
+
+/**
+* End doxygen group MemoryTest.
+* @}
+*/

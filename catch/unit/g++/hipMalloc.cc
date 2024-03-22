@@ -47,3 +47,8 @@ TEST_CASE("Unit_hipMalloc_gpptest") {
   int result = MallocFunc();
   REQUIRE(result == 1);
 }
+
+/**
+* End doxygen group MemoryTest.
+* @}
+*/

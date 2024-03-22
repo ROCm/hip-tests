@@ -443,3 +443,8 @@ TEST_CASE("Unit_hipMemCreate_Negative") {
     REQUIRE(hipMemCreate(&handle, granularity, &prop, 0) == hipErrorInvalidValue);
   }
 }
+
+/**
+* End doxygen group VirtualMemoryManagementTest.
+* @}
+*/

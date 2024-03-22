@@ -78,3 +78,8 @@ TEST_CASE("Performance_hipMemsetD8") {
                                         LinearAllocs::hipMallocManaged);
   RunBenchmark(allocation_type, size);
 }
+
+/**
+* End doxygen group PerformanceTest.
+* @}
+*/

@@ -78,3 +78,8 @@ TEST_CASE("Performance_hipMemPoolImportFromShareableHandle") {
   }
   RunBenchmark();
 }
+
+/**
+* End doxygen group PerformanceTest.
+* @}
+*/

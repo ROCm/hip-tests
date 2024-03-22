@@ -602,3 +602,8 @@ TEMPLATE_TEST_CASE("Unit_Device_rnorm_Sanity_Positive", "", float, double) {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_Device_rnorm_rnormf_Negative_RTC") { NegativeTestRTCWrapper<18>(kRnorm); }
+
+/**
+* End doxygen group MathTest.
+* @}
+*/

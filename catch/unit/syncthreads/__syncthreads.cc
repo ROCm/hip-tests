@@ -57,3 +57,8 @@ TEST_CASE("Unit___syncthreads_Positive_Basic") {
     REQUIRE(out_alloc.host_ptr()[i] == kBlockSize * (kBlockSize + 1) / 2);
   }
 }
+
+/**
+* End doxygen group SyncthreadsTest.
+* @}
+*/

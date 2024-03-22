@@ -259,3 +259,8 @@ TEST_CASE("Unit_dim3_XYZ_Positive_Host") {
   REQUIRE(vector.y == value_y);
   REQUIRE(vector.z == value_z);
 }
+
+/**
+* End doxygen group VectorTypeTest.
+* @}
+*/

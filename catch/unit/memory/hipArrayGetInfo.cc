@@ -92,3 +92,8 @@ TEST_CASE("Unit_hipArrayGetInfo_Negative_Parameters") {
     HIP_CHECK_ERROR(hipArrayGetInfo(&desc, &extent, &flags, array.ptr()), hipErrorInvalidHandle);
   }
 }
+
+/**
+* End doxygen group MemoryTest.
+* @}
+*/

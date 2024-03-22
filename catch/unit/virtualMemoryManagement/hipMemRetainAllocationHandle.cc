@@ -139,3 +139,8 @@ TEST_CASE("Unit_hipMemRetainAllocationHandle_NegTst") {
   }
   HIP_CHECK(hipMemAddressFree(ptrA, size_mem));
 }
+
+/**
+* End doxygen group VirtualMemoryManagementTest.
+* @}
+*/

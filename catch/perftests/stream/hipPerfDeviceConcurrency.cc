@@ -267,3 +267,8 @@ TEST_CASE("Perf_hipPerfDeviceConcurrency") {
   // Time for kernel on all available devices
   REQUIRE(true == deviceConcurrency.run(++testCase, nGpu));
 }
+
+/**
+* End doxygen group perfStreamTest.
+* @}
+*/

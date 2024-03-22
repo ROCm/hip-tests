@@ -108,3 +108,8 @@ TEST_CASE("Unit_hipMemMapArrayAsync_Positive_Basic") {
 
   HIP_CHECK(hipMipmappedArrayDestroy(array));
 }
+
+/**
+* End doxygen group VirtualMemoryManagementTest.
+* @}
+*/

@@ -95,3 +95,8 @@ TEST_CASE("Unit_hipGraphExecDestroy_Positive_Basic") {
   HIP_CHECK(hipGraphExecDestroy(graphExec));
   HIP_CHECK(hipStreamDestroy(streamForGraph));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

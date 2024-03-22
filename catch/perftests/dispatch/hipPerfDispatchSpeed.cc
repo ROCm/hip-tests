@@ -194,3 +194,8 @@ TEST_CASE("Perf_hipPerfDispatchSpeed") {
   }
   HIP_CHECK(hipFree(srcBuffer));
 }
+
+/**
+* End doxygen group perfDispatchTest.
+* @}
+*/

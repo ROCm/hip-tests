@@ -578,3 +578,8 @@ MATH_UNARY_HP_KERNEL_DEF(h2rint);
  */
 MATH_UNARY_HP_TEST_DEF_IMPL(h2rint, static_cast<float (*)(float)>(std::rint),
                             EqValidatorBuilderFactory<float>());
+
+/**
+* End doxygen group MathTest.
+* @}
+*/

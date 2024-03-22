@@ -162,3 +162,8 @@ TEST_CASE("Unit_hiprtcGetLoweredName_templateKrnls") {
   REQUIRE(Test(2, gpuProgram2));
   REQUIRE(Test(3, gpuProgram3));
 }
+
+/**
+* End doxygen group hiprtc.
+* @}
+*/

@@ -143,3 +143,8 @@ TEST_CASE("Unit_hipMemExportToShareableHandle_Negative_Parameters") {
   }
 #endif
 }
+
+/**
+* End doxygen group VirtualMemoryManagementTest.
+* @}
+*/

@@ -194,3 +194,8 @@ TEST_CASE("Unit_hipDeviceGetP2PAttribute_Negative") {
   }
 #endif
 }
+
+/**
+* End doxygen group DriverTest.
+* @}
+*/

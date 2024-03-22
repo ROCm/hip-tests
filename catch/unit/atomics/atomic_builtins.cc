@@ -95,3 +95,8 @@ TEST_CASE("Unit_AtomicBuiltins_Negative_Parameters_RTC") {
   AtomicBuiltinsRTCWrapper(kBuiltinFetchMax, 5, 2);
   AtomicBuiltinsRTCWrapper(kBuiltinFetchMin, 5, 2);
 }
+
+/**
+* End doxygen group AtomicsTest.
+* @}
+*/

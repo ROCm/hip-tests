@@ -104,3 +104,8 @@ TEST_CASE("Unit_hipDeviceCanAccessPeer_negative") {
     HIP_CHECK_ERROR(hipDeviceCanAccessPeer(&canAccessPeer, 0, deviceCount), hipErrorInvalidDevice);
   }
 }
+
+/**
+* End doxygen group PeerToPeerTest.
+* @}
+*/

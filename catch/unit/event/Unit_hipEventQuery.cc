@@ -91,3 +91,8 @@ TEST_CASE("Unit_hipEventQuery_DifferentDevice") {
   HIP_CHECK(hipEventDestroy(event2));
   HIP_CHECK(hipStreamDestroy(stream));
 }
+
+/**
+* End doxygen group EventTest.
+* @}
+*/

@@ -203,3 +203,8 @@ TEST_CASE("Unit_hipEventElapsedTime") {
   HIP_CHECK(hipEventDestroy(start));
   HIP_CHECK(hipEventDestroy(stop));
 }
+
+/**
+* End doxygen group EventTest.
+* @}
+*/

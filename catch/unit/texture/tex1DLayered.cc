@@ -147,3 +147,8 @@ TEMPLATE_TEST_CASE("Unit_tex1DLayered_Positive_ReadModeNormalizedFloat", "", cha
     }
   }
 }
+
+/**
+* End doxygen group TextureTest.
+* @}
+*/

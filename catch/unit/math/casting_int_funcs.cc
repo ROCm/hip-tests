@@ -733,3 +733,8 @@ TEST_CASE("Unit_Device___hiloint2double_Positive") {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_Device___hiloint2double_Negative_RTC") { NegativeTestRTCWrapper<5>(kHilo2Double); }
+
+/**
+* End doxygen group MathTest.
+* @}
+*/

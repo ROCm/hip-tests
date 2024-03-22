@@ -127,3 +127,8 @@ TEST_CASE("Unit_hipIpcCloseMemHandle_Negative_Close_In_Originating_Process") {
   HIP_CHECK_ERROR(hipIpcCloseMemHandle(ptr), hipErrorInvalidValue);
   HIP_CHECK(hipFree(ptr));
 }
+
+/**
+* End doxygen group DeviceTest.
+* @}
+*/

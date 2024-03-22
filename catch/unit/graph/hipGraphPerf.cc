@@ -2757,3 +2757,8 @@ TEST_CASE("Unit_hipGraph_PerfCheck_hipGraphExecUpdate_kernel_inLoop") {
 }
 #endif
 #endif  //  #if __linux__
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

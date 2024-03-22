@@ -79,3 +79,8 @@ TEST_CASE("Unit_hipPeekAtLastError_Positive_Threaded") {
   HipPeekAtLastErrorTest test;
   test.run();
 }
+
+/**
+* End doxygen group ErrorTest.
+* @}
+*/

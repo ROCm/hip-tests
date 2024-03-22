@@ -110,3 +110,8 @@ TEST_CASE("Unit_hipGetStreamDeviceId_Negative_Parameters") {
   StreamGuard stream_guard{Streams::nullstream};
   REQUIRE(hipGetStreamDeviceId(stream_guard.stream()) == id);
 }
+
+/**
+* End doxygen group CallbackTest.
+* @}
+*/

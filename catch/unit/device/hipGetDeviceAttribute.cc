@@ -540,3 +540,8 @@ TEST_CASE("Unit_hipGetDeviceAttribute_hipDevAttrHostRegisterSupported") {
     return;
   }
 }
+
+/**
+* End doxygen group DeviceTest.
+* @}
+*/

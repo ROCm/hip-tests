@@ -247,3 +247,8 @@ TEST_CASE("Unit_hipGraphNodeGetDependentNodes_Negative_Parameters") {
   HIP_CHECK(hipGraphDestroy(graph));
   HIP_CHECK(hipFree(A_d));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

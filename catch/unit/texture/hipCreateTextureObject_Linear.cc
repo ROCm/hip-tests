@@ -159,3 +159,8 @@ TEST_CASE("Unit_hipCreateTextureObject_LinearResource") {
   // De-Initialization
   HIP_CHECK(hipFree(texBuf));
 }
+
+/**
+* End doxygen group TextureTest.
+* @}
+*/

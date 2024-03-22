@@ -62,3 +62,8 @@ TEST_CASE("Unit_Host_Printf") {
   free(count);
   HIP_CHECK(hipFree(count_d));
 }
+
+/**
+* End doxygen group PrintfTest.
+* @}
+*/

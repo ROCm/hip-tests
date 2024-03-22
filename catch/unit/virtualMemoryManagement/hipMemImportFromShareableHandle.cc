@@ -208,3 +208,8 @@ TEST_CASE("Unit_hipMemImportFromShareableHandle_Negative_Parameters") {
 
   HIP_CHECK(hipMemRelease(handle));
 }
+
+/**
+* End doxygen group VirtualMemoryManagementTest.
+* @}
+*/

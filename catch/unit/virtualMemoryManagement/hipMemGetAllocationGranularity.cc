@@ -182,3 +182,8 @@ TEST_CASE("Unit_hipMemGetAllocationGranularity_NegativeTests") {
   }
 #endif
 }
+
+/**
+* End doxygen group VirtualMemoryManagementTest.
+* @}
+*/

@@ -258,3 +258,8 @@ TEST_CASE("Unit_hipFuncSetAttribute_Positive_PreferredSharedMemoryCarveout_Not_S
 
   REQUIRE(old_attributes.preferredShmemCarveout == new_attributes.preferredShmemCarveout);
 }
+
+/**
+* End doxygen group ExecutionTest.
+* @}
+*/

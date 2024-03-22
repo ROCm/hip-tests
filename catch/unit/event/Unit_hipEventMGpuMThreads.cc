@@ -252,3 +252,8 @@ TEST_CASE("Unit_hipEventMGpuMThreads_3") {
     SUCCEED("skipped the testcase as number of devices is less than 2");
   }
 }
+
+/**
+* End doxygen group EventTest.
+* @}
+*/

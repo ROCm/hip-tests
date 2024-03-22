@@ -77,3 +77,8 @@ TEST_CASE("Unit_hipFreeAsync_Negative_Parameters") {
                     hipErrorInvalidValue);
   }
 }
+
+/**
+* End doxygen group StreamOTest.
+* @}
+*/

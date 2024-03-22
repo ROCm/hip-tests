@@ -218,3 +218,8 @@ TEST_CASE("Unit_hipGraphExecMemsetNodeSetParams_Negative_Updating_Non1D_Node") {
   HIP_CHECK(hipGraphExecDestroy(graph_exec));
   HIP_CHECK(hipGraphDestroy(graph));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

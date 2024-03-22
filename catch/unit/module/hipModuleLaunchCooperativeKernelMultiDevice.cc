@@ -225,3 +225,8 @@ TEST_CASE("Unit_hipModuleLaunchCooperativeKernelMultiDevice_Negative_MultiKernel
     HIP_CHECK(hipStreamDestroy(params.hStream));
   }
 }
+
+/**
+* End doxygen group ModuleTest.
+* @}
+*/

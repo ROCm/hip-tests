@@ -530,3 +530,8 @@ TEST_CASE("Unit_hipGraphAddMemsetNode_hipMallocManaged") {
   HIP_CHECK(hipStreamDestroy(streamForGraph));
   HIP_CHECK(hipFree(A_d));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

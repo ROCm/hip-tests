@@ -74,3 +74,8 @@ TEST_CASE("Unit_hipDeviceGetLimit_CheckValidityOfOutputVal") {
           hipSuccess);
   REQUIRE_FALSE(Value <= 0);
 }
+
+/**
+* End doxygen group DeviceTest.
+* @}
+*/

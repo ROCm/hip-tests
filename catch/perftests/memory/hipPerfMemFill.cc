@@ -543,3 +543,8 @@ TEST_CASE("Perf_hipPerfMemFill_test") {
   REQUIRE(true == hipPerfMemFillDouble.open(0));
   REQUIRE(true == hipPerfMemFillDouble.run());
 }
+
+/**
+* End doxygen group perfMemoryTest.
+* @}
+*/

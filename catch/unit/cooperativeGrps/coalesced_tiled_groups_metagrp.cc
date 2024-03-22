@@ -137,3 +137,8 @@ TEST_CASE("Unit_coalesced_groups_metagrp_basic") {
   delete[] mgrpSize_h;
   delete[] mgrpRank_h;
 }
+
+/**
+* End doxygen group CooperativeGroupTest.
+* @}
+*/

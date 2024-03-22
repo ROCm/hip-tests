@@ -65,3 +65,8 @@ TEST_CASE("Unit_hipGetMipmappedArrayLevel_Negative_Parameters") {
 
   HIP_CHECK(hipFreeMipmappedArray(array));
 }
+
+/**
+* End doxygen group TextureTest.
+* @}
+*/

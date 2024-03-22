@@ -123,3 +123,8 @@ TEST_CASE("Unit_Rtc_MathFunctions_header") {
   delete [] result_h;
   REQUIRE(true);
 }
+
+/**
+* End doxygen group hiprtcHeaders.
+* @}
+*/

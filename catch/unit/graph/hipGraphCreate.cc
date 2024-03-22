@@ -70,3 +70,8 @@ TEST_CASE("Unit_hipGraphCreate_Positive_Basic") {
 
   HIP_CHECK(hipGraphDestroy(graph));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

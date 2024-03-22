@@ -192,3 +192,8 @@ TEST_CASE("Unit_hipDeviceGetUuid_VerifyUuidFrm_hipGetDeviceProperties") {
 }
 #endif
 #endif
+
+/**
+* End doxygen group DriverTest.
+* @}
+*/

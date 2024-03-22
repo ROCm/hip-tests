@@ -683,3 +683,8 @@ TEMPLATE_TEST_CASE("Unit_Coalesced_Group_Tiled_Partition_Sync_Positive_Basic", "
   SECTION("Global memory") { CoalescedGroupTiledPartitionSyncTest<true, TestType>(); }
   SECTION("Shared memory") { CoalescedGroupTiledPartitionSyncTest<false, TestType>(); }
 }
+
+/**
+* End doxygen group DeviceLanguageTest.
+* @}
+*/

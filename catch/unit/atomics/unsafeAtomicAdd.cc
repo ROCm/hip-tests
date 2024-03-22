@@ -122,3 +122,8 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_Positive_Multi_Kernel", "", float, doub
     }
   }
 }
+
+/**
+* End doxygen group AtomicsTest.
+* @}
+*/

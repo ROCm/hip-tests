@@ -209,3 +209,8 @@ TEST_CASE("Unit_hipStreamIsCapturing_Positive_Thread") {
   HIP_CHECK(hipStreamEndCapture(stream, &graph));
   HIP_CHECK(hipGraphDestroy(graph));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

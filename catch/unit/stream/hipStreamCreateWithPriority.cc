@@ -1011,3 +1011,8 @@ TEST_CASE("Unit_hipStreamCreateWithPriority_ValidateWithEvents") {
 TEST_CASE("Unit_hipStreamCreateWithPriority_TestMultipleStreamWithPriority") {
   hipStreamCreateWithPriorityTest::TestForMultipleStreamWithPriority<int>();
 }
+
+/**
+* End doxygen group StreamTest.
+* @}
+*/

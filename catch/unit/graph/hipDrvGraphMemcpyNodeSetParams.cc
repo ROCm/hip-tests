@@ -315,3 +315,8 @@ TEST_CASE("Unit_hipDrvGraphMemcpyNodeSetParams_Negative_Parameters") {
   HIP_CHECK(hipCtxDestroy(context));
 }
 #endif // if 0
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

@@ -191,3 +191,8 @@ TEMPLATE_TEST_CASE("Unit_tex3DLod_Positive_ReadModeNormalizedFloat", "", char, u
     REQUIRE(ref_val.w == fixture.out_alloc_h[i].w);
   }
 }
+
+/**
+* End doxygen group TextureTest.
+* @}
+*/

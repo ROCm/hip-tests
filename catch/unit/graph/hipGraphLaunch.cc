@@ -143,3 +143,8 @@ TEST_CASE("Unit_hipGraphLaunch_Negative_Parameters") {
     HIP_CHECK_ERROR(hipGraphLaunch(graph_exec, hipStreamPerThread), hipErrorInvalidValue);
   }
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

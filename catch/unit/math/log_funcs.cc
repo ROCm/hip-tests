@@ -258,3 +258,8 @@ TEST_CASE("Unit_Device_ilogb_Accuracy_Positive") {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_Device_ilogb_ilogbf_Negative_RTC") { NegativeTestRTCWrapper<4>(kIlogb); }
+
+/**
+* End doxygen group MathTest.
+* @}
+*/

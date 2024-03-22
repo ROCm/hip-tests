@@ -251,3 +251,8 @@ TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParams1D_Negative_Changing_Memcpy_Direc
   HIP_CHECK(hipGraphExecDestroy(graph_exec));
   HIP_CHECK(hipGraphDestroy(graph));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

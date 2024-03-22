@@ -71,3 +71,8 @@ TEST_CASE("Unit_hipDeviceGraphMemTrim_Negative_Parameters") {
     HIP_CHECK_ERROR(hipDeviceGraphMemTrim(num_dev), hipErrorInvalidDevice);
   }
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

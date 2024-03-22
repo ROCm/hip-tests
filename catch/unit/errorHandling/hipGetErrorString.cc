@@ -73,3 +73,8 @@ TEST_CASE("Unit_hipGetErrorString_Negative_Parameters") {
   const char* error_string = hipGetErrorString(static_cast<hipError_t>(-1));
   REQUIRE(error_string != nullptr);
 }
+
+/**
+* End doxygen group ErrorTest.
+* @}
+*/

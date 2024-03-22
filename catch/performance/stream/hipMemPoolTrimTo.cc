@@ -75,3 +75,8 @@ TEST_CASE("Performance_hipMemPoolTrimTo") {
   size_t min_bytes_to_hold = GENERATE(4_KB, 4_MB, 16_MB);
   RunBenchmark(min_bytes_to_hold);
 }
+
+/**
+* End doxygen group PerformanceTest.
+* @}
+*/

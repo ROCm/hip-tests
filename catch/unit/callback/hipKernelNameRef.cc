@@ -69,3 +69,8 @@ TEST_CASE("Unit_hipKernelNameRef_Negative_Parameters") {
   hipFunction_t kernel_function{nullptr};
   REQUIRE(hipKernelNameRef(kernel_function) == nullptr);
 }
+
+/**
+* End doxygen group CallbackTest.
+* @}
+*/

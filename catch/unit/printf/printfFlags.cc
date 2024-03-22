@@ -73,3 +73,8 @@ xyzzy
   REQUIRE(proc.run() == 0);
   REQUIRE(proc.getOutput() == reference);
 }
+
+/**
+* End doxygen group PrintfTest.
+* @}
+*/

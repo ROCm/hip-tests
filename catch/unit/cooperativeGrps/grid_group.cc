@@ -287,3 +287,8 @@ TEST_CASE("Unit_Grid_Group_Sync_Positive_Basic") {
     REQUIRE(uint_arr.ptr()[i * grid.block_count_ + j] == max_in_this_loop - 1);
   }
 }
+
+/**
+* End doxygen group DeviceLanguageTest.
+* @}
+*/

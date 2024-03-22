@@ -81,3 +81,8 @@ TEST_CASE("Performance_hipEventCreateWithFlags") {
       hipEventDisableTiming /*, hipEventInterprocess  disabled until fixed (EXSWHTEC-25) */);
   RunBenchmark(flag);
 }
+
+/**
+* End doxygen group PerformanceTest.
+* @}
+*/

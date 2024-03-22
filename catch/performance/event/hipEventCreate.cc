@@ -54,3 +54,8 @@ TEST_CASE("Performance_hipEventCreate") {
   HipEventCreateBenchmark benchmark;
   benchmark.Run();
 }
+
+/**
+* End doxygen group PerformanceTest.
+* @}
+*/

@@ -78,3 +78,8 @@ TEST_CASE("Performance_hipStreamWaitEvent") {
   Streams stream_type = GENERATE(Streams::nullstream, Streams::created);
   RunBenchmark(stream_type);
 }
+
+/**
+* End doxygen group PerformanceTest.
+* @}
+*/

@@ -81,3 +81,8 @@ TEST_CASE("Performance_hipMemPoolGetAttribute") {
                                       hipMemPoolReuseAllowInternalDependencies);
   RunBenchmark(attribute);
 }
+
+/**
+* End doxygen group PerformanceTest.
+* @}
+*/

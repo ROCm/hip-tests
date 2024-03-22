@@ -385,3 +385,8 @@ TEMPLATE_TEST_CASE("Unit_surf3D_Positive_ReadWrite", "", char, uchar, short, ush
   const int depth = GENERATE(4, 11);
   runTestR<TestType>(width, height, depth);
 }
+
+/**
+* End doxygen group SurfaceTest.
+* @}
+*/

@@ -292,3 +292,8 @@ TEMPLATE_TEST_CASE("Unit_surf1D_Positive_ReadWrite", "", char, uchar, short, ush
   const int width = GENERATE(31, 67, 131, 263);
   runTestRW<TestType>(width);
 }
+
+/**
+* End doxygen group SurfaceTest.
+* @}
+*/

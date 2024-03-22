@@ -118,3 +118,8 @@ TEMPLATE_TEST_CASE("Unit_hipTexObjPitch_texture2D", "", float, int,
   HIP_CHECK(hipFree(devPtrA));
   HIP_CHECK(hipFree(devPtrB));
 }
+
+/**
+* End doxygen group TextureTest.
+* @}
+*/

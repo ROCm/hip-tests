@@ -1430,3 +1430,8 @@ TEST_CASE("Unit_Rtc_VectorTypes_header") {
   delete [] result_h;
   REQUIRE(true);
 }
+
+/**
+* End doxygen group hiprtcHeaders.
+* @}
+*/

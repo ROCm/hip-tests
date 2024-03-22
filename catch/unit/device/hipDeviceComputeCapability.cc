@@ -104,3 +104,8 @@ TEST_CASE("Unit_hipDeviceComputeCapability_ValidateVersion") {
     REQUIRE(minor >= 0);
   }
 }
+
+/**
+* End doxygen group DriverTest.
+* @}
+*/

@@ -116,3 +116,8 @@ TEMPLATE_TEST_CASE("Unit_Warp_Shfl_XOR_Positive_Basic", "", int, unsigned int, l
     WarpShflXOR<TestType>().run(true);
   }
 }
+
+/**
+* End doxygen group DeviceLanguageTest.
+* @}
+*/

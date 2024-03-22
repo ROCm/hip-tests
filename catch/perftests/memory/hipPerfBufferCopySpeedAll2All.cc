@@ -397,3 +397,8 @@ TEST_CASE("Perf_PerfBufferCopySpeedAll2One_test - kernel copy - remotes to local
 TEST_CASE("Perf_PerfBufferCopySpeedOne2All_test - kernel copy - local to remotes") {
   testCopyPerf(true, true, true);
 }
+
+/**
+* End doxygen group perfMemoryTest.
+* @}
+*/

@@ -124,3 +124,8 @@ TEST_CASE("Unit___threadfence_system_Positive_Basic_Host") {
     REQUIRE(!(out_host.host_ptr()[0] == kInitVal1 && out_host.ptr()[1] == kSetVal2));
   }
 }
+
+/**
+* End doxygen group ThreadfenceTest.
+* @}
+*/

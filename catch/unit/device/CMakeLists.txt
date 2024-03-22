@@ -29,6 +29,12 @@ set(TEST_SRC
     hipDriverGetVersion.cc
 )
 
+if(HIP_PLATFORM MATCHES "amd")
+  set(AMD_SRC
+      hipGetProcAddressDevMgmt.cc)
+  set(TEST_SRC ${TEST_SRC} ${AMD_SRC})
+endif()
+
 if(UNIX)
     set(TEST_SRC ${TEST_SRC}
                  hipIpcOpenMemHandle.cc

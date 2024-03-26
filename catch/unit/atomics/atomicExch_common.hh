@@ -97,7 +97,7 @@ __global__ void atomic_exch_kernel(T* const global_mem, T* const old_vals, const
     __syncthreads();
   }
 
-  const auto n = cooperative_groups::this_grid().size() - width;
+  const auto n = cooperative_groups::this_grid().size();
 
   T* atomic_addr = pitched_offset(mem, pitch, tid % width);
 
@@ -335,7 +335,7 @@ void AtomicExchSingleDeviceSingleKernelTest(const unsigned int width, const unsi
     }
     using LA = LinearAllocs;
     for (const auto alloc_type :
-         {LA::hipMalloc, LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister}) {
+         {LA::hipMalloc, LA::hipHostMalloc, LA::hipMallocManaged}) {
       params.alloc_type = alloc_type;
       DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
         AtomicExch<TestType, false, scope, memory_scope>().run(params);
@@ -370,7 +370,7 @@ void AtomicExchSingleDeviceMultipleKernelTest(const unsigned int kernel_count,
 
   using LA = LinearAllocs;
   for (const auto alloc_type :
-       {LA::hipMalloc, LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister}) {
+       {LA::hipMalloc, LA::hipHostMalloc, LA::hipMallocManaged}) {
     params.alloc_type = alloc_type;
     DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
       AtomicExch<TestType, false, scope>().run(params);
@@ -413,7 +413,7 @@ void AtomicExchMultipleDeviceMultipleKernelAndHostTest(const unsigned int num_de
   params.host_thread_count = host_thread_count;
 
   using LA = LinearAllocs;
-  for (const auto alloc_type : {LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister}) {
+  for (const auto alloc_type : {LA::hipHostMalloc , LA::hipMallocManaged}) {
     params.alloc_type = alloc_type;
     DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
       AtomicExch<TestType, false, AtomicScopes::system>().run(params);

@@ -480,20 +480,20 @@ TEST_CASE("Unit_hipCGMultiGridGroupType_Basic") {
     max_threads_per_blk = min(max_threads_per_blk, device_properties.maxThreadsPerBlock);
   }
 
-  void* (*kernel_func)(void);
+  void* kernel_func;
   bool specific_api_test = false;
 
   SECTION("Default multi grid group API test") {
-    kernel_func = reinterpret_cast<void* (*)()>(kernel_cg_multi_grid_group_type);
+    kernel_func = reinterpret_cast<void*>(kernel_cg_multi_grid_group_type);
     specific_api_test = true;
   }
 
   SECTION("Base type multi grid group API test") {
-    kernel_func = reinterpret_cast<void* (*)()>(kernel_cg_multi_grid_group_type_via_base_type);
+    kernel_func = reinterpret_cast<void*>(kernel_cg_multi_grid_group_type_via_base_type);
   }
 
   SECTION("Public API multi grid group test") {
-    kernel_func = reinterpret_cast<void* (*)()>(kernel_cg_multi_grid_group_type_via_public_api);
+    kernel_func = reinterpret_cast<void*>(kernel_cg_multi_grid_group_type_via_public_api);
   }
 
   // Test for blockSizes in powers of 2

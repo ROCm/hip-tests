@@ -76,7 +76,7 @@ TEST_CASE("Unit_hipPointerGetAttribute_MemoryTypes") {
     REQUIRE(datatype == hipMemoryTypeDevice);
 
   }
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
   SECTION("Malloc Array Allocation") {
     hipArray_t B_d;
     hipChannelFormatDesc desc = hipCreateChannelDesc<char>();
@@ -205,7 +205,7 @@ TEST_CASE("Unit_hipPointerGetAttribute_BufferID") {
    hipPointerGetAttribute API with HIP_POINTER_ATTRIBUTE_DEVICE_ORDINAL
    and ensure that it matches with CUDA result
 */
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
 TEST_CASE("Unit_hipPointerGetAttribute_HostDeviceOrdinal") {
   size_t Nbytes = 0;
   Nbytes = N * sizeof(int);
@@ -276,7 +276,7 @@ TEST_CASE("Unit_hipPointerGetAttribute_Negative") {
         == hipErrorInvalidValue);
   }
   SECTION("Pass nullptr to device attribute") {
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
     REQUIRE(hipPointerGetAttribute(&data, HIP_POINTER_ATTRIBUTE_DEVICE_POINTER,
             nullptr) == hipErrorInvalidValue);
 #else
@@ -311,7 +311,7 @@ TEST_CASE("Unit_hipPointerGetAttribute_Negative") {
     REQUIRE(hipPointerGetAttribute(&data, static_cast<hipPointer_attribute>(-1),
                                    reinterpret_cast<hipDeviceptr_t>(A_h)) == hipErrorInvalidValue);
   }
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
   SECTION("Pass HIP_POINTER_ATTRIBUTE_IS_GPU_DIRECT_RDMA_CAPABLE"
       "not supported by HIP") {
     REQUIRE(hipPointerGetAttribute(&data,

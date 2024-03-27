@@ -45,7 +45,7 @@ static constexpr auto LEN{1024 * 1024};
 static constexpr auto LARGE_CHUNK_LEN{100 * LEN};
 static constexpr auto SMALL_CHUNK_LEN{10 * LEN};
 
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
 #define TEST_SKIP(arch, msg) \
   if (std::string::npos == arch.find("xnack+")) {\
     HipTest::HIP_SKIP_TEST(msg);\
@@ -534,7 +534,7 @@ TEST_CASE("Unit_hipHostRegister_AsyncApis") {
   HIP_CHECK(hipGetDeviceProperties(&prop, 0));
   std::string arch = prop.gcnArchName;
   bool useRegPtrInDev = false;
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
   if (std::string::npos == arch.find("xnack+")) {
     useRegPtrInDev = false;
   } else {
@@ -594,7 +594,7 @@ TEST_CASE("Unit_hipHostRegister_Graphs") {
   HIP_CHECK(hipGetDeviceProperties(&prop, 0));
   std::string arch = prop.gcnArchName;
   bool useRegPtrInDev = false;
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
   if (std::string::npos == arch.find("xnack+")) {
     useRegPtrInDev = false;
   } else {
@@ -660,7 +660,7 @@ TEST_CASE("Unit_hipHostRegister_Graphs") {
   free(B);
 }
 
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
 /**
  * Test Description
  * ------------------------

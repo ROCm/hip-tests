@@ -35,6 +35,8 @@ if(HIP_PLATFORM MATCHES "amd")
 add_custom_target(libLazyLoad.so COMMAND ${CMAKE_CXX_COMPILER} -fPIC -lpthread -shared ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/liblazyLoad.cc -I${CMAKE_CURRENT_SOURCE_DIR}/../../include -I${CMAKE_CURRENT_SOURCE_DIR}/../../external/Catch2 -L${HIP_PATH}/${CMAKE_INSTALL_LIBDIR} -o libLazyLoad.so)
 elseif(HIP_PLATFORM MATCHES "nvidia")
 add_custom_target(libLazyLoad.so COMMAND ${CMAKE_CXX_COMPILER} -Xcompiler -fPIC -lpthread -shared ${CMAKE_CURRENT_SOURCE_DIR}/liblazyLoad.cc -I${CMAKE_CURRENT_SOURCE_DIR}/../../include -I${CMAKE_CURRENT_SOURCE_DIR}/../../external/Catch2 -I${HIP_PATH}/include/ -o libLazyLoad.so)
+elseif(HIP_PLATFORM MATCHES "spirv")
+add_custom_target(libLazyLoad.so COMMAND ${CMAKE_CXX_COMPILER} -fPIC -lpthread -shared ${CMAKE_CURRENT_SOURCE_DIR}/liblazyLoad.cc -I${CMAKE_CURRENT_SOURCE_DIR}/../../include -I${CMAKE_CURRENT_SOURCE_DIR}/../../external/Catch2 -I${HIP_PATH}/include/ -o libLazyLoad.so)
 endif()
 
 add_custom_target(bit_extract_kernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/bit_extract_kernel.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../dynamicLoading/bit_extract_kernel.code -I${HIP_PATH}/include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include -L${HIP_PATH}/${CMAKE_INSTALL_LIBDIR})

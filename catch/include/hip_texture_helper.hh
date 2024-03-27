@@ -1,6 +1,10 @@
 #pragma once
 #include <math.h>
 
+#ifndef uchar
+#define uchar unsigned char
+#endif
+
 #define HIP_SAMPLING_VERIFY_EPSILON     0.00001
 // The internal precision varies by the GPU family and sometimes within the family.
 // Thus the following threshold is subject to change.

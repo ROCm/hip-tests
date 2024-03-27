@@ -2,7 +2,6 @@
 set(TEST_SRC
   thread_block.cc
   thread_block_tile.cc
-  coalesced_group_tiled_partition.cc
   hipCGThreadBlockType_old.cc
   hipCGMultiGridGroupType_old.cc
   hipCGGridGroupType_old.cc
@@ -12,13 +11,20 @@ set(TEST_SRC
   hipLaunchCooperativeKernel_old.cc
   hipLaunchCooperativeKernelMultiDevice_old.cc
   multi_grid_group.cc
-  coalesced_groups_shfl_down_old.cc
-  coalesced_groups_shfl_up_old.cc
   hipCGCoalescedGroups_old.cc
-  coalesced_group.cc
   grid_group.cc
   coalesced_tiled_groups_metagrp.cc
 )
+
+# Bugs in SPIRV-LLVM-Translator
+if(NOT HIP_PLATFORM STREQUAL "spirv")
+  set(TEST_SRC ${TEST_SRC}
+  coalesced_group.cc
+  coalesced_groups_shfl_down_old.cc
+  coalesced_groups_shfl_up_old.cc
+  coalesced_group_tiled_partition.cc)
+endif()
+
 if(HIP_PLATFORM STREQUAL "nvidia")
   set_source_files_properties(hipCGMultiGridGroupType_old.cc PROPERTIES COMPILE_FLAGS "-D_CG_ABI_EXPERIMENTAL -rdc=true -gencode arch=compute_60,code=sm_60 -gencode arch=compute_70,code=sm_70 -gencode arch=compute_80,code=sm_80")
   set_source_files_properties(hipLaunchCooperativeKernelMultiDevice_old.cc PROPERTIES COMPILE_FLAGS "-D_CG_ABI_EXPERIMENTAL -rdc=true -gencode arch=compute_60,code=sm_60 -gencode arch=compute_70,code=sm_70 -gencode arch=compute_80,code=sm_80")

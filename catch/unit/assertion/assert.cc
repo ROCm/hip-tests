@@ -68,7 +68,7 @@ template <bool should_abort> void LaunchAssertKernel() {
 
   if constexpr (should_abort) {
     AssertFailKernel<<<num_blocks, num_threads, 0, 0>>>(d_a);
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
     HIP_CHECK(hipDeviceSynchronize());
 #else
     HIP_CHECK_ERROR(hipDeviceSynchronize(), hipErrorAssert);
@@ -116,7 +116,7 @@ TEST_CASE("Unit_Assert_Positive_Basic_KernelPass") {
  */
 TEST_CASE("Unit_Assert_Positive_Basic_KernelFail") {
   try_and_catch_abort(&LaunchAssertKernel<true>);
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
   REQUIRE(abort_raised_flag == 1);
 #else
   REQUIRE(abort_raised_flag == 0);

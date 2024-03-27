@@ -52,7 +52,7 @@ __global__  void CoherentTst(int *ptr, int PeakClk) {
 }
 
 __global__  void CoherentTst_gfx11(int *ptr, int PeakClk) {
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
   // Incrementing the value by 1
   int64_t GpuFrq = int64_t(PeakClk) * 1000;
   int64_t StrtTck = wall_clock64();
@@ -124,7 +124,7 @@ static void TstCoherency(int *Ptr, bool HmmMem) {
 /* Test case description: The following test validates if fine grain
    behavior is observed or not with memory allocated using malloc()*/
 // The following test is failing on Nvidia platform hence disabled it for now
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
 TEST_CASE("Unit_malloc_CoherentTst") {
   hipDeviceProp_t prop;
   HIPCHECK(hipGetDeviceProperties(&prop, 0));
@@ -155,7 +155,7 @@ TEST_CASE("Unit_malloc_CoherentTst") {
 /* Test case description: The following test validates if coarse grain memory
    behavior is observed or not with memory allocated using malloc()*/
 // The following test is failing on Nvidia platform hence disabling it for now
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
 TEST_CASE("Unit_malloc_CoherentTstWthAdvise") {
   hipDeviceProp_t prop;
   HIPCHECK(hipGetDeviceProperties(&prop, 0));
@@ -187,7 +187,7 @@ TEST_CASE("Unit_malloc_CoherentTstWthAdvise") {
 /* Test case description: The following test validates if fine memory
    behavior is observed or not with memory allocated using mmap()*/
 // The following test is failing on Nvidia platform hence disabling it for now
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
 TEST_CASE("Unit_mmap_CoherentTst") {
   hipDeviceProp_t prop;
   HIPCHECK(hipGetDeviceProperties(&prop, 0));
@@ -224,7 +224,7 @@ TEST_CASE("Unit_mmap_CoherentTst") {
 /* Test case description: The following test validates if coarse grain memory
    behavior is observed or not with memory allocated using mmap()*/
 // The following test is failing on Nvidia platform hence disabling it for now
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
 TEST_CASE("Unit_mmap_CoherentTstWthAdvise") {
   hipDeviceProp_t prop;
   HIPCHECK(hipGetDeviceProperties(&prop, 0));
@@ -269,7 +269,7 @@ TEST_CASE("Unit_mmap_CoherentTstWthAdvise") {
 /* Test Case Description: The following test checks if the memory is
    accessible when HIP_HOST_COHERENT is set to 0*/
 // The following test is AMD specific test hence skipping for Nvidia
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
 TEST_CASE("Unit_hipHostMalloc_WthEnv0Flg1") {
   if ((setenv("HIP_HOST_COHERENT", "0", 1)) != 0) {
       WARN("Unable to turn on HIP_HOST_COHERENT, hence terminating the Test case!");
@@ -310,7 +310,7 @@ TEST_CASE("Unit_hipHostMalloc_WthEnv0Flg1") {
 /* Test Case Description: The following test checks if the memory is
    accessible when HIP_HOST_COHERENT is set to 0*/
 // The following test is AMD specific test hence skipping for Nvidia
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
 TEST_CASE("Unit_hipHostMalloc_WthEnv0Flg2") {
   if ((setenv("HIP_HOST_COHERENT", "0", 1)) != 0) {
       WARN("Unable to turn on HIP_HOST_COHERENT, hence terminating the Test case!");
@@ -351,7 +351,7 @@ TEST_CASE("Unit_hipHostMalloc_WthEnv0Flg2") {
 /* Test Case Description: The following test checks if the memory is
    accessible when HIP_HOST_COHERENT is set to 0*/
 // The following test is AMD specific test hence skipping for Nvidia
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
 TEST_CASE("Unit_hipHostMalloc_WthEnv0Flg3") {
   if ((setenv("HIP_HOST_COHERENT", "0", 1)) != 0) {
       WARN("Unable to turn on HIP_HOST_COHERENT, hence terminating the Test case!");
@@ -392,7 +392,7 @@ TEST_CASE("Unit_hipHostMalloc_WthEnv0Flg3") {
 /* Test Case Description: The following test checks if the memory is
    accessible when HIP_HOST_COHERENT is set to 0*/
 // The following test is AMD specific test hence skipping for Nvidia
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
 TEST_CASE("Unit_hipHostMalloc_WthEnv0Flg4") {
   if ((setenv("HIP_HOST_COHERENT", "0", 1)) != 0) {
       WARN("Unable to turn on HIP_HOST_COHERENT, hence terminating the Test case!");
@@ -434,7 +434,7 @@ TEST_CASE("Unit_hipHostMalloc_WthEnv0Flg4") {
 /* Test Case Description: The following test checks if the memory exhibits
    fine grain behavior when HIP_HOST_COHERENT is set to 1*/
 // The following test is AMD specific test hence skipping for Nvidia
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
 TEST_CASE("Unit_hipHostMalloc_WthEnv1") {
   if ((setenv("HIP_HOST_COHERENT", "1", 1)) != 0) {
       WARN("Unable to turn on HIP_HOST_COHERENT, hence terminating the Test case!");
@@ -473,7 +473,7 @@ TEST_CASE("Unit_hipHostMalloc_WthEnv1") {
 /* Test Case Description: The following test checks if the memory exhibits
    fine grain behavior when HIP_HOST_COHERENT is set to 1*/
 // The following test is AMD specific test hence skipping for Nvidia
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
 TEST_CASE("Unit_hipHostMalloc_WthEnv1Flg1") {
   if ((setenv("HIP_HOST_COHERENT", "1", 1)) != 0) {
       WARN("Unable to turn on HIP_HOST_COHERENT, hence terminating the Test case!");
@@ -511,7 +511,7 @@ TEST_CASE("Unit_hipHostMalloc_WthEnv1Flg1") {
 /* Test Case Description: The following test checks if the memory exhibits
    fine grain behavior when HIP_HOST_COHERENT is set to 1*/
 // The following test is AMD specific test hence skipping for Nvidia
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
 TEST_CASE("Unit_hipHostMalloc_WthEnv1Flg2") {
   if ((setenv("HIP_HOST_COHERENT", "1", 1)) != 0) {
       WARN("Unable to turn on HIP_HOST_COHERENT, hence terminating the Test case!");
@@ -549,7 +549,7 @@ TEST_CASE("Unit_hipHostMalloc_WthEnv1Flg2") {
 /* Test Case Description: The following test checks if the memory exhibits
    fine grain behavior when HIP_HOST_COHERENT is set to 1*/
 // The following test is AMD specific test hence skipping for Nvidia
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
 TEST_CASE("Unit_hipHostMalloc_WthEnv1Flg3") {
   if ((setenv("HIP_HOST_COHERENT", "1", 1)) != 0) {
       WARN("Unable to turn on HIP_HOST_COHERENT, hence terminating the Test case!");

@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 const char* ErrorName(hipError_t enumerator) {
   switch (enumerator) {
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
     case hipSuccess:
       return "hipSuccess";
     case hipErrorInvalidValue:
@@ -343,7 +343,7 @@ const char* ErrorString(hipError_t enumerator) {
     case hipErrorProfilerDisabled:
       return "profiler disabled while using external profiling tool";
     case hipErrorProfilerNotInitialized:
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
       return "profiler is not initialized";
 #elif HT_NVIDIA
       return "profiler not initialized: call cudaProfilerInitialize()";
@@ -352,62 +352,62 @@ const char* ErrorString(hipError_t enumerator) {
       return "profiler already started";
     case hipErrorProfilerAlreadyStopped:
       return "profiler already stopped";
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
     case hipErrorInvalidConfiguration:
       return "invalid configuration argument";
 #elif HT_NVIDIA
       return "unknown error";
 #endif
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
     case hipErrorInvalidPitchValue:
       return "invalid pitch argument";
 #elif HT_NVIDIA
       return "unknown error";
 #endif
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
     case hipErrorInvalidSymbol:
       return "invalid device symbol";
 #elif HT_NVIDIA
       return "unknown error";
 #endif
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
     case hipErrorInvalidDevicePointer:
       return "invalid device pointer";
 #elif HT_NVIDIA
       return "unknown error";
 #endif
-#if HT_AMD
+#if HT_AMD || HT_SPIRV 
     case hipErrorInvalidMemcpyDirection:
       return "invalid copy direction for memcpy";
 #elif HT_NVIDIA
       return "unknown error";
 #endif
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
     case hipErrorInsufficientDriver:
       return "driver version is insufficient for runtime version";
 #elif HT_NVIDIA
       return "unknown error";
 #endif
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
     case hipErrorMissingConfiguration:
       return "__global__ function call is not configured";
 #elif HT_NVIDIA
       return "unknown error";
 #endif
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
     case hipErrorPriorLaunchFailure:
       return "unspecified launch failure in prior launch";
 #elif HT_NVIDIA
       return "unknown error";
 #endif
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
     case hipErrorInvalidDeviceFunction:
       return "invalid device function";
 #elif HT_NVIDIA
       return "unknown error";
 #endif
     case hipErrorNoDevice:
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
       return "no ROCm-capable device is detected";
 #elif HT_NVIDIA
       return "no CUDA-capable device is detected";
@@ -419,7 +419,7 @@ const char* ErrorString(hipError_t enumerator) {
     case hipErrorInvalidContext:
       return "invalid device context";
     case hipErrorContextAlreadyCurrent:
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
       return "context is already current context";
 #elif HT_NVIDIA
       return "context already current";
@@ -451,7 +451,7 @@ const char* ErrorString(hipError_t enumerator) {
     case hipErrorPeerAccessUnsupported:
       return "peer access is not supported between these two devices";
     case hipErrorInvalidKernelFile:
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
       return "invalid kernel file";
 #elif HT_NVIDIA
       return "a PTX JIT compilation failed";

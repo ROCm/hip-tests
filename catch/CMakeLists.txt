@@ -12,7 +12,7 @@ option(ENABLE_ADDRESS_SANITIZER "Option to enable ASAN build" OFF)
 message(STATUS "STANDALONE_TESTS : ${STANDALONE_TESTS}")
 
 # Check if platform is set
-if(NOT HIP_PLATFORM STREQUAL "amd" AND NOT HIP_PLATFORM STREQUAL "nvidia")
+if(NOT HIP_PLATFORM STREQUAL "amd" AND NOT HIP_PLATFORM STREQUAL "nvidia" AND NOT HIP_PLATFORM STREQUAL "spirv")
     message(FATAL_ERROR "Unexpected HIP_PLATFORM: " ${HIP_PLATFORM})
 endif()
 
@@ -60,9 +60,11 @@ message(STATUS "ROCM_PATH: ${ROCM_PATH}")
 set(CMAKE_CXX_COMPILER "${HIP_PATH}/bin/hipcc${EXT}")
 set(CMAKE_C_COMPILER "${HIP_PATH}/bin/hipcc${EXT}")
 set(HIPCONFIG_EXECUTABLE "${HIP_PATH}/bin/hipconfig${EXT}")
-execute_process(COMMAND ${HIPCONFIG_EXECUTABLE} --version
-                OUTPUT_VARIABLE HIP_VERSION
-                OUTPUT_STRIP_TRAILING_WHITESPACE)
+if (NOT DEFINED HIP_VERSION)
+    execute_process(COMMAND ${HIPCONFIG_EXECUTABLE} --version
+                    OUTPUT_VARIABLE HIP_VERSION
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif()
 
 # enforce c++17
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++17")
@@ -132,7 +134,21 @@ option(RTC_TESTING "Run tests using HIP RTC to compile the kernels" OFF)
 if (RTC_TESTING)
     add_definitions(-DRTC_TESTING=ON)
 endif()
-add_definitions(-DKERNELS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/kernels/")
+
+# The following does not work
+# add_definitions(-DKERNELS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/kernels/")
+# In file included from /space/pvelesko/chipStar/hip-tests-update/hip-tests/catch/hipTestMain/main.cc:3:
+# In file included from /space/pvelesko/chipStar/hip-tests-update/hip-tests/catch/./include/hip_test_common.hh:37:
+# /space/pvelesko/chipStar/hip-tests-update/hip-tests/catch/./include/hip_test_rtc.hh:110:36: error: use of undeclared identifier 'tests'
+# <command line>:1:68: note: expanded from macro 'KERNELS_PATH'
+#     1 | #define KERNELS_PATH /space/pvelesko/chipStar/hip-tests-update/hip-tests/catch/kernels/
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/kernels_path.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/kernels_path.h"
+)
+
+# Include the generated header file directory
+include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 set(CATCH_BUILD_DIR catch_tests)
 execute_process(COMMAND ${CMAKE_COMMAND} -E

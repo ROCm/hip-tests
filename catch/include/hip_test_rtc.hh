@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include <mutex>
 #include "hip/hip_runtime_api.h"
 #include "hip_test_context.hh"
+#include "kernels_path.h"
 
 namespace HipTest {
 

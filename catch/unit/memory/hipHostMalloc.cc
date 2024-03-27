@@ -46,7 +46,7 @@ std::vector<std::string> syncMsg = {"event", "stream", "device"};
 static constexpr int numElements{1024 * 16};
 static constexpr size_t sizeBytes{numElements * sizeof(int)};
 
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
 static __global__ void kerTestMemAccess(char *buf) {
   size_t myId = threadIdx.x + blockDim.x * blockIdx.x;
   buf[myId] = VALUE;
@@ -162,7 +162,7 @@ This testcase verifies the hipHostMalloc API by passing nullptr
 to the pointer variable
 */
 TEST_CASE("Unit_hipHostMalloc_Negative") {
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
   {
     // Stimulate error condition:
     int* A = nullptr;
@@ -280,7 +280,7 @@ TEST_CASE("Unit_hipHostMalloc_AllocateMoreThanAvailGPUMemory") {
   }
 }
 
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
 TEST_CASE("Unit_hipHostMalloc_AllocateUseMoreThanAvailGPUMemory") {
   char* A = nullptr;
   size_t maxGpuMem = 0, availableMem = 0;

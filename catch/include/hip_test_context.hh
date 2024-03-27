@@ -47,9 +47,15 @@ THE SOFTWARE.
 #if defined(__HIP_PLATFORM_AMD__)
 #define HT_AMD 1
 #define HT_NVIDIA 0
+#define HT_SPIRV 0
 #elif defined(__HIP_PLATFORM_NVIDIA__)
 #define HT_AMD 0
 #define HT_NVIDIA 1
+#define HT_SPIRV 0
+#elif defined(__HIP_PLATFORM_CLANG__) || defined(__HIP_PLATFORM_SPIRV__)
+#define HT_AMD 0
+#define HT_NVIDIA 0
+#define HT_SPIRV 1
 #else
 #error "Platform not recognized"
 #endif
@@ -74,12 +80,12 @@ struct HCResult {
 
 class TestContext {
   bool p_windows = false, p_linux = false;  // OS
-  bool amd = false, nvidia = false;         // HIP Platform
+  bool amd = false, nvidia = false, spirv = false;         // HIP Platform
   std::string exe_path;
   std::string current_test;
   std::set<std::string> skip_test;
   std::string json_file_;
-  std::vector<std::string> platform_list_ = {"amd", "nvidia"};
+  std::vector<std::string> platform_list_ = {"amd", "nvidia", "spirv"};
   std::vector<std::string> os_list_ = {"windows", "linux", "all"};
   std::vector<std::string> amd_arch_list_ = {};
 
@@ -141,6 +147,7 @@ class TestContext {
   bool isLinux() const;
   bool isNvidia() const;
   bool isAmd() const;
+  bool isSpirv() const;
   bool skipTest() const;
 
   const std::string& getCurrentTest() const { return current_test; }

@@ -1401,7 +1401,12 @@ static void captureStrmThread(hipGraph_t* graph, int* Ah, int* Ad, int* Bh, int*
   std::thread t1(strmSyncThread, Ah, Ad, Bh, Bd, BLOCKSIZE, error);
   t1.join();
   myadd<<<GRIDSIZE, BLOCKSIZE, 0, stream[0]>>>(Ad, Bd);
-  HIP_CHECK(hipStreamEndCapture(stream[0], graph));  // End Capture
+  if (flag == hipStreamCaptureModeGlobal) {
+    HIP_CHECK_ERROR(hipStreamEndCapture(stream[0], graph),
+                    hipErrorStreamCaptureInvalidated);  // End Capture
+  } else {
+    HIP_CHECK(hipStreamEndCapture(stream[0], graph));  // End Capture
+  }
 }
 
 TEST_CASE("Unit_hipStreamBeginCapture_StreamSync_OngoingCapture_MThread") {
@@ -1445,13 +1450,11 @@ TEST_CASE("Unit_hipStreamBeginCapture_StreamSync_OngoingCapture_MThread") {
     REQUIRE(error == hipErrorStreamCaptureUnsupported);
   }
 #endif
-#if HT_AMD
   SECTION("Capture Flag = hipStreamCaptureModeGlobal Multithreaded") {
     captureStrmThread(&graph, Ah.host_ptr(), Ad.ptr(), Bh.host_ptr(), Bd.ptr(), BLOCKSIZE, GRIDSIZE,
                       hipStreamCaptureModeGlobal, &error);
     REQUIRE(error == hipErrorStreamCaptureUnsupported);
   }
-#endif
   SECTION("Capture Flag = hipStreamCaptureModeThreadLocal Multithreaded") {
     captureStrmThread(&graph, Ah.host_ptr(), Ad.ptr(), Bh.host_ptr(), Bd.ptr(), BLOCKSIZE, GRIDSIZE,
                       hipStreamCaptureModeThreadLocal, &error);

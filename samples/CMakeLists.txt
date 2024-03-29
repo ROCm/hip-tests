@@ -88,7 +88,7 @@ if(ENABLE_ADDRESS_SANITIZER)
 endif()
 
 add_custom_target(build_samples
-            COMMAND make build_intro build_utils build_cookbook
+            DEPENDS build_intro build_utils build_cookbook
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 add_subdirectory(0_Intro)

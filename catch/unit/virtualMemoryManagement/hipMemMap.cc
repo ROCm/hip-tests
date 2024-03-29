@@ -224,8 +224,11 @@ TEST_CASE("Unit_hipMemMap_PhysicalMemory_Map2MultVMMs") {
   for (int buf = 0; buf < num_buf; buf++) {
     HIP_CHECK(hipMemMap(ptrA[buf], size_mem, 0, handle, 0));
   }
+  // Set access for all the buffers.
+  for (int buf = 0; buf < num_buf; buf++) {
+    HIP_CHECK(hipMemSetAccess(ptrA[buf], size_mem, &accessDesc, 1));
+  }
   // Copy data to VMM via ptrA[0]
-  HIP_CHECK(hipMemSetAccess(ptrA[0], size_mem, &accessDesc, 1));
   HIP_CHECK(hipMemcpyHtoD(ptrA[0], A_h.data(), buffer_size));
   // Validate the data contained in VMM using ptrA[0], ptrA[1],
   // ......, ptrA[num_buf-1]
@@ -234,6 +237,11 @@ TEST_CASE("Unit_hipMemMap_PhysicalMemory_Map2MultVMMs") {
     HIP_CHECK(hipMemcpyDtoH(B_h.data(), ptrA[buf], buffer_size));
     REQUIRE(true == std::equal(B_h.begin(), B_h.end(), A_h.data()));
   }
+
+  for (int buf = 0; buf < num_buf; buf++) {
+    HIP_CHECK(hipMemUnmap(ptrA[buf], size_mem));
+  }
+
   // Release resources
   HIP_CHECK(hipMemRelease(handle));
   for (int buf = 0; buf < num_buf; buf++) {

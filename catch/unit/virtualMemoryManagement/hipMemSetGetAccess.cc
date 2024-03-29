@@ -361,11 +361,17 @@ TEST_CASE("Unit_hipMemSetAccess_FuncTstOnMultDev") {
     accessDesc.flags = hipMemAccessFlagsProtReadWrite;
     // Make the address accessible to GPU deviceId
     std::vector<int> A_h(N), B_h(N);
+    // Set Device, for kernel launch to be launched in the right device.
     HIP_CHECK(hipMemSetAccess(ptrA, size_mem, &accessDesc, 1));
     for (int idx = 0; idx < N; idx++) {
       A_h[idx] = idx;
     }
     HIP_CHECK(hipMemcpyHtoD(ptrA, A_h.data(), buffer_size));
+        // Set the A_h to verify with square kernel.
+    for (int idx = 0; idx < N; idx++) {
+      A_h[idx] = idx * idx;
+    }
+    HIP_CHECK(hipSetDevice(deviceId));
     // Launch square kernel
     hipLaunchKernelGGL(square_kernel, dim3(N / THREADS_PER_BLOCK), dim3(THREADS_PER_BLOCK), 0, 0,
                        static_cast<int*>(ptrA));

@@ -82,3 +82,46 @@ TEST_CASE("Unit_hipFreeAsync_Negative_Parameters") {
 * End doxygen group StreamOTest.
 * @}
 */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Functional test cases to trigger capturehipFreeAsync internal api
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipFreeAsync
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.0
+ */
+TEST_CASE("Unit_hipFreeAsync_capturehipFreeAsync") {
+  HIP_CHECK(hipSetDevice(0));
+  hipGraph_t graph{nullptr};
+  hipGraphExec_t graphExec{nullptr};
+  hipStream_t stream;
+  hipMemPool_t memPool;
+  int rows, cols;
+  rows = GENERATE(3, 4, 1024);
+  cols = GENERATE(3, 4, 1024);
+  HIP_CHECK(hipDeviceGetDefaultMemPool(&memPool, 0));
+  HIP_CHECK(hipStreamCreate(&stream));
+  int* devMem;
+
+  // Start Capturing
+  HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
+  HIP_CHECK(hipMallocFromPoolAsync(reinterpret_cast<void**>(&devMem),
+                                   sizeof(int) * rows * cols, memPool,
+                                   stream));
+  HIP_CHECK(hipFreeAsync(devMem, stream));
+  // End Capture
+  HIP_CHECK(hipStreamEndCapture(stream, &graph));
+
+  // Create and Launch Executable Graphs
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+  HIP_CHECK(hipGraphLaunch(graphExec, stream));
+  HIP_CHECK(hipStreamSynchronize(stream));
+
+  HIP_CHECK(hipGraphExecDestroy(graphExec));
+  HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipStreamDestroy(stream));
+}

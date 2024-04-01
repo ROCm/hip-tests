@@ -189,3 +189,64 @@ TEST_CASE("Unit_hipMemcpy2DAsync_Negative_Parameters") {
                   dst_alloc.width(), dst_alloc.height(), hipMemcpyDeviceToDevice);
   }
 }
+
+/**
+* Test Description
+* ------------------------
+*  - Basic scenario to trigger capturehipMemcpy2DAsync internal api for
+*  improved code coverage
+* Test source
+* ------------------------
+*  - unit/memory/hipMemcpy2DAsync.cc
+* Test requirements
+* ------------------------
+*  - HIP_VERSION >= 6.0
+*/
+TEMPLATE_TEST_CASE("Unit_hipMemcpy2DAsync_capturehipMemcpy2DAsync", "", int,
+                   float, double) {
+  TestType *A_h, *B_h, *A_d;
+  hipGraph_t graph{nullptr};
+  hipGraphExec_t graphExec{nullptr};
+  int row, col;
+  row = GENERATE(3, 4, 100);
+  col = GENERATE(3, 4, 100);
+  hipStream_t stream;
+  size_t devPitch;
+
+  A_h = reinterpret_cast<TestType*>(malloc(sizeof(TestType) * row * col));
+  B_h = reinterpret_cast<TestType*>(malloc(sizeof(TestType) * row * col));
+  HIP_CHECK(hipStreamCreate(&stream));
+  for (int i = 0; i < row; i++) {
+    for (int j = 0; j < col; j++) {
+      B_h[i * col + j] = i * col + j;
+    }
+  }
+  HIP_CHECK(hipMallocPitch(reinterpret_cast<void **>(&A_d), &devPitch,
+                           sizeof(TestType) * col, row));
+  HIP_CHECK(hipMemcpy2D(A_d, devPitch, B_h, sizeof(TestType) * col,
+                        sizeof(TestType) * col, row, hipMemcpyHostToDevice));
+
+  HIP_CHECK(hipDeviceSynchronize());
+  HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
+  HIP_CHECK(hipMemcpy2DAsync(A_h, col * sizeof(TestType), A_d, devPitch,
+                             col * sizeof(TestType), row,
+                             hipMemcpyDeviceToHost, stream));
+  HIP_CHECK(hipStreamEndCapture(stream, &graph));
+  HIP_CHECK(hipDeviceSynchronize());
+
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+  HIP_CHECK(hipGraphLaunch(graphExec, stream));
+  HIP_CHECK(hipStreamSynchronize(stream));
+
+  for (int i = 0; i < row; i++) {
+    for (int j = 0; j < col; j++) {
+      REQUIRE(A_h[i * col + j] == B_h[i * col + j]);
+    }
+  }
+  HIP_CHECK(hipGraphExecDestroy(graphExec));
+  HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipStreamDestroy(stream));
+  HIP_CHECK(hipFree(A_d));
+  free(A_h);
+  free(B_h);
+}

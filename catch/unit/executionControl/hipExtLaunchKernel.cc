@@ -174,3 +174,49 @@ TEST_CASE("Unit_hipExtLaunchKernel_Negative_Parameters") {
                     hipErrorInvalidValue);
   }
 }
+
+/**
+* Test Description
+* ------------------------
+*  - Basic functional testcase to trigger capturehipExtLaunchKernel internal api
+*  to improve code coverage.
+* Test source
+* ------------------------
+*  - unit/executionControl/hipExtLaunchKernel.cc
+* Test requirements
+* ------------------------
+*  - HIP_VERSION >= 6.0
+*/
+TEST_CASE("Unit_hipExtLaunchKernel_capturehipExtLaunchKernel") {
+  hipGraph_t graph{nullptr};
+  hipGraphExec_t graphExec{nullptr};
+  hipStream_t stream;
+  HIP_CHECK(hipStreamCreate(&stream));
+  int *A_d;
+  int *A_h = nullptr;
+  A_h = reinterpret_cast<int*>(malloc(sizeof(int)));
+  HIP_CHECK(hipMalloc(reinterpret_cast<void**>(&A_d), sizeof(int)));
+  void *args[1] = {&A_d};
+  // Begin Capture operation
+  HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
+  HIP_CHECK(hipExtLaunchKernel(reinterpret_cast<void*>(kernel_42),
+                               dim3{1, 1, 1}, dim3{1, 1, 1}, args, 0, stream,
+                               nullptr, nullptr, 0u));
+  // End Capture
+  HIP_CHECK(hipStreamEndCapture(stream, &graph));
+
+  // Create and Launch Executable Graphs
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+  HIP_CHECK(hipGraphLaunch(graphExec, stream));
+  HIP_CHECK(hipStreamSynchronize(stream));
+
+  HIP_CHECK(hipMemcpyDtoH(A_h, A_d, sizeof(int)));
+  REQUIRE(A_h != nullptr);
+  REQUIRE(*A_h == 42);
+
+  HIP_CHECK(hipGraphExecDestroy(graphExec));
+  HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipStreamDestroy(stream));
+  HIP_CHECK(hipFree(A_d));
+  free(A_h);
+}

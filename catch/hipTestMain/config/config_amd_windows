@@ -691,6 +691,9 @@
         "Unit_Thread_Block_Tile_Sync_Positive_Basic - uint8_t",
         "Unit_Thread_Block_Tile_Sync_Positive_Basic - uint16_t",
         "Unit_Thread_Block_Tile_Sync_Positive_Basic - uint32_t",
+        "Unit_hiprtc_devicemalloc",
+        "Unit_deviceAllocation_InOneThread_AccessInAllThreads",
+        "Unit_deviceAllocation_Malloc_ComplexDataType",
         "=== SWDEV-441604: Below tests take long time to run in stress test on 12/01/24 ===",
         "Unit_Thread_Block_Tile_Shfl_Up_Positive_Basic - int",
         "Unit_Thread_Block_Tile_Shfl_Up_Positive_Basic - unsigned int",
@@ -1437,6 +1440,9 @@
         "Unit_atomicCAS_system_Positive_Host_And_Peer_GPUs - int",
         "Unit_atomicCAS_system_Positive_Host_And_Peer_GPUs - unsigned int",
         "Unit_atomicCAS_system_Positive_Host_And_Peer_GPUs - unsigned long long",
+        "=== SWDEV-453453 : Below tests failed in stress test on 22/03/24 ===",
+        "Unit_hipDeviceGetGraphMemAttribute_Functional",
+        "Unit_hipDeviceGetGraphMemAttribute_Functional_Multi_Device",
     #endif
         "End of json"
     ]

@@ -32,6 +32,11 @@ hip_add_exe_to_target(NAME MultiProc
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests
                       LINKER_LIBS hiprtc)
+elseif(HIP_PLATFORM MATCHES "spirv")
+hip_add_exe_to_target(NAME MultiProc
+                    TEST_SRC ${TEST_SRC}
+                    TEST_TARGET_NAME build_tests
+                    )
 endif()
 
 if(UNIX)

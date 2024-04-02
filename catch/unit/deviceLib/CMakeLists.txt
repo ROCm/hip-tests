@@ -189,6 +189,4 @@ elseif(HIP_PLATFORM MATCHES "nvidia" OR HIP_PLATFORM MATCHES "spirv")
                       COMPILE_OPTIONS -Wno-deprecated-declarations) #--Wno-deprecated-declarations unrecognized clang++
 endif()
 
-if (NOT HIP_PLATFORM MATCHES "spirv")
-  add_dependencies(build_tests kerDevAllocMultCO.code kerDevWriteMultCO.code kerDevFreeMultCO.code kerDevAllocSingleKer.code)
-endif()
+add_dependencies(build_tests kerDevAllocMultCO.code kerDevWriteMultCO.code kerDevFreeMultCO.code kerDevAllocSingleKer.code)

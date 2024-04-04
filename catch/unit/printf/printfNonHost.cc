@@ -19,7 +19,7 @@
    THE SOFTWARE.
  */
 #include <hip_test_common.hh>
- 
+
 
 #define ITER_COUNT 61681
 #define KERNEL_ITERATIONS 15
@@ -65,6 +65,12 @@ __global__ void kernel_printf_thread(int *count) {
 */
 
 TEST_CASE("Unit_NonHost_Printf_basic") {
+  int pcieAtomic = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&pcieAtomic, hipDeviceAttributeHostNativeAtomicSupported, 0));
+  if (!pcieAtomic) {
+    HipTest::HIP_SKIP_TEST("Device doesn't support pcie atomic, Skipped");
+    return;
+  }
   int *count{nullptr}, *count_d{nullptr};
 
   count = reinterpret_cast<int*>(malloc(sizeof(int)));
@@ -93,6 +99,12 @@ TEST_CASE("Unit_NonHost_Printf_basic") {
  */
 
 TEST_CASE("Unit_NonHost_Printf_loop") {
+  int pcieAtomic = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&pcieAtomic, hipDeviceAttributeHostNativeAtomicSupported, 0));
+  if (!pcieAtomic) {
+    HipTest::HIP_SKIP_TEST("Device doesn't support pcie atomic, Skipped");
+    return;
+  }
   int *count{nullptr}, *count_d{nullptr};
 
   count = reinterpret_cast<int*>(malloc(ITER_COUNT * sizeof(int)));
@@ -131,6 +143,12 @@ TEST_CASE("Unit_NonHost_Printf_loop") {
  */
 
 TEST_CASE("Unit_NonHost_Printf_multiple_Threads") {
+  int pcieAtomic = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&pcieAtomic, hipDeviceAttributeHostNativeAtomicSupported, 0));
+  if (!pcieAtomic) {
+    HipTest::HIP_SKIP_TEST("Device doesn't support pcie atomic, Skipped");
+    return;
+  }
   int *count{nullptr}, *count_d{nullptr};
 
   count = reinterpret_cast<int*>(malloc(ITER_COUNT_FOR_THREAD * sizeof(int)));
@@ -172,6 +190,12 @@ TEST_CASE("Unit_NonHost_Printf_multiple_Threads") {
  */
 
 TEST_CASE("Unit_NonHost_Printf_BufferAvailability") {
+  int pcieAtomic = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&pcieAtomic, hipDeviceAttributeHostNativeAtomicSupported, 0));
+  if (!pcieAtomic) {
+    HipTest::HIP_SKIP_TEST("Device doesn't support pcie atomic, Skipped");
+    return;
+  }
   int *count{nullptr}, *count_d{nullptr};
 
   count = reinterpret_cast<int*>(malloc((ITER_COUNT-1) * sizeof(int)));

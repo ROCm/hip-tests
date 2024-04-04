@@ -41,6 +41,12 @@ THE SOFTWARE.
 */
 
 TEST_CASE("Unit_Buffered_Printf_Flags") {
+  int pcieAtomic = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&pcieAtomic, hipDeviceAttributeHostNativeAtomicSupported, 0));
+  if (!pcieAtomic) {
+    HipTest::HIP_SKIP_TEST("Device doesn't support pcie atomic, Skipped");
+    return;
+  }
   std::string reference(R"here(00000042
 -0000042
 00000042

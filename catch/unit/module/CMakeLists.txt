@@ -19,25 +19,72 @@
 # SOFTWARE.
 
 # Common Tests - Test independent of all platforms
-if(HIP_PLATFORM MATCHES "amd")
 set(TEST_SRC
-    hipExtModuleLaunchKernel.cc
+    hip_module_common.cc
+    hipModuleLoad.cc
+    hipModuleLoadData.cc
+    hipModuleLoadDataEx.cc
+    hipModuleUnload.cc
+    hipModuleGetFunction.cc
+    hipModuleLaunchKernel.cc
+    hipModuleGetGlobal.cc
+    hipModuleGetTexRef.cc
 )
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code
+                   COMMAND ${CMAKE_CXX_COMPILER} --genco --std=c++17 ${CMAKE_CURRENT_SOURCE_DIR}/get_function_module.cc
+                   -o get_function_module.code
+                   -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/get_function_module.cc)
+add_custom_target(get_function_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code)
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/launch_kernel_module.code
+                   COMMAND ${CMAKE_CXX_COMPILER} --genco --std=c++17 ${CMAKE_CURRENT_SOURCE_DIR}/launch_kernel_module.cc
+                   -o launch_kernel_module.code
+                   -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/launch_kernel_module.cc)
+add_custom_target(launch_kernel_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/launch_kernel_module.code)
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/get_global_test_module.code
+                   COMMAND ${CMAKE_CXX_COMPILER} --genco --std=c++17 ${CMAKE_CURRENT_SOURCE_DIR}/get_global_test_module.cc
+                   -o get_global_test_module.code
+                   -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/get_global_test_module.cc)
+add_custom_target(get_global_test_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/get_global_test_module.code)
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/get_tex_ref_module.code
+                   COMMAND ${CMAKE_CXX_COMPILER} --genco --std=c++17 ${CMAKE_CURRENT_SOURCE_DIR}/get_tex_ref_module.cc
+                   -o get_tex_ref_module.code
+                   -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/get_tex_ref_module.cc)
+add_custom_target(get_tex_ref_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/get_tex_ref_module.code)
 
 # Note to pass arch use format like -DOFFLOAD_ARCH_STR="--offload-arch=gfx900  --offload-arch=gfx906"
 # having space at the start/end of OFFLOAD_ARCH_STR can cause build failures
+
+if(HIP_PLATFORM MATCHES "amd")
+set(TEST_SRC
+    ${TEST_SRC}
+    hipExtModuleLaunchKernel.cc)
+
+add_custom_target(empty_module.code
+                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
+                  ${CMAKE_CURRENT_SOURCE_DIR}/empty_module.cc
+                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/empty_module.code
+                  -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
+                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 
 add_custom_target(copyKernel.code
                   COMMAND ${CMAKE_CXX_COMPILER} -mcode-object-version=5 --genco ${OFFLOAD_ARCH_STR}
                   ${CMAKE_CURRENT_SOURCE_DIR}/copyKernel.cc
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copyKernel.code
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/
+                  -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 
 add_custom_target(copyKernel.s
                   COMMAND ${CMAKE_CXX_COMPILER} -mcode-object-version=5 -S ${CMAKE_CURRENT_SOURCE_DIR}/copyKernel.cc
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copyKernel.s
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/
+                  -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 
 if(UNIX)
@@ -49,7 +96,7 @@ add_custom_target(copiousArgKernel.code
                   COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
                   ${CMAKE_CURRENT_SOURCE_DIR}/copiousArgKernel.cc
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copiousArgKernel.code
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/
+                  -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 
 add_custom_target(copiousArgKernel0.code
@@ -57,7 +104,7 @@ add_custom_target(copiousArgKernel0.code
                   -mllvm -amdgpu-kernarg-preload-count=0
                   ${CMAKE_CURRENT_SOURCE_DIR}/copiousArgKernel.cc
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copiousArgKernel0.code
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/
+                  -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 
 add_custom_target(copiousArgKernel1.code
@@ -65,7 +112,7 @@ add_custom_target(copiousArgKernel1.code
                   -mllvm -amdgpu-kernarg-preload-count=1
                   ${CMAKE_CURRENT_SOURCE_DIR}/copiousArgKernel.cc
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copiousArgKernel1.code
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/
+                  -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 
 add_custom_target(copiousArgKernel2.code
@@ -73,7 +120,7 @@ add_custom_target(copiousArgKernel2.code
                   -mllvm -amdgpu-kernarg-preload-count=2
                   ${CMAKE_CURRENT_SOURCE_DIR}/copiousArgKernel.cc
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copiousArgKernel2.code
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/
+                  -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 
 add_custom_target(copiousArgKernel3.code
@@ -81,7 +128,7 @@ add_custom_target(copiousArgKernel3.code
                   -mllvm -amdgpu-kernarg-preload-count=3
                   ${CMAKE_CURRENT_SOURCE_DIR}/copiousArgKernel.cc
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copiousArgKernel3.code
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/
+                  -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 
 add_custom_target(copiousArgKernel16.code
@@ -89,7 +136,7 @@ add_custom_target(copiousArgKernel16.code
                   -mllvm -amdgpu-kernarg-preload-count=16
                   ${CMAKE_CURRENT_SOURCE_DIR}/copiousArgKernel.cc
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copiousArgKernel16.code
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/
+                  -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 
 add_custom_target(copiousArgKernel17.code
@@ -97,14 +144,30 @@ add_custom_target(copiousArgKernel17.code
                   -mllvm -amdgpu-kernarg-preload-count=17
                   ${CMAKE_CURRENT_SOURCE_DIR}/copiousArgKernel.cc
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copiousArgKernel17.code
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/
+                  -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 endif()
+endif()
 
+if(HIP_PLATFORM MATCHES "amd")
+    set(RTCLIB "hiprtc")
+else()
+    set(RTCLIB "nvrtc")
+endif()
 hip_add_exe_to_target(NAME ModuleTest
   TEST_SRC ${TEST_SRC}
-  TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
+  TEST_TARGET_NAME build_tests
+  LINKER_LIBS ${RTCLIB}
+  COMMON_SHARED_SRC ${COMMON_SHARED_SRC}
+  COMPILE_OPTIONS -std=c++17)
 
+add_dependencies(ModuleTest get_function_module)
+add_dependencies(ModuleTest launch_kernel_module)
+add_dependencies(ModuleTest get_global_test_module)
+add_dependencies(ModuleTest get_tex_ref_module)
+
+if(HIP_PLATFORM MATCHES "amd")
+add_dependencies(build_tests empty_module.code)
 add_dependencies(build_tests copyKernel.code copyKernel.s)
 if(UNIX)
 add_dependencies(build_tests copiousArgKernel.code copiousArgKernel0.code copiousArgKernel1.code copiousArgKernel2.code

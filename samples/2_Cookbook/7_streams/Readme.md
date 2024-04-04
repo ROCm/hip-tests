@@ -7,7 +7,7 @@ In all Earlier tutorial we used single stream, In this tutorial, we'll explain h
 The various instances of kernel to be executed on device in exact launch order defined by Host are called streams. We can launch multiple streams on a single device. We will learn how to learn two streams which can we scaled with ease.
 
 ## Requirement:
-For hardware requirement and software installation [Installation](https://github.com/ROCm-Developer-Tools/HIP/blob/master/INSTALL.md)
+For hardware requirement and software installation [Installation](https://rocm.docs.amd.com/projects/HIP/en/latest/how_to_guides/install.html)
 
 ## prerequiste knowledge:
 
@@ -62,11 +62,10 @@ stream PASSED!
 ```
 
 ## More Info:
-- [HIP FAQ](https://github.com/ROCm-Developer-Tools/HIP/blob/master/docs/markdown/hip_faq.md)
-- [HIP Kernel Language](https://github.com/ROCm-Developer-Tools/HIP/blob/master/docs/markdown/hip_kernel_language.md)
-- [HIP Runtime API (Doxygen)](http://rocm-developer-tools.github.io/HIP)
-- [HIP Porting Guide](https://github.com/ROCm-Developer-Tools/HIP/blob/master/docs/markdown/hip_porting_guide.md)
-- [HIP Terminology](https://github.com/ROCm-Developer-Tools/HIP/blob/master/docs/markdown/hip_terms.md) (including Rosetta Stone of GPU computing terms across CUDA/HIP/HC/AMP/OpenL)
-- [HIPIFY](https://github.com/ROCm-Developer-Tools/HIPIFY/blob/master/README.md)
-- [Developer/CONTRIBUTING Info](https://github.com/ROCm-Developer-Tools/HIP/blob/master/CONTRIBUTING.md)
-- [Release Notes](https://github.com/ROCm-Developer-Tools/HIP/blob/master/RELEASE.md)
+- [HIP FAQ](https://rocm.docs.amd.com/projects/HIP/en/latest/user_guide/faq.html)
+- [HIP Kernel Language](https://rocm.docs.amd.com/projects/HIP/en/latest/reference/kernel_language.html)
+- [HIP Runtime API (Doxygen)](https://rocm.docs.amd.com/projects/HIP/en/latest/doxygen/html/index.html)
+- [HIP Porting Guide](https://rocm.docs.amd.com/projects/HIP/en/latest/user_guide/hip_porting_guide.html)
+- [HIP Terminology](https://rocm.docs.amd.com/projects/HIP/en/latest/reference/terms.html) (including comparing syntax for different compute terms across CUDA/HIP/OpenL)
+- [HIPIFY](https://rocm.docs.amd.com/projects/HIPIFY/en/latest/index.html)
+- [Developer/CONTRIBUTING Info](https://rocm.docs.amd.com/projects/HIP/en/latest/developer_guide/contributing.html)

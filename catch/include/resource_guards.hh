@@ -102,23 +102,25 @@ template <typename T> class LinearAllocGuard {
 
   ~LinearAllocGuard() {
     // No Catch macros, don't want to possibly throw in the destructor
-    switch (allocation_type_) {
-      case LinearAllocs::noAlloc:
-        break;
-      case LinearAllocs::malloc:
-        free(ptr_);
-        break;
-      case LinearAllocs::mallocAndRegister:
-        // Cast to void to suppress nodiscard warnings
-        static_cast<void>(hipHostUnregister(host_ptr_));
-        free(host_ptr_);
-        break;
-      case LinearAllocs::hipHostMalloc:
-        static_cast<void>(hipHostFree(ptr_));
-        break;
-      case LinearAllocs::hipMalloc:
-      case LinearAllocs::hipMallocManaged:
-        static_cast<void>(hipFree(ptr_));
+    if (ptr_ != nullptr) {
+      switch (allocation_type_) {
+        case LinearAllocs::noAlloc:
+          break;
+        case LinearAllocs::malloc:
+          free(ptr_);
+          break;
+        case LinearAllocs::mallocAndRegister:
+          // Cast to void to suppress nodiscard warnings
+          static_cast<void>(hipHostUnregister(host_ptr_));
+          free(host_ptr_);
+          break;
+        case LinearAllocs::hipHostMalloc:
+          static_cast<void>(hipHostFree(ptr_));
+          break;
+        case LinearAllocs::hipMalloc:
+        case LinearAllocs::hipMallocManaged:
+          static_cast<void>(hipFree(ptr_));
+      }
     }
   }
 
@@ -287,7 +289,7 @@ class StreamGuard {
   }
 
   ~StreamGuard() {
-    if (stream_type_ == Streams::created) {
+    if (stream_type_ == Streams::created && stream_ != nullptr) {
       static_cast<void>(hipStreamDestroy(stream_));
     }
   }
@@ -345,4 +347,46 @@ class StreamsGuard {
 
  private:
   std::vector<hipStream_t> streams_;
+};
+
+enum class MemPools { dev_default, created };
+
+class MemPoolGuard {
+ public:
+  MemPoolGuard(const MemPools mempool_type, int device,
+               hipMemAllocationHandleType handle_type = hipMemHandleTypeNone)
+      : mempool_type_{mempool_type}, device_{device}, handle_type_{handle_type} {
+    switch (mempool_type_) {
+      case MemPools::dev_default:
+        HIP_CHECK(hipDeviceGetDefaultMemPool(&mempool_, device_));
+        break;
+      case MemPools::created:
+        hipMemPoolProps pool_props;
+        pool_props.allocType = hipMemAllocationTypePinned;
+        pool_props.handleTypes = handle_type_;
+        pool_props.location.type = hipMemLocationTypeDevice;
+        pool_props.location.id = device_;
+        pool_props.win32SecurityAttributes = nullptr;
+        memset(pool_props.reserved, 0, sizeof(pool_props.reserved));
+
+        HIP_CHECK(hipMemPoolCreate(&mempool_, &pool_props));
+    }
+  }
+
+  MemPoolGuard(const MemPoolGuard&) = delete;
+  MemPoolGuard(MemPoolGuard&&) = delete;
+
+  ~MemPoolGuard() {
+    if (mempool_type_ == MemPools::created) {
+      static_cast<void>(hipMemPoolDestroy(mempool_));
+    }
+  }
+
+  hipMemPool_t mempool() const { return mempool_; }
+
+ private:
+  const MemPools mempool_type_;
+  int device_;
+  hipMemAllocationHandleType handle_type_;
+  hipMemPool_t mempool_;
 };

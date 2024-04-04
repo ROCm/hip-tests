@@ -32,6 +32,7 @@ set(TEST_SRC
   hipGraph.cc
   hipSimpleGraphWithKernel.cc
   hipGraphAddMemcpyNode.cc
+  hipGraphAddMemcpyNode_old.cc
   hipGraphClone.cc
   hipGraphInstantiateWithFlags.cc
   hipGraphAddHostNode.cc
@@ -54,6 +55,7 @@ set(TEST_SRC
   hipGraphAddMemcpyNode1D.cc
   hipGraphAddChildGraphNode.cc
   hipGraphNodeGetType.cc
+  hipGraphExecMemcpyNodeSetParams1D_old.cc
   hipGraphExecMemcpyNodeSetParams1D.cc
   hipGraphGetEdges.cc
   hipGraphGetEdges_old.cc
@@ -71,7 +73,10 @@ set(TEST_SRC
   hipGraphEventRecordNodeSetEvent.cc
   hipGraphEventWaitNodeGetEvent.cc
   hipGraphExecMemcpyNodeSetParams.cc
+  hipGraphExecMemcpyNodeSetParams_old.cc
   hipStreamBeginCapture.cc
+  hipGraphAddMemcpyNode1D_old.cc
+  hipGraphAddMemcpyNode1D.cc
   hipStreamBeginCapture_old.cc
   hipStreamIsCapturing.cc
   hipStreamIsCapturing_old.cc)
@@ -98,13 +103,16 @@ set(TEST_SRC
   hipGraphAddMemsetNode.cc
   hipGraphAddKernelNode.cc
   hipGraphMemcpyNodeGetParams.cc
+  hipGraphMemcpyNodeGetParams_old.cc
   hipGraphMemcpyNodeSetParams.cc
+  hipGraphMemcpyNodeSetParams_old.cc
   hipGraphKernelNodeGetParams.cc
   hipGraphKernelNodeSetParams.cc
   hipGraphExecKernelNodeSetParams.cc
   hipGraphLaunch.cc
   hipGraphLaunch_old.cc
   hipGraphMemcpyNodeSetParams1D.cc
+  hipGraphMemcpyNodeSetParams1D_old.cc
   hipGraphExecMemcpyNodeSetParamsToSymbol_old.cc
   hipGraphExecMemcpyNodeSetParamsToSymbol.cc
   hipGraphNodeGetDependentNodes.cc
@@ -140,9 +148,12 @@ set(TEST_SRC
   hipGraphKernelNodeGetAttribute.cc
   hipGraphKernelNodeSetAttribute.cc
   hipGraphMemAllocNodeGetParams.cc
+  hipDrvGraphAddMemcpyNode.cc
+  hipGraphAddMemAllocNode.cc
+  hipGraphAddMemFreeNode.cc
 )
 
-add_custom_target(add_Kernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/add_Kernel.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../graph/add_Kernel.code -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
+add_custom_target(add_Kernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/add_Kernel.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../graph/add_Kernel.code -I${HIP_PATH}/include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 
 hip_add_exe_to_target(NAME GraphsTest2
                       TEST_SRC ${TEST_SRC}

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#include "printf_negative_kernels_rtc.hh"
+
 #include <hip_test_common.hh>
 #include <hip_test_process.hh>
 
-TEST_CASE("Unit_printf_specifier") {
-#ifdef __HIP_PLATFORM_NVIDIA__
+/**
+* @addtogroup printf printf
+* @{
+* @ingroup PrintfTest
+* `int printf()` -
+* Method to print the content on output device.
+*/
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Sanity test for `printf(format, ...)` to check all format specifier specifier characters and
+ * precision/width sub-specifiers.
+ *
+ * Test source
+ * ------------------------
+ *    - unit/printf/printfSpecifier.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_Printf_specifier_Sanity_Positive") {
+#if HT_NVIDIA
   std::string reference(R"here(xyzzy
 %
 hello % world
@@ -33,13 +56,19 @@ hello % world
 %cxyzzy
 sep
 -42
+-42
 42
+52
+2a
+2A
 123.456000
 -123.456000
 -1.234560e+02
 1.234560E+02
 123.456
 -123.456
+0x1.edd2f1a9fbe77p+6
+-0X1.EDD2F1A9FBE77P+6
 x
 (null)
 (nil)
@@ -54,13 +83,19 @@ hello % world
 %cxyzzy
 sep
 -42
+-42
 42
+52
+2a
+2A
 123.456000
 -123.456000
 -1.234560e+02
 1.234560E+02
 123.456
 -123.456
+0x1.edd2f1a9fbe77p+6
+-0X1.EDD2F1A9FBE77P+6
 x
 
 (nil)
@@ -75,13 +110,19 @@ hello % world
 %cxyzzy
 sep
 -42
+-42
 42
+52
+2a
+2A
 123.456000
 -123.456000
 -1.234560e+02
 1.234560E+02
 123.456
 -123.456
+0x1.edd2f1a9fbe77p+6
+-0X1.EDD2F1A9FBE77P+6
 x
 
 0000000000000000
@@ -92,4 +133,45 @@ x
   hip::SpawnProc proc("printfSpecifiers_exe", true);
   REQUIRE(0 == proc.run());
   REQUIRE(proc.getOutput() == reference);
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *    - RTCs kernels that pass combinations of arguments of invalid types for printf
+ * Test source
+ * ------------------------
+ *    - unit/printf/printfSpecifiers.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 5.2
+ */
+TEST_CASE("Unit_Printf_Negative_Parameters_RTC") {
+  hiprtcProgram program{};
+
+  const auto program_source = kPrintfParam;
+
+  HIPRTC_CHECK(
+      hiprtcCreateProgram(&program, program_source, "printf_negative.cc", 0, nullptr, nullptr));
+  hiprtcResult result{hiprtcCompileProgram(program, 0, nullptr)};
+
+  // Get the compile log and count compiler error messages
+  size_t log_size{};
+  HIPRTC_CHECK(hiprtcGetProgramLogSize(program, &log_size));
+  std::string log(log_size, ' ');
+  HIPRTC_CHECK(hiprtcGetProgramLog(program, log.data()));
+  int error_count{0};
+
+  int expected_error_count{11};
+  std::string error_message{"error:"};
+
+  size_t n_pos = log.find(error_message, 0);
+  while (n_pos != std::string::npos) {
+    ++error_count;
+    n_pos = log.find(error_message, n_pos + 1);
+  }
+
+  HIPRTC_CHECK(hiprtcDestroyProgram(&program));
+  HIPRTC_CHECK_ERROR(result, HIPRTC_ERROR_COMPILATION);
+  REQUIRE(error_count == expected_error_count);
 }

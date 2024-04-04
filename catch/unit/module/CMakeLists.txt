@@ -68,7 +68,8 @@ add_custom_target(get_tex_ref_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/get
 if(HIP_PLATFORM MATCHES "amd")
 set(TEST_SRC
     ${TEST_SRC}
-    hipExtModuleLaunchKernel.cc)
+    hipExtModuleLaunchKernel.cc
+    hipHccModuleLaunchKernel.cc)
 
 add_custom_target(empty_module.code
                   COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}

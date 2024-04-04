@@ -47,6 +47,12 @@ THE SOFTWARE.
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_Printf_specifier_Sanity_Positive") {
+  int pcieAtomic = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&pcieAtomic, hipDeviceAttributeHostNativeAtomicSupported, 0));
+  if (!pcieAtomic) {
+    HipTest::HIP_SKIP_TEST("Device doesn't support pcie atomic, Skipped");
+    return;
+  }
 #if HT_NVIDIA
   std::string reference(R"here(xyzzy
 %
@@ -147,6 +153,12 @@ x
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_Printf_Negative_Parameters_RTC") {
+  int pcieAtomic = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&pcieAtomic, hipDeviceAttributeHostNativeAtomicSupported, 0));
+  if (!pcieAtomic) {
+    HipTest::HIP_SKIP_TEST("Device doesn't support pcie atomic, Skipped");
+    return;
+  }
   hiprtcProgram program{};
 
   const auto program_source = kPrintfParam;

@@ -179,3 +179,64 @@ TEST_CASE("Unit_hipMemset2D_UniqueWidthHeight") {
   free(A_h);
 }
 
+/**
+* Test Description
+* ------------------------
+*  - Basic functional testcase for triggering capturehipMemset2DAsync internal
+*  API to improve code coverage
+* Test source
+* ------------------------
+*  - unit/memory/hipMemset2D.cc
+* Test requirements
+* ------------------------
+*  - HIP_VERSION >= 6.0
+*/
+TEST_CASE("Unit_hipMemset2DAsync_capturehipMemset2DAsync") {
+  char *A_h, *B_h, *A_d;
+  hipGraph_t graph{nullptr};
+  hipGraphExec_t graphExec{nullptr};
+  int rows, cols;
+  rows = GENERATE(3, 4, 100);
+  cols = GENERATE(3, 4, 100);
+  hipStream_t stream;
+  size_t devPitch;
+
+  A_h = reinterpret_cast<char*>(malloc(sizeof(char) * rows * cols));
+  B_h = reinterpret_cast<char*>(malloc(sizeof(char) * rows * cols));
+  HIP_CHECK(hipStreamCreate(&stream));
+  for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < cols; j++) {
+      A_h[i * cols + j] = 'a';
+    }
+  }
+  HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&A_d), &devPitch,
+                           sizeof(char) * cols, rows));
+  HIP_CHECK(hipMemcpy2D(A_d, devPitch, A_h, sizeof(char) * cols,
+                        sizeof(char) * cols, rows, hipMemcpyHostToDevice));
+
+  HIP_CHECK(hipDeviceSynchronize());
+  HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
+  HIP_CHECK(hipMemset2DAsync(A_d, devPitch, 'b', sizeof(char) * cols, rows,
+                             stream));
+  HIP_CHECK(hipStreamEndCapture(stream, &graph));
+  HIP_CHECK(hipDeviceSynchronize());
+
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+  HIP_CHECK(hipGraphLaunch(graphExec, stream));
+  HIP_CHECK(hipStreamSynchronize(stream));
+
+  HIP_CHECK(hipMemcpy2D(B_h, sizeof(char) * cols, A_d, devPitch,
+                        sizeof(char) * cols, rows, hipMemcpyDeviceToHost));
+
+  for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < cols; j++) {
+      REQUIRE(B_h[i * cols + j] == 'b');
+    }
+  }
+  HIP_CHECK(hipGraphExecDestroy(graphExec));
+  HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipStreamDestroy(stream));
+  HIP_CHECK(hipFree(A_d));
+  free(A_h);
+  free(B_h);
+}

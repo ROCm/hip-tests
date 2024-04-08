@@ -382,7 +382,6 @@
         "Performance_hipMemcpy2D_HostToHost",
         "Performance_hipMemcpy2DAsync_HostToHost",
         "Unit_hipDeviceGetGraphMemAttribute_Positive_ReuseMemory",
-        "Unit_hipGraphAddNodeTypeEventWait_Positive_Basic",
         "Unit_hipDrvGraphAddMemsetNode_Negative_Parameters",
         "Unit_hipDrvGraphAddMemsetNode_hipMallocPitch_2D",
         "Unit_hipDrvGraphAddMemsetNode_hipMallocPitch_1D",

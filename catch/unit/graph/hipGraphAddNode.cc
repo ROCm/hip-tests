@@ -440,8 +440,8 @@ TEST_CASE("Unit_hipGraphAddNodeTypeEventWait_Positive_Basic") {
 
   // Create a event wait node in graph
   hipGraphNodeParams wait_node_params = {};
-  rec_node_params.type = hipGraphNodeTypeWaitEvent;
-  rec_node_params.eventWait.event = event;
+  wait_node_params.type = hipGraphNodeTypeWaitEvent;
+  wait_node_params.eventWait.event = event;
   HIP_CHECK(hipGraphAddNode(&event_wait_node, graph, &event_rec_node, 1, &wait_node_params));
 
   // Instantiate and launch the graph

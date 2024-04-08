@@ -363,7 +363,6 @@
         "Unit_hipFreeMipmappedArrayMultiTArray - int",
         "Unit_hipGraphExecMemcpyNodeSetParams_Positive_Basic",
         "Unit_hipGraphExecMemcpyNodeSetParams_Negative_Parameters",
-        "Unit_hipGraphMemcpyNodeSetParams_Negative_Parameters",
         "Unit_hipMemcpy3D_Positive_Synchronization_Behavior",
         "Unit_hipMemcpyParam2D_Positive_Synchronization_Behavior",
         "Unit_hipMemcpyAsync_Positive_Synchronization_Behavior",

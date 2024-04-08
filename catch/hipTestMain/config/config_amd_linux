@@ -240,7 +240,6 @@
         "Unit_hipFuncSetAttribute_Positive_PreferredSharedMemoryCarveout_Not_Supported",
         "Unit_hipLaunchCooperativeKernel_Negative_Parameters",
         "Unit_hipDeviceGetGraphMemAttribute_Positive_ReuseMemory",
-        "Unit_hipGraphAddNodeTypeEventWait_Positive_Basic",
         "Unit_hipDrvGraphAddMemsetNode_Negative_Parameters",
         "Unit_hipDrvGraphAddMemsetNode_hipMalloc3D_2D",
         "Unit_hipDrvGraphAddMemsetNode_hipMalloc3D_1D",

@@ -241,8 +241,8 @@ TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParams_Negative_Changing_Memcpy_Directi
   hipGraph_t graph = nullptr;
   HIP_CHECK(hipGraphCreate(&graph, 0));
 
-  auto params = GetMemcpy3DParms(make_hipPitchedPtr(dst, 0, sizeof(int), 0), make_hipPos(0, 0, 0),
-                                 make_hipPitchedPtr(src, 0, sizeof(int), 0), make_hipPos(0, 0, 0),
+  auto params = GetMemcpy3DParms(make_hipPitchedPtr(dst, sizeof(int), sizeof(int), 0), make_hipPos(0, 0, 0),
+                                 make_hipPitchedPtr(src, sizeof(int), sizeof(int), 0), make_hipPos(0, 0, 0),
                                  make_hipExtent(sizeof(int), 1, 1), dir);
 
   hipGraphNode_t node = nullptr;

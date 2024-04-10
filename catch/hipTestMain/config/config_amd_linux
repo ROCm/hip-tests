@@ -191,7 +191,6 @@
         "Unit_hipGraphicsUnmapResources_Negative_Parameters",
         "Unit_hipGraphicsUnregisterResource_Negative_Parameters",
         "SWDEV-443760: This test fails when device memory is used for kernel args",
-        "Unit_hipGraphExecMemcpyNodeSetParams1D_Negative",
         "=== Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/356 ===",
         "Unit_Device_Complex_Unary_Negative_Parameters_RTC",
         "Unit_Device_Complex_Binary_Negative_Parameters_RTC",

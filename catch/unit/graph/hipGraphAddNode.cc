@@ -326,6 +326,8 @@ static hipError_t MemcpyType3DWrapper(PtrVariant dst_ptr, hipPos dst_pos, PtrVar
  *    - HIP_VERSION >= 6.0
  */
 TEST_CASE("Unit_hipGraphAddNodeTypeMemcpy_Positive_Basic") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr bool async = false;
 
   SECTION("Device to host") { Memcpy3DDeviceToHostShell<async>(MemcpyType3DWrapper); }

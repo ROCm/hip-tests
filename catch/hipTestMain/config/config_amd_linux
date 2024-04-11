@@ -262,7 +262,6 @@
         "Unit_unsafeAtomicMax_Positive_Multi_Kernel_Same_Address - float",
         "Unit___hip_atomic_fetch_min_Positive_Wavefront_Adjacent_Addresses - double",
         "Unit___hip_atomic_fetch_min_Positive_Wavefront_Scattered_Addresses - double",
-        "Unit_AtomicBuiltins_Negative_Parameters_RTC",
         "SWDEV-446588 - Disable graph multi gpu testcases until graph has support for it",
         "Unit_hipGraphExecUpdate_Negative_MultiDevice_Context_Changed",
         "Unit_hipGraphMem_Alloc_Free_NodeGetParams_Functional_MultiDevice",

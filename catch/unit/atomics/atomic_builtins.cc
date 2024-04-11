@@ -83,10 +83,8 @@ void AtomicBuiltinsRTCWrapper(const char* program_source, int expected_errors_nu
 TEST_CASE("Unit_AtomicBuiltins_Negative_Parameters_RTC") {
   AtomicBuiltinsRTCWrapper(kBuiltinStore, 5, 5);
   AtomicBuiltinsRTCWrapper(kBuiltinLoad, 4, 4);
-  /* Begin: Should be 5 errors, 6 warnings for both. See EXSWHTEC-309*/
-  AtomicBuiltinsRTCWrapper(kBuiltinCompExWeak, 5, 2);
-  AtomicBuiltinsRTCWrapper(kBuiltinCompExStrong, 5, 2);
-  /* End. */
+  AtomicBuiltinsRTCWrapper(kBuiltinCompExWeak, 5, 7);
+  AtomicBuiltinsRTCWrapper(kBuiltinCompExStrong, 5, 7);
   AtomicBuiltinsRTCWrapper(kBuiltinExchange, 5, 2);
   AtomicBuiltinsRTCWrapper(kBuiltinFetchAdd, 5, 2);
   AtomicBuiltinsRTCWrapper(kBuiltinFetchAnd, 7, 2);

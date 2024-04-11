@@ -610,6 +610,8 @@ static void hipGraphClone_Test_hipGraphExecMemcpyNodeSetParams() {
 }
 
 TEST_CASE("Unit_hipGraphClone_Test_hipGraphExecMemcpyNodeSetParams") {
+  CHECK_IMAGE_SUPPORT
+
   hipGraphClone_Test_hipGraphExecMemcpyNodeSetParams();
 }
 

@@ -33,7 +33,7 @@ THE SOFTWARE.
 class MemsetD32Benchmark : public Benchmark<MemsetD32Benchmark> {
  public:
   MemsetD32Benchmark(LinearAllocs allocation_type, size_t size)
-      : dst_(allocation_type, size), size_(size) {}
+      : dst_(allocation_type, size * sizeof(int32_t)), size_(size) {}
 
   void operator()() {
     TIMED_SECTION(kTimerTypeEvent) {

@@ -33,7 +33,7 @@ THE SOFTWARE.
 class MemsetD32AsyncBenchmark : public Benchmark<MemsetD32AsyncBenchmark> {
  public:
   MemsetD32AsyncBenchmark(LinearAllocs allocation_type, size_t size)
-      : dst_(allocation_type, size), size_(size), stream_(Streams::created) {}
+      : dst_(allocation_type, size * sizeof(int32_t)), size_(size), stream_(Streams::created) {}
 
   void operator()() {
     TIMED_SECTION_STREAM(kTimerTypeEvent, stream_.stream()) {

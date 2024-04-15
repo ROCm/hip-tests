@@ -90,7 +90,7 @@ void Memcpy2DDeviceToDeviceShell(F memcpy_func, const hipStream_t kernel_stream 
   }
 
   LinearAllocGuard2D<int> src_alloc(cols * src_cols_mult, rows);
-  HIP_CHECK(hipSetDevice(src_device));
+  HIP_CHECK(hipSetDevice(dst_device));
   LinearAllocGuard2D<int> dst_alloc(cols, rows);
   HIP_CHECK(hipSetDevice(src_device));
   LinearAllocGuard<int> host_alloc(LinearAllocs::hipHostMalloc, dst_alloc.width() * rows);
@@ -181,6 +181,7 @@ void MemcpySyncBehaviorCheck(F memcpy_func, const bool should_sync,
   LaunchDelayKernel(std::chrono::milliseconds{300}, kernel_stream);
   HIP_CHECK(memcpy_func());
   if (should_sync) {
+    HIP_CHECK(hipStreamSynchronize(kernel_stream));
     HIP_CHECK(hipStreamQuery(kernel_stream));
   } else {
     HIP_CHECK_ERROR(hipStreamQuery(kernel_stream), hipErrorNotReady);

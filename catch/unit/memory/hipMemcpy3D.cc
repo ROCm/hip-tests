@@ -60,17 +60,29 @@ TEST_CASE("Unit_hipMemcpy3D_Positive_Synchronization_Behavior") {
 
   SECTION("Device to Pinned Host") { Memcpy3DDtoHPinnedSyncBehavior(Memcpy3DWrapper<>, true); }
 
-  SECTION("Device to Device") {
-#if HT_NVIDIA
-    Memcpy3DDtoDSyncBehavior(Memcpy3DWrapper<>, false);
-#else
-    Memcpy3DDtoDSyncBehavior(Memcpy3DWrapper<>, true);
-#endif
-  }
-
 #if HT_NVIDIA  // Disabled on AMD due to defect - EXSWHTEC-232
   SECTION("Host to Host") { Memcpy3DHtoHSyncBehavior(Memcpy3DWrapper<>, true); }
 #endif
+}
+
+TEST_CASE("Unit_hipMemcpy3D_Positive_DeviceToDevice_Synchronization_Behavior") {
+  CHECK_IMAGE_SUPPORT
+
+  LinearAllocGuard3D<int> src_alloc(make_hipExtent(32 * sizeof(int), 32, 8));
+  LinearAllocGuard3D<int> dst_alloc(make_hipExtent(32 * sizeof(int), 32, 8));
+  HipTest::BlockingContext b_context{nullptr};
+  hipStream_t kernel_stream{nullptr};
+
+  auto parms = GetMemcpy3DParms(dst_alloc.pitched_ptr(), make_hipPos(0, 0, 0), src_alloc.pitched_ptr(),
+                                make_hipPos(0, 0, 0), dst_alloc.extent(), hipMemcpyDeviceToDevice);
+
+  b_context.block_stream();
+  REQUIRE(b_context.is_blocked());
+  HIP_CHECK(hipMemcpy3D(&parms));
+  HIP_CHECK_ERROR(hipStreamQuery(kernel_stream), hipErrorNotReady);
+  b_context.unblock_stream();
+  HIP_CHECK(hipDeviceSynchronize());
+  REQUIRE(hipStreamQuery(kernel_stream) == hipSuccess);
 }
 
 TEST_CASE("Unit_hipMemcpy3D_Positive_Parameters") {

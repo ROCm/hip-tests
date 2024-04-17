@@ -535,7 +535,7 @@ TEST_CASE("Unit_hipDrvGraphAddMemcpyNode_Negative_Parameters") {
       invalid_ptr.pitch = extent.width - 1;
       auto params = GetDrvMemcpy3DParms(invalid_ptr, dst_pos, src_ptr, src_pos, extent, kind);
       HIP_CHECK_ERROR(hipDrvGraphAddMemcpyNode(&node, graph, nullptr, 0, &params, context),
-                      hipErrorInvalidPitchValue);
+                      hipErrorInvalidValue);
     }
 
     SECTION("srcPitch < width") {
@@ -543,7 +543,7 @@ TEST_CASE("Unit_hipDrvGraphAddMemcpyNode_Negative_Parameters") {
       invalid_ptr.pitch = extent.width - 1;
       auto params = GetDrvMemcpy3DParms(dst_ptr, dst_pos, invalid_ptr, src_pos, extent, kind);
       HIP_CHECK_ERROR(hipDrvGraphAddMemcpyNode(&node, graph, nullptr, 0, &params, context),
-                      hipErrorInvalidPitchValue);
+                      hipErrorInvalidValue);
     }
 
     SECTION("dstPitch > max pitch") {

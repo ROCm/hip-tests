@@ -236,6 +236,7 @@
         "Unit_hipMemCreate_ChkWithKerLaunch",
         "Unit_hipMemCreate_MapNonContiguousChunks",
         "Unit_hipMemMap_MapPartialPhysicalMem",
+        "Unit_hipMemMap_VMMMemoryReuse_MultiGPU",
         "Unit_hipMemSetAccess_SetGet",
         "Unit_hipMemSetAccess_MultDevSetGet",
         "Unit_hipMemSetAccess_EntireVMMRangeSetGet",

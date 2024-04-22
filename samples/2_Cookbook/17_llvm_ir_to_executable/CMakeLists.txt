@@ -2,9 +2,6 @@ project(llvm_ir_to_exe)
 
 cmake_minimum_required(VERSION 3.10)
 
-message(STATUS "This sample is temporarily disabled until fix for SWDEV-448422 is available.")
-return()
-
 if(UNIX)
   if(NOT DEFINED ROCM_PATH)
     set(ROCM_PATH "/opt/rocm" CACHE STRING "Default ROCM installation directory.")

@@ -1586,8 +1586,6 @@
     #if defined NAVI21
         "=== SWDEV-445961: These tests hang in PSDB stress test on 09/02/2024 ===",
         "Unit_hipStreamBeginCapture_hipStreamPerThread",
-        "=== SWDEV-453412 : Below test failed in stress test on 22/03/24 ===",
-        "Unit_hipDeviceName_gcnArchName_And_rocm_agent_enumerator",
     #endif
     #if defined NAVI3X
         "=== Below tests soft hang in stress test on 13/09/23 ===",
@@ -1613,8 +1611,6 @@
         "Unit_hipDeviceSynchronize_Functional",
         "Unit_hipStreamPerThread_StreamQuery",
         "Unit_hipMultiThreadStreams1_AsyncAsync",
-        "=== SWDEV-453412 : Below test failed in stress test on 22/03/24 ===",
-        "Unit_hipDeviceName_gcnArchName_And_rocm_agent_enumerator",
         "=== SWDEV-453415 : Below tests hang in stress test on 22/03/24 ===",
         "Unit_Warp_Shfl_Down_Positive_Basic - __half",
         "Unit_hipExtModuleLaunchKernel_Functional",

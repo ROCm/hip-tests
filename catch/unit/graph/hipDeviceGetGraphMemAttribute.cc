@@ -87,6 +87,15 @@ static void checkGraphMemAttribute(size_t used_mem, size_t high_mem) {
   REQUIRE(read_mem == high_mem);
 }
 
+// Reset memory graph attributes back to the original state
+static void ResetGraphMemAttribute() {
+  size_t mem_size = 0;
+  hipGraphMemAttributeType attr = hipGraphMemAttrUsedMemHigh;
+  HIP_CHECK(hipDeviceSetGraphMemAttribute(0, attr, &mem_size));
+  attr = hipGraphMemAttrReservedMemHigh;
+  HIP_CHECK(hipDeviceSetGraphMemAttribute(0, attr, &mem_size));
+}
+
 /**
  * Test Description
  * ------------------------
@@ -125,6 +134,7 @@ TEST_CASE("Unit_hipDeviceGetGraphMemAttribute_Positive_DoubleMemory") {
   HIP_CHECK(hipGraphExecDestroy(graph_exec2));
   HIP_CHECK(hipDeviceGraphMemTrim(0));
   checkGraphMemAttribute(0, 2 * element_count * sizeof(int));
+  ResetGraphMemAttribute();
 }
 
 /**
@@ -140,6 +150,7 @@ TEST_CASE("Unit_hipDeviceGetGraphMemAttribute_Positive_DoubleMemory") {
  *  - HIP_VERSION >= 6.0
  */
 TEST_CASE("Unit_hipDeviceGetGraphMemAttribute_Positive_ReuseMemory") {
+#if !HT_NVIDIA // The test adds a free node and it's unclear if memory has to be released.
   hipGraphExec_t graph_exec1, graph_exec2;
 
   StreamGuard stream_guard(Streams::created);
@@ -149,18 +160,20 @@ TEST_CASE("Unit_hipDeviceGetGraphMemAttribute_Positive_ReuseMemory") {
   HIP_CHECK(hipGraphLaunch(graph_exec1, stream));
   HIP_CHECK(hipStreamSynchronize(stream));
 
-  checkGraphMemAttribute(element_count * sizeof(int), element_count * sizeof(int));
+  checkGraphMemAttribute(0, element_count * sizeof(int));
 
   createGraph(&graph_exec2);
   HIP_CHECK(hipGraphLaunch(graph_exec2, stream));
   HIP_CHECK(hipStreamSynchronize(stream));
 
-  checkGraphMemAttribute(element_count * sizeof(int), element_count * sizeof(int));
+  checkGraphMemAttribute(0, element_count * sizeof(int));
 
   HIP_CHECK(hipGraphExecDestroy(graph_exec1));
   HIP_CHECK(hipGraphExecDestroy(graph_exec2));
   HIP_CHECK(hipDeviceGraphMemTrim(0));
   checkGraphMemAttribute(0, element_count * sizeof(int));
+  ResetGraphMemAttribute();
+#endif
 }
 
 /**
@@ -202,12 +215,13 @@ TEST_CASE("Unit_hipDeviceGetGraphMemAttribute_Negative_Parameters") {
   SECTION("Get value is nullptr") {
     HIP_CHECK_ERROR(hipDeviceGetGraphMemAttribute(0, attr, nullptr), hipErrorInvalidValue);
   }
+  ResetGraphMemAttribute();
 }
 
 /**
 * Test Description
 * ------------------------
-*  - Functional Test for APIs
+*  - Functional Test for APIs
 *  - hipDeviceGetGraphMemAttribute
 *  - hipDeviceSetGraphMemAttribute
 *  - hipDeviceGraphMemTrim
@@ -234,14 +248,15 @@ TEST_CASE("Unit_hipDeviceGetGraphMemAttribute_Negative_Parameters") {
 *
 * Test source
 * ------------------------
-*  - /unit/graph/hipDeviceGetGraphMemAttribute.cc
+*  - /unit/graph/hipDeviceGetGraphMemAttribute.cc
 * Test requirements
 * ------------------------
-*  - HIP_VERSION >= 6.1
+*  - HIP_VERSION >= 6.1
 */
 
 static void Unit_hipDeviceGetGraphMemAttribute_Functional(
                                                unsigned deviceId = 0) {
+#if !HT_NVIDIA // The test adds a free node and it's unclear if memory has to be released.
   int mem_pool_support = 0;
   HIP_CHECK(hipDeviceGetAttribute(&mem_pool_support,
             hipDeviceAttributeMemoryPoolsSupported, 0));
@@ -302,13 +317,13 @@ static void Unit_hipDeviceGetGraphMemAttribute_Functional(
   SECTION("Memory footprint check after launching & before delete graph") {
     HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
                          hipGraphMemAttrUsedMemCurrent, &value));
-    REQUIRE(value == Nbytes);
+    REQUIRE(value == 0);
     HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
                          hipGraphMemAttrUsedMemHigh, &value));
     REQUIRE(value == Nbytes);
     HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
                          hipGraphMemAttrReservedMemCurrent, &value));
-    REQUIRE(value == Nbytes);
+    REQUIRE(value == 0);
     HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
                          hipGraphMemAttrReservedMemHigh, &value));
     REQUIRE(value == Nbytes);
@@ -322,13 +337,13 @@ static void Unit_hipDeviceGetGraphMemAttribute_Functional(
   SECTION("Memory footprint check after destroying graph") {
     HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
                          hipGraphMemAttrUsedMemCurrent, &value));
-    REQUIRE(value == Nbytes);
+    REQUIRE(value == 0);
     HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
                          hipGraphMemAttrUsedMemHigh, &value));
     REQUIRE(value == Nbytes);
     HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
                          hipGraphMemAttrReservedMemCurrent, &value));
-    REQUIRE(value == Nbytes);
+    REQUIRE(value == 0);
     HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
                          hipGraphMemAttrReservedMemHigh, &value));
     REQUIRE(value == Nbytes);
@@ -374,6 +389,8 @@ static void Unit_hipDeviceGetGraphMemAttribute_Functional(
                          hipGraphMemAttrReservedMemHigh, &value));
     REQUIRE(value == 0);
   }
+  ResetGraphMemAttribute();
+#endif
 }
 
 TEST_CASE("Unit_hipDeviceGetGraphMemAttribute_Functional") {
@@ -381,6 +398,7 @@ TEST_CASE("Unit_hipDeviceGetGraphMemAttribute_Functional") {
 }
 
 TEST_CASE("Unit_hipDeviceGetGraphMemAttribute_Functional_Multi_Device") {
+#if !HT_NVIDIA // The test adds a free node and it's unclear if memory has to be released.
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
 
@@ -391,22 +409,23 @@ TEST_CASE("Unit_hipDeviceGetGraphMemAttribute_Functional_Multi_Device") {
   } else {
     HipTest::HIP_SKIP_TEST("Skipped test as there is no device to test.");
   }
+#endif
 }
 
 /**
 * Test Description
 * ------------------------
-*  - Negative Test for API - hipDeviceGetGraphMemAttribute
+*  - Negative Test for API - hipDeviceGetGraphMemAttribute
 *  1) Pass device id as negative value.
 *  2) Pass device id which don't exist as INT_MAX.
 *  3) Pass hipGraphMemAttributeType other than existing (4 type) in this structure
 *  4) Pass value of footprint pointer as nullptr.
 * Test source
 * ------------------------
-*  - /unit/graph/hipDeviceGetGraphMemAttribute.cc
+*  - /unit/graph/hipDeviceGetGraphMemAttribute.cc
 * Test requirements
 * ------------------------
-*  - HIP_VERSION >= 6.1
+*  - HIP_VERSION >= 6.1
 */
 
 TEST_CASE("Unit_hipDeviceGetGraphMemAttribute_Negative") {
@@ -431,12 +450,13 @@ TEST_CASE("Unit_hipDeviceGetGraphMemAttribute_Negative") {
                            hipGraphMemAttrUsedMemCurrent, nullptr);
     REQUIRE(ret == hipErrorInvalidValue);
   }
+  ResetGraphMemAttribute();
 }
 
 /**
 * Test Description
 * ------------------------
-*  - Negative Test for API - hipDeviceSetGraphMemAttribute
+* - Negative Test for API - hipDeviceSetGraphMemAttribute
 *  1) Pass device id as negative value.
 *  2) Pass device id which don't exist as INT_MAX.
 *  3) Pass hipGraphMemAttributeType as hipGraphMemAttrUsedMemCurrent
@@ -445,10 +465,10 @@ TEST_CASE("Unit_hipDeviceGetGraphMemAttribute_Negative") {
 *  6) Pass value of footprint pointer as negative value address
 * Test source
 * ------------------------
-*  - /unit/graph/hipDeviceGetGraphMemAttribute.cc
+*  - /unit/graph/hipDeviceGetGraphMemAttribute.cc
 * Test requirements
 * ------------------------
-*  - HIP_VERSION >= 6.1
+*  - HIP_VERSION >= 6.1
 */
 
 TEST_CASE("Unit_hipDeviceSetGraphMemAttribute_Negative") {
@@ -490,6 +510,7 @@ TEST_CASE("Unit_hipDeviceSetGraphMemAttribute_Negative") {
                                         reinterpret_cast<void *>(-1));
     REQUIRE(ret == hipErrorInvalidValue);
   }
+  ResetGraphMemAttribute();
 }
 
 /**

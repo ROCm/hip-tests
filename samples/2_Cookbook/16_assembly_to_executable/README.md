@@ -78,4 +78,4 @@ PASSED!
 
 **Note:** Currently, defined arch is `gfx900`, `gfx906`, `gfx908`, `gfx1010`,`gfx1030`,`gfx1100`,`gfx1101`,`gfx1102` and `gfx1103`. Any undefined arch can be modified with make argument `GPU_ARCHxx`.
 
-## For More Information, please refer to the HIP FAQ.
+## For More Information, please refer to [HIP FAQ](https://rocm.docs.amd.com/projects/HIP/en/latest/how-to/faq.html).

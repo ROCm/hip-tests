@@ -6,16 +6,15 @@ This tutorial is about how to use inline GCN asm in kernel. In this tutorial, we
 
 If you want to take advantage of the extra performance benefits of writing in assembly as well as take advantage of special GPU hardware features that were only available through assemby, then this tutorial is for you. In this tutorial we'll be explaining how to start writing inline asm in kernel.
 
-For more insight Please read the following blogs by Ben Sander
-[The Art of AMDGCN Assembly: How to Bend the Machine to Your Will](gpuopen.com/amdgcn-assembly)
-[AMD GCN Assembly: Cross-Lane Operations](http://gpuopen.com/amd-gcn-assembly-cross-lane-operations/)
+For more insight Please read the following blogs by Ben Sander:
+[The Art of AMDGCN Assembly: How to Bend the Machine to Your Will](https://gpuopen.com/learn/amdgcn-assembly/) and [AMD GCN Assembly: Cross-Lane Operations](http://gpuopen.com/amd-gcn-assembly-cross-lane-operations/).
 
 For more information:
-[AMD GCN3 ISA Architecture Manual](http://gpuopen.com/compute-product/amd-gcn3-isa-architecture-manual/)
-[User Guide for AMDGPU Back-end](llvm.org/docs/AMDGPUUsage.html)
+[AMD GCN3 ISA Architecture Manual](https://gpuopen.com/amd-isa-documentation/),
+[User Guide for AMDGPU Back-end](https://llvm.org/docs/AMDGPUUsage.html).
 
 ## Requirement:
-For hardware requirement and software installation [Installation](https://rocm.docs.amd.com/projects/HIP/en/latest/how_to_guides/install.html)
+For hardware requirement and software installation [Installation](https://rocm.docs.amd.com/projects/HIP/en/latest/install/install.html)
 
 ## prerequiste knowledge:
 
@@ -62,10 +61,11 @@ PASSED!
 ```
 
 ## More Info:
-- [HIP FAQ](https://rocm.docs.amd.com/projects/HIP/en/latest/user_guide/faq.html)
+## More Info:
+- [HIP FAQ](https://rocm.docs.amd.com/projects/HIP/en/latest/how-to/faq.html)
 - [HIP Kernel Language](https://rocm.docs.amd.com/projects/HIP/en/latest/reference/kernel_language.html)
 - [HIP Runtime API (Doxygen)](https://rocm.docs.amd.com/projects/HIP/en/latest/doxygen/html/index.html)
-- [HIP Porting Guide](https://rocm.docs.amd.com/projects/HIP/en/latest/user_guide/hip_porting_guide.html)
+- [HIP Porting Guide](https://rocm.docs.amd.com/projects/HIP/en/latest/how-to/hip_porting_guide.html)
 - [HIP Terminology](https://rocm.docs.amd.com/projects/HIP/en/latest/reference/terms.html) (including comparing syntax for different compute terms across CUDA/HIP/OpenL)
 - [HIPIFY](https://rocm.docs.amd.com/projects/HIPIFY/en/latest/index.html)
-- [Developer/CONTRIBUTING Info](https://rocm.docs.amd.com/projects/HIP/en/latest/developer_guide/contributing.html)
+- [Developer/CONTRIBUTING Info](https://github.com/ROCm/HIP/blob/develop/CONTRIBUTING.md)

@@ -106,4 +106,4 @@ PASSED!
 
 **Note:** Any undefined arch can be modified with make argument `GPU_ARCHxx`.
 
-## For More Information, please refer to the HIP FAQ.
+## For More Information, please refer to [HIP FAQ](https://rocm.docs.amd.com/projects/HIP/en/latest/how-to/faq.html).

@@ -218,14 +218,18 @@ TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParams1D_Negative_Parameters") {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParams1D_Negative_Changing_Memcpy_Direction") {
-  int host;
-  LinearAllocGuard<int> dev(LinearAllocs::hipMalloc, sizeof(int));
+  CHECK_IMAGE_SUPPORT
+
+  LinearAllocGuard<int> host1(LinearAllocs::hipHostMalloc, sizeof(int));
+  LinearAllocGuard<int> host2(LinearAllocs::hipHostMalloc, sizeof(int));
+  LinearAllocGuard<int> dev1(LinearAllocs::hipMalloc, sizeof(int));
+  LinearAllocGuard<int> dev2(LinearAllocs::hipMalloc, sizeof(int));
 
   const auto [dir, src, dst] =
-      GENERATE_REF(std::make_tuple(hipMemcpyHostToHost, &host, &host),
-                   std::make_tuple(hipMemcpyHostToDevice, &host, dev.ptr()),
-                   std::make_tuple(hipMemcpyDeviceToHost, dev.ptr(), &host),
-                   std::make_tuple(hipMemcpyDeviceToDevice, dev.ptr(), dev.ptr()));
+      GENERATE_REF(std::make_tuple(hipMemcpyHostToHost, host1.ptr(), host2.ptr()),
+                   std::make_tuple(hipMemcpyHostToDevice, host1.ptr(), dev1.ptr()),
+                   std::make_tuple(hipMemcpyDeviceToHost, dev1.ptr(), host1.ptr()),
+                   std::make_tuple(hipMemcpyDeviceToDevice, dev1.ptr(), dev2.ptr()));
 
   hipGraph_t graph = nullptr;
   HIP_CHECK(hipGraphCreate(&graph, 0));

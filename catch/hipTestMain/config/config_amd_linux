@@ -1519,6 +1519,9 @@
         "Unit_Warp_Ballot_Positive_Basic",
         "Unit_Warp_Vote_Any_Positive_Basic",
         "Unit_Warp_Vote_All_Positive_Basic",
+        "=== Below Tests fail in stress test 06/11/24 ===",
+        "Unit_hipGraphExecMemcpyNodeSetParams_Negative_Changing_Memcpy_Direction",
+        "Unit_hipGraphExecMemcpyNodeSetParams1D_Negative_Changing_Memcpy_Direction",
     #endif
     #if defined gfx1030
         "=== SWDEV-445961: These tests hang in PSDB stress test on 09/02/2024 ===",

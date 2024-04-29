@@ -34,8 +34,11 @@ set(CPACK_SET_DESTDIR TRUE)
 if(NOT DEFINED CPACK_INSTALL_PREFIX)
   set(CPACK_INSTALL_PREFIX "/opt/rocm/")
 endif()
-
-set(PKG_NAME hip-catch-${HIP_PLATFORM})
+if(BUILD_SHARED_LIBS)
+  set(PKG_NAME hip-catch-${HIP_PLATFORM})
+else()
+  set(PKG_NAME hip-catch-${HIP_PLATFORM}-static)
+endif()
 set(CPACK_PACKAGE_NAME ${PKG_NAME})
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "HIP: Heterogenous-computing Interface for Portability [CATCH TESTS]")
 set(CPACK_PACKAGE_DESCRIPTION "HIP:
@@ -49,8 +52,14 @@ set(CPACK_RPM_SPEC_MORE_DEFINE "%global __os_install_post %{nil}")
 
 set (CPACK_RPM_PACKAGE_AUTOREQ 0)
 # to remove hip-catch-* package during uninstallation of rocm
-set (CPACK_DEBIAN_PACKAGE_DEPENDS "rocm-core, hip-runtime-amd")
-set (CPACK_RPM_PACKAGE_REQUIRES "rocm-core, hip-runtime-amd")
+
+if(BUILD_SHARED_LIBS)
+  set (CPACK_DEBIAN_PACKAGE_DEPENDS "rocm-core, hip-runtime-amd")
+  set (CPACK_RPM_PACKAGE_REQUIRES "rocm-core, hip-runtime-amd")
+else()
+  set (CPACK_DEBIAN_PACKAGE_DEPENDS "rocm-core, hip-static-dev")
+  set (CPACK_RPM_PACKAGE_REQUIRES "rocm-core, hip-static-devel")
+endif()
 
 if(NOT WIN32)
 install(DIRECTORY ${PROJECT_BINARY_DIR}/${CATCH_BUILD_DIR}

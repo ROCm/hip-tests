@@ -22,6 +22,7 @@ cmake_minimum_required(VERSION 3.16.8)
 project(hip-samples)
 
 option(ENABLE_ADDRESS_SANITIZER "Option to enable ASAN build" OFF)
+option(BUILD_SHARED_LIBS "Use this option to link with shared hip runtime libraries" ON)
 
 # Read -DROCM_Path and env{ROCM_PATH}
 if(NOT DEFINED ROCM_PATH)

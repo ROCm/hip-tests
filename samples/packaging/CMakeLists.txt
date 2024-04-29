@@ -37,7 +37,11 @@ if(NOT DEFINED CPACK_INSTALL_PREFIX)
   set(CPACK_INSTALL_PREFIX "/opt/rocm/")
 endif()
 
-set(PKG_NAME hip-samples)
+if(BUILD_SHARED_LIBS)
+  set(PKG_NAME hip-samples)
+else()
+  set(PKG_NAME hip-samples-static)
+endif()
 set(CPACK_PACKAGE_NAME ${PKG_NAME})
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "HIP: Heterogenous-computing Interface for Portability [HIP SAMPLES]")
 set(CPACK_PACKAGE_DESCRIPTION "HIP:

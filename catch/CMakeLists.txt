@@ -7,7 +7,7 @@ set(CMAKE_CXX_COMPILER_WORKS 1)
 project(hiptests)
 
 option(ENABLE_ADDRESS_SANITIZER "Option to enable ASAN build" OFF)
-
+option(BUILD_SHARED_LIBS "Option for testing shared libraries" ON)
 # flag to generate standalone exe per src file.
 message(STATUS "STANDALONE_TESTS : ${STANDALONE_TESTS}")
 
@@ -63,6 +63,17 @@ set(HIPCONFIG_EXECUTABLE "${HIP_PATH}/bin/hipconfig${EXT}")
 execute_process(COMMAND ${HIPCONFIG_EXECUTABLE} --version
                 OUTPUT_VARIABLE HIP_VERSION
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+if(NOT WIN32)
+  if(NOT BUILD_SHARED_LIBS)
+    list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH} ${ROCM_PATH}/llvm)
+    find_package(amd_comgr)
+    find_package(hsa-runtime64)
+    link_libraries(hsa-runtime64::hsa-runtime64)
+    link_libraries(amd_comgr)
+    link_libraries(hiprtc-builtins)
+  endif() # end BUILD_SHARED_LIBS
+endif() # end win32
 
 # enforce c++17
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++17")

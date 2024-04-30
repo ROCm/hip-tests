@@ -131,3 +131,8 @@ TEST_CASE("Unit_Rtc_TextureTypes_header") {
   delete [] result_h;
   REQUIRE(true);
 }
+
+/**
+* End doxygen group hiprtcHeaders.
+* @}
+*/

@@ -117,3 +117,8 @@ TEST_CASE("Unit_Warp_Vote_Any_Positive_Basic") {
     WarpAny().run(true);
   }
 }
+
+/**
+* End doxygen group DeviceLanguageTest.
+* @}
+*/

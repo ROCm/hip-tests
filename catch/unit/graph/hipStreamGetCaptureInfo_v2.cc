@@ -19,7 +19,6 @@ THE SOFTWARE.
 
 #include <hip_test_checkers.hh>
 #include <hip_test_kernels.hh>
-#include <hip_test_defgroups.hh>
 
 #include "stream_capture_common.hh"
 
@@ -259,3 +258,8 @@ TEST_CASE("Unit_hipStreamGetCaptureInfo_v2_Negative_Parameters") {
   }
 #endif
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

@@ -19,7 +19,6 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
-#include <hip_test_defgroups.hh>
 
 #include "stream_capture_common.hh"
 
@@ -204,3 +203,8 @@ TEST_CASE("Unit_hipStreamEndCapture_Positive_Thread") {
   HIP_CHECK(hipGraphExecDestroy(graphExec));
   HIP_CHECK(hipGraphDestroy(graph));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

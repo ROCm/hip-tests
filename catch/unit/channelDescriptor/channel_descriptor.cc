@@ -192,3 +192,8 @@ TEST_CASE("Unit_ChannelDescriptor_Positive_16BitFloatingPoint") {
   REQUIRE(channel_desc.f == referent_channel_desc.f);
 }
 #endif
+
+/**
+* End doxygen group DeviceLanguageTest.
+* @}
+*/

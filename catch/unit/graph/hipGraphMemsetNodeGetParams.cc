@@ -19,7 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip_test_defgroups.hh>
 #include <hip_test_common.hh>
 #include <resource_guards.hh>
 
@@ -83,3 +82,8 @@ TEST_CASE("Unit_hipGraphMemsetNodeGetParams_Negative_Parameters") {
   }
 #endif
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

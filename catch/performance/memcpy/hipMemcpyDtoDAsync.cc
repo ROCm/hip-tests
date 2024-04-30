@@ -104,3 +104,8 @@ TEST_CASE("Performance_hipMemcpyDtoDAsync_PeerAccessDisabled") {
   const auto allocation_size = GENERATE(4_KB, 4_MB, 16_MB);
   RunBenchmark(allocation_size);
 }
+
+/**
+ * End doxygen group memcpy.
+ * @}
+ */

@@ -19,7 +19,7 @@
    THE SOFTWARE.
  */
 #include <hip_test_common.hh>
-#include <hip_test_defgroups.hh>
+ 
 
 // Kernel Function
 __global__ void run_printf(int *count) {
@@ -44,6 +44,12 @@ __global__ void run_printf(int *count) {
  * - HIP_VERSION >= 5.7
  */
 TEST_CASE("Unit_Host_Printf") {
+  int pcieAtomic = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&pcieAtomic, hipDeviceAttributeHostNativeAtomicSupported, 0));
+  if (!pcieAtomic) {
+    HipTest::HIP_SKIP_TEST("Device doesn't support pcie atomic, Skipped");
+    return;
+  }
   int *count{nullptr}, *count_d{nullptr};
   count = reinterpret_cast<int*>(malloc(sizeof(int)));
   HIP_CHECK(hipMalloc(&count_d, sizeof(int)));
@@ -62,3 +68,8 @@ TEST_CASE("Unit_Host_Printf") {
   free(count);
   HIP_CHECK(hipFree(count_d));
 }
+
+/**
+* End doxygen group PrintfTest.
+* @}
+*/

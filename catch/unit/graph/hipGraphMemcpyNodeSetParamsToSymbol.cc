@@ -22,7 +22,6 @@ THE SOFTWARE.
 #include <functional>
 #include <vector>
 
-#include <hip_test_defgroups.hh>
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 
@@ -86,7 +85,7 @@ void GraphMemcpyToSymbolSetParamsShell(const void* symbol, const void* alt_symbo
  * node addition. A graph is constructed to which a MemcpyToSymbol node is added with valid but
  * incorrect parameters. The parameters are then updated to correct values and the graph executed.
  * After graph execution, a MemcpyFromSymbol is performed and the copied values are compared against
- * values known to have been copied to symbol memory previously.  
+ * values known to have been copied to symbol memory previously.
  * The test is run for scalar, const scalar, array, and const array symbols of types char, int,
  * float and double. For array symbols, the test is repeated for zero and non-zero offset values.
  * Verification is performed for destination memory allocated on host and device.
@@ -160,3 +159,8 @@ TEST_CASE("Unit_hipGraphMemcpyNodeSetParamsToSymbol_Negative_Parameters") {
 
   HIP_CHECK(hipGraphDestroy(graph));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

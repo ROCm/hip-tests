@@ -16,11 +16,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <hip_test_common.hh>
-#include <hip_test_defgroups.hh>
+
 #include <string.h>
+
 #include <cstring>
 #include <vector>
+
+#include <hip_test_common.hh>
+#include <hip_test_defgroups.hh>
+#include <resource_guards.hh>
 
 static bool testPassed1D = false;
 static bool testPassed2D = false;
@@ -459,3 +463,88 @@ TEST_CASE("Unit_hipArrayGetDescriptor_Negative_Scenarios") {
   #endif
 }
 
+/**
+ * @addtogroup hipArrayGetDescriptor hipArrayGetDescriptor
+ * @{
+ * @ingroup MemoryTest
+ * `hipArrayGetDescriptor(HIP_ARRAY_DESCRIPTOR* pArrayDescriptor, hipArray* array)` -
+ * Gets a 1D or 2D array descriptor.
+ */
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Basic sanity test for `hipArrayGetDescriptor`.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipArrayGetDescriptor.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.7
+ */
+TEST_CASE("Unit_hipArrayGetDescriptor_Positive_Basic") {
+  HIP_ARRAY_DESCRIPTOR expected_desc{};
+  using vec_info = vector_info<float>;
+  expected_desc.Format = vec_info::format;
+  expected_desc.NumChannels = vec_info::size;
+  expected_desc.Width = 1024 / sizeof(float);
+  expected_desc.Height = 4;
+
+  hipArray_t ptr;
+  HIP_CHECK(hipArrayCreate(&ptr, &expected_desc));
+
+  HIP_ARRAY_DESCRIPTOR desc;
+  HIP_CHECK(hipArrayGetDescriptor(&desc, ptr));
+
+  REQUIRE(desc.Format == expected_desc.Format);
+  REQUIRE(desc.NumChannels == expected_desc.NumChannels);
+  REQUIRE(desc.Width == expected_desc.Width);
+  REQUIRE(desc.Height == expected_desc.Height);
+
+  HIP_CHECK(hipArrayDestroy(ptr));
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Negative parameters test for `hipArrayGetDescriptor`.
+ * Test source
+ * ------------------------
+ *  - unit/memory/hipArrayGetDescriptor.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.7
+ */
+TEST_CASE("Unit_hipArrayGetDescriptor_Negative_Parameters") {
+  HIP_ARRAY_DESCRIPTOR expected_desc{};
+  using vec_info = vector_info<float>;
+  expected_desc.Format = vec_info::format;
+  expected_desc.NumChannels = vec_info::size;
+  expected_desc.Width = 1024 / sizeof(float);
+  expected_desc.Height = 4;
+
+  hipArray_t ptr;
+  HIP_CHECK(hipArrayCreate(&ptr, &expected_desc));
+
+  HIP_ARRAY_DESCRIPTOR desc;
+
+  SECTION("desc is nullptr") {
+    HIP_CHECK_ERROR(hipArrayGetDescriptor(nullptr, ptr), hipErrorInvalidValue);
+  }
+
+  SECTION("array is nullptr") {
+    HIP_CHECK_ERROR(hipArrayGetDescriptor(&desc, nullptr), hipErrorInvalidHandle);
+  }
+
+  SECTION("array is freed") {
+    HIP_CHECK(hipArrayDestroy(ptr));
+    HIP_CHECK_ERROR(hipArrayGetDescriptor(&desc, ptr), hipErrorInvalidHandle);
+  }
+
+  static_cast<void>(hipArrayDestroy(ptr));
+}
+
+/**
+* End doxygen group MemoryTest.
+* @}
+*/

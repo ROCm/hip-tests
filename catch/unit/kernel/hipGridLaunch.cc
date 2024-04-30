@@ -21,7 +21,7 @@ THE SOFTWARE.
 #include <hip_test_kernels.hh>
 #include <hip_test_checkers.hh>
 #include <hip_test_common.hh>
-#include <hip_test_defgroups.hh>
+ 
 
 static unsigned threadsPerBlock = 256;
 static unsigned blocksPerCU = 6;
@@ -115,3 +115,8 @@ TEST_CASE("Unit_hipGridLaunch") {
   }
 #endif
 }
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

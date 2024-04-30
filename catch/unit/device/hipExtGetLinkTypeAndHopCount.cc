@@ -152,3 +152,8 @@ TEST_CASE("Unit_hipExtGetLinkTypeAndHopCount_Negative_Parameters") {
 }
 #endif
 #endif
+
+/**
+* End doxygen group DeviceTest.
+* @}
+*/

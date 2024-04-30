@@ -267,3 +267,8 @@ TEST_CASE("Performance_hipStreamSynchronize") {
   HipStreamSynchronizeBenchmark benchmark;
   benchmark.Run();
 }
+
+/**
+* End doxygen group PerformanceTest.
+* @}
+*/

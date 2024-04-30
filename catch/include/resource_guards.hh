@@ -35,15 +35,15 @@ enum class LinearAllocs {
 inline std::string to_string(const LinearAllocs allocation_type) {
   switch (allocation_type) {
     case LinearAllocs::malloc:
-      return "host pageable";
+      return "malloc";
     case LinearAllocs::mallocAndRegister:
-      return "registered";
+      return "malloc + hipHostRegister";
     case LinearAllocs::hipHostMalloc:
-      return "host pinned";
+      return "hipHostMalloc";
     case LinearAllocs::hipMalloc:
-      return "device malloc";
+      return "hipMalloc";
     case LinearAllocs::hipMallocManaged:
-      return "managed";
+      return "hipMallocManaged";
     default:
       return "unknown alloc type";
   }
@@ -83,24 +83,38 @@ template <typename T> class LinearAllocGuard {
 
   LinearAllocGuard(const LinearAllocGuard&) = delete;
 
-  LinearAllocGuard(LinearAllocGuard&& o)
-      : allocation_type_{o.allocation_type_}, ptr_{o.ptr_}, host_ptr_{o.host_ptr_} {
-    o.allocation_type_ = LinearAllocs::noAlloc;
-    o.ptr_ = nullptr;
-    o.host_ptr_ = nullptr;
-  }
+  LinearAllocGuard(LinearAllocGuard&& o) { *this = std::move(o); }
 
   LinearAllocGuard& operator=(LinearAllocGuard&& o) {
-    allocation_type_ = o.allocation_type_;
-    ptr_ = o.ptr_;
-    host_ptr_ = o.host_ptr_;
+    if (this != &o) {
+      dealloc();
 
-    o.allocation_type_ = LinearAllocs::noAlloc;
-    o.ptr_ = nullptr;
-    o.host_ptr_ = nullptr;
+      allocation_type_ = o.allocation_type_;
+      ptr_ = o.ptr_;
+      host_ptr_ = o.host_ptr_;
+
+      o.allocation_type_ = LinearAllocs::noAlloc;
+      o.ptr_ = nullptr;
+      o.host_ptr_ = nullptr;
+    }
+
+    return *this;
   }
 
-  ~LinearAllocGuard() {
+  ~LinearAllocGuard() { dealloc(); }
+
+  T* ptr() const { return ptr_; };
+  T* host_ptr() const { return host_ptr_; }
+
+ private:
+  LinearAllocs allocation_type_ = LinearAllocs::noAlloc;
+  T* ptr_ = nullptr;
+  T* host_ptr_ = nullptr;
+
+  void dealloc() {
+    if (ptr_ == nullptr) {
+      return;
+    }
     // No Catch macros, don't want to possibly throw in the destructor
     if (ptr_ != nullptr) {
       switch (allocation_type_) {
@@ -123,14 +137,6 @@ template <typename T> class LinearAllocGuard {
       }
     }
   }
-
-  T* ptr() const { return ptr_; };
-  T* host_ptr() const { return host_ptr_; }
-
- private:
-  LinearAllocs allocation_type_ = LinearAllocs::noAlloc;
-  T* ptr_ = nullptr;
-  T* host_ptr_ = nullptr;
 };
 
 template <typename T> class LinearAllocGuardMultiDim {
@@ -210,6 +216,42 @@ template <typename T> class ArrayAllocGuard {
   const hipExtent extent_;
 };
 
+template <typename T> class MipmappedArrayAllocGuard {
+ public:
+  // extent should contain logical width
+  MipmappedArrayAllocGuard(const hipExtent extent, const unsigned int levels,
+                           const unsigned int flags)
+      : extent_{extent}, levels_{levels} {
+    hipChannelFormatDesc desc = hipCreateChannelDesc<T>();
+    HIP_CHECK(hipMallocMipmappedArray(&ptr_, &desc, extent_, levels_, flags));
+  }
+
+  MipmappedArrayAllocGuard(const hipExtent extent, const unsigned int flags = 0u)
+      : MipmappedArrayAllocGuard{extent, 1, flags} {}
+
+  ~MipmappedArrayAllocGuard() { static_cast<void>(hipFreeMipmappedArray(ptr_)); }
+
+  MipmappedArrayAllocGuard(const MipmappedArrayAllocGuard&) = delete;
+  MipmappedArrayAllocGuard(MipmappedArrayAllocGuard&&) = delete;
+
+  hipMipmappedArray_t ptr() const { return ptr_; }
+
+  hipArray_t GetLevel(unsigned int level) {
+    hipArray_t ret;
+    HIP_CHECK(hipGetMipmappedArrayLevel(&ret, ptr_, level));
+    return ret;
+  }
+
+  hipExtent extent() const { return extent_; }
+
+  unsigned int levels() const { return levels_; }
+
+ private:
+  hipMipmappedArray_t ptr_ = nullptr;
+  const hipExtent extent_;
+  const unsigned int levels_;
+};
+
 template <typename T> class DrvArrayAllocGuard {
  public:
   // extent should contain width in bytes
@@ -266,24 +308,24 @@ class StreamGuard {
 
   StreamGuard(const StreamGuard&) = delete;
 
-  StreamGuard(StreamGuard&& o)
-      : stream_type_{o.stream_type_}, flags_{o.flags_}, priority_{o.priority_}, stream_{o.stream_} {
-    o.stream_type_ = Streams::nullstream;
-    o.flags_ = 0u;
-    o.priority_ = 0;
-    o.stream_ = nullptr;
-  }
+  StreamGuard(StreamGuard&& o) { *this = std::move(o); }
 
   StreamGuard& operator=(StreamGuard&& o) {
-    stream_type_ = o.stream_type_;
-    flags_ = o.flags_;
-    priority_ = o.priority_;
-    stream_ = o.stream_;
+    if (this != &o) {
+      if (stream_type_ == Streams::created) {
+        static_cast<void>(hipStreamDestroy(stream_));
+      }
 
-    o.stream_type_ = Streams::nullstream;
-    o.flags_ = 0u;
-    o.priority_ = 0;
-    o.stream_ = nullptr;
+      stream_type_ = o.stream_type_;
+      flags_ = o.flags_;
+      priority_ = o.priority_;
+      stream_ = o.stream_;
+
+      o.stream_type_ = Streams::nullstream;
+      o.flags_ = 0u;
+      o.priority_ = 0;
+      o.stream_ = nullptr;
+    }
 
     return *this;
   }
@@ -362,12 +404,12 @@ class MemPoolGuard {
         break;
       case MemPools::created:
         hipMemPoolProps pool_props;
+        memset(&pool_props, 0, sizeof(pool_props));
         pool_props.allocType = hipMemAllocationTypePinned;
         pool_props.handleTypes = handle_type_;
         pool_props.location.type = hipMemLocationTypeDevice;
         pool_props.location.id = device_;
         pool_props.win32SecurityAttributes = nullptr;
-        memset(pool_props.reserved, 0, sizeof(pool_props.reserved));
 
         HIP_CHECK(hipMemPoolCreate(&mempool_, &pool_props));
     }
@@ -379,6 +421,11 @@ class MemPoolGuard {
   ~MemPoolGuard() {
     if (mempool_type_ == MemPools::created) {
       static_cast<void>(hipMemPoolDestroy(mempool_));
+    } else {
+      // Reset max states for default mem pool, so subtests won't fail
+      uint64_t value = 0;
+      HIP_CHECK(hipMemPoolSetAttribute(mempool_, hipMemPoolAttrUsedMemHigh, &value));
+      HIP_CHECK(hipMemPoolSetAttribute(mempool_, hipMemPoolAttrReservedMemHigh, &value));
     }
   }
 

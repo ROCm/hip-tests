@@ -57,6 +57,13 @@ TEST_CASE("Unit_hipMemPoolDestroy_Negative_Parameter") {
   }
 
   SECTION("Double hipMemPoolDestroy") {
+    hipMemPoolProps kPoolProps;
+    memset(&kPoolProps, 0, sizeof(kPoolProps));
+    kPoolProps.allocType = hipMemAllocationTypePinned;
+    kPoolProps.handleTypes = hipMemHandleTypeNone;
+    kPoolProps.location.type = hipMemLocationTypeDevice;
+    kPoolProps.location.id = 0;
+    kPoolProps.win32SecurityAttributes = nullptr;
     HIP_CHECK(hipMemPoolCreate(&mem_pool, &kPoolProps));
     HIP_CHECK(hipMemPoolDestroy(mem_pool));
     HIP_CHECK_ERROR(hipMemPoolDestroy(mem_pool), hipErrorInvalidValue);
@@ -69,3 +76,8 @@ TEST_CASE("Unit_hipMemPoolDestroy_Negative_Parameter") {
     HIP_CHECK_ERROR(hipMemPoolDestroy(default_mem_pool), hipErrorInvalidValue);
   }
 }
+
+/**
+* End doxygen group StreamOTest.
+* @}
+*/

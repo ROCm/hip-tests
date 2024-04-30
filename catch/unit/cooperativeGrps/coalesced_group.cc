@@ -758,3 +758,8 @@ TEMPLATE_TEST_CASE("Unit_Coalesced_Group_Sync_Positive_Basic", "", uint8_t, uint
   SECTION("Global memory") { CoalescedGroupSyncTest<true, TestType>(); }
   SECTION("Shared memory") { CoalescedGroupSyncTest<false, TestType>(); }
 }
+
+/**
+* End doxygen group DeviceLanguageTest.
+* @}
+*/

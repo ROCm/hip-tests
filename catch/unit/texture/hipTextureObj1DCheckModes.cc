@@ -162,3 +162,8 @@ TEST_CASE("Unit_hipTextureObj1DCheckModes") {
     runTest<hipAddressModeBorder, hipFilterModeLinear, true>(256, 12.5);
   }
 }
+
+/**
+* End doxygen group TextureTest.
+* @}
+*/

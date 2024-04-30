@@ -545,3 +545,8 @@ TEST_CASE("Perf_hipTestP2PBiDirKernelCopy_test") {
 TEST_CASE("Perf_hipCheckP2PSupport") {
   checkP2PSupport();
 }
+
+/**
+* End doxygen group perfMemoryTest.
+* @}
+*/

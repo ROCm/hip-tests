@@ -68,3 +68,8 @@ TEST_CASE("Performance_hipMemPoolDestroy") {
   }
   RunBenchmark();
 }
+
+/**
+* End doxygen group PerformanceTest.
+* @}
+*/

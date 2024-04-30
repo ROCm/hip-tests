@@ -66,3 +66,8 @@ TEST_CASE("Unit_hipRuntimeGetVersion_Negative") {
   // If initialization is attempted with nullptr, error shall be reported
   CHECK_FALSE(hipRuntimeGetVersion(nullptr) == hipSuccess);
 }
+
+/**
+* End doxygen group DriverTest.
+* @}
+*/

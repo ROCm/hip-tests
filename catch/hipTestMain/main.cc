@@ -36,6 +36,12 @@ int main(int argc, char** argv) {
     | Opt(cmd_options.cg_iterations, "cg_iterations")
         ["-C"]["--cg-iterations"]
         ("Number of iterations used for cooperative groups sync tests (default: 5)")
+    | Opt(cmd_options.accuracy_iterations, "accuracy_iterations")
+        ["-A"]["--accuracy-iterations"]
+        ("Number of iterations used for math accuracy tests with randomly generated inputs (default: 2^32)")
+    | Opt(cmd_options.accuracy_max_memory, "accuracy_max_memory")
+        ["-M"]["--accuracy-max-memory"]
+        ("Percentage of global device memory allowed for math accuracy tests (default: 80%)")
   ;
   // clang-format on
 

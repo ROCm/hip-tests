@@ -110,3 +110,8 @@ TEST_CASE("Stress_hipHostRegister_Oversubscription") {
   HIP_CHECK(hipHostUnregister(A));
   free(A);
 }
+
+/**
+* End doxygen group MemoryTest.
+* @}
+*/

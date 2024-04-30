@@ -156,3 +156,8 @@ TEST_CASE("Unit_hipEventSynchronize_NoEventRecord_Positive") {
   HipTest::checkVectorADD(A_h, B_h, C_h, N, true);
   HipTest::freeArrays(A_d, B_d, C_d, A_h, B_h, C_h, false);
 }
+
+/**
+* End doxygen group EventTest.
+* @}
+*/

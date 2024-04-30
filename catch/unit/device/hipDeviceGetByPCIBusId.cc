@@ -173,3 +173,8 @@ TEST_CASE("Unit_hipDeviceGetByPCIBusId_WrongBusID") {
   REQUIRE(ret != hipSuccess);
 }
 
+
+/**
+* End doxygen group DriverTest.
+* @}
+*/

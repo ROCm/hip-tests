@@ -21,7 +21,7 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip_test_kernels.hh>
 #include <hip_test_checkers.hh>
-#include <hip_test_defgroups.hh>
+ 
 
 #define CODEOBJ_FILE "add_Kernel.code"
 #define KERNEL_NAME "Add"
@@ -464,3 +464,8 @@ TEST_CASE("Unit_hipGraphAddKernelNode_moduleLoadKernelFn_streamCapture") {
 }
 #endif
 
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

@@ -73,3 +73,8 @@ TEST_CASE("Performance_hipStreamGetFlags") {
   unsigned int expected_flag = GENERATE(hipStreamDefault, hipStreamNonBlocking);
   RunBenchmark(expected_flag);
 }
+
+/**
+* End doxygen group PerformanceTest.
+* @}
+*/

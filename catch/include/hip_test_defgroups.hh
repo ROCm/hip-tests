@@ -40,6 +40,13 @@ THE SOFTWARE.
  */
 
 /**
+ * @defgroup AtomicsTest Device Atomics
+ * @{
+ * This section describes tests for the Device Atomic APIs.
+ * @}
+ */
+
+/**
  * @defgroup DeviceLanguageTest Device Language
  * @{
  * This section describes tests for the Device Language API.
@@ -96,16 +103,23 @@ THE SOFTWARE.
  */
 
 /**
-* @defgroup KernelTest Kernel Functions Management
-* @{
-* This section describes the various kernel functions invocation.
-* @}
-*/
+ * @defgroup KernelTest Kernel Functions Management
+ * @{
+ * This section describes the various kernel functions invocation.
+ * @}
+ */
 
 /**
- * @defgroup AtomicsTest Device Atomics
+ * @defgroup SyncthreadsTest Synchronization Functions
  * @{
- * This section describes tests for the Device Atomic APIs.
+ * This section describes tests for Synchronization Functions.
+ * @}
+ */
+
+/**
+ * @defgroup ThreadfenceTest Memory Fence Functions
+ * @{
+ * This section describes tests for Memory Fence Functions.
  * @}
  */
 
@@ -119,7 +133,8 @@ THE SOFTWARE.
 /**
  * @defgroup PeerToPeerTest PeerToPeer Device Memory Access
  * @{
- * This section describes tests for the PeerToPeer device memory access functions of HIP runtime API.
+ * This section describes tests for the PeerToPeer device memory access functions of HIP runtime
+ * API.
  * @warning PeerToPeer support is experimental.
  * @}
  */
@@ -135,6 +150,7 @@ THE SOFTWARE.
  * @defgroup ShflTest warp shuffle function Management
  * @{
  * This section describes the warp shuffle types & functions of HIP runtime API.
+ * @}
  */
 
 /**
@@ -149,12 +165,20 @@ THE SOFTWARE.
  * @{
  * This section describes the tests for Stream Ordered Memory Allocator functions of HIP runtime
  * API.
+ * @}
  */
 
 /**
  * @defgroup StreamTest Stream Management
  * @{
  * This section describes the stream management types & functions of HIP runtime API.
+ * @}
+ */
+
+/**
+ * @defgroup ModuleTest Module Management
+ * @{
+ * This section describes the module management types & functions of HIP runtime API.
  * @}
  */
 
@@ -169,6 +193,13 @@ THE SOFTWARE.
  * @defgroup VectorTypeTest Vector types
  * @{
  * This section describes tests for the Vector type functions and operators.
+ * @}
+ */
+
+ /**
+ * @defgroup MathTest Math Device Functions
+ * @{
+ * This section describes tests for device math functions of HIP runtime API.
  * @}
  */
 
@@ -190,5 +221,12 @@ THE SOFTWARE.
  * @defgroup ComplexTest Complex type
  * @{
  * This section describes tests for the Complex type functions.
+ * @}
+ */
+
+/**
+ * @defgroup VirtualMemoryManagementTest Virtual Memory Management APIs
+ * @{
+ * This section describes the virtual memory management types & functions of HIP runtime API.
  * @}
  */

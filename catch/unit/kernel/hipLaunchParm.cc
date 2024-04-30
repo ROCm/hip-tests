@@ -20,7 +20,7 @@ THE SOFTWARE.
 #include <hip_test_kernels.hh>
 #include <hip_test_checkers.hh>
 #include <hip_test_common.hh>
-#include <hip_test_defgroups.hh>
+ 
 #include <cstdint>
 
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -1012,3 +1012,8 @@ TEST_CASE("Unit_hipLaunchParm") {
   HIP_CHECK(hipHostFree(result_h));
   HIP_CHECK(hipFree(result_d));
 }
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

@@ -103,3 +103,8 @@ TEST_CASE("Unit_hipFuncSetCacheConfig_Negative_Not_Supported") {
   HIP_CHECK_ERROR(hipFuncSetCacheConfig(reinterpret_cast<void*>(kernel), hipFuncCachePreferNone),
                   hipErrorNotSupported);
 }
+
+/**
+* End doxygen group ExecutionTest.
+* @}
+*/

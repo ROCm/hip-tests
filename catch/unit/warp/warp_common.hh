@@ -21,6 +21,7 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 #include <hip/hip_cooperative_groups.h>
+#include <hip/hip_fp16.h>
 
 static __device__ bool deactivate_thread(const uint64_t* const active_masks) {
   const auto warp =

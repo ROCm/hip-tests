@@ -18,7 +18,7 @@
  * */
 
 #include <hip_test_common.hh>
-#include <hip_test_defgroups.hh>
+ 
 #include "hipMalloc.h"
 /**
  * @addtogroup hipMalloc hipMalloc
@@ -47,3 +47,8 @@ TEST_CASE("Unit_hipMalloc_gpptest") {
   int result = MallocFunc();
   REQUIRE(result == 1);
 }
+
+/**
+* End doxygen group MemoryTest.
+* @}
+*/

@@ -94,3 +94,8 @@ TEST_CASE("Unit_hipCreateTextureObject_MmArrayResource") {
   ret = hipCreateTextureObject(&texObj, &resDesc, &texDesc, nullptr);
   REQUIRE(ret != hipSuccess);
 }
+
+/**
+* End doxygen group TextureTest.
+* @}
+*/

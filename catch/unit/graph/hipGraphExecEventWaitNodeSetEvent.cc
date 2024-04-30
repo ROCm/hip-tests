@@ -54,24 +54,9 @@ Testcase Scenarios :
 /**
  * Kernel Functions to perform square and introduce delay in device.
  */
-static __global__ void sqr_ker_func(int* a, int* b, size_t N, int clockrate, size_t delayMs) {
+static __global__ void sqr_ker_func(int* a, int* b, size_t N) {
   int tx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
   if (tx < N) b[tx] = a[tx] * a[tx];
-  uint64_t wait_t = delayMs, start = clock64() / clockrate, cur;
-  do {
-    cur = clock64() / clockrate - start;
-  } while (cur < wait_t);
-}
-
-static __global__ void sqr_ker_func_gfx11(int* a, int* b, size_t N, int clockrate, size_t delayMs) {
-#if HT_AMD
-  int tx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-  if (tx < N) b[tx] = a[tx] * a[tx];
-  uint64_t wait_t = delayMs, start = wall_clock64() / clockrate, cur;
-  do {
-    cur = wall_clock64() / clockrate - start;
-  } while (cur < wait_t);
-#endif
 }
 
 /**
@@ -109,24 +94,13 @@ TEST_CASE("Unit_hipGraphExecEventWaitNodeSetEvent_SetAndVerifyMemory") {
   // graph1 creation ...........
   // Create memcpy and kernel nodes for graph1
   // MemcpyH2D -> kernel1 -> event_rec
+  size_t NElem{N};
   hipGraphNode_t memcpyH2D, kernelnode1;
   hipKernelNodeParams kernelNodeParams1{};
   HIP_CHECK(hipGraphAddMemcpyNode1D(&memcpyH2D, graph1, nullptr, 0, inp_d, inp_h, memsize,
                                     hipMemcpyHostToDevice));
-  // Get device clock rate
-  int clkRate = 0;
-  size_t NElem{N};
-  size_t delayMs{2000};
-  if (IsGfx11()) {
-    HIPCHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeWallClockRate, 0));
-  } else {
-    HIPCHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
-  }
-  // kernel1
-  auto sqr_ker_func_used = IsGfx11() ? sqr_ker_func_gfx11 : sqr_ker_func;
-  void* kernelArgs[] = {&inp_d, &out_d, reinterpret_cast<void*>(&NElem),
-                        reinterpret_cast<void*>(&clkRate), reinterpret_cast<void*>(&delayMs)};
-  kernelNodeParams1.func = reinterpret_cast<void*>(sqr_ker_func_used);
+  void* kernelArgs[] = {&inp_d, &out_d, reinterpret_cast<void*>(&NElem)};
+  kernelNodeParams1.func = reinterpret_cast<void*>(sqr_ker_func);
   kernelNodeParams1.gridDim = dim3(gridSize);
   kernelNodeParams1.blockDim = dim3(blockSize);
   kernelNodeParams1.sharedMemBytes = 0;

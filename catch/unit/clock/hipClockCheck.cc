@@ -189,3 +189,8 @@ TEST_CASE("Unit_hipWallClock64_Positive_Basic") {
 
   REQUIRE(kernel_time_execution(kernel_wc64, clock_rate, expected_time1, expected_time2));
 }
+
+/**
+* End doxygen group DeviceLanguageTest.
+* @}
+*/

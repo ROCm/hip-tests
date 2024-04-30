@@ -56,12 +56,12 @@ TEST_CASE("Unit_hipMemPoolCreate_Negative_Parameter") {
   HIP_CHECK(hipGetDeviceCount(&num_dev));
 
   hipMemPoolProps pool_props;
+  memset(&pool_props, 0, sizeof(pool_props));
   pool_props.allocType = hipMemAllocationTypePinned;
   pool_props.handleTypes = hipMemHandleTypeNone;
   pool_props.location.type = hipMemLocationTypeDevice;
   pool_props.location.id = 0;
   pool_props.win32SecurityAttributes = nullptr;
-  memset(pool_props.reserved, 0, sizeof(pool_props.reserved));
 
   hipMemPool_t mem_pool = nullptr;
 
@@ -91,3 +91,67 @@ TEST_CASE("Unit_hipMemPoolCreate_Negative_Parameter") {
     pool_props.location.id = 0;
   }
 }
+
+TEST_CASE("Unit_hipMemPoolCreate_With_maxSize") {
+  int mem_pool_support = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&mem_pool_support, hipDeviceAttributeMemoryPoolsSupported, 0));
+  if (!mem_pool_support) {
+    SUCCEED("Runtime doesn't support Memory Pool. Skip the test case.");
+    return;
+  }
+  hipMemPoolProps pool_props;
+  memset(&pool_props, 0, sizeof(pool_props));
+  pool_props.allocType = hipMemAllocationTypePinned;
+  pool_props.handleTypes = hipMemHandleTypeNone;
+  pool_props.location.type = hipMemLocationTypeDevice;
+  pool_props.location.id = 0;
+  pool_props.win32SecurityAttributes = nullptr;
+#if HT_AMD
+  pool_props.maxSize = 1024 * 1024 * 1024;
+#endif
+  float *A = nullptr, *B = nullptr;
+  hipStream_t stream;
+  HIP_CHECK(hipStreamCreate(&stream));
+  hipMemPool_t mem_pool = nullptr;
+  HIP_CHECK(hipMemPoolCreate(&mem_pool, &pool_props));
+  HIP_CHECK(hipMallocFromPoolAsync (reinterpret_cast<void**>(&A), 1024 * 1024 * 512, mem_pool, stream));
+#if HT_AMD
+  HIP_CHECK_ERROR(hipMallocFromPoolAsync (reinterpret_cast<void**>(&B), 1024 * 1024 * 513, mem_pool,
+                                          stream), hipErrorOutOfMemory);
+#else
+  HIP_CHECK(hipMallocFromPoolAsync (reinterpret_cast<void**>(&B), 1024 * 1024 * 513, mem_pool, stream));
+#endif
+  HIP_CHECK(hipMemPoolDestroy(mem_pool));
+  HIP_CHECK(hipStreamDestroy(stream));
+}
+
+TEST_CASE("Unit_hipMemPoolCreate_Without_maxSize") {
+  int mem_pool_support = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&mem_pool_support, hipDeviceAttributeMemoryPoolsSupported, 0));
+  if (!mem_pool_support) {
+    SUCCEED("Runtime doesn't support Memory Pool. Skip the test case.");
+    return;
+  }
+  hipMemPoolProps pool_props;
+  memset(&pool_props, 0, sizeof(pool_props));
+  pool_props.allocType = hipMemAllocationTypePinned;
+  pool_props.handleTypes = hipMemHandleTypeNone;
+  pool_props.location.type = hipMemLocationTypeDevice;
+  pool_props.location.id = 0;
+  pool_props.win32SecurityAttributes = nullptr;
+
+  float *A = nullptr, *B = nullptr;
+  hipStream_t stream;
+  HIP_CHECK(hipStreamCreate(&stream));
+  hipMemPool_t mem_pool = nullptr;
+  HIP_CHECK(hipMemPoolCreate(&mem_pool, &pool_props));
+  HIP_CHECK(hipMallocFromPoolAsync (reinterpret_cast<void**>(&A), 1024 * 1024 * 512, mem_pool, stream));
+  HIP_CHECK(hipMallocFromPoolAsync (reinterpret_cast<void**>(&B), 1024 * 1024 * 513, mem_pool, stream));
+  HIP_CHECK(hipMemPoolDestroy(mem_pool));
+  HIP_CHECK(hipStreamDestroy(stream));
+}
+
+/**
+* End doxygen group StreamOTest.
+* @}
+*/

@@ -284,3 +284,8 @@ TEST_CASE("Unit_hipGraphKernelNodeCopyAttributes_Attribute_Negative") {
   HIP_CHECK(hipGraphDestroy(graph));
   HIP_CHECK(hipStreamDestroy(streamForGraph));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

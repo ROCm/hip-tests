@@ -21,7 +21,7 @@ THE SOFTWARE.
 #include <hip_test_kernels.hh>
 #include <hip_test_checkers.hh>
 #include <hip_test_common.hh>
-#include <hip_test_defgroups.hh>
+ 
 #ifdef __linux__
 #include <unistd.h>
 #include <sys/wait.h>
@@ -215,7 +215,7 @@ bool testhipLinkTypeHopcountDevice(int numDevices) {
   rsmi_status_t (*fntopo_init)(uint64_t);
   rsmi_status_t (*fntopo_shut_down)();
 
-  lib_rocm_smi_hdl = dlopen("/opt/rocm/rocm_smi/lib/librocm_smi64.so",
+  lib_rocm_smi_hdl = dlopen("/opt/rocm/lib/librocm_smi64.so",
                         RTLD_LAZY);
   REQUIRE(lib_rocm_smi_hdl);
 
@@ -349,3 +349,8 @@ TEST_CASE("Unit_hipP2pLinkTypeAndHopFunc") {
     printf("This test is skipped due to non linux environment.\n");
 #endif
 }
+
+/**
+* End doxygen group p2pTest.
+* @}
+*/

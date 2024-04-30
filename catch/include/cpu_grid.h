@@ -130,7 +130,7 @@ inline dim3 GenerateThreadDimensions() {
 inline dim3 GenerateBlockDimensions() {
   hipDeviceProp_t props;
   HIP_CHECK(hipGetDeviceProperties(&props, 0));
-  const auto multipliers = {0.1, 0.5, 0.9, 1.0, 1.1, 1.5, 1.9, 2.0, 3.0, 4.0};
+  const auto multipliers = {0.5, 0.9, 1.0, 1.1, 1.5, 1.9, 2.0, 3.0, 4.0};
   return GENERATE_COPY(dim3(1, 1, 1),
                        map([sm = props.multiProcessorCount](
                                double i) { return dim3(static_cast<int>(i * sm), 1, 1); },

@@ -397,3 +397,8 @@ TEST_CASE("Unit_hipGraphDebugDotPrint_Argument_Check") {
   HIP_CHECK(hipGraphDestroy(graph));
 }
 #endif  //  __linux__
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

@@ -17,7 +17,7 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include <hip_test_common.hh>
-#include <hip_test_defgroups.hh>
+ 
 
 constexpr size_t N = 1024;
 int p_blockSize = 256;
@@ -100,3 +100,8 @@ TEST_CASE("Unit_kernel_LaunchBounds_Functional") {
   free(A_h);
   free(C_h);
 }
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

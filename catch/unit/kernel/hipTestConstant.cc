@@ -17,7 +17,7 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include <hip_test_common.hh>
-#include <hip_test_defgroups.hh>
+ 
 
 #define LEN 512
 #define SIZE 2048
@@ -74,3 +74,8 @@ TEST_CASE("Unit_kernel_chkConstantViaKernel") {
   HIP_CHECK(hipFree(Ad));
 }
 
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip_test_helper.hh>
 #include <hip_test_process.hh>
-#include <hip_test_defgroups.hh>
+ 
 #include <utils.hh>
 
 #define OFFSET 128
@@ -984,3 +984,8 @@ TEMPLATE_TEST_CASE("Unit_hipHostRegister_Negative", "", int, float, double) {
     HIP_CHECK_ERROR(hipHostRegister(hostPtr, 0, 0), hipErrorInvalidValue);
   }
 }
+
+/**
+* End doxygen group MemoryTest.
+* @}
+*/

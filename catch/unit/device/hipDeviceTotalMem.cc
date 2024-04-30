@@ -134,3 +134,8 @@ TEST_CASE("Unit_hipDeviceTotalMem_NonSelectedDevice") {
     REQUIRE(totMem == prop.totalGlobalMem);
   }
 }
+
+/**
+* End doxygen group DriverTest.
+* @}
+*/

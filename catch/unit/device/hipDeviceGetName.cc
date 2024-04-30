@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2022 - 2024 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -17,13 +17,14 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <cstddef>
 #include <hip_test_common.hh>
+#include <cstddef>
 #include <cstring>
 #include <cstdio>
 #include <array>
 #include <algorithm>
 #include <iterator>
+#include <map>
 
 /**
  * @addtogroup hipDeviceGetName hipDeviceGetName
@@ -66,22 +67,26 @@ TEST_CASE("Unit_hipDeviceGetName_NegTst") {
   }
 
   SECTION("Valid Device") {
-    const auto device = GENERATE_COPY(from_range(std::begin(devices), std::end(devices)));
+    const auto device = GENERATE_COPY(from_range(std::begin(devices),
+                                      std::end(devices)));
 
     SECTION("Nullptr for name argument") {
       // Scenario2
-      HIP_CHECK_ERROR(hipDeviceGetName(nullptr, name.size(), device), hipErrorInvalidValue);
+      HIP_CHECK_ERROR(hipDeviceGetName(nullptr, name.size(), device),
+                      hipErrorInvalidValue);
     }
 #if HT_AMD
     // These test scenarios fail on NVIDIA.
     SECTION("Zero name length") {
       // Scenario3
-      HIP_CHECK_ERROR(hipDeviceGetName(name.data(), 0, device), hipErrorInvalidValue);
+      HIP_CHECK_ERROR(hipDeviceGetName(name.data(), 0, device),
+                      hipErrorInvalidValue);
     }
 
     SECTION("Negative name length") {
       // Scenario4
-      HIP_CHECK_ERROR(hipDeviceGetName(name.data(), -1, device), hipErrorInvalidValue);
+      HIP_CHECK_ERROR(hipDeviceGetName(name.data(), -1, device),
+                      hipErrorInvalidValue);
     }
 #endif
   }
@@ -90,14 +95,16 @@ TEST_CASE("Unit_hipDeviceGetName_NegTst") {
 
     constexpr size_t timeout = 100;
     size_t timeoutCount = 0;
-    while (std::find(std::begin(devices), std::end(devices), badDevice) != std::end(devices)) {
+    while (std::find(std::begin(devices), std::end(devices), badDevice) !=
+                     std::end(devices)) {
       badDevice += 1;
       timeoutCount += 1;
       REQUIRE(timeoutCount < timeout);  // give up after a while
     }
 
     // Scenario5
-    HIP_CHECK_ERROR(hipDeviceGetName(name.data(), name.size(), badDevice), hipErrorInvalidDevice);
+    HIP_CHECK_ERROR(hipDeviceGetName(name.data(), name.size(), badDevice),
+                    hipErrorInvalidDevice);
   }
 }
 
@@ -125,7 +132,7 @@ TEST_CASE("Unit_hipDeviceGetName_CheckPropName") {
     HIP_CHECK(hipGetDeviceProperties(&prop, device));
 
     // Scenario1
-    CHECK(strncmp(name.data(), prop.name, name.size()) == 0);
+    REQUIRE(strncmp(name.data(), prop.name, name.size()) == 0);
   }
 }
 
@@ -173,3 +180,72 @@ TEST_CASE("Unit_hipDeviceGetName_PartialFill") {
   REQUIRE(*strEnd == 0);
   REQUIRE(std::all_of(strEnd+1, end, [](char& c) { return c == fillValue; }));
 }
+
+#ifdef __linux__
+#if HT_AMD
+#define BUFFER_LEN 512
+
+/**
+ * Test Description
+ * ------------------------
+ *  - Get the GPU name from rocm_agent_enumerator and
+      compare it with the value from hipGetDeviceProperties gcnArchName
+ * Test source
+ * ------------------------
+ *  - unit/device/hipDeviceGetName.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.7
+ */
+TEST_CASE("Unit_hipDeviceName_gcnArchName_And_rocm_agent_enumerator") {
+  int deviceCount = 0;
+  HIP_CHECK(hipGetDeviceCount(&deviceCount));
+  if (deviceCount <= 0) {
+    HipTest::HIP_SKIP_TEST("No device found, skipping the test.");
+    return;
+  }
+
+  FILE* fpipe;
+  fpipe = popen("rocm_agent_enumerator", "r");
+  if (fpipe == nullptr) {
+    HipTest::HIP_SKIP_TEST("Unable to create command file.\n");
+    return;
+  }
+  char command_op[BUFFER_LEN];
+  const char *defCpu = "gfx000";
+  int j = 0;
+  std::map<int, std::vector<char>> dNameMap;
+  while (fgets(command_op, BUFFER_LEN, fpipe)) {
+    std::string rocmCommand_line(command_op);
+    int dNameLen = strlen(rocmCommand_line.c_str());
+    if (std::string::npos != rocmCommand_line.find(defCpu)) {  // ignore CPU
+      continue;
+    } else {
+      std::vector<char> dName(dNameLen, 0);
+      std::memcpy(dName.data(), &rocmCommand_line[0], dNameLen);
+      dNameMap[j] = dName;
+    }
+    j++;
+  }
+
+  for (const auto& i : dNameMap) {
+    if (i.second.size() == 0) {
+      continue;
+    }
+    auto dev = i.first;
+    HIP_CHECK(hipSetDevice(dev));
+    hipDevice_t device;
+    hipDeviceProp_t prop;
+    HIP_CHECK(hipDeviceGet(&device, dev));
+    HIP_CHECK(hipGetDeviceProperties(&prop, device));
+    REQUIRE(strncmp(i.second.data(), prop.gcnArchName,
+                    strlen(i.second.data()) - 1) == 0);
+  }
+}
+#endif
+#endif
+
+/**
+* End doxygen group DriverTest.
+* @}
+*/

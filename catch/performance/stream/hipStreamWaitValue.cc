@@ -170,3 +170,8 @@ TEST_CASE("Performance_hipStreamWaitValue64") {
                                hipStreamWaitValueNor);
   RunBenchmark<StreamWaitValue64Benchmark>(array_size, flag);
 }
+
+/**
+* End doxygen group PerformanceTest.
+* @}
+*/

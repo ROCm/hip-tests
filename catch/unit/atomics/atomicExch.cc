@@ -58,7 +58,9 @@ TEMPLATE_TEST_CASE("Unit_atomicExch_Positive_Same_Address_Compile_Time", "", int
                    unsigned long, unsigned long long, float, double) {
 #endif // HT_NVIDIA
   for (auto current = 0; current < cmd_options.iterations; ++current) {
-    AtomicExchSameAddressTest<TestType, AtomicScopes::device>();
+      DYNAMIC_SECTION("Positive Same Address" << current) {
+         AtomicExchSameAddressTest<TestType, AtomicScopes::device>();
+    }
   }
 }
 
@@ -211,3 +213,8 @@ TEST_CASE("Unit_atomicExch_Negative_Parameters_RTC") {
   HIPRTC_CHECK_ERROR(result, HIPRTC_ERROR_COMPILATION);
   REQUIRE(error_count == expected_error_count);
 }
+
+/**
+* End doxygen group AtomicsTest.
+* @}
+*/

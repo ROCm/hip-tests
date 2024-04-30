@@ -63,7 +63,14 @@ static void RunBenchmark(LinearAllocs host_allocation_type, size_t width) {
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Performance_hipMemcpyAtoH") {
+  CHECK_IMAGE_SUPPORT
+
   const auto allocation_size = GENERATE(512, 1024, 4096);
   const auto host_allocation_type = GENERATE(LinearAllocs::malloc, LinearAllocs::hipHostMalloc);
   RunBenchmark(host_allocation_type, allocation_size);
 }
+
+/**
+ * End doxygen group memcpy.
+ * @}
+ */

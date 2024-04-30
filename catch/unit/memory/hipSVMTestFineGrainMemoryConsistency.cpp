@@ -234,6 +234,13 @@ void launch_kernels_and_verify(std::vector<hipStream_t> &streams, unsigned int n
 *  - HIP_VERSION >= 5.7
 */
 TEST_CASE("test_svm_fine_grain_memory_consistency") {
+  int pcieAtomic = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&pcieAtomic, hipDeviceAttributeHostNativeAtomicSupported, 0));
+  if (!pcieAtomic) {
+    fprintf(stderr, "Device doesn't support pcie atomic, Skipped\n");
+    REQUIRE(true);
+    return;
+  }
   const int num_elements = 2167;
   int num_devices = 0;
   HIP_CHECK(hipGetDeviceCount(&num_devices));

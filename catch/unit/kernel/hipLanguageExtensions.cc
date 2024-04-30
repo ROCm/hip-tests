@@ -20,7 +20,7 @@ THE SOFTWARE.
 #include <hip_test_kernels.hh>
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
-#include <hip_test_defgroups.hh>
+ 
 #include <hip/math_functions.h>
 
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -104,3 +104,8 @@ __global__ void vectorADD(T __restrict__* A_d, T* B_d, T* C_d, size_t N) {
 TEST_CASE("Unit_hipLanguageExtensions") {
   REQUIRE(true);
 }
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

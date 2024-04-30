@@ -41,10 +41,16 @@ TEST_CASE("Unit_hipGLGetDevices_Positive_Basic") {
   unsigned int gl_device_count = 0;
   std::vector<int> gl_devices(device_count, -1);
 
-  HIP_CHECK(hipGLGetDevices(&gl_device_count, gl_devices.data(), device_count, device_list));
-
-  REQUIRE(gl_device_count == 1);
-  REQUIRE(gl_devices.at(0) == 0);
+  if (device_list == hipGLDeviceListNextFrame) {
+    HIP_CHECK_ERROR(hipGLGetDevices(&gl_device_count, gl_devices.data(),
+                    device_count, device_list), hipErrorNotSupported);
+    REQUIRE(gl_device_count == 0);
+    REQUIRE(gl_devices.at(0) == -1);
+  } else {
+    HIP_CHECK(hipGLGetDevices(&gl_device_count, gl_devices.data(), device_count, device_list));
+    REQUIRE(gl_device_count == 1);
+    REQUIRE(gl_devices.at(0) == 0);
+  }
 }
 
 TEST_CASE("Unit_hipGLGetDevices_Positive_Parameters") {
@@ -56,18 +62,21 @@ TEST_CASE("Unit_hipGLGetDevices_Positive_Parameters") {
   std::vector<int> gl_devices(device_count, -1);
 
   SECTION("pHipDeviceCount == nullptr") {
-    HIP_CHECK(hipGLGetDevices(nullptr, gl_devices.data(), device_count, hipGLDeviceListAll));
-    REQUIRE(gl_devices.at(0) == 0);
+    HIP_CHECK_ERROR(hipGLGetDevices(nullptr, gl_devices.data(),
+                    device_count, hipGLDeviceListAll), hipErrorInvalidValue);
+    REQUIRE(gl_devices.at(0) == -1);
   }
 
   SECTION("pHipDevices == nullptr") {
-    HIP_CHECK(hipGLGetDevices(&gl_device_count, nullptr, device_count, hipGLDeviceListAll));
-    REQUIRE(gl_device_count == 1);
+    HIP_CHECK_ERROR(hipGLGetDevices(&gl_device_count, nullptr,
+                                    device_count, hipGLDeviceListAll), hipErrorInvalidValue);
+    REQUIRE(gl_device_count == 0);
   }
 
   SECTION("hipDeviceCount == 0") {
-    HIP_CHECK(hipGLGetDevices(&gl_device_count, gl_devices.data(), 0, hipGLDeviceListAll));
-    REQUIRE(gl_device_count == 1);
+    HIP_CHECK_ERROR(hipGLGetDevices(&gl_device_count, gl_devices.data(),
+                    0, hipGLDeviceListAll), hipErrorInvalidValue);
+    REQUIRE(gl_device_count == 0);
     REQUIRE(gl_devices.at(0) == -1);
   }
 }

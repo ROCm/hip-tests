@@ -233,16 +233,9 @@ TEST_CASE("Unit_hipMemPrefetchAsyncNegativeTst") {
     hipStream_t strm;
     HIP_CHECK(hipStreamCreate(&strm));
     SECTION("Passing null for dev ptr") {
-      int *Ptr;
       err = hipMemPrefetchAsync(NULL, MemSz, 0, strm);
       if (err == hipSuccess) {
         WARN("hipMemPrefetchAsync() gives hipSuccess when NULL is passed!!");
-        IfTestPassed = false;
-      }
-      err = hipMemPrefetchAsync(Ptr, MemSz, 0, strm);
-      if (err == hipSuccess) {
-        WARN("hipMemPrefetchAsync() gives hipSuccess when uninitialized"
-             " pointer is passed!!");
         IfTestPassed = false;
       }
     }

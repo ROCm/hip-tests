@@ -307,3 +307,8 @@ TEST_CASE("Perf_hipPerfSampleRate_test") {
     sampleTypes.run(testCase);
   }
 }
+
+/**
+* End doxygen group perfMemoryTest.
+* @}
+*/

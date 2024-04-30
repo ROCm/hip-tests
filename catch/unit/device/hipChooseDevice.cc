@@ -79,3 +79,8 @@ TEST_CASE("Unit_hipChooseDevice_NegTst") {
     REQUIRE_FALSE(hipSuccess == hipChooseDevice(&dev, nullptr));
   }
 }
+
+/**
+* End doxygen group DeviceTest.
+* @}
+*/

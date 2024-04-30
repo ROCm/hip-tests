@@ -190,3 +190,8 @@ TEST_CASE("Unit_hipGraphAddMemFreeNode_Negative_NotSupported") {
   HIP_CHECK(hipGraphDestroy(graph1));
   HIP_CHECK(hipGraphDestroy(graph2));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

@@ -20,7 +20,7 @@ THE SOFTWARE.
 #include <hip_test_kernels.hh>
 #include <hip_test_checkers.hh>
 #include <hip_test_common.hh>
-#include <hip_test_defgroups.hh>
+ 
 
 #define LEN  (16 * 1024)
 #define SIZE (LEN * sizeof(float))
@@ -87,3 +87,8 @@ TEST_CASE("Unit_hipDynamicShared2") {
   delete[] A;
   delete[] B;
 }
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

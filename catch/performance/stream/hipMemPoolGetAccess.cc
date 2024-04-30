@@ -74,3 +74,8 @@ TEST_CASE("Performance_hipMemPoolGetAccess") {
   }
   RunBenchmark();
 }
+
+/**
+* End doxygen group PerformanceTest.
+* @}
+*/

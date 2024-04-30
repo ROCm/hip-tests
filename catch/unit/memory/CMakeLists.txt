@@ -72,28 +72,24 @@ set(TEST_SRC
     hipMemAdviseMmap.cc
     hipMallocManaged.cc
     hipMemRangeGetAttribute.cc
-    hipMemRangeGetAttribute_old.cc)
+    hipMemRangeGetAttribute_old.cc
+    hipMemCoherencyTst.cc)
 
 if(HIP_PLATFORM MATCHES "amd")
   set(TEST_SRC
       ${TEST_SRC}
       hipMemPtrGetInfo.cc
       hipPointerGetAttributes.cc
-      hipMemCoherencyTst.cc
       hipExtMallocWithFlags.cc
       hipMallocMngdMultiThread.cc
-      hipArray.cc
       hipMemVmm.cc
-      hipMemCreate.cc
-      hipMemMap.cc
-      hipMemGetAllocationGranularity.cc
-      hipMemSetGetAccess.cc
-      hipMemRetainAllocationHandle.cc
-      hipMemUnmap.cc
-      hipMemAddressFree.cc
-      hipMemAddressReserve.cc
-      hipMemRelease.cc
-      hipMemGetAllocationPropertiesFromHandle.cc)
+      hipArray.cc
+      hipMemcpyDeviceToDeviceNoCU.cc)
+  if(UNIX)
+    # Should be compiled for NVIDIA as well after EXSWHTEC-346 is addressed
+    # For windows build error occurs undefined symbol: hipPointerSetAttribute
+    set(TEST_SRC ${TEST_SRC} hipPointerSetAttribute.cc)
+  endif()
 else()
   set(TEST_SRC ${TEST_SRC} hipGetSymbolSizeAddress.cc)
 endif()
@@ -105,6 +101,11 @@ hip_add_exe_to_target(NAME MemoryTest1
 if(HIP_PLATFORM MATCHES "amd")
   set_source_files_properties(hipHostRegister.cc PROPERTIES COMPILE_FLAGS -std=c++17)
   add_executable(hipHostRegisterPerf EXCLUDE_FROM_ALL hipHostRegister_exe.cc)
+  add_dependencies(build_tests hipHostRegisterPerf)
+if(UNIX)
+  add_executable(hipMemAdviseTstAlignedAllocMem EXCLUDE_FROM_ALL hipMemAdvise_AlignedAllocMem_Exe.cc)
+  add_dependencies(MemoryTest1 hipMemAdviseTstAlignedAllocMem)
+endif()
 endif()
 
 set(TEST_SRC
@@ -161,9 +162,19 @@ set(TEST_SRC
     hipStreamAttachMemAsync.cc
     hipMemRangeGetAttributes_old.cc
     hipMemGetAddressRange.cc
-    hipArrayGetDescriptor.cc
     hipMallocMipmappedArray.cc
     hipFreeMipmappedArray.cc)
+
+if(HIP_PLATFORM MATCHES "amd")
+  set(TEST_SRC
+      ${TEST_SRC}
+      # Test below currently doesn't work on NVIDIA, will update based on ticket response
+      hipDrvMemcpy2DUnaligned.cc
+      # Below 3 tests should be compiled for NVIDIA as well after EXSWHTEC-349 is addressed
+      hipArrayGetInfo.cc
+      hipArrayGetDescriptor.cc
+      hipArray3DGetDescriptor.cc)
+endif()
 
 set(NOT_FOR_MI200_AND_ABOVE_TEST hipMallocArray.cc hipArrayCreate.cc) # tests not for MI200+
 set(MI200_AND_ABOVE_TARGETS gfx90a gfx940 gfx941 gfx942)
@@ -179,7 +190,6 @@ function(CheckRejectedArchs OFFLOAD_ARCH_STR_LOCAL)
     endif()        # CMAKE_MATCH_COUNT
   endforeach()   # OFFLOAD_ARCH_LIST
 endfunction()  # CheckAcceptedArchs
-
 if(HIP_PLATFORM MATCHES "amd")
   if (DEFINED OFFLOAD_ARCH_STR)
     CheckRejectedArchs(${OFFLOAD_ARCH_STR})
@@ -200,17 +210,18 @@ hip_add_exe_to_target(NAME MemoryTest2
   TEST_SRC ${TEST_SRC}
   TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
 
-if(HIP_PLATFORM MATCHES "amd")
-  set(TEST_SRC
-    hipSVMTestByteGranularity.cpp
-    hipSVMTestFineGrainMemoryConsistency.cpp
-    hipSVMTestFineGrainSyncBuffers.cpp
-    hipSVMTestSharedAddressSpaceFineGrain.cpp
-  )
+set(TEST_SRC
+  hipSVMTestByteGranularity.cpp
+  hipSVMTestFineGrainMemoryConsistency.cpp
+  hipSVMTestFineGrainSyncBuffers.cpp
+  hipSVMTestSharedAddressSpaceFineGrain.cpp
+)
 
-  hip_add_exe_to_target(NAME SVMAtomicTest
-    TEST_SRC ${TEST_SRC}
-    TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
+hip_add_exe_to_target(NAME SVMAtomicTest
+  TEST_SRC ${TEST_SRC}
+  TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
 
-  add_dependencies(build_tests hipHostRegisterPerf)
+if(HIP_PLATFORM MATCHES "nvidia")
+  set_target_properties(SVMAtomicTest PROPERTIES COMPILE_FLAGS -arch=sm_70)
+  set_target_properties(MemoryTest1 PROPERTIES COMPILE_FLAGS -arch=sm_70)
 endif()

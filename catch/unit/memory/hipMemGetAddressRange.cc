@@ -119,3 +119,8 @@ TEST_CASE("Unit_hipMemGetAddressRange_Negative") {
         hipErrorNotFound);
   }
 }
+
+/**
+* End doxygen group PeerToPeerTest.
+* @}
+*/

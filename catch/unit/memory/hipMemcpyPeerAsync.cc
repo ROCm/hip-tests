@@ -319,3 +319,8 @@ TEST_CASE("Unit_hipMemcpyPeerAsync_Negative_Parameters") {
     INFO("Peer access cannot be enabled between devices " << src_device << " " << dst_device);
   }
 }
+
+/**
+* End doxygen group PeerToPeerTest.
+* @}
+*/

@@ -17,7 +17,7 @@ OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include <hip_test_common.hh>
-#include <hip_test_defgroups.hh>
+ 
 #include <cstring>
 #include "../kernel/printf_common.h"
 
@@ -65,3 +65,8 @@ TEST_CASE("Unit_kernel_ChkPrintf") {
     delete [] data;
   }
 }
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

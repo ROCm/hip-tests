@@ -18,7 +18,7 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 #include <hip_test_process.hh>
-#include <hip_test_defgroups.hh>
+ 
 
 /**
 * @addtogroup printf printf
@@ -41,6 +41,12 @@ THE SOFTWARE.
 */
 
 TEST_CASE("Unit_Buffered_Printf_Flags") {
+  int pcieAtomic = 0;
+  HIP_CHECK(hipDeviceGetAttribute(&pcieAtomic, hipDeviceAttributeHostNativeAtomicSupported, 0));
+  if (!pcieAtomic) {
+    HipTest::HIP_SKIP_TEST("Device doesn't support pcie atomic, Skipped");
+    return;
+  }
   std::string reference(R"here(00000042
 -0000042
 00000042
@@ -59,3 +65,8 @@ xyzzy
   REQUIRE(proc.getOutput() == reference);
 }
 
+
+/**
+* End doxygen group PrintfTest.
+* @}
+*/

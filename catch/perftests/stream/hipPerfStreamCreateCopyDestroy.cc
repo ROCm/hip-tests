@@ -144,3 +144,8 @@ TEST_CASE("Perf_hipPerfStreamCreateCopyDestroy") {
     REQUIRE(true == streamCCD.run(testCase));
   }
 }
+
+/**
+* End doxygen group perfStreamTest.
+* @}
+*/

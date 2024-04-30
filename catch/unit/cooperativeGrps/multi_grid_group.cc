@@ -247,8 +247,8 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Basic") {
     HIP_CHECK(hipSetDevice(i));
     // Verify multi_grid_group.thread_rank() values
     const auto multi_grid_thread0_rank = multi_grid.thread0_rank_in_multi_grid(i);
-    ArrayAllOf(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_,
-               [rank_0 = multi_grid_thread0_rank](uint32_t j) { return rank_0 + j; });
+    ArrayInRange(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_, multi_grid_thread0_rank,
+                 multi_grid_thread0_rank + multi_grid.grids_[i].thread_count_);
     HIP_CHECK(hipMemcpy(uint_arr[i].ptr(), uint_arr_dev[i].ptr(),
                         multi_grid.grids_[i].thread_count_ * sizeof(*uint_arr[i].ptr()),
                         hipMemcpyDeviceToHost));
@@ -400,8 +400,8 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Base_Type") {
     HIP_CHECK(hipSetDevice(i));
     // Verify multi_grid_group.thread_rank() values
     const auto multi_grid_thread0_rank = multi_grid.thread0_rank_in_multi_grid(i);
-    ArrayAllOf(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_,
-               [rank_0 = multi_grid_thread0_rank](uint32_t j) { return rank_0 + j; });
+    ArrayInRange(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_, multi_grid_thread0_rank,
+                 multi_grid_thread0_rank + multi_grid.grids_[i].thread_count_);
     HIP_CHECK(hipMemcpy(uint_arr[i].ptr(), uint_arr_dev[i].ptr(),
                         multi_grid.grids_[i].thread_count_ * sizeof(*uint_arr[i].ptr()),
                         hipMemcpyDeviceToHost));
@@ -508,8 +508,8 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Non_Member_Functions") {
     HIP_CHECK(hipDeviceSynchronize());
     // Verify multi_grid_group.thread_rank() values
     const auto multi_grid_thread0_rank = multi_grid.thread0_rank_in_multi_grid(i);
-    ArrayAllOf(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_,
-               [rank_0 = multi_grid_thread0_rank](uint32_t j) { return rank_0 + j; });
+    ArrayInRange(uint_arr[i].ptr(), multi_grid.grids_[i].thread_count_, multi_grid_thread0_rank,
+                 multi_grid_thread0_rank + multi_grid.grids_[i].thread_count_);
   }
 }
 
@@ -539,6 +539,7 @@ TEST_CASE("Unit_Multi_Grid_Group_Getters_Positive_Non_Member_Functions") {
  *  - Devices support cooperative multi device launch
  */
 TEST_CASE("Unit_Multi_Grid_Group_Positive_Sync") {
+  CHECK_IMAGE_SUPPORT
   int num_devices = 0;
   HIP_CHECK(hipGetDeviceCount(&num_devices));
   num_devices = min(num_devices, kMaxGPUs);
@@ -650,3 +651,8 @@ TEST_CASE("Unit_Multi_Grid_Group_Positive_Sync") {
   };
   ArrayAllOf(global_arr.ptr(), num_devices, f);
 }
+
+/**
+* End doxygen group DeviceLanguageTest.
+* @}
+*/

@@ -731,3 +731,9 @@ Device float16 functions [
   __hisnan2
   __hneg2
 ]
+
+OpenGL Interop [
+  hipGLGetDevices
+  hipGraphicsGLRegisterBuffer
+  hipGraphicsGLRegisterImage
+]

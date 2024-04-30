@@ -52,6 +52,8 @@ THE SOFTWARE.
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddMemcpyNode_Positive_Basic") {
+  CHECK_IMAGE_SUPPORT
+
   constexpr bool async = false;
 
   SECTION("Device to host") { Memcpy3DDeviceToHostShell<async>(Memcpy3DWrapper<async, true>); }
@@ -121,6 +123,8 @@ TEST_CASE("Unit_hipGraphAddMemcpyNode_Positive_Basic") {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphAddMemcpyNode_Negative_Parameters") {
+  CHECK_IMAGE_SUPPORT
+
   using namespace std::placeholders;
 
   constexpr hipExtent extent{128 * sizeof(int), 128, 8};
@@ -285,3 +289,8 @@ TEST_CASE("Unit_hipGraphAddMemcpyNode_Negative_Parameters") {
                   make_hipPos(0, 0, 0), extent, hipMemcpyDeviceToDevice);
   }
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

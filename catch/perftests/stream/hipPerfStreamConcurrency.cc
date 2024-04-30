@@ -413,3 +413,8 @@ TEST_CASE("Perf_hipPerfStreamConcurrency") {
     REQUIRE(true == streamConcurrency.run(testCase, deviceId));
   }
 }
+
+/**
+* End doxygen group perfComputeTest.
+* @}
+*/

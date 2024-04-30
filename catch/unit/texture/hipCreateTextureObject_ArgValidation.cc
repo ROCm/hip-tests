@@ -105,3 +105,8 @@ TEST_CASE("Unit_hipCreateTextureObject_ArgValidation") {
   // De-Initialization
   HIP_CHECK(hipFree(texBuf));
 }
+
+/**
+* End doxygen group TextureTest.
+* @}
+*/

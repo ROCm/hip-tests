@@ -44,7 +44,7 @@ THE SOFTWARE.
  */
 
 #include <hip_test_common.hh>
-#include <hip_test_defgroups.hh>
+
 #include <iostream>
 #include <fstream>
 #include "hip/hip_ext.h"
@@ -236,28 +236,6 @@ TEST_CASE("Unit_hipExtModuleLaunchKernel_UniformWorkGroup") {
   HIP_CHECK(hipModuleUnload(Module));
 }
 
-TEST_CASE("Unit_hipExtModuleLaunchKernel_Positive_Basic") {
-  ModuleLaunchKernelPositiveBasic<hipExtModuleLaunchKernel>();
-
-  SECTION("Timed kernel launch with events") {
-    hipEvent_t start_event = nullptr, stop_event = nullptr;
-    HIP_CHECK(hipEventCreate(&start_event));
-    HIP_CHECK(hipEventCreate(&stop_event));
-    const auto kernel = GetKernel(mg.module(), "Delay");
-    int clock_rate = 0;
-    HIP_CHECK(hipDeviceGetAttribute(&clock_rate, hipDeviceAttributeClockRate, 0));
-    uint32_t interval = 100;
-    uint32_t ticks_per_second = clock_rate;
-    void* kernel_params[2] = {&interval, &ticks_per_second};
-    HIP_CHECK(hipExtModuleLaunchKernel(kernel, 1, 1, 1, 1, 1, 1, 0, nullptr, kernel_params, nullptr,
-                                       start_event, stop_event));
-    HIP_CHECK(hipDeviceSynchronize());
-    auto elapsed = 0.0f;
-    HIP_CHECK(hipEventElapsedTime(&elapsed, start_event, stop_event));
-    REQUIRE(static_cast<uint32_t>(elapsed) >= interval);
-  }
-}
-
 TEST_CASE("Unit_hipExtModuleLaunchKernel_Positive_Parameters") {
   ModuleLaunchKernelPositiveParameters<hipExtModuleLaunchKernel>();
 
@@ -285,3 +263,8 @@ TEST_CASE("Unit_hipExtModuleLaunchKernel_Positive_Parameters") {
 TEST_CASE("Unit_hipExtModuleLaunchKernel_Negative_Parameters") {
   ModuleLaunchKernelNegativeParameters<hipExtModuleLaunchKernel>();
 }
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

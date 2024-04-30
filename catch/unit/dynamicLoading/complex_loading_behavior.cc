@@ -18,7 +18,7 @@ THE SOFTWARE.
 */
 #include <hip_test_common.hh>
 #include <dlfcn.h>
-#include <hip_test_defgroups.hh>
+ 
 /**
 * @addtogroup hipLaunchKernelGGL hipLaunchCooperativeKernel
 * @{
@@ -145,3 +145,8 @@ TEST_CASE("Unit_dynamic_loading_device_kernels_from_library") {
 
   REQUIRE(testResult == true);
 }
+
+/**
+* End doxygen group DynamicLoading.
+* @}
+*/

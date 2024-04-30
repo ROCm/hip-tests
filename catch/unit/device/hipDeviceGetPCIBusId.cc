@@ -184,3 +184,8 @@ TEST_CASE("Unit_hipDeviceGetPCIBusId_NegTst") {
                   deviceCount) == hipSuccess);
   }
 }
+
+/**
+* End doxygen group DriverTest.
+* @}
+*/

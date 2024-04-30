@@ -125,3 +125,8 @@ TEST_CASE("Unit_hipIpcOpenMemHandle_Negative_Open_In_Two_Contexts_Same_Device") 
     HIP_CHECK(hipFree(reinterpret_cast<void*>(ptr)));
   }
 }
+
+/**
+* End doxygen group DeviceTest.
+* @}
+*/

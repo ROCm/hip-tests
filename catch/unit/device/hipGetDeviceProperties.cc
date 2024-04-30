@@ -488,3 +488,8 @@ TEST_CASE("Print_Out_Properties_6.0") {
 
   std::flush(std::cout);
 }
+
+/**
+* End doxygen group DeviceTest.
+* @}
+*/

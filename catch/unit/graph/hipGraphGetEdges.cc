@@ -20,7 +20,7 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 #include <hip_test_kernels.hh>
-#include <hip_test_defgroups.hh>
+ 
 
 #include "graph_dependency_common.hh"
 
@@ -295,3 +295,8 @@ TEST_CASE("Unit_hipGraphGetEdges_Negative_Parameters") {
   HIP_CHECK(hipEventDestroy(event_end));
   HIP_CHECK(hipEventDestroy(event_start));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

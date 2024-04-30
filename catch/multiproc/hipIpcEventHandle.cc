@@ -431,4 +431,9 @@ TEST_CASE("Unit_hipIpcEventHandle_ParameterValidation") {
  *  - @ref Unit_hipIpcEventHandle_ParameterValidation
  */
 
+/**
+ * End doxygen group hipIpcOpenEventHandle.
+ * @}
+ */
+
 #endif

@@ -166,3 +166,8 @@ TEST_CASE("Unit_hipDeviceReset_Positive_Threaded") {
     CHECK(mem_config_after == mem_config_before);
   }
 }
+
+/**
+* End doxygen group DeviceTest.
+* @}
+*/

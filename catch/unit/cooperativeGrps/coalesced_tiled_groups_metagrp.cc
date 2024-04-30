@@ -21,7 +21,7 @@ THE SOFTWARE.
 */
 #include <hip_test_common.hh>
 #include <hip/hip_cooperative_groups.h>
-#include <hip_test_defgroups.hh>
+ 
 
 /**
  * @addtogroup coalesced_group thread_block_tile
@@ -137,3 +137,8 @@ TEST_CASE("Unit_coalesced_groups_metagrp_basic") {
   delete[] mgrpSize_h;
   delete[] mgrpRank_h;
 }
+
+/**
+* End doxygen group CooperativeGroupTest.
+* @}
+*/

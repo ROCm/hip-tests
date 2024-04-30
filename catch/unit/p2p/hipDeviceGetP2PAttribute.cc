@@ -23,7 +23,7 @@ THE SOFTWARE.
 #include "hip/hip_runtime_api.h"
 #include <hip_test_process.hh>
 #include <string>
-#include <hip_test_defgroups.hh>
+ 
 
 /**
  * @addtogroup hipDeviceGetP2PAttribute hipDeviceGetP2PAttribute
@@ -194,3 +194,8 @@ TEST_CASE("Unit_hipDeviceGetP2PAttribute_Negative") {
   }
 #endif
 }
+
+/**
+* End doxygen group DriverTest.
+* @}
+*/

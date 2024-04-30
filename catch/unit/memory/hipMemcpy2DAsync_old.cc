@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2023 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -72,7 +72,7 @@ static constexpr auto ROWS{6};
  *  - unit/memory/hipMemcpy2DAsync.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 5.2
+ *  - HIP_VERSION >= 6.1
  */
 
 TEMPLATE_TEST_CASE("Unit_hipMemcpy2DAsync_Host&PinnedMem", ""
@@ -80,6 +80,7 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpy2DAsync_Host&PinnedMem", ""
   CHECK_IMAGE_SUPPORT
   // 1 refers to pinned host memory
   auto mem_type = GENERATE(0, 1);
+  auto memcpy_d2d_type = GENERATE(0, 1);
   HIP_CHECK(hipSetDevice(0));
   TestType  *A_h{nullptr}, *B_h{nullptr}, *C_h{nullptr}, *A_d{nullptr},
             *B_d{nullptr};
@@ -95,6 +96,12 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpy2DAsync_Host&PinnedMem", ""
   } else {
     HipTest::initArrays<TestType>(nullptr, nullptr, nullptr,
                                   &A_h, &B_h, &C_h, NUM_W*NUM_H, false);
+  }
+  hipMemcpyKind d2d_type;
+  if (memcpy_d2d_type) {
+    d2d_type = hipMemcpyDeviceToDevice;
+  } else {
+    d2d_type = hipMemcpyDeviceToDeviceNoCU;
   }
   HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&A_d),
                           &pitch_A, width, NUM_H));
@@ -112,7 +119,7 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpy2DAsync_Host&PinnedMem", ""
     // Performs D2D on same GPU device
     HIP_CHECK(hipMemcpy2DAsync(B_d, pitch_B, A_d,
                                pitch_A, COLUMNS*sizeof(TestType),
-                               ROWS, hipMemcpyDeviceToDevice, stream));
+                               ROWS, d2d_type, stream));
 
     // hipMemcpy2DAsync Device to Host
     HIP_CHECK(hipMemcpy2DAsync(B_h, COLUMNS*sizeof(TestType), B_d, pitch_B,
@@ -129,7 +136,7 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpy2DAsync_Host&PinnedMem", ""
     // Performs D2D on same GPU device
     HIP_CHECK(hipMemcpy2DAsync(B_d, pitch_B, A_d, pitch_A,
                                COLUMNS*sizeof(TestType), ROWS,
-                               hipMemcpyDeviceToDevice, hipStreamPerThread));
+                               d2d_type, hipStreamPerThread));
 
     // hipMemcpy2DAsync Device to Host
     HIP_CHECK(hipMemcpy2DAsync(B_h, COLUMNS*sizeof(TestType), B_d, pitch_B,
@@ -553,3 +560,8 @@ TEST_CASE("Unit_hipMemcpy2DAsync_multiDevice_Basic_Size_Test") {
     }
   }
 }
+
+/**
+* End doxygen group MemcpyTest.
+* @}
+*/

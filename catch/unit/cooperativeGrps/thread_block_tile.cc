@@ -551,3 +551,8 @@ TEMPLATE_TEST_CASE("Unit_Thread_Block_Tile_Sync_Positive_Basic", "", uint8_t, ui
 #endif
   }
 }
+
+/**
+* End doxygen group DeviceLanguageTest.
+* @}
+*/

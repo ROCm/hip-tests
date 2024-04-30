@@ -22,7 +22,6 @@ THE SOFTWARE.
 #include <functional>
 #include <vector>
 
-#include <hip_test_defgroups.hh>
 #include <hip_test_common.hh>
 #include <hip_test_checkers.hh>
 
@@ -75,7 +74,7 @@ void GraphMemcpyFromSymbolShell(void* symbol, size_t offset, const std::vector<T
  * ------------------------
  *    - Verify that data is correctly copied from a symbol. A graph is constructed to which a
  * MemcpyFromSymbol node is added. After graph execution, values in destination memory are compared
- * against values known to be in symbol memory.  
+ * against values known to be in symbol memory.
  * The test is run for scalar, const scalar, array, and const array symbols of types char, int,
  * float and double. For array symbols, the test is repeated for zero and non-zero offset values.
  * Verification is performed for destination memory allocated on host and device.
@@ -106,7 +105,7 @@ TEST_CASE("Unit_hipGraphAddMemcpyNodeFromSymbol_Positive_Basic") {
 
 /**
  * Test Description
- * ------------------------ 
+ * ------------------------
  *    - Verify API behavior with invalid arguments:
  *      -# pGraphNodes is nullptr
  *      -# graph is nullptr
@@ -122,12 +121,12 @@ TEST_CASE("Unit_hipGraphAddMemcpyNodeFromSymbol_Positive_Basic") {
  *      -# kind is illogical (hipMemcpyHostToDevice)
  *      -# kind is an invalid enum value
  * Test source
- * ------------------------ 
+ * ------------------------
  *    - unit/graph/hipGraphAddMemcpyNodeFromSymbol.cc
  * Test requirements
- * ------------------------ 
+ * ------------------------
  *    - HIP_VERSION >= 5.2
- */ 
+ */
 TEST_CASE("Unit_hipGraphAddMemcpyNodeFromSymbol_Negative_Parameters") {
   using namespace std::placeholders;
   hipGraph_t graph = nullptr;
@@ -147,3 +146,8 @@ TEST_CASE("Unit_hipGraphAddMemcpyNodeFromSymbol_Negative_Parameters") {
 
   HIP_CHECK(hipGraphDestroy(graph));
 }
+
+/**
+* End doxygen group GraphTest.
+* @}
+*/

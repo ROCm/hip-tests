@@ -21,7 +21,7 @@ THE SOFTWARE.
 #include <hip_test_kernels.hh>
 #include <hip_test_checkers.hh>
 #include <hip_test_common.hh>
-#include <hip_test_defgroups.hh>
+ 
 #include "hip/hip_ext.h"
 
 static unsigned threadsPerBlock = 256;
@@ -131,3 +131,8 @@ TEST_CASE("Unit_hipExtLaunchKernelGGL") {
     testMixData();
   }
 }
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

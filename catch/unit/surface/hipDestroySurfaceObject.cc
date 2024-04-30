@@ -66,3 +66,8 @@ TEST_CASE("Unit_hipDestroySurfaceObject_Negative_Parameters") {
     HIP_CHECK(hipFreeArray(array));
   }
 }
+
+/**
+* End doxygen group SurfaceTest.
+* @}
+*/

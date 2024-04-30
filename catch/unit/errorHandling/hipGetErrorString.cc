@@ -20,9 +20,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "errorEnumerators.h"
 #include <hip_test_common.hh>
-#include <hip/hip_runtime_api.h>
+
+#include "error_handling_common.hh"
 
 /**
  * @addtogroup hipGetErrorString hipGetErrorString
@@ -48,6 +48,7 @@ TEST_CASE("Unit_hipGetErrorString_Positive_Basic") {
   const char* error_string = nullptr;
   const auto enumerator =
       GENERATE(from_range(std::begin(kErrorEnumerators), std::end(kErrorEnumerators)));
+  INFO("Error: " << enumerator);
 
   error_string = hipGetErrorString(enumerator);
 
@@ -72,3 +73,8 @@ TEST_CASE("Unit_hipGetErrorString_Negative_Parameters") {
   const char* error_string = hipGetErrorString(static_cast<hipError_t>(-1));
   REQUIRE(error_string != nullptr);
 }
+
+/**
+* End doxygen group ErrorTest.
+* @}
+*/

@@ -21,12 +21,10 @@ THE SOFTWARE.
 #include <hip_test_checkers.hh>
 #include <hip_test_common.hh>
 #include <hip/hip_fp16.h>
-#include <hip_test_defgroups.hh>
 
 const int size = 32;
 
-template <typename T>
-__global__ void shflDownSum(T* a, int size) {
+template <typename T> __global__ void shflDownSum(T* a, int size) {
   T val = a[threadIdx.x];
   for (int i = size / 2; i > 0; i /= 2) {
     val += __shfl_down(val, i, size);
@@ -34,8 +32,7 @@ __global__ void shflDownSum(T* a, int size) {
   a[threadIdx.x] = val;
 }
 
-template <typename T>
-__global__ void shflUpSum(T* a, int size) {
+template <typename T> __global__ void shflUpSum(T* a, int size) {
   T val = a[threadIdx.x];
   for (int i = size / 2; i > 0; i /= 2) {
     val += __shfl_up(val, i, size);
@@ -43,34 +40,29 @@ __global__ void shflUpSum(T* a, int size) {
   a[threadIdx.x] = val;
 }
 
-template <typename T>
-__global__ void shflXorSum(T* a, int size) {
+template <typename T> __global__ void shflXorSum(T* a, int size) {
   T val = a[threadIdx.x];
-  for (int i = size/2; i > 0; i /= 2) {
+  for (int i = size / 2; i > 0; i /= 2) {
     val += __shfl_xor(val, i, size);
   }
   a[threadIdx.x] = val;
 }
 
 static void getFactor(int* fact) { *fact = 101; }
-static void getFactor(unsigned int* fact) {
-  *fact = static_cast<unsigned int>(INT32_MAX)+1;
-}
+static void getFactor(unsigned int* fact) { *fact = static_cast<unsigned int>(INT32_MAX) + 1; }
 static void getFactor(float* fact) { *fact = 2.5; }
 static void getFactor(double* fact) { *fact = 2.5; }
 static void getFactor(__half* fact) { *fact = 2.5; }
 static void getFactor(int64_t* fact) { *fact = 303; }
-static void getFactor(uint64_t* fact) {
-  *fact = static_cast<uint64_t>(__LONG_LONG_MAX__)+1;
-}
+static void getFactor(uint64_t* fact) { *fact = static_cast<uint64_t>(__LONG_LONG_MAX__) + 1; }
 
 template <typename T> T sum(T* a) {
   T cpuSum = 0;
   T factor;
   getFactor(&factor);
   for (int i = 0; i < size; i++) {
-      a[i] = i + factor;
-      cpuSum += a[i];
+    a[i] = i + factor;
+    cpuSum += a[i];
   }
   return cpuSum;
 }
@@ -80,8 +72,8 @@ template <> __half sum(__half* a) {
   __half factor;
   getFactor(&factor);
   for (int i = 0; i < size; i++) {
-      a[i] = i + __half2float(factor);
-      cpuSum = __half2float(cpuSum) + __half2float(a[i]);
+    a[i] = i + __half2float(factor);
+    cpuSum = __half2float(cpuSum) + __half2float(a[i]);
   }
   return cpuSum;
 }
@@ -100,8 +92,7 @@ template <> bool compare(__half gpuSum, __half cpuSum) {
   return false;
 }
 
-template <typename T>
-static void runTestShflUp() {
+template <typename T> static void runTestShflUp() {
   const int size = 32;
   T a[size];
   T cpuSum = sum(a);
@@ -114,8 +105,7 @@ static void runTestShflUp() {
   HIP_CHECK(hipFree(d_a));
 }
 
-template <typename T>
-static void runTestShflDown() {
+template <typename T> static void runTestShflDown() {
   T a[size];
   T cpuSum = sum(a);
   T* d_a;
@@ -127,8 +117,7 @@ static void runTestShflDown() {
   HIP_CHECK(hipFree(d_a));
 }
 
-template <typename T>
-static void runTestShflXor() {
+template <typename T> static void runTestShflXor() {
   T a[size];
   T cpuSum = sum(a);
   T* d_a;
@@ -141,12 +130,12 @@ static void runTestShflXor() {
 }
 
 /**
-* @addtogroup __shfl __shfl
-* @{
-* @ingroup ShflTest
-* `T __shfl_up(T var, unsigned int lane_delta, int width = warpSize)` -
-* Contains warp __shfl_up function
-*/
+ * @addtogroup __shfl __shfl
+ * @{
+ * @ingroup ShflTest
+ * `T __shfl_up(T var, unsigned int lane_delta, int width = warpSize)` -
+ * Contains warp __shfl_up function
+ */
 
 /**
  * Test Description
@@ -164,27 +153,13 @@ static void runTestShflXor() {
  */
 
 TEST_CASE("Unit_runTestShfl_up") {
-  SECTION("runTestShflUp for int") {
-    runTestShflUp<int>();
-  }
-  SECTION("runTestShflUp for float") {
-    runTestShflUp<float>();
-  }
-  SECTION("runTestShflUp for double") {
-    runTestShflUp<double>();
-  }
-  SECTION("runTestShflUp for __half") {
-    runTestShflUp<__half>();
-  }
-  SECTION("runTestShflUp for int64_t") {
-    runTestShflUp<int64_t>();
-  }
-  SECTION("runTestShflUp for unsigned int") {
-    runTestShflUp<unsigned int>();
-  }
-  SECTION("runTestShflUp for uint64_t") {
-    runTestShflUp<uint64_t>();
-  }
+  SECTION("runTestShflUp for int") { runTestShflUp<int>(); }
+  SECTION("runTestShflUp for float") { runTestShflUp<float>(); }
+  SECTION("runTestShflUp for double") { runTestShflUp<double>(); }
+  SECTION("runTestShflUp for __half") { runTestShflUp<__half>(); }
+  SECTION("runTestShflUp for int64_t") { runTestShflUp<int64_t>(); }
+  SECTION("runTestShflUp for unsigned int") { runTestShflUp<unsigned int>(); }
+  SECTION("runTestShflUp for uint64_t") { runTestShflUp<uint64_t>(); }
 }
 /**
  * End doxygen group __shfl.
@@ -192,12 +167,12 @@ TEST_CASE("Unit_runTestShfl_up") {
  */
 
 /**
-* @addtogroup __shfl __shfl
-* @{
-* @ingroup ShflTest
-* `T __shfl_down(T var, unsigned int lane_delta, int width = warpSize)` -
-* Contains warp __shfl_down function
-*/
+ * @addtogroup __shfl __shfl
+ * @{
+ * @ingroup ShflTest
+ * `T __shfl_down(T var, unsigned int lane_delta, int width = warpSize)` -
+ * Contains warp __shfl_down function
+ */
 
 /**
  * Test Description
@@ -215,27 +190,13 @@ TEST_CASE("Unit_runTestShfl_up") {
  */
 
 TEST_CASE("Unit_runTestShfl_Down") {
-  SECTION("runTestShflDown for int") {
-    runTestShflDown<int>();
-  }
-  SECTION("runTestShflDown for float") {
-    runTestShflDown<float>();
-  }
-  SECTION("runTestShflDown for double") {
-    runTestShflDown<double>();
-  }
-  SECTION("runTestShflDown for __half") {
-    runTestShflDown<__half>();
-  }
-  SECTION("runTestShflDown for int64_t") {
-    runTestShflDown<int64_t>();
-  }
-  SECTION("runTestShflDown for unsigned int") {
-    runTestShflDown<unsigned int>();
-  }
-  SECTION("runTestShflDown for uint64_t") {
-    runTestShflDown<uint64_t>();
-  }
+  SECTION("runTestShflDown for int") { runTestShflDown<int>(); }
+  SECTION("runTestShflDown for float") { runTestShflDown<float>(); }
+  SECTION("runTestShflDown for double") { runTestShflDown<double>(); }
+  SECTION("runTestShflDown for __half") { runTestShflDown<__half>(); }
+  SECTION("runTestShflDown for int64_t") { runTestShflDown<int64_t>(); }
+  SECTION("runTestShflDown for unsigned int") { runTestShflDown<unsigned int>(); }
+  SECTION("runTestShflDown for uint64_t") { runTestShflDown<uint64_t>(); }
 }
 /**
  * End doxygen group __shfl.
@@ -243,12 +204,12 @@ TEST_CASE("Unit_runTestShfl_Down") {
  */
 
 /**
-* @addtogroup __shfl __shfl
-* @{
-* @ingroup ShflTest
-* `T __shfl_xor(T var, int laneMask, int width=warpSize)` -
-* Contains warp __shfl_xor function
-*/
+ * @addtogroup __shfl __shfl
+ * @{
+ * @ingroup ShflTest
+ * `T __shfl_xor(T var, int laneMask, int width=warpSize)` -
+ * Contains warp __shfl_xor function
+ */
 
 /**
  * Test Description
@@ -266,27 +227,13 @@ TEST_CASE("Unit_runTestShfl_Down") {
  */
 
 TEST_CASE("Unit_runTestShfl_Xor") {
-  SECTION("runTestShflXor for int") {
-    runTestShflXor<int>();
-  }
-  SECTION("runTestShflXor for float") {
-    runTestShflXor<float>();
-  }
-  SECTION("runTestShflXor for double") {
-    runTestShflXor<double>();
-  }
-  SECTION("runTestShflXor for __half") {
-    runTestShflXor<__half>();
-  }
-  SECTION("runTestShflXor for int64_t") {
-    runTestShflXor<int64_t>();
-  }
-  SECTION("runTestShflXor for unsigned int") {
-    runTestShflXor<unsigned int>();
-  }
-  SECTION("runTestShflXor for uint64_t") {
-    runTestShflXor<uint64_t>();
-  }
+  SECTION("runTestShflXor for int") { runTestShflXor<int>(); }
+  SECTION("runTestShflXor for float") { runTestShflXor<float>(); }
+  SECTION("runTestShflXor for double") { runTestShflXor<double>(); }
+  SECTION("runTestShflXor for __half") { runTestShflXor<__half>(); }
+  SECTION("runTestShflXor for int64_t") { runTestShflXor<int64_t>(); }
+  SECTION("runTestShflXor for unsigned int") { runTestShflXor<unsigned int>(); }
+  SECTION("runTestShflXor for uint64_t") { runTestShflXor<uint64_t>(); }
 }
 /**
  * End doxygen group __shfl.

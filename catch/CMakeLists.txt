@@ -303,6 +303,12 @@ add_subdirectory(perftests ${CATCH_BUILD_DIR}/perftests)
 add_subdirectory(multiproc ${CATCH_BUILD_DIR}/multiproc)
 add_subdirectory(performance ${CATCH_BUILD_DIR}/performance)
 
+add_custom_target(gen_coverage
+                  COMMAND ${CMAKE_MAKE_PROGRAM} default_target
+                  COMMAND ./generateHipAPICoverage ${HIP_PATH}/include
+                  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../utils/coverage
+                  COMMENT "Generating Test Coverage Report")
+
 cmake_policy(POP)
 
 # packaging the tests
@@ -319,4 +325,20 @@ file(TO_NATIVE_PATH ${PROJECT_BINARY_DIR} CATCH_BINARY_DIR)
 add_custom_target(package_test COMMAND ${CMAKE_COMMAND} .
     COMMAND cpack
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+endif()
+
+# Doxygen documentation
+# check if doxygen is installed
+find_package(Doxygen)
+if(DOXYGEN_FOUND)
+    # Configure Doxyfile with proper paths
+    set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/DoxyfileTests)
+    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/DoxyfileTests.out)
+    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+
+    add_custom_target(build_docs
+        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+        COMMENT "Generating test plan documentation with Doxygen")
+else()
+    message(STATUS "Doxygen was not found. Building test plan documentation will not be available")
 endif()

@@ -477,3 +477,8 @@ TEST_CASE("Unit_Device_Complex_Cast_Negative_Parameters_RTC") {
   ComplexTypeRTCWrapper<14>(kComplexDoubleToFloat);
   ComplexTypeRTCWrapper<14>(kComplexFloatToDouble);
 }
+
+/**
+* End doxygen group ComplexTest.
+* @}
+*/

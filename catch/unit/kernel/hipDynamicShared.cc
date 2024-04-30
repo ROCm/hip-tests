@@ -20,7 +20,7 @@ THE SOFTWARE.
 #include <hip_test_kernels.hh>
 #include <hip_test_checkers.hh>
 #include <hip_test_common.hh>
-#include <hip_test_defgroups.hh>
+ 
 
 #pragma clang diagnostic ignored "-Wunused-parameter"
 
@@ -162,3 +162,8 @@ TEST_CASE("Unit_hipDynamicShared") {
     testExternShared<double>(65536, 64);
   }
 }
+
+/**
+* End doxygen group KernelTest.
+* @}
+*/

@@ -88,12 +88,12 @@ static void checkGraphMemAttribute(size_t used_mem, size_t high_mem) {
 }
 
 // Reset memory graph attributes back to the original state
-static void ResetGraphMemAttribute() {
+static void ResetGraphMemAttribute(unsigned deviceId = 0) {
   size_t mem_size = 0;
   hipGraphMemAttributeType attr = hipGraphMemAttrUsedMemHigh;
-  HIP_CHECK(hipDeviceSetGraphMemAttribute(0, attr, &mem_size));
+  HIP_CHECK(hipDeviceSetGraphMemAttribute(deviceId, attr, &mem_size));
   attr = hipGraphMemAttrReservedMemHigh;
-  HIP_CHECK(hipDeviceSetGraphMemAttribute(0, attr, &mem_size));
+  HIP_CHECK(hipDeviceSetGraphMemAttribute(deviceId, attr, &mem_size));
 }
 
 /**
@@ -292,7 +292,7 @@ static void Unit_hipDeviceGetGraphMemAttribute_Functional(
   HIP_CHECK(hipGraphAddMemFreeNode(&freeNodeA, graph, &allocNodeA, 1,
                       reinterpret_cast<void *>(allocParams.dptr)));
 
-  int value = -1;
+  size_t value = -1;
   SECTION("Memory footprint check before launching graph") {
     HIP_CHECK(hipDeviceGetGraphMemAttribute(deviceId,
                          hipGraphMemAttrUsedMemCurrent, &value));
@@ -389,7 +389,7 @@ static void Unit_hipDeviceGetGraphMemAttribute_Functional(
                          hipGraphMemAttrReservedMemHigh, &value));
     REQUIRE(value == 0);
   }
-  ResetGraphMemAttribute();
+  ResetGraphMemAttribute(deviceId);
 #endif
 }
 
@@ -429,7 +429,7 @@ TEST_CASE("Unit_hipDeviceGetGraphMemAttribute_Functional_Multi_Device") {
 */
 
 TEST_CASE("Unit_hipDeviceGetGraphMemAttribute_Negative") {
-  int value = 0;
+  size_t value = 0;
   hipError_t ret;
   SECTION("Pass device id as negative value") {
     ret = hipDeviceGetGraphMemAttribute(-1,
@@ -472,7 +472,7 @@ TEST_CASE("Unit_hipDeviceGetGraphMemAttribute_Negative") {
 */
 
 TEST_CASE("Unit_hipDeviceSetGraphMemAttribute_Negative") {
-  int value = 0;
+  size_t value = 0;
   hipError_t ret;
   SECTION("Pass device id as negative value") {
     ret = hipDeviceSetGraphMemAttribute(-3,

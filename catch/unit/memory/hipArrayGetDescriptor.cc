@@ -483,6 +483,8 @@ TEST_CASE("Unit_hipArrayGetDescriptor_Negative_Scenarios") {
  *  - HIP_VERSION >= 5.7
  */
 TEST_CASE("Unit_hipArrayGetDescriptor_Positive_Basic") {
+  CHECK_IMAGE_SUPPORT
+
   HIP_ARRAY_DESCRIPTOR expected_desc{};
   using vec_info = vector_info<float>;
   expected_desc.Format = vec_info::format;
@@ -516,6 +518,8 @@ TEST_CASE("Unit_hipArrayGetDescriptor_Positive_Basic") {
  *  - HIP_VERSION >= 5.7
  */
 TEST_CASE("Unit_hipArrayGetDescriptor_Negative_Parameters") {
+  CHECK_IMAGE_SUPPORT
+
   HIP_ARRAY_DESCRIPTOR expected_desc{};
   using vec_info = vector_info<float>;
   expected_desc.Format = vec_info::format;

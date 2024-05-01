@@ -279,7 +279,6 @@
         "Unit_hipDrvGraphAddMemsetNode_hipMalloc_1D",
         "Unit_hipDrvGraphAddMemsetNode_hipMallocManaged",
         "Unit_hipDrvGraphAddMemcpyNode_Negative_Parameters",
-        "Unit_hipPointerSetAttribute_Negative_Parameters",
         "Unit_hipDrvGetErrorName_Positive_Basic",
         "Unit_hipDrvGetErrorString_Positive_Basic",
         "Unit_hipModuleLaunchKernel_Negative_Parameters",

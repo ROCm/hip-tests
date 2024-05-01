@@ -76,7 +76,7 @@ TEST_CASE("Unit_hipPointerSetAttribute_Positive_SyncMemops") {
  */
 TEST_CASE("Unit_hipPointerSetAttribute_Negative_Parameters") {
   LinearAllocGuard<int> mem(LinearAllocs::hipMalloc, 4);
-  bool value = false;
+  int value = 0;
 
   SECTION("value is nullptr") {
     HIP_CHECK_ERROR(hipPointerSetAttribute(nullptr, HIP_POINTER_ATTRIBUTE_SYNC_MEMOPS, mem.ptr()),

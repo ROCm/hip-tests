@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include <stdlib.h>
 #include <iostream>
 #include "hip/hip_runtime_api.h"
+#include "hip/hip_runtime.h"
 
 #define HIP_CHECK(error) \
 { \
@@ -35,8 +36,10 @@ THE SOFTWARE.
 
 // Kernel
 __global__ void MemAdvise_Exe(int *Hmm, int n) {
-  for (int i = 0; i < n; i ++) {
-    Hmm[i] = Hmm[i] + 10;
+  size_t offset = (blockIdx.x * blockDim.x + threadIdx.x);
+  size_t stride = blockDim.x * gridDim.x;
+  for (int i = offset; i < n; i+=stride) {
+    Hmm[i] +=  10;
   }
 }
 
@@ -51,8 +54,7 @@ static int hipMemAdvise_AlignedAllocMem_Exe() {
 
   if ((managedMem == 1) && (pageMemAccess == 1)) {
     int *Mllc = nullptr, MemSz = 4096 * 4, NumElms = 4096, InitVal = 123;
-    // Mllc = reinterpret_cast<(int *)>(aligned_alloc(4096, MemSz));
-    Mllc = reinterpret_cast<int*>(aligned_alloc(4096, 4096*4));
+    Mllc = reinterpret_cast<int*>(aligned_alloc(4096, MemSz));
 
     for (int i = 0; i < NumElms; ++i) {
       Mllc[i] = InitVal;
@@ -64,8 +66,7 @@ static int hipMemAdvise_AlignedAllocMem_Exe() {
     // The following hipMemAdvise() call is made to know if advise on
     // aligned_alloc() is causing any issue
     HIP_CHECK(hipMemAdvise(Mllc, MemSz, hipMemAdviseSetPreferredLocation, 0));
-    hipError_t err = hipMemPrefetchAsync(Mllc, MemSz, 0, strm);
-    if (err != hipErrorInvalidValue) return -1;
+    HIP_CHECK(hipMemPrefetchAsync(Mllc, MemSz, 0, strm));
     HIP_CHECK(hipStreamSynchronize(strm));
     MemAdvise_Exe<<<(NumElms/32), 32, 0, strm>>>(Mllc, NumElms);
     HIP_CHECK(hipStreamSynchronize(strm));

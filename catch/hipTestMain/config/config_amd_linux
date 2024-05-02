@@ -1319,7 +1319,6 @@
         "Unit_hipGraphAddNodeTypeMemset_Positive_Basic - uint8_t",
         "Unit_hipGraphAddNodeTypeMemset_Positive_Basic - uint16_t",
         "Unit_hipGraphAddNodeTypeMemset_Positive_Basic - uint32_t",
-        "Unit_hipMemAdvise_TstAlignedAllocMem_XNACK",
         "Unit_hipCreateSurfaceObject_Negative_Parameters",
         "Unit_hipDestroySurfaceObject_Negative_Parameters",
         "Unit_Device___float2half_rd_Accuracy_Limited_Positive",

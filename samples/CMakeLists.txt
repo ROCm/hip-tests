@@ -23,10 +23,6 @@ project(hip-samples)
 
 option(ENABLE_ADDRESS_SANITIZER "Option to enable ASAN build" OFF)
 
-if (WIN32)
-    set(EXT ".bat")
-endif()
-
 # Read -DROCM_Path and env{ROCM_PATH}
 if(NOT DEFINED ROCM_PATH)
     if(DEFINED ENV{ROCM_PATH})
@@ -41,12 +37,18 @@ if(NOT DEFINED HIP_PATH)
     endif()
 endif()
 
+if(UNIX)
+  set(HIPCONFIG_EXEC "hipconfig")
+else()
+  set(HIPCONFIG_EXEC "hipconfig.bat")
+endif()
+
 # both are not set
 if(NOT DEFINED HIP_PATH AND NOT DEFINED ROCM_PATH)
     set(HIP_PATH "/opt/rocm")
     set(ROCM_PATH "/opt/rocm")
 elseif(DEFINED HIP_PATH AND NOT DEFINED ROCM_PATH)
-    execute_process(COMMAND ${HIP_PATH}/bin/hipconfig${EXT} --rocmpath
+    execute_process(COMMAND ${HIP_PATH}/bin/${HIPCONFIG_EXEC} --rocmpath
                 OUTPUT_VARIABLE ROCM_PATH
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
 elseif(DEFINED ROCM_PATH AND NOT DEFINED HIP_PATH)
@@ -55,8 +57,7 @@ endif()
 message(STATUS "HIP_PATH: ${HIP_PATH}")
 message(STATUS "ROCM_PATH: ${ROCM_PATH}")
 
-set(HIPCONFIG_EXECUTABLE "${HIP_PATH}/bin/hipconfig${EXT}")
-execute_process(COMMAND ${HIPCONFIG_EXECUTABLE} --version
+execute_process(COMMAND ${HIP_PATH}/bin/${HIPCONFIG_EXEC} --version
                 OUTPUT_VARIABLE HIP_VERSION
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
 

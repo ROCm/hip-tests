@@ -234,13 +234,13 @@ TEST_CASE("Unit_hipMemRangeGetAttribute_AccessedBy1") {
   if (managed == 1) {
     int Ngpus = 0, *Hmm = NULL, MEM_SZ = 4096, RND_NUM = 999;
     HIP_CHECK(hipGetDeviceCount(&Ngpus));
-    int *OutData = new int[Ngpus];
+    std::vector<int> OutData;
     for (int i = 0; i < Ngpus; ++i) {
-      OutData[Ngpus] = RND_NUM;
+      OutData.push_back(RND_NUM);
     }
     HIP_CHECK(hipMallocManaged(&Hmm, MEM_SZ));
     HIP_CHECK(hipMemAdvise(Hmm, MEM_SZ, hipMemAdviseSetAccessedBy, 0));
-    HIP_CHECK(hipMemRangeGetAttribute(OutData, 4*Ngpus,
+    HIP_CHECK(hipMemRangeGetAttribute(OutData.data(), sizeof(int)*OutData.size(),
                                      hipMemRangeAttributeAccessedBy,
                                      Hmm, MEM_SZ));
     if (OutData[0] != 0) {
@@ -259,7 +259,7 @@ TEST_CASE("Unit_hipMemRangeGetAttribute_AccessedBy1") {
       }
       // checking the behavior with dataSize less than the number of gpus
       // This should not result in segfault.
-      HIP_CHECK(hipMemRangeGetAttribute(OutData, 4*(Ngpus-1),
+      HIP_CHECK(hipMemRangeGetAttribute(OutData.data(), sizeof(int)*(OutData.size()-1),
                                        hipMemRangeAttributeAccessedBy,
                                        Hmm, MEM_SZ));
       // OutData should have stored the gpu ordinals for which AccessedBy is
@@ -277,7 +277,6 @@ TEST_CASE("Unit_hipMemRangeGetAttribute_AccessedBy1") {
       }
     }
     HIP_CHECK(hipFree(Hmm));
-    delete[] OutData;
   } else {
     SUCCEED("GPU 0 doesn't support hipDeviceAttributeManagedMemory "
            "attribute. Hence skipping the testing with Pass result.\n");
@@ -298,29 +297,28 @@ TEST_CASE("Unit_hipMemRangeGetAttribte_3") {
   if (managed == 1) {
     int Ngpus = 0, *Hmm = NULL, MEM_SZ = 4096*4, RND_NUM = 999;
     HIP_CHECK(hipGetDeviceCount(&Ngpus));
-    int *OutData = new int[Ngpus];
+    std::vector<int> OutData;
     for (int i = 0; i < Ngpus; ++i) {
-      OutData[Ngpus] = RND_NUM;
+      OutData.push_back(RND_NUM);
     }
     HIP_CHECK(hipMallocManaged(&Hmm, MEM_SZ));
     HIP_CHECK(hipMemAdvise(Hmm, MEM_SZ/2, hipMemAdviseSetAccessedBy, 0));
-    HIP_CHECK(hipMemRangeGetAttribute(OutData, 4*Ngpus,
+    HIP_CHECK(hipMemRangeGetAttribute(OutData.data(), sizeof(int)*OutData.size(),
                                      hipMemRangeAttributeAccessedBy,
                                      (Hmm), MEM_SZ));
 
     HIP_CHECK(hipMemAdvise(Hmm, MEM_SZ/2, hipMemAdviseSetReadMostly, 0));
     // The Api called below should not fail
-    HIP_CHECK(hipMemRangeGetAttribute(OutData, 4,
+    HIP_CHECK(hipMemRangeGetAttribute(OutData.data(), sizeof(int),
                                      hipMemRangeAttributeReadMostly,
                                      (Hmm), MEM_SZ));
 
     HIP_CHECK(hipMemAdvise(Hmm, MEM_SZ/2, hipMemAdviseSetPreferredLocation, 0));
     // The api called below should not fail
-    HIP_CHECK(hipMemRangeGetAttribute(OutData, 4,
+    HIP_CHECK(hipMemRangeGetAttribute(OutData.data(), sizeof(int),
                                      hipMemRangeAttributePreferredLocation,
                                      (Hmm), MEM_SZ));
     HIP_CHECK(hipFree(Hmm));
-    delete[] OutData;
   } else {
     SUCCEED("GPU 0 doesn't support hipDeviceAttributeManagedMemory "
            "attribute. Hence skipping the testing with Pass result.\n");
@@ -394,23 +392,22 @@ TEST_CASE("Unit_hipMemRangeGetAttribute_PrefetchAndGtAttr") {
     size_t PageSz = 4096;
     HIP_CHECK(hipGetDeviceCount(&Ngpus));
 
-    int *OutData = new int[Ngpus];
+    std::vector<int> OutData;
     for (int i = 0; i < Ngpus; ++i) {
-      OutData[Ngpus] = RND_NUM;
+      OutData.push_back(RND_NUM);
     }
     HIP_CHECK(hipMallocManaged(&Hmm, PageSz*4));
     hipStream_t strm;
     HIP_CHECK(hipStreamCreate(&strm));
     HIP_CHECK(hipMemPrefetchAsync(Hmm, PageSz*4, 0, strm));
     HIP_CHECK(hipStreamSynchronize(strm));
-    HIP_CHECK(hipMemRangeGetAttribute(OutData, 4,
+    HIP_CHECK(hipMemRangeGetAttribute(OutData.data(), sizeof(int),
                                      hipMemRangeAttributeLastPrefetchLocation,
                                      Hmm, PageSz*4));
     HIP_CHECK(hipStreamDestroy(strm));
     HIP_CHECK(hipFree(Hmm));
     if (OutData[0] != 0) {
       WARN("Didnt receive expected value at line: " << __LINE__);
-      delete[] OutData;
       REQUIRE(false);
     }
   } else {

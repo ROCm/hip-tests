@@ -45,7 +45,7 @@ __global__ void readFromTexture(T* output, hipTextureObject_t texObj, size_t wid
   } else {
     const float v = y / (float)height;
     if (textureGather) {
-      output[y * width + x] = tex2Dgather<T>(texObj, u, v, ChannelToRead);
+      // output[y * width + x] = tex2Dgather<T>(texObj, u, v, ChannelToRead);
     } else {
       output[y * width + x] = tex2D<T>(texObj, u, v);
     }

@@ -90,7 +90,7 @@ if(HIP_PLATFORM MATCHES "amd")
     # For windows build error occurs undefined symbol: hipPointerSetAttribute
     set(TEST_SRC ${TEST_SRC} hipPointerSetAttribute.cc)
   endif()
-else()
+elseif(HIP_PLATFORM MATCHES "nvidia")
   set(TEST_SRC ${TEST_SRC} hipGetSymbolSizeAddress.cc)
 endif()
 
@@ -176,7 +176,11 @@ if(HIP_PLATFORM MATCHES "amd")
       hipArray3DGetDescriptor.cc)
 endif()
 
-set(NOT_FOR_MI200_AND_ABOVE_TEST hipMallocArray.cc hipArrayCreate.cc) # tests not for MI200+
+if (NOT HIP_PLATFORM MATCHES "spirv") 
+  # clang crash on HipTextureLowering.cpp: 
+  # Don't know how to lower this texture use case
+  set(NOT_FOR_MI200_AND_ABOVE_TEST hipMallocArray.cc hipArrayCreate.cc) # tests not for MI200+
+endif()
 set(MI200_AND_ABOVE_TARGETS gfx90a gfx940 gfx941 gfx942)
 function(CheckRejectedArchs OFFLOAD_ARCH_STR_LOCAL)
   set(ARCH_CHECK -1 PARENT_SCOPE)

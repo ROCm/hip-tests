@@ -145,7 +145,7 @@ static __global__ void Delay(uint32_t interval, const uint32_t ticks_per_ms) {
       __builtin_amdgcn_s_sleep(10);
     }
     #endif
-    #if HT_NVIDIA
+    #if HT_NVIDIA || HT_SPIRV
     uint64_t start = clock64();
     while (clock64() - start < ticks_per_ms) {
     }
@@ -170,7 +170,7 @@ inline void LaunchDelayKernel(const std::chrono::milliseconds interval, const hi
   #if HT_AMD
   HIPCHECK(hipDeviceGetAttribute(&ticks_per_ms, hipDeviceAttributeWallClockRate, 0));
   #endif
-  #if HT_NVIDIA
+  #if HT_NVIDIA || HT_SPIRV
   HIPCHECK(hipDeviceGetAttribute(&ticks_per_ms, hipDeviceAttributeClockRate, 0));
   #endif
   Delay<<<1, 1, 0, stream>>>(interval.count(), ticks_per_ms);

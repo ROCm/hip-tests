@@ -28,7 +28,7 @@ THE SOFTWARE.
 
 static int IsStreamWaitValueSupported(int device_id) {
   int wait_value_supported = 0;
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
   HIP_CHECK(hipDeviceGetAttribute(&wait_value_supported, hipDeviceAttributeCanUseStreamWaitValue,
                                   device_id));
 #else

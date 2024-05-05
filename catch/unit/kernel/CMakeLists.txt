@@ -39,6 +39,11 @@ if(UNIX)
       hipPrintfKernel.cc)
 endif()
 
+if(NOT HIP_PLATFORM MATCHES "spirv")
+  #error: call to '__shfl' is ambiguous
+  set(TEST_SRC ${TEST_SRC} hipShflTests.cc)
+endif()
+
 # only for AMD
 if(HIP_PLATFORM MATCHES "amd")
   set(AMD_SRC

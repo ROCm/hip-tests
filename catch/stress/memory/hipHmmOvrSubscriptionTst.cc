@@ -35,6 +35,9 @@ __global__ void floatx2(float* ptr, size_t size) {
 }
 
 TEST_CASE("Stress_HMM_OverSubscriptionTst") {
+#if HT_SPIRV
+  HipTest::HIP_SKIP_TEST("Stress_HMM_OverSubscriptionTst Unsupported on SPIRV");
+#endif
   int hmm = 0;
   HIP_CHECK(hipDeviceGetAttribute(&hmm, hipDeviceAttributeManagedMemory, 0));
 

@@ -105,7 +105,7 @@ void checkMipmappedArrayIsExpected(hipArray_t level_array,
                                    const hipExtent& expected_extent,
                                    const unsigned int expected_flags) {
 // hipArrayGetInfo doesn't currently exist (EXSWCPHIPT-87)
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
   std::ignore = level_array;
   std::ignore = expected_desc;
   std::ignore = expected_extent;
@@ -134,7 +134,7 @@ void checkMipmappedArrayIsExpected(hipArray_t level_array,
 TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_happy", "", char, uint2, int4, short4, float) {
   hipMipmappedArray_t array;
   const auto desc = hipCreateChannelDesc<TestType>();
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
   const unsigned int flags = hipArrayDefault;
 #else
   const unsigned int flags =
@@ -162,7 +162,7 @@ TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_happy", "", char, uint2, int4, 
   }
 }
 
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
 constexpr std::array<unsigned int, 1> validFlags{hipArrayDefault};
 #else
 constexpr std::array<unsigned int, 9> validFlags{
@@ -247,7 +247,7 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_InvalidFlags") {
   hipMipmappedArray_t array;
   hipChannelFormatDesc desc = hipCreateChannelDesc<float4>();
 
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
   const unsigned int flag = 0xDEADBEEF;
 #else
   const unsigned int flag =
@@ -368,7 +368,7 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NumericLimit") {
 // texture gather arrays are only allowed to be 2D
 TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_Negative_Non2DTextureGather", "", char, uchar2,
                    float2) {
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
   HipTest::HIP_SKIP_TEST("Texture Gather arrays not supported using AMD backend");
   return;
 #endif

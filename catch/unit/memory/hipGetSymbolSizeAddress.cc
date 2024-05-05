@@ -76,7 +76,7 @@ static void HipGetSymbolSizeAddressTest(const void* symbol) {
   ArrayFindIfNot(read_buffer.data(), expected_value, read_buffer.size());
 }
 
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
 #define SYMBOL(expr) &HIP_SYMBOL(expr)
 #else
 #define SYMBOL(expr) HIP_SYMBOL(expr)
@@ -96,7 +96,7 @@ TEST_CASE("Unit_hipGetSymbolSizeAddress_Positive_Basic") {
 
 TEST_CASE("Unit_hipGetSymbolAddress_Negative_Parameters") {
 // Causes a segfault in CUDA
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
   SECTION("devPtr == nullptr") {
     HIP_CHECK_ERROR(hipGetSymbolAddress(nullptr, SYMBOL(int_var)), hipErrorInvalidValue);
   }
@@ -110,7 +110,7 @@ TEST_CASE("Unit_hipGetSymbolAddress_Negative_Parameters") {
 
 TEST_CASE("Unit_hipGetSymbolSize_Negative_Parameters") {
 // Causes a segfault in CUDA
-#if HT_AMD
+#if HT_AMD || HT_SPIRV
   SECTION("size == nullptr") {
     HIP_CHECK_ERROR(hipGetSymbolSize(nullptr, SYMBOL(int_var)), hipErrorInvalidValue);
   }

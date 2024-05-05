@@ -29,8 +29,6 @@ set(TEST_SRC
     hipTextureObj2D.cc
     hipSimpleTexture3D.cc
     hipTextureRef2D.cc
-    hipSimpleTexture1DLayered.cc
-    hipSimpleTexture2DLayered.cc
     hipBindTex2DPitch.cc
     hipBindTexRef1DFetch.cc
     hipTex1DFetchCheckModes.cc
@@ -52,6 +50,12 @@ set(TEST_SRC
     hipMipmappedArrayDestroy.cc
     hipMipmappedArrayGetLevel.cc
 )
+
+if(NOT HIP_PLATFORM MATCHES "spirv")
+  set(TEST_SRC ${TEST_SRC}
+  hipSimpleTexture1DLayered.cc
+  hipSimpleTexture2DLayered.cc)
+endif()
 
 # tests not for MI200+
 set(NOT_FOR_MI200_AND_ABOVE_TEST

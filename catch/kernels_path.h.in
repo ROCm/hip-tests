@@ -1,0 +1,6 @@
+#ifndef KERNELS_PATH_H
+#define KERNELS_PATH_H
+
+#define KERNELS_PATH "@CMAKE_CURRENT_SOURCE_DIR@/kernels/"
+
+#endif

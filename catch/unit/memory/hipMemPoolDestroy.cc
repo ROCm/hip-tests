@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
+   Copyright (c) 2024 Advanced Micro Devices, Inc. All rights reserved.
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the "Software"), to deal
    in the Software without restriction, including without limitation the rights
@@ -40,15 +40,10 @@
  *  - /unit/memory/hipMemPoolDestroy.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 6.0
+ *  - HIP_VERSION >= 6.2
  */
 TEST_CASE("Unit_hipMemPoolDestroy_Negative_Parameter") {
-  int mem_pool_support = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&mem_pool_support, hipDeviceAttributeMemoryPoolsSupported, 0));
-  if (!mem_pool_support) {
-    SUCCEED("Runtime doesn't support Memory Pool. Skip the test case.");
-    return;
-  }
+  checkMempoolSupported(0)
 
   hipMemPool_t mem_pool = nullptr;
 

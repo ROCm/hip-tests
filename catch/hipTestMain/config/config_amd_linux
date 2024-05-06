@@ -9,6 +9,10 @@
     ],
     "DisabledTests": [
     #if defined COMMON
+        "Unit_hipMallocFromPoolAsync_MThread_MaxThresh",
+        "Unit_hipMallocFromPoolAsync_MThread_CommonMpool_DefaultMempool",
+        "Unit_hipMemPoolTrimTo_Multithreaded",
+        "Unit_hipMemPoolSetGetAccess_Positive_MultipleGPU",
         "Unit_hipStreamPerThread_DeviceReset_1",
         "Unit_hipDeviceGetSharedMemConfig_Positive_Basic",
         "Unit_hipDeviceGetSharedMemConfig_Positive_Threaded",

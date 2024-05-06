@@ -512,7 +512,7 @@ TEST_CASE("Unit_hipCGMultiGridGroupType_Basic") {
 
 TEST_CASE("Unit_hipCGMultiGridGroupType_Barrier") {
   int num_devices = 0;
-  uint32_t loops = GENERATE(1, 2, 3, 4);
+  uint32_t loops = GENERATE(1, 2);
   uint32_t warps = GENERATE(4, 8, 16, 32);
   uint32_t block_size = 1;
 

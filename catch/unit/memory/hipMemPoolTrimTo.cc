@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
+   Copyright (c) 2024 Advanced Micro Devices, Inc. All rights reserved.
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the "Software"), to deal
    in the Software without restriction, including without limitation the rights
@@ -43,19 +43,12 @@
  *  - /unit/memory/hipMemPoolTrimTo.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 6.0
+ *  - HIP_VERSION >= 6.2
  */
 TEST_CASE("Unit_hipMemPoolTrimTo_Negative_Parameter") {
   int device_id = 0;
   HIP_CHECK(hipSetDevice(device_id));
-
-  int mem_pool_support = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&mem_pool_support, hipDeviceAttributeMemoryPoolsSupported, 0));
-  if (!mem_pool_support) {
-    SUCCEED("Runtime doesn't support Memory Pool. Skip the test case.");
-    return;
-  }
-
+  checkMempoolSupported(device_id)
   size_t trim_size = 1024;
 
   SECTION("Passing nullptr to mem_pool") {
@@ -73,18 +66,12 @@ TEST_CASE("Unit_hipMemPoolTrimTo_Negative_Parameter") {
  *  - /unit/memory/hipMemPoolTrimTo.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 6.0
+ *  - HIP_VERSION >= 6.2
  */
 TEST_CASE("Unit_hipMemPoolTrimTo_Positive_Basic") {
   int device_id = 0;
   HIP_CHECK(hipSetDevice(device_id));
-
-  int mem_pool_support = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&mem_pool_support, hipDeviceAttributeMemoryPoolsSupported, 0));
-  if (!mem_pool_support) {
-    SUCCEED("Runtime doesn't support Memory Pool. Skip the test case.");
-    return;
-  }
+  checkMempoolSupported(device_id)
 
   const size_t allocation_size1 = kPageSize * kPageSize * 2;
   const size_t allocation_size2 = kPageSize / 2;
@@ -162,6 +149,147 @@ TEST_CASE("Unit_hipMemPoolTrimTo_Positive_Basic") {
   REQUIRE((allocation_size1 + allocation_size2) == value64);
 
   HIP_CHECK(hipFreeAsync(reinterpret_cast<void*>(alloc_mem2), stream.stream()));
+}
+
+static bool thread_results[NUMBER_OF_THREADS];
+
+/**
+ * Local function to test hipMemPoolAttrReleaseThreshold.
+ */
+static bool checkhipMemPoolTrimTo(hipStream_t stream, int N,
+                                int dev = 0) {
+  streamMemAllocTest testObj(N);
+  size_t byte_size = N*sizeof(int);
+  // assign memory to host pointers
+  testObj.createHostBufferWithData();
+  // Create mempool in current device
+  hipMemPool_t mem_pool;
+  hipMemPoolProps pool_props{};
+  pool_props.allocType = hipMemAllocationTypePinned;
+  pool_props.location.id = dev;
+  pool_props.location.type = hipMemLocationTypeDevice;
+  HIP_CHECK(hipMemPoolCreate(&mem_pool, &pool_props));
+  uint64_t setThreshold = UINT64_MAX;
+  HIP_CHECK(hipMemPoolSetAttribute(mem_pool, hipMemPoolAttrReleaseThreshold,
+                                   &setThreshold));
+  testObj.useCommonMempool(mem_pool);
+  for (int iter = 1; iter <= LAUNCH_ITERATIONS; iter++) {
+    // Set different min_bytes_to_hold for each iteration
+    size_t min_bytes_to_hold =
+    (byte_size * 3 * (LAUNCH_ITERATIONS - iter))/LAUNCH_ITERATIONS;
+    HIP_CHECK(hipMemPoolTrimTo(mem_pool, min_bytes_to_hold));
+    // assign memory to device pointers
+    testObj.allocFromMempool(stream);
+    testObj.transferToMempool(stream);
+    testObj.runKernel(stream);
+    testObj.transferFromMempool(stream);
+    testObj.freeDevBuf(stream);
+    // verify and validate
+    REQUIRE(true == testObj.validateResult());
+    HIP_CHECK(hipStreamSynchronize(stream));
+  }
+  HIP_CHECK(hipMemPoolDestroy(mem_pool));
+  return true;
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Create explicit mempool1 on default GPU and set attribute
+ * hipMemPoolAttrReleaseThreshold to UINT64_MAX.
+ * LOOP for 10 times: {Trim the memory pool in each iteration, then
+ * Allocate A_d1, B_d1, C_d1 from pool1, memcpy data to (A_d1, B_d1).
+ * Launch kernel to perform C_d1(x)=A_d1(x)+B_d1(x), verify
+ * result and free the memory.} After loop free the pool.
+ * ------------------------
+ *    - catch\unit\memory\hipMemPoolTrimTo.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 6.2
+ */
+TEST_CASE("Unit_hipMemPoolTrimTo_VaryingMinBytesToHold") {
+  checkMempoolSupported(0)
+  // create a stream
+  hipStream_t stream;
+  HIP_CHECK(hipStreamCreate(&stream));
+  constexpr int N = 1 << 20;
+  REQUIRE(true == checkhipMemPoolTrimTo(stream, N));
+  HIP_CHECK(hipStreamDestroy(stream));
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *    - MultiGPU scenario: Execute the above scenario in each device.
+ * ------------------------
+ *    - catch\unit\memory\hipMemPoolTrimTo.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 6.2
+ */
+TEST_CASE("Unit_hipMemPoolTrimTo_MGpuVaryingMinBytesToHold") {
+  constexpr int N = 1 << 20;
+  int numDevices = 0;
+  HIP_CHECK(hipGetDeviceCount(&numDevices));
+  if (numDevices < 2) {
+    WARN("Number of GPUs insufficient for test");
+  } else {
+    for (int dev = 0; dev < numDevices; dev++) {
+      checkMempoolSupported(dev)
+      HIP_CHECK(hipSetDevice(dev));
+      // create a stream
+      hipStream_t stream;
+      HIP_CHECK(hipStreamCreate(&stream));
+      REQUIRE(true == checkhipMemPoolTrimTo(stream, N, dev));
+      HIP_CHECK(hipStreamDestroy(stream));
+    }
+  }
+}
+
+/**
+ * Local Thread Functions
+ */
+static void thread_Test(hipStream_t stream, int N, int threadNum) {
+  thread_results[threadNum] =
+  checkhipMemPoolTrimTo(stream, N, false);
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *    - Multithread scenario: Execute the above scenario in each thread.
+ * ------------------------
+ *    - catch\unit\memory\hipMemPoolTrimTo.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 6.2
+ */
+TEST_CASE("Unit_hipMemPoolTrimTo_Multithreaded") {
+  checkMempoolSupported(0)
+  // create a stream
+  constexpr int N = 1 << 20;
+  std::vector<std::thread> tests;
+  hipStream_t stream[NUMBER_OF_THREADS];
+  // Initialize and create streams
+  for (int idx = 0; idx < NUMBER_OF_THREADS; idx++) {
+    thread_results[idx] = false;
+    HIP_CHECK(hipStreamCreate(&stream[idx]));
+  }
+  // Spawn the test threads
+  for (int idx = 0; idx < NUMBER_OF_THREADS; idx++) {
+    tests.push_back(std::thread(thread_Test, stream[idx],
+                                N, idx));
+  }
+  // Wait for all threads to complete
+  for (std::thread &t : tests) {
+    t.join();
+  }
+  // Wait for thread and destroy stream
+  bool status = true;
+  for (int idx = 0; idx < NUMBER_OF_THREADS; idx++) {
+    status = status & thread_results[idx];
+    HIP_CHECK(hipStreamDestroy(stream[idx]));
+  }
 }
 
 /**

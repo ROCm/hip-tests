@@ -24,6 +24,7 @@ set(AMD_TEST_SRC
     hiprtc_TextureTypes_HeaderTst.cc
     hipRtcComplexHeader.cc
     hipRtcPtrdiff_t.cc
+    hiprtc_Bitcode_UndefinedFn.cc
 )
 
 add_custom_target(copyRtcHeaders ALL

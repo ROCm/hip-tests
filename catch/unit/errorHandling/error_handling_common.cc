@@ -352,56 +352,56 @@ const char* ErrorString(hipError_t enumerator) {
       return "profiler already started";
     case hipErrorProfilerAlreadyStopped:
       return "profiler already stopped";
-#if HT_AMD
     case hipErrorInvalidConfiguration:
+#if HT_AMD
       return "invalid configuration argument";
 #elif HT_NVIDIA
       return "unknown error";
 #endif
-#if HT_AMD
     case hipErrorInvalidPitchValue:
+#if HT_AMD
       return "invalid pitch argument";
 #elif HT_NVIDIA
       return "unknown error";
 #endif
-#if HT_AMD
     case hipErrorInvalidSymbol:
+#if HT_AMD
       return "invalid device symbol";
 #elif HT_NVIDIA
       return "unknown error";
 #endif
-#if HT_AMD
     case hipErrorInvalidDevicePointer:
+#if HT_AMD
       return "invalid device pointer";
 #elif HT_NVIDIA
       return "unknown error";
 #endif
-#if HT_AMD
     case hipErrorInvalidMemcpyDirection:
+#if HT_AMD
       return "invalid copy direction for memcpy";
 #elif HT_NVIDIA
       return "unknown error";
 #endif
-#if HT_AMD
     case hipErrorInsufficientDriver:
+#if HT_AMD
       return "driver version is insufficient for runtime version";
 #elif HT_NVIDIA
       return "unknown error";
 #endif
-#if HT_AMD
     case hipErrorMissingConfiguration:
+#if HT_AMD
       return "__global__ function call is not configured";
 #elif HT_NVIDIA
       return "unknown error";
 #endif
-#if HT_AMD
     case hipErrorPriorLaunchFailure:
+#if HT_AMD
       return "unspecified launch failure in prior launch";
 #elif HT_NVIDIA
       return "unknown error";
 #endif
-#if HT_AMD
     case hipErrorInvalidDeviceFunction:
+#if HT_AMD
       return "invalid device function";
 #elif HT_NVIDIA
       return "unknown error";

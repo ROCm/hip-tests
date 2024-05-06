@@ -619,8 +619,6 @@
         "Unit_tex2DLayeredLod_Positive_ReadModeNormalizedFloat - unsigned char",
         "Unit_tex2DLayeredLod_Positive_ReadModeNormalizedFloat - short",
         "Unit_tex2DLayeredLod_Positive_ReadModeNormalizedFloat - unsigned short",
-        "Unit_hipDrvGetErrorName_Positive_Basic",
-        "Unit_hipDrvGetErrorString_Positive_Basic",
         "Unit_hipModuleLaunchKernel_Negative_Parameters",
         "Unit_hipModuleGetTexRef_Positive_Basic",
         "Unit_hipExtModuleLaunchKernel_Negative_Parameters",

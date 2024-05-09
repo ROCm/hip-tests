@@ -33,6 +33,7 @@ set(TEST_SRC
     hipTestGlobalVariable.cc
     hipTestMemKernel.cc
     launch_bounds.cc
+    hipAutoThreadIdx.cc
 )
 if(UNIX)
   set(TEST_SRC ${TEST_SRC}

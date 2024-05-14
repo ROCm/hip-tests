@@ -38,9 +38,14 @@ TEST_CASE("Unit_hipMemcpyAsync_Positive_Synchronization_Behavior") {
   using namespace std::placeholders;
   HIP_CHECK(hipDeviceSynchronize());
 
-  SECTION("Host memory to device memory") {
-    MemcpyHtoDSyncBehavior(std::bind(hipMemcpyAsync, _1, _2, _3, hipMemcpyHostToDevice, nullptr),
-                           true);
+  SECTION("Host pageable memory to device memory") {
+    MemcpyHPageabletoDSyncBehavior(
+        std::bind(hipMemcpyAsync, _1, _2, _3, hipMemcpyHostToDevice, nullptr), true);
+  }
+
+  SECTION("Host pinned memory to device memory") {
+    MemcpyHPinnedtoDSyncBehavior(
+        std::bind(hipMemcpyAsync, _1, _2, _3, hipMemcpyHostToDevice, nullptr), false);
   }
 
   SECTION("Device memory to pageable host memory") {
@@ -66,6 +71,9 @@ TEST_CASE("Unit_hipMemcpyAsync_Positive_Synchronization_Behavior") {
   SECTION("Host memory to host memory") {
     MemcpyHtoHSyncBehavior(std::bind(hipMemcpyAsync, _1, _2, _3, hipMemcpyHostToHost, nullptr),
                            true);
+
+    MemcpyHPinnedtoHPinnedSyncBehavior(
+        std::bind(hipMemcpyAsync, _1, _2, _3, hipMemcpyHostToHost, nullptr), false);
   }
 }
 

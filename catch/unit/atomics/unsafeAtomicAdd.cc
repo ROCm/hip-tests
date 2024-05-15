@@ -24,6 +24,9 @@ THE SOFTWARE.
 
 #include <hip_test_common.hh>
 
+#include <hip/hip_fp16.h>
+#include <hip/hip_bf16.h>
+
 /**
  * @addtogroup unsafeAtomicAdd unsafeAtomicAdd
  * @{
@@ -121,6 +124,41 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_Positive_Multi_Kernel", "", float, doub
                                                                             cache_line_size);
     }
   }
+}
+
+template <typename Type,
+          std::enable_if_t<std::is_same<Type, __half2>::value ||
+                               std::is_same<Type, __hip_bfloat162>::value,
+                           bool> = true>
+__global__ void unsafe_add_kernel(Type* ptr, Type val) {
+  (void)unsafeAtomicAdd(ptr, val);
+}
+
+TEMPLATE_TEST_CASE("Unit_unsafe_atomic_add_half_and_bfloat", "", __half2, __hip_bfloat162) {
+  auto kernel = unsafe_add_kernel<TestType>;
+  TestType val;
+  if constexpr (std::is_same<TestType, __half2>::value) {
+    val = __float22half2_rn(float2{1.0f, 2.0f});
+  } else {
+    val = __float22bfloat162_rn(float2{1.0f, 2.0f});
+  }
+
+  TestType* out;
+  HIP_CHECK(hipMalloc(&out, sizeof(TestType)));
+  HIP_CHECK(hipMemset(out, 0, sizeof(TestType)));
+  kernel<<<1, 32>>>(out, val);
+
+  TestType dout;
+  HIP_CHECK(hipMemcpy(&dout, out, sizeof(TestType), hipMemcpyDeviceToHost));
+  float2 hout;
+  if constexpr (std::is_same<TestType, __half2>::value) {
+    hout = __half22float2(dout);
+  } else {
+    hout = __bfloat1622float2(dout);
+  }
+
+  REQUIRE(hout.x == 32.0f);
+  REQUIRE(hout.y == 64.0f);
 }
 
 /**

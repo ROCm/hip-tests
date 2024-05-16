@@ -5,8 +5,7 @@ set(TEST_SRC
     printfSpecifiers.cc
     printfFlagsNonHost.cc
     printfSpecifiersNonHost.cc
-    printfHost.cc
-)
+    printfHost.cc)
 
 if(HIP_PLATFORM MATCHES "nvidia")
   set(LINKER_LIBS nvrtc)
@@ -16,7 +15,13 @@ endif()
 
 if(UNIX)
   set(AMD_TEST_SRC
-      printfNonHost.cc)
+    printfNonHost.cc
+    hipPrintfManyDevices.cc
+    hipPrintfStar.cc
+    hipPrintfManyWaves.cc
+    hipPrintfWidthPrecision.cc
+    hipPrintfBasic.cc
+    hipPrintfAltForms.cc)
 endif()
 
 if(HIP_PLATFORM MATCHES "amd")

@@ -1115,6 +1115,10 @@
         "=== SWDEV-475482 : Disable tests to merge clr change 08/02/24 ===",
         "Unit_hipCreateTextureObject_LinearResource",
         "Unit_hipCreateTextureObject_Pitch2DResource",
+        "=== Following tests disabled due to SWDEV-483110",
+        "Unit_UUID_setEnv_Thread",
+        "Unit_UUID_setEnv_Thread_Lock",
+        "====================================================",
     #endif
     #if defined gfx1200 || defined gfx1201
         "=== SWDEV-470751 : Fine Grain memory is MTYPE_NC due to HW bug.",

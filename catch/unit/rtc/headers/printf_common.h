@@ -30,7 +30,6 @@ THE SOFTWARE.
 #if defined(_WIN32)
 #include <io.h>
 #else
-#include <error.h>
 #include <unistd.h>
 #endif
 
@@ -110,7 +109,7 @@ struct CaptureStream {
     saved_fd = dup(orig_fd);
 
     if ((temp_fd = mkstemp(tempname)) == -1) {
-      error(0, errno, "Error");
+      fprintf(stderr, "Error: %s\n", strerror(errno));
       assert(false);
     }
   }
@@ -118,11 +117,11 @@ struct CaptureStream {
   void Begin() {
     fflush(nullptr);
     if (dup2(temp_fd, orig_fd) == -1) {
-      error(0, errno, "Error");
+      fprintf(stderr, "Error: %s\n", strerror(errno));
       assert(false);
     }
     if (close(temp_fd) != 0) {
-      error(0, errno, "Error");
+      fprintf(stderr, "Error: %s\n", strerror(errno));
       assert(false);
     }
   }
@@ -130,11 +129,11 @@ struct CaptureStream {
   void End() {
     fflush(nullptr);
     if (dup2(saved_fd, orig_fd) == -1) {
-      error(0, errno, "Error");
+      fprintf(stderr, "Error: %s\n", strerror(errno));
       assert(false);
     }
     if (close(saved_fd) != 0) {
-      error(0, errno, "Error");
+      fprintf(stderr, "Error: %s\n", strerror(errno));
       assert(false);
     }
   }
@@ -148,7 +147,7 @@ struct CaptureStream {
 
   ~CaptureStream() {
     if (remove(tempname) != 0) {
-      error(0, errno, "Error");
+      fprintf(stderr, "Error: %s\n", strerror(errno));
       assert(false);
     }
   }

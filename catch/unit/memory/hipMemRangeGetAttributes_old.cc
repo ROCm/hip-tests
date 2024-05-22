@@ -268,7 +268,7 @@ TEST_CASE("Unit_hipMemRangeGetAttributes_NegativeTst") {
     // Passing NULL as first parameter
     SECTION("Passing NULL as first parameter") {
       if (!CheckError(hipMemRangeGetAttributes(
-                                      reinterpret_cast<void**>(NULL),
+                                      static_cast<void**>(NULL),
                                       reinterpret_cast<size_t*>(dataSizes),
                                       AttrArr, 4, Hmm, MEM_SIZE),
                                       __LINE__)) {

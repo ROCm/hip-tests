@@ -10,6 +10,7 @@ set(TEST_SRC
     hipStreamCreateWithPriority.cc
     hipStreamDestroy.cc
     hipAPIStreamDisable.cc
+    hipStreamLegacy.cc
     hipStreamValue.cc
     hipStreamSynchronize.cc
     hipStreamQuery.cc

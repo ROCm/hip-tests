@@ -247,7 +247,6 @@
         "Unit_hipDrvGetErrorString_Positive_Basic",
         "Unit_hipModuleLaunchKernel_Negative_Parameters",
         "Unit_hipModuleGetTexRef_Positive_Basic",
-        "Unit_hipModuleGetTexRef_Negative_Parameters",
         "Unit_hipModuleLaunchCooperativeKernel_Negative_Parameters",
         "Unit_hipExtModuleLaunchKernel_Negative_Parameters",
         "Unit_hipLaunchKernel_Negative_Parameters",

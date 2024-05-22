@@ -49,6 +49,7 @@ set(TEST_SRC
     hipMemcpy2DFromArray_old.cc
     hipMemcpy2DFromArrayAsync.cc
     hipMemcpy2DFromArrayAsync_old.cc
+    hipMemcpyAtoD.cc
     hipMemcpyAtoH.cc
     hipMemcpyAtoH_old.cc
     hipMemcpyHtoA.cc

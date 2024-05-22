@@ -52,6 +52,7 @@ set(TEST_SRC
     hipMemcpyAtoH.cc
     hipMemcpyAtoH_old.cc
     hipMemcpyHtoA.cc
+    hipMemcpyAtoA.cc
     hipMemcpyHtoA_old.cc
     hipMemcpyAllApiNegative.cc
     hipMemcpy_MultiThread.cc

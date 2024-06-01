@@ -75,7 +75,7 @@ $ make
 - Execute the sample
 ```
 $ ./hipEvent
-Device name Navi 14 [Radeon Pro W5500]
+Device name AMD Radeon RX 6900 XT
 hipMemcpyHostToDevice time taken  =  0.981ms
 kernel Execution time             =  0.539ms
 hipMemcpyDeviceToHost time taken  =  1.220ms

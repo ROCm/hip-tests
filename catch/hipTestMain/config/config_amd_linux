@@ -1,25 +1,5 @@
 #define COMMON
 
-#if defined gfx906
-    #define VEGA20
-#endif
-
-#if defined gfx908
-    #define MI100
-#endif
-
-#if defined gfx90a || defined  gfx940 || defined gfx941 || defined gfx942
-    #define MI2XX
-#endif
-
-#if defined gfx1030
-    #define NAVI21
-#endif
-
-#if defined gfx1100 || defined gfx1102
-    #define NAVI3X
-#endif
-
 {
     "Info": [
         "File generated for commit on below mentioned date and time",
@@ -1310,7 +1290,7 @@
         "Unit_atomicCAS_system_Positive_Host_And_Peer_GPUs - int",
         "Unit_atomicCAS_system_Positive_Host_And_Peer_GPUs - unsigned int",
         "Unit_atomicCAS_system_Positive_Host_And_Peer_GPUs - unsigned long long",
-        "SWDEV-447384, SWDEV-447932: These tests fail in Navi31, Navi32 & Navi33",
+        "SWDEV-447384, SWDEV-447932: These tests fail in gfx1100, gfx1101 & gfx1102",
         "Unit_hipFreeAsync_Negative_Parameters",
         "Unit_hipMallocMipmappedArray_DiffSizes",
         "Unit_hipMallocMipmappedArray_MultiThread",
@@ -1368,11 +1348,11 @@
         "Unit_hipGraphAddMemAllocNode_Positive_FreeSeparateGraph",
         "Unit_hipGraphAddMemFreeNode_Negative_NotSupported",
     #endif
-    #if defined VEGA20
+    #if defined gfx906
         "=== SWDEV-419112 Below tests fail in stress test on 29/08/23 ===",
         "Unit_deviceAllocation_Malloc_ComplexDataType",
     #endif
-    #if defined MI100
+    #if defined gfx908
         "=== Below test soft hang in stress test on 29/08/23 ===",
         "Unit_hipMultiThreadStreams2",
         "=== SWDEV-425248:Below tests failed in stress test on 11/10/23 ===",
@@ -1413,7 +1393,7 @@
         "=== SWDEV-443630 - Below tests failed in stress test on 19/01/23 ===",
         "Unit_hipGetSetDevice_MultiThreaded",
     #endif
-    #if defined MI2XX
+    #if defined gfx90a || defined  gfx940 || defined gfx941 || defined gfx942
         "Unit_hipStreamPerThread_DeviceReset_1",
         "Unit_hipDeviceGetPCIBusId_Negative_PartialFill",
         "Unit_hipInit_Negative",
@@ -1542,11 +1522,11 @@
         "Unit_Warp_Vote_Any_Positive_Basic",
         "Unit_Warp_Vote_All_Positive_Basic",
     #endif
-    #if defined NAVI21
+    #if defined gfx1030
         "=== SWDEV-445961: These tests hang in PSDB stress test on 09/02/2024 ===",
         "Unit_hipStreamBeginCapture_hipStreamPerThread",
     #endif
-    #if defined NAVI3X
+    #if defined gfx1100 || defined gfx1102
         "=== Below tests soft hang in stress test on 13/09/23 ===",
         "Unit_hipMemsetFunctional_ZeroValue_hipMemsetD16",
         "Unit_hipIpcMemAccess_Semaphores",

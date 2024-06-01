@@ -594,7 +594,7 @@
         "Unit_hipGraphicsUnmapResources_Negative_Parameters",
         "Unit_hipGraphicsUnregisterResource_Negative_Parameters",
         "Unit_hipGraphExecMemcpyNodeSetParams1D_Negative",
-        "Note: NAVI3X",
+        "Note: gfx1100, gfx1101, gfx1102",
         "=== Below tests soft hang in stress test on 13/09/23 ===",
         "Unit_hipMemsetFunctional_ZeroValue_hipMemsetD16",
         "Unit_hipIpcMemAccess_Semaphores",

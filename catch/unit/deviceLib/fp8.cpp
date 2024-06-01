@@ -61,7 +61,7 @@ std::vector<T> cpu_cvt_float_fp8_float(const std::vector<T>& nums) {
   return ret;
 }
 
-// This test only makes sense on MI300 where device side convert will use the builtins to convert
+// This test only makes sense on gfx94x where device side convert will use the builtins to convert
 // floats to fp8
 TEMPLATE_TEST_CASE("Unit_fp8_compare_host_device", "", float, double) {
   std::vector<TestType> numbers = {0.0f, 1.0f, 1.1f, 2.0f,  2.1f,  3.0f,  3.2f,

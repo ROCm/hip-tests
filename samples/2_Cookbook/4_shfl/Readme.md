@@ -45,7 +45,7 @@ $ make
 - Execute the sample
 ```
 $ ./shfl
-Device name Navi 14 [Radeon Pro W5500]
+Device name AMD Radeon RX 6900 XT
 PASSED!
 ```
 ## requirement for nvidia

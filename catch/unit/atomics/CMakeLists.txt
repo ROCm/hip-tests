@@ -57,19 +57,19 @@ if(HIP_PLATFORM MATCHES "amd")
       __hip_atomic_exchange.cc
     )
 
-  #atomicInc & atomicDec tests are disabled on MI300X due to SWDEV-440688
-  set(NOT_FOR_MI300X_TEST
+  #atomicInc & atomicDec tests are disabled on gfx941 due to SWDEV-440688
+  set(NOT_FOR_GFX941_TEST
       atomicInc.cc
       atomicDec.cc
   )
-  set(MI300X_TARGET gfx941)
+  set(GFX941_TARGET gfx941)
   function(CheckRejectedArchs OFFLOAD_ARCH_STR_LOCAL)
     set(ARCH_CHECK -1 PARENT_SCOPE)
     string(REGEX MATCHALL "--offload-arch=gfx[0-9a-z]+" OFFLOAD_ARCH_LIST ${OFFLOAD_ARCH_STR_LOCAL})
     foreach(OFFLOAD_ARCH IN LISTS OFFLOAD_ARCH_LIST)
       string(REGEX MATCHALL "--offload-arch=(gfx[0-9a-z]+)" matches ${OFFLOAD_ARCH})
       if (CMAKE_MATCH_COUNT EQUAL 1)
-        if (CMAKE_MATCH_1 IN_LIST MI300X_TARGET)
+        if (CMAKE_MATCH_1 IN_LIST GFX941_TARGET)
           set(ARCH_CHECK 1 PARENT_SCOPE)
         endif()         # CMAKE_MATCH_1
       endif()        # CMAKE_MATCH_COUNT
@@ -84,10 +84,10 @@ if(HIP_PLATFORM MATCHES "amd")
     set(ARCH_CHECK -1)
   endif()
   if(${ARCH_CHECK} EQUAL -1)
-    message(STATUS "Adding test: ${NOT_FOR_MI300X_TEST}")
-    set(TEST_SRC ${TEST_SRC} ${NOT_FOR_MI300X_TEST})
+    message(STATUS "Adding test: ${NOT_FOR_GFX941_TEST}")
+    set(TEST_SRC ${TEST_SRC} ${NOT_FOR_GFX941_TEST})
   else()
-    message(STATUS "Removing test: ${NOT_FOR_MI300X_TEST}")
+    message(STATUS "Removing test: ${NOT_FOR_GFX941_TEST}")
   endif()
 
 

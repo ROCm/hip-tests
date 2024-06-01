@@ -47,7 +47,7 @@ $ make
 - Execute the sample
 ```
 $ ./dynamic_shared
-Device name Navi 14 [Radeon Pro W5500]
+Device name AMD Radeon RX 6900 XT
 dynamic_shared PASSED!
 ```
 

@@ -37,7 +37,7 @@ $ make
 - Execute the sample
 ```
 $ ./sharedMemory
-Device name Navi 14 [Radeon Pro W5500]
+Device name AMD Radeon RX 6900 XT
 PASSED!
 ```
 

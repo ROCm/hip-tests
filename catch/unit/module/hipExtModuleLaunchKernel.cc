@@ -271,7 +271,7 @@ TEST_CASE("Unit_hipExtModuleLaunchKernel_Positive_Parameters") {
 }
 
 TEST_CASE("Unit_hipExtModuleLaunchKernel_Negative_Parameters") {
-  ModuleLaunchKernelNegativeParameters<hipExtModuleLaunchKernel>();
+  ModuleLaunchKernelNegativeParameters<hipExtModuleLaunchKernel>(true);
 }
 /**
  * Test Description

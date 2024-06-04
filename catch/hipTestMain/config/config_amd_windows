@@ -1409,6 +1409,8 @@
         "=== SWDEV-454245, SWDEV-454247 : Below tests fail on 29/03/24 ===",
         "Unit_hipStreamBeginCaptureToGraph_IndepGraphsThreads",
         "Unit_hipStreamBeginCaptureToGraph_CaptureDepGraph",
+        "=== SWDEV-465071 Below test is temporarily disabled due to compiler change ===",
+        "Unit_hipClassKernel_Virtual",
     #endif
         "End of json"
     ]

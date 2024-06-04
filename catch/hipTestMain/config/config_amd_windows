@@ -1426,8 +1426,6 @@
         "Unit_atomicCAS_system_Positive_Host_And_Peer_GPUs - int",
         "Unit_atomicCAS_system_Positive_Host_And_Peer_GPUs - unsigned int",
         "Unit_atomicCAS_system_Positive_Host_And_Peer_GPUs - unsigned long long",
-        "=== SWDEV-450255 & SWDEV-449527 ===",
-        "Unit_RTC_LinkAddFile_Negative",
         "=== SWDEV-453453 : Below tests failed in stress test on 22/03/24 ===",
         "Unit_hipDeviceGetGraphMemAttribute_Functional",
         "Unit_hipDeviceGetGraphMemAttribute_Functional_Multi_Device",

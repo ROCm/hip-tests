@@ -774,8 +774,6 @@
         "Unit_Device_remquo_Accuracy_Positive - double",
         "Unit_Device_modf_Accuracy_Positive - float",
         "Unit_Device_modf_Accuracy_Positive - double",
-        "=== SWDEV-450255 & SWDEV-449527 ===",
-        "Unit_RTC_LinkAddFile_Negative",
         "=== Below tests cause timeout in stress test of 09/02/24 ===",
         "Unit_Device___half2half2_Accuracy_Positive",
         "Unit_Device_make_half2_Accuracy_Positive",

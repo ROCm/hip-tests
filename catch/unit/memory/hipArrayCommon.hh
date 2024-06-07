@@ -58,9 +58,11 @@ template <typename T> void checkDataIsAscending(const std::vector<T>& hostData) 
   size_t i = 0;
   for (; i < hostData.size(); ++i) {
     allMatch = allMatch && hostData[i] == static_cast<T>(i);
-    if (!allMatch) break;
+    if (!allMatch) {
+      INFO("hostData[" << i << "] == " << static_cast<T>(hostData[i]));
+      break;
+    }
   }
-  INFO("hostData[" << i << "] == " << static_cast<T>(hostData[i]));
   REQUIRE(allMatch);
 }
 

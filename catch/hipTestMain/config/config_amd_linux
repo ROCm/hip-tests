@@ -1390,8 +1390,6 @@
         "Unit_hipMallocManaged_HostDeviceConcurrent",
         "Unit_hipMallocManaged_MultiThread",
         "Unit_hipMemcpyAsync_H2H-H2D-D2H-H2PinMem - double",
-        "Unit_hipMallocArray_happy - int4",
-        "Unit_hipMallocArray_happy - float4",
         "=== SWDEV-437982:Below test failed in stress test on 08/12/23 ===",
         "Unit_hipDeviceGetPCIBusId_Functional",
         "Unit_hipDrvMemcpy_Functional",

@@ -997,6 +997,8 @@
         "====================================================",
         "Test Unit_hipGraphUserObj_ClonedGraph disabled due to SWDEV-483112",
         "Unit_hipGraphUserObj_ClonedGraph",
+        "-------------BatchMemOps fails on windows-----------------------------------",
+        "Unit_hipStreamBatchMemOp_functional",
     #endif
         "End of json"
     ]

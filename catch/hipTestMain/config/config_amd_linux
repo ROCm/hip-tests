@@ -236,7 +236,6 @@
         "Unit_hipDrvGraphAddMemsetNode_hipMalloc_1D",
         "Unit_hipDrvGraphAddMemsetNode_hipMallocManaged",
         "Unit_hipModuleLaunchKernel_Negative_Parameters",
-        "Unit_hipModuleGetTexRef_Positive_Basic",
         "Unit_hipModuleLaunchCooperativeKernel_Negative_Parameters",
         "Unit_hipExtModuleLaunchKernel_Negative_Parameters",
         "Unit_hipLaunchKernel_Negative_Parameters",

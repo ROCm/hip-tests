@@ -38,7 +38,6 @@
         "Unit_hipModuleLoadData_Negative_Parameters",
         "Unit_hipModuleLoadDataEx_Positive_Basic",
         "Unit_hipModuleLoadDataEx_Negative_Parameters",
-        "Unit_hipModuleGetTexRef_Positive_Basic",
         "Performance_hipMemsetD16",
         "Performance_hipMemsetD16Async",
         "Performance_hipMemsetD32",

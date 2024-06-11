@@ -617,7 +617,6 @@
         "Unit_tex2DLayeredLod_Positive_ReadModeNormalizedFloat - short",
         "Unit_tex2DLayeredLod_Positive_ReadModeNormalizedFloat - unsigned short",
         "Unit_hipModuleLaunchKernel_Negative_Parameters",
-        "Unit_hipModuleGetTexRef_Positive_Basic",
         "Unit_hipExtModuleLaunchKernel_Negative_Parameters",
         "Unit_hipLaunchKernel_Negative_Parameters",
         "Unit_Kernel_Launch_bounds_Negative_OutOfBounds",

@@ -52,7 +52,8 @@ TEMPLATE_TEST_CASE("Unit_hipFreeMipmappedArrayImplicitSyncArray", "", char, floa
 
   const unsigned int numLevels = GENERATE(1, 5, 7);
 
-  HIP_CHECK(hipMallocMipmappedArray(&arrayPtr, &desc, extent, numLevels, flags));
+  HIP_CHECK_IGNORED_RETURN(hipMallocMipmappedArray(&arrayPtr, &desc, extent, numLevels, flags),
+                           hipErrorNotSupported);
 
   LaunchDelayKernel(std::chrono::milliseconds{50}, nullptr);
   // make sure device is busy
@@ -82,7 +83,8 @@ TEST_CASE("Unit_hipFreeMipmappedArray_Negative_DoubleFree") {
 
   const unsigned int numLevels = GENERATE(1, 5, 7);
 
-  HIP_CHECK(hipMallocMipmappedArray(&arrayPtr, &desc, extent, numLevels, flags));
+  HIP_CHECK_IGNORED_RETURN(hipMallocMipmappedArray(&arrayPtr, &desc, extent, numLevels, flags),
+                           hipErrorNotSupported);
 
   HIP_CHECK(hipFreeMipmappedArray(arrayPtr));
   HIP_CHECK_ERROR(hipFreeMipmappedArray(arrayPtr), hipErrorContextIsDestroyed);

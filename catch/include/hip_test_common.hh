@@ -49,6 +49,23 @@ THE SOFTWARE.
     }                                                                                              \
   }
 
+#define HIP_CHECK_IGNORED_RETURN(error, ignoredError)                                              \
+  {                                                                                                \
+    hipError_t localError = error;                                                                 \
+    if ((localError == ignoredError)) {                                                            \
+      INFO("Skipped: " << hipGetErrorString(localError) << "\n    Code: " << localError            \
+                     << "\n    Str: " << #error << "\n    In File: " << __FILE__                   \
+                     << "\n    At line: " << __LINE__);                                            \
+      return;                                                                                      \
+    }                                                                                              \
+    if ((localError != hipSuccess) && (localError != hipErrorPeerAccessAlreadyEnabled)) {          \
+      INFO("Error: " << hipGetErrorString(localError) << "\n    Code: " << localError              \
+                     << "\n    Str: " << #error << "\n    In File: " << __FILE__                   \
+                     << "\n    At line: " << __LINE__);                                            \
+      REQUIRE(false);                                                                              \
+    }                                                                                              \
+  }
+
 // Threaded HIP_CHECKs
 #define HIP_CHECK_THREAD(error)                                                                    \
   {                                                                                                \
@@ -88,6 +105,20 @@ THE SOFTWARE.
          << "\n    Actual Code:   " << localError << "\nStr: " << #errorExpr                       \
          << "\n    In File: " << __FILE__ << "\n    At line: " << __LINE__);                       \
     REQUIRE(localError == expectedError);                                                          \
+  }
+
+// Check that an expression, errorExpr, evaluates to the expected error_t, expectedError or
+// expectedError1.
+#define HIP_CHECK_ERRORS(errorExpr, expectedError, expectedError1)                                 \
+  {                                                                                                \
+    hipError_t localError = errorExpr;                                                             \
+    INFO("Matching Errors: "                                                                       \
+         << "\n    Expected Error: " << hipGetErrorString(expectedError)                           \
+         << "\n    Expected Code: " << expectedError << " or " << expectedError << '\n'            \
+         << "                  Actual Error:   " << hipGetErrorString(localError)                  \
+         << "\n    Actual Code:   " << localError << "\nStr: " << #errorExpr                       \
+         << "\n    In File: " << __FILE__ << "\n    At line: " << __LINE__);                       \
+    REQUIRE((localError == expectedError || localError == expectedError1));                        \
   }
 
 // Not thread-safe

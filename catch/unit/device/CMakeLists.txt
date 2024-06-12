@@ -6,7 +6,6 @@ set(TEST_SRC
     hipDeviceGetLimit_old.cc
     hipDeviceGetName.cc
     hipDeviceGetPCIBusId.cc
-    hipDeviceSetGetCacheConfig.cc
     hipDeviceSynchronize.cc
     hipDeviceTotalMem.cc
     hipGetDeviceAttribute.cc
@@ -34,6 +33,10 @@ if(HIP_PLATFORM MATCHES "amd" AND BUILD_SHARED_LIBS)
   set(AMD_SRC
       hipGetProcAddressDevMgmt.cc)
   set(TEST_SRC ${TEST_SRC} ${AMD_SRC})
+else()
+  # The following functions are unimplemented on AMD
+  set(TEST_SRC ${TEST_SRC}
+      hipDeviceSetGetCacheConfig.cc)
 endif()
 
 if(UNIX)

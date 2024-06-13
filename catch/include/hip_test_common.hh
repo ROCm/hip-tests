@@ -206,6 +206,26 @@ static inline bool IsGfx11() {
 #endif
 }
 
+static inline bool IsMi350() {
+#if HT_NVIDIA
+  return false;
+#elif HT_AMD
+  int device = -1;
+  hipDeviceProp_t props{};
+  HIP_CHECK(hipGetDevice(&device));
+  HIP_CHECK(hipGetDeviceProperties(&props, device));
+  // Get GCN Arch Name and compare to check if it is gfx11
+  std::string arch = std::string(props.gcnArchName);
+  auto pos = arch.find("gfx950");
+  if (pos != std::string::npos)
+    return true;
+  else
+    return false;
+#else
+  std::cout << "Have to be either Nvidia or AMD platform, asserting" << std::endl;
+  assert(false);
+#endif
+}
 
 // Utility Functions
 namespace HipTest {

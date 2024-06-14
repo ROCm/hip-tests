@@ -244,7 +244,6 @@
         "Unit_hipMemSetAccess_AccessDirectlyFromHost",
         "Unit_hipMemSetAccess_Vmm2UnifiedMemCpy",
         "Unit_hipMemSetAccess_Vmm2DevMemCpy",
-        "Unit_hipMemSetAccess_Vmm2PeerPeerMemCpy",
         "Unit_hipMemSetAccess_Vmm2VMMInterDevMemCpy",
         "Unit_hipMemSetAccess_MapPhysChksFromMulDev",
         "Unit_hipMemSetAccess_GrowVMM",

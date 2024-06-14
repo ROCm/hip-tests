@@ -105,8 +105,6 @@
         "Unit_hipEventIpc",
         "=== SWDEV-427101:Below test fails randomly in PSDB ===",
         "Unit_deviceAllocation_InOneThread_AccessInAllThreads",
-        "=== Below test is disabled due to defect EXSWHTEC-347 ===",
-        "Unit_hipPointerSetAttribute_Positive_SyncMemops",
         "=== Below 2 tests are disable due to defect EXSWHTEC-356 ===",
         "Unit_Device___hisinf2_Accuracy_Positive",
         "Unit_Device___hisnan2_Accuracy_Positive",

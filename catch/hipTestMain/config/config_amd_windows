@@ -214,8 +214,6 @@
         "Unit_hipVectorTypes_test_on_device",
         "Unit_Layered1DTexture_Check_DeviceBufferToFromLayered1DArray - ushort4",
         "Unit_Layered2DTexture_Check_DeviceBufferToFromLayered2DArray - float4",
-        "=== Below test is disabled due to defect EXSWHTEC-347 ===",
-        "Unit_hipPointerSetAttribute_Positive_SyncMemops",
         "NOTE: The following test is disabled due to defect - EXSWHTEC-241",
         "Unit_hipFuncGetAttributes_Negative_Parameters",
         "NOTE: The following test is disabled due to defect - EXSWHTEC-242",

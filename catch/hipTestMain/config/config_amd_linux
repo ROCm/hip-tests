@@ -1270,10 +1270,6 @@
         "Unit_Coalesced_Group_Shfl_Up_Positive_Basic - unsigned long long",
         "Unit_Coalesced_Group_Shfl_Up_Positive_Basic - float",
         "Unit_Coalesced_Group_Shfl_Up_Positive_Basic - double",
-        "=== Below tests fail in stress test 03/29/24 ===",
-        "Unit_Warp_Ballot_Positive_Basic",
-        "Unit_Warp_Vote_Any_Positive_Basic",
-        "Unit_Warp_Vote_All_Positive_Basic",
     #endif
     #if defined gfx1030
         "=== SWDEV-445961: These tests hang in PSDB stress test on 09/02/2024 ===",

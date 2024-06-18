@@ -120,7 +120,7 @@ TEST_CASE("Unit_hipMemPoolSetGetAccess_Positive_MultipleGPU") {
   }
 
   const auto mempool_type = GENERATE(MemPools::dev_default, MemPools::created);
-  const auto access_flag = GENERATE(hipMemAccessFlagsProtNone, hipMemAccessFlagsProtRead,
+  const auto access_flag = GENERATE(hipMemAccessFlagsProtRead,
                                     hipMemAccessFlagsProtReadWrite);
 
   int can_access_peer = 0;

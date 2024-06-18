@@ -226,8 +226,6 @@
         "Unit_hipGraphMemcpyNodeSetParams_Negative_Parameters",
         "Unit_hipMemcpy3D_Positive_Synchronization_Behavior",
         "Unit_hipMemcpyParam2D_Positive_Synchronization_Behavior",
-        "Unit_hipMemcpyParam2D_Positive_Array",
-        "Unit_hipMemcpyParam2DAsync_Positive_Array",
         "Unit_hipMemcpy2D_Positive_Synchronization_Behavior",
         "Unit_hipMemcpyAsync_Positive_Synchronization_Behavior",
         "Unit_hipDrvMemcpy3D_Positive_Synchronization_Behavior",

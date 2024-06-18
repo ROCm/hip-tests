@@ -396,6 +396,7 @@ TEST_CASE("Unit_hipMemcpy2DFromArrayAsync_Negative") {
 *  - HIP_VERSION >= 6.0
 */
 TEST_CASE("Unit_hipMemcpy2DFromArrayAsync_capturehipMemcpy2DFromArrayAsync") {
+  CHECK_IMAGE_SUPPORT
   int rows, cols;
   rows = GENERATE(3, 4, 100);
   cols = GENERATE(3, 4, 100);

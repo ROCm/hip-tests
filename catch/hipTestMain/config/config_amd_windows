@@ -134,7 +134,6 @@
         "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep",
         "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ClonedGrph",
         "Unit_hipGraphDestroyNode_Complx_ChkNumOfNodesNDep_ChldNode",
-        "Unit_hipMemGetAddressRange_Negative",
         "NOTE: The following 2 tests are disabled due to defect - EXSWHTEC-238",
         "Unit_hipDrvMemcpy3D_Positive_Array",
         "Unit_hipDrvMemcpy3DAsync_Positive_Array",

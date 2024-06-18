@@ -105,7 +105,7 @@ TEST_CASE("Unit_hipMemGetAddressRange_Negative") {
   size_t mem_size = 0;
   const auto allocation_size = kPageSize / 2;
   const int offset = kPageSize;
-  LinearAllocGuard<int> host_alloc(LinearAllocs::hipHostMalloc, allocation_size);
+  LinearAllocGuard<int> dst_alloc(LinearAllocs::hipMalloc, allocation_size);
 
   hipDeviceptr_t dummy_ptr = NULL;
 
@@ -115,7 +115,7 @@ TEST_CASE("Unit_hipMemGetAddressRange_Negative") {
   SECTION("Offset is greater than allocated size") {
     HIP_CHECK_ERROR(
         hipMemGetAddressRange(&base_ptr, &mem_size,
-                              reinterpret_cast<hipDeviceptr_t>(host_alloc.ptr() + offset)),
+                              reinterpret_cast<hipDeviceptr_t>(dst_alloc.ptr() + offset)),
         hipErrorNotFound);
   }
 }

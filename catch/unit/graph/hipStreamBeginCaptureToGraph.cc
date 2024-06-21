@@ -34,6 +34,8 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <vector>
 #include <atomic>
+#include <functional>
+#include <cstddef>
 
 constexpr size_t N = 1 << 20;
 constexpr unsigned blocks = 256;
@@ -41,7 +43,20 @@ constexpr unsigned threadsPerBlock = 64;
 
 static bool CaptureStreamAndLaunchGraph(int *A_d, int *B_d, int *C_d,
             int *A_h, int *B_h, int *C_h, hipStreamCaptureMode mode,
-            hipStream_t &stream1, hipStream_t &stream2, hipGraph_t &graph) {
+            hipStream_t &stream1, hipStream_t &stream2, hipGraph_t &graph,
+            bool verifyStreamSync = false, std::function<bool()> verifyFunc1= nullptr) {
+  auto verifyFunc = [&]() {
+    // Validate the computation
+    for (size_t i = 0; i < N; i++) {
+      if (C_h[i] != (A_h[i] - B_h[i])) {
+        fprintf(stderr, "Error at %zu: C=%d, A=%d, B=%d\n", i,
+          C_h[i], A_h[i], B_h[i]);
+        return false;
+      }
+    }
+    return true;
+  };
+
   hipGraphExec_t graphExec{nullptr};
   size_t Nbytes = N * sizeof(int);
   hipEvent_t e;
@@ -66,16 +81,23 @@ static bool CaptureStreamAndLaunchGraph(int *A_d, int *B_d, int *C_d,
   // Replay the recorded sequence multiple times
   HIP_CHECK(hipGraphLaunch(graphExec, stream1));
   HIP_CHECK(hipStreamSynchronize(stream1));
+  bool res = true;
+  if (verifyStreamSync) {
+    // Verify if hipStreamSynchronize() works as expected
+    res = verifyFunc1 ? verifyFunc1() : true;
+    res = res && verifyFunc();
+  }
+
   HIP_CHECK(hipGraphExecDestroy(graphExec));
   HIP_CHECK(hipEventDestroy(e));
 
-  // Validate the computation
-  for (size_t i = 0; i < N; i++) {
-    if (C_h[i] != (A_h[i] - B_h[i])) {
-      return false;
-    }
+  if (!verifyStreamSync) {
+    // After hipGraphExecDestroy(), all internal streams are
+    // surely synced!
+    res = verifyFunc1 ? verifyFunc1() : true;
+    res = res && verifyFunc();
   }
-  return true;
+  return res;
 }
 
 /**
@@ -111,23 +133,39 @@ TEST_CASE("Unit_hipStreamBeginCaptureToGraph_BasicFunctional") {
   HIP_CHECK(hipMalloc(&A_d, Nbytes));
   HIP_CHECK(hipMalloc(&B_d, Nbytes));
   HIP_CHECK(hipMalloc(&C_d, Nbytes));
+  bool verifyStreamSync = false;
 
   SECTION("Capture stream and launch graph when mode is global") {
+    SECTION("Verify after hipGraphExecDestroy()") {
+      verifyStreamSync = false;
+    }
+    SECTION("Verify after hipStreamSynchronize()") {
+      verifyStreamSync = true;
+    }
     ret = CaptureStreamAndLaunchGraph(A_d, B_d, C_d, A_h.data(), B_h.data(),
-            C_h.data(), hipStreamCaptureModeGlobal, stream1, stream2, graph);
-    REQUIRE(ret == true);
+            C_h.data(), hipStreamCaptureModeGlobal, stream1, stream2, graph, verifyStreamSync);
   }
 
   SECTION("Capture stream and launch graph when mode is local") {
+    SECTION("Verify after hipGraphExecDestroy()") {
+      verifyStreamSync = false;
+    }
+    SECTION("Verify after hipStreamSynchronize()") {
+      verifyStreamSync = true;
+    }
     ret = CaptureStreamAndLaunchGraph(A_d, B_d, C_d, A_h.data(), B_h.data(),
-        C_h.data(), hipStreamCaptureModeThreadLocal, stream1, stream2, graph);
-    REQUIRE(ret == true);
+           C_h.data(), hipStreamCaptureModeThreadLocal, stream1, stream2, graph, verifyStreamSync);
   }
 
   SECTION("Capture stream and launch graph when mode is relaxed") {
+    SECTION("Verify after hipGraphExecDestroy()") {
+      verifyStreamSync = false;
+    }
+    SECTION("Verify after hipStreamSynchronize()") {
+      verifyStreamSync = true;
+    }
     ret = CaptureStreamAndLaunchGraph(A_d, B_d, C_d, A_h.data(), B_h.data(),
-        C_h.data(), hipStreamCaptureModeRelaxed, stream1, stream2, graph);
-    REQUIRE(ret == true);
+            C_h.data(), hipStreamCaptureModeRelaxed, stream1, stream2, graph, verifyStreamSync);
   }
 
   HIP_CHECK(hipStreamDestroy(stream1));
@@ -136,6 +174,7 @@ TEST_CASE("Unit_hipStreamBeginCaptureToGraph_BasicFunctional") {
   HIP_CHECK(hipFree(A_d));
   HIP_CHECK(hipFree(B_d));
   HIP_CHECK(hipFree(C_d));
+  REQUIRE(ret == true);
 }
 
 /**
@@ -160,6 +199,19 @@ TEST_CASE("Unit_hipStreamBeginCaptureToGraph_CaptureIndepGraph") {
   bool ret;
   hipGraph_t graph{nullptr};
   hipGraphNode_t memcpyNode1, memcpyNode2, memcpyNode3, kernelNode;
+
+  // Verify Manual Graph
+  auto verifyFunc = [&]() {
+    // Validate the computation
+    for (size_t i = 0; i < N; i++) {
+      if (C2_h[i] != (A2_h[i] + B2_h[i])) {
+        fprintf(stderr, "Error at %zu: C2=%d, A2=%d, B2=%d\n", i,
+          C2_h[i], A2_h[i], B2_h[i]);
+        return false;
+      }
+    }
+    return true;
+  };
 
   // Fill with data
   for (size_t i = 0; i < N; i++) {
@@ -204,16 +256,18 @@ TEST_CASE("Unit_hipStreamBeginCaptureToGraph_CaptureIndepGraph") {
   HIP_CHECK(hipGraphAddDependencies(graph, &memcpyNode1, &kernelNode, 1));
   HIP_CHECK(hipGraphAddDependencies(graph, &memcpyNode2, &kernelNode, 1));
   HIP_CHECK(hipGraphAddDependencies(graph, &kernelNode, &memcpyNode3, 1));
+  bool verifyStreamSync = false;
 
   // Capture an independent graph from stream
-  ret = CaptureStreamAndLaunchGraph(A1_d, B1_d, C1_d, A1_h.data(),
-        B1_h.data(), C1_h.data(), hipStreamCaptureModeGlobal, stream1,
-        stream2, graph);
-  REQUIRE(ret == true);
-  // Verify Manual Graph
-  for (size_t i = 0; i < N; i++) {
-    REQUIRE(C2_h[i] == (A2_h[i] + B2_h[i]));
+  SECTION("Verify after hipGraphExecDestroy()") {
+    verifyStreamSync = false;
   }
+  SECTION("Verify after hipStreamSynchronize()") {
+    verifyStreamSync = true;
+  }
+  ret = CaptureStreamAndLaunchGraph(A1_d, B1_d, C1_d, A1_h.data(), B1_h.data(), C1_h.data(),
+        hipStreamCaptureModeGlobal, stream1, stream2, graph, verifyStreamSync, verifyFunc);
+  REQUIRE(ret == true);
 
   HIP_CHECK(hipStreamDestroy(stream1));
   HIP_CHECK(hipStreamDestroy(stream2));
@@ -224,6 +278,7 @@ TEST_CASE("Unit_hipStreamBeginCaptureToGraph_CaptureIndepGraph") {
   HIP_CHECK(hipFree(A2_d));
   HIP_CHECK(hipFree(B2_d));
   HIP_CHECK(hipFree(C2_d));
+  REQUIRE(ret == true);
 }
 
 /**
@@ -238,7 +293,6 @@ TEST_CASE("Unit_hipStreamBeginCaptureToGraph_CaptureIndepGraph") {
  *    - HIP_VERSION >= 6.2
  */
 #ifdef __linux__
-// Currently disabled due to defect raised.
 TEST_CASE("Unit_hipStreamBeginCaptureToGraph_CaptureDepGraph") {
   hipGraphExec_t graphExec{nullptr};
   int *A1_d, *B1_d, *C1_d, *C2_d;
@@ -307,10 +361,21 @@ TEST_CASE("Unit_hipStreamBeginCaptureToGraph_CaptureDepGraph") {
   HIP_CHECK(hipGraphLaunch(graphExec, stream));
   HIP_CHECK(hipStreamSynchronize(stream));
 
+  bool ret = true;
   // Verify Manual Graph
   for (size_t i = 0; i < N; i++) {
-    REQUIRE(C1_h[i] == (A1_h[i] + B1_h[i]));
-    REQUIRE(C2_h[i] == (A1_h[i] - B1_h[i]));
+    if (C1_h[i] != (A1_h[i] + B1_h[i])) {
+      fprintf(stderr, "Error at %zu: C1=%d, A1=%d, B1=%d\n", i,
+        C1_h[i], A1_h[i], B1_h[i]);
+      ret = false;
+      break;
+    }
+    if (C2_h[i] != (A1_h[i] - B1_h[i])) {
+      fprintf(stderr, "Error at %zu: C2=%d, A1=%d, B1=%d\n", i,
+        C2_h[i], A1_h[i], B1_h[i]);
+      ret = false;
+      break;
+    }
   }
 
   HIP_CHECK(hipGraphExecDestroy(graphExec));
@@ -320,6 +385,7 @@ TEST_CASE("Unit_hipStreamBeginCaptureToGraph_CaptureDepGraph") {
   HIP_CHECK(hipFree(B1_d));
   HIP_CHECK(hipFree(C1_d));
   HIP_CHECK(hipFree(C2_d));
+  REQUIRE(ret == true);
 }
 #endif
 /**
@@ -1092,8 +1158,15 @@ TEST_CASE("Unit_hipStreamBeginCaptureToGraph_MultipleFlags") {
   HIP_CHECK(hipMalloc(&A_d, Nbytes));
   HIP_CHECK(hipMalloc(&B_d, Nbytes));
   HIP_CHECK(hipMalloc(&C_d, Nbytes));
-  ret = CaptureStreamAndLaunchGraph(A_d, B_d, C_d, A_h.data(), B_h.data(),
-            C_h.data(), hipStreamCaptureModeGlobal, stream1, stream2, graph);
+  bool verifyStreamSync = false;
+  SECTION("Verify after hipGraphExecDestroy()") {
+    verifyStreamSync = false;
+  }
+  SECTION("Verify after hipStreamSynchronize()") {
+    verifyStreamSync = true;
+  }
+  ret = CaptureStreamAndLaunchGraph(A_d, B_d, C_d, A_h.data(), B_h.data(), C_h.data(),
+        hipStreamCaptureModeGlobal, stream1, stream2, graph, verifyStreamSync);
   REQUIRE(ret == true);
 
   HIP_CHECK(hipStreamDestroy(stream1));
@@ -1207,10 +1280,16 @@ void threadCaptureExec(int *A_d, int *B_d, int *C_d,
                        int *A_h, int *B_h, int *C_h,
                        hipStream_t *stream1, hipStream_t *stream2,
                        hipGraph_t *graph) {
-  bool ret;
-  ret = CaptureStreamAndLaunchGraph(A_d, B_d, C_d, A_h, B_h, C_h,
-                                    hipStreamCaptureModeRelaxed,
-                                    *stream1, *stream2, *graph);
+  bool ret = false;
+  SECTION("Verify after hipGraphExecDestroy()") {
+    ret = CaptureStreamAndLaunchGraph(A_d, B_d, C_d, A_h, B_h, C_h, hipStreamCaptureModeRelaxed,
+          *stream1, *stream2, *graph, false);
+  }
+  SECTION("Verify after hipStreamSynchronize()") {
+    ret = CaptureStreamAndLaunchGraph(A_d, B_d, C_d, A_h, B_h, C_h, hipStreamCaptureModeRelaxed,
+          *stream1, *stream2, *graph, true);
+  }
+
   int val = 0;
   if (ret) {
     val = 1;
@@ -1272,5 +1351,6 @@ TEST_CASE("Unit_hipStreamBeginCaptureToGraph_IndepGraphsThreads") {
   HIP_CHECK(hipFree(A2_d));
   HIP_CHECK(hipFree(B2_d));
   HIP_CHECK(hipFree(C2_d));
+  fprintf(stderr, "Unit_hipStreamBeginCaptureToGraph_IndepGraphsThreads\n");
 }
 #endif

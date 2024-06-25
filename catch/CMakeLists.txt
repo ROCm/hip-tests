@@ -16,10 +16,6 @@ if(NOT HIP_PLATFORM STREQUAL "amd" AND NOT HIP_PLATFORM STREQUAL "nvidia")
     message(FATAL_ERROR "Unexpected HIP_PLATFORM: " ${HIP_PLATFORM})
 endif()
 
-if(WIN32)
-    set(EXT ".bat")
-endif()
-
 if(HIP_PLATFORM STREQUAL "amd")
     if(UNIX AND DEFINED ROCM_PATH)
         # Read -DROCM_PATH and set CXX_FLAGS for amd platform only
@@ -57,10 +53,17 @@ endif()
 message(STATUS "HIP_PATH: ${HIP_PATH}")
 message(STATUS "ROCM_PATH: ${ROCM_PATH}")
 
-set(CMAKE_CXX_COMPILER "${HIP_PATH}/bin/hipcc${EXT}")
-set(CMAKE_C_COMPILER "${HIP_PATH}/bin/hipcc${EXT}")
-set(HIPCONFIG_EXECUTABLE "${HIP_PATH}/bin/hipconfig${EXT}")
-execute_process(COMMAND ${HIPCONFIG_EXECUTABLE} --version
+if(UNIX)
+  set(HIPCC_EXEC "hipcc")
+  set(HIPCONFIG_EXEC "hipconfig")
+else()
+  set(HIPCC_EXEC "hipcc.bin")
+  set(HIPCONFIG_EXEC "hipconfig.bat")
+endif()
+
+set(CMAKE_C_COMPILER   "${HIP_PATH}/bin/${HIPCC_EXEC}")
+set(CMAKE_CXX_COMPILER "${HIP_PATH}/bin/${HIPCC_EXEC}")
+execute_process(COMMAND ${HIP_PATH}/bin/${HIPCONFIG_EXEC} --version
                 OUTPUT_VARIABLE HIP_VERSION
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
 
@@ -281,6 +284,20 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/catchInfo.txt ${_catch
 # allows user to run ctest from catch_tests level
 set(_subdirs ${_autogen} "subdirs(..)\n")
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/CTestTestfile.cmake ${_subdirs})
+
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+
+# copy python script and headers to catch test package
+set(CATCH_INCLUDE_DIR include)
+execute_process(COMMAND ${CMAKE_COMMAND} -E
+                make_directory ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/${CATCH_INCLUDE_DIR})
+
+file(COPY ./unit/compileAndCaptureOutput.py
+            DESTINATION  ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/unit )
+
+file(COPY ./include/hip_test_common.hh DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/${CATCH_INCLUDE_DIR})
+file(COPY ./include/hip_test_context.hh DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/${CATCH_INCLUDE_DIR})
+file(COPY ./external/Catch2/catch.hpp DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/${CATCH_INCLUDE_DIR})
 
 # Enable device lambda on nvidia platforms
 if(HIP_PLATFORM STREQUAL "nvidia")

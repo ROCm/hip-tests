@@ -73,7 +73,9 @@ set(TEST_SRC
     hipMallocManaged.cc
     hipMemRangeGetAttribute.cc
     hipMemRangeGetAttribute_old.cc
-    hipMemCoherencyTst.cc)
+    hipMemCoherencyTst.cc
+    hipMemsetD32.cc
+    hipMemsetD16.cc)
 
 if(HIP_PLATFORM MATCHES "amd")
   set(TEST_SRC
@@ -176,15 +178,15 @@ if(HIP_PLATFORM MATCHES "amd")
       hipArray3DGetDescriptor.cc)
 endif()
 
-set(NOT_FOR_MI200_AND_ABOVE_TEST hipMallocArray.cc hipArrayCreate.cc) # tests not for MI200+
-set(MI200_AND_ABOVE_TARGETS gfx90a gfx940 gfx941 gfx942)
+set(NOT_FOR_gfx90a_AND_ABOVE_TEST hipMallocArray.cc hipArrayCreate.cc) # tests not for gfx90a+
+set(gfx90a_AND_ABOVE_TARGETS gfx90a gfx940 gfx941 gfx942)
 function(CheckRejectedArchs OFFLOAD_ARCH_STR_LOCAL)
   set(ARCH_CHECK -1 PARENT_SCOPE)
   string(REGEX MATCHALL "--offload-arch=gfx[0-9a-z]+" OFFLOAD_ARCH_LIST ${OFFLOAD_ARCH_STR_LOCAL})
   foreach(OFFLOAD_ARCH IN LISTS OFFLOAD_ARCH_LIST)
     string(REGEX MATCHALL "--offload-arch=(gfx[0-9a-z]+)" matches ${OFFLOAD_ARCH})
     if (CMAKE_MATCH_COUNT EQUAL 1)
-      if (CMAKE_MATCH_1 IN_LIST MI200_AND_ABOVE_TARGETS)
+      if (CMAKE_MATCH_1 IN_LIST gfx90a_AND_ABOVE_TARGETS)
         set(ARCH_CHECK 1 PARENT_SCOPE)
       endif()         # CMAKE_MATCH_1
     endif()        # CMAKE_MATCH_COUNT
@@ -199,11 +201,11 @@ if(HIP_PLATFORM MATCHES "amd")
     set(ARCH_CHECK -1)
   endif()
   if(${ARCH_CHECK} EQUAL -1)
-    message(STATUS "Adding test: ${NOT_FOR_MI200_AND_ABOVE_TEST}")
-    set(TEST_SRC ${TEST_SRC} ${NOT_FOR_MI200_AND_ABOVE_TEST})
+    message(STATUS "Adding test: ${NOT_FOR_gfx90a_AND_ABOVE_TEST}")
+    set(TEST_SRC ${TEST_SRC} ${NOT_FOR_gfx90a_AND_ABOVE_TEST})
   endif()
 else()
-  set(TEST_SRC ${TEST_SRC} ${NOT_FOR_MI200_AND_ABOVE_TEST})
+  set(TEST_SRC ${TEST_SRC} ${NOT_FOR_gfx90a_AND_ABOVE_TEST})
 endif()
 
 hip_add_exe_to_target(NAME MemoryTest2

@@ -32,7 +32,7 @@ THE SOFTWARE.
 namespace cg = cooperative_groups;
 
 
-__global__ void kernel_any(int* const out, const uint64_t* const active_masks, uint64_t predicate) {
+__global__ void kernel_any(uint64_t* const out, const uint64_t* const active_masks, uint64_t predicate) {
   if (deactivate_thread(active_masks)) {
     return;
   }
@@ -40,12 +40,13 @@ __global__ void kernel_any(int* const out, const uint64_t* const active_masks, u
   const auto grid = cg::this_grid();
   const auto warp = cg::tiled_partition(cg::this_thread_block(), warpSize);
 
-  out[grid.thread_rank()] = __any((predicate & (static_cast<uint64_t>(1) << warp.thread_rank())));
+  int pred = MASK_SHIFT(predicate, warp.thread_rank());
+  out[grid.thread_rank()] = __any(pred);
 }
 
-class WarpAny : public WarpVoteTest<WarpAny, int> {
+class WarpAny : public WarpVoteTest<WarpAny, uint64_t> {
  public:
-  void launch_kernel(int* const arr_dev, const uint64_t* const active_masks) {
+  void launch_kernel(uint64_t* const arr_dev, const uint64_t* const active_masks) {
     auto test_case = GENERATE(range(0, 5));
     predicate_mask_ = get_predicate_mask(test_case, this->warp_size_);
     INFO("Predicate mask: " << predicate_mask_);
@@ -53,7 +54,7 @@ class WarpAny : public WarpVoteTest<WarpAny, int> {
                                                                   predicate_mask_);
   }
 
-  void validate(const int* const arr) {
+  void validate(const uint64_t* const arr) {
     ArrayAllOf(arr, this->grid_.thread_count_, [this](unsigned int i) -> std::optional<int> {
       const auto rank_in_block = this->grid_.thread_rank_in_block(i).value();
       const auto rank_in_warp = rank_in_block % this->warp_size_;

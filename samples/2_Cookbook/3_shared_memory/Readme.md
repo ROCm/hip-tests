@@ -7,7 +7,7 @@ Earlier we learned how to write our first hip program, in which we compute Matri
 As we mentioned earlier  that Memory bottlenecks is the main problem why we are not able to get the highest performance, therefore minimizing the latency for memory access plays prominent role in application optimization. In this tutorial, we'll learn how to use static shared memory and will explain the dynamic one latter.
 
 ## Requirement:
-For hardware requirement and software installation [Installation](https://rocm.docs.amd.com/projects/HIP/en/latest/how_to_guides/install.html)
+For hardware requirement and software installation [Installation](https://rocm.docs.amd.com/projects/HIP/en/latest/install/install.html)
 
 ## prerequiste knowledge:
 
@@ -37,15 +37,15 @@ $ make
 - Execute the sample
 ```
 $ ./sharedMemory
-Device name Navi 14 [Radeon Pro W5500]
+Device name AMD Radeon RX 6900 XT
 PASSED!
 ```
 
 ## More Info:
-- [HIP FAQ](https://rocm.docs.amd.com/projects/HIP/en/latest/user_guide/faq.html)
+- [HIP FAQ](https://rocm.docs.amd.com/projects/HIP/en/latest/how-to/faq.html)
 - [HIP Kernel Language](https://rocm.docs.amd.com/projects/HIP/en/latest/reference/kernel_language.html)
 - [HIP Runtime API (Doxygen)](https://rocm.docs.amd.com/projects/HIP/en/latest/doxygen/html/index.html)
-- [HIP Porting Guide](https://rocm.docs.amd.com/projects/HIP/en/latest/user_guide/hip_porting_guide.html)
+- [HIP Porting Guide](https://rocm.docs.amd.com/projects/HIP/en/latest/how-to/hip_porting_guide.html)
 - [HIP Terminology](https://rocm.docs.amd.com/projects/HIP/en/latest/reference/terms.html) (including comparing syntax for different compute terms across CUDA/HIP/OpenL)
 - [HIPIFY](https://rocm.docs.amd.com/projects/HIPIFY/en/latest/index.html)
-- [Developer/CONTRIBUTING Info](https://rocm.docs.amd.com/projects/HIP/en/latest/developer_guide/contributing.html)
+- [Developer/CONTRIBUTING Info](https://github.com/ROCm/HIP/blob/develop/CONTRIBUTING.md)

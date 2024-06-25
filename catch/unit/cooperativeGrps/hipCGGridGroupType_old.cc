@@ -312,19 +312,19 @@ TEST_CASE("Unit_hipCGGridGroupType_Basic") {
     return;
   }
 
-  void* (*kernel_func)(void);
+  void* kernel_func;
 
   SECTION("Default grid group API test") {
-    kernel_func = reinterpret_cast<void* (*)()>(kernel_cg_grid_group_type);
+    kernel_func = reinterpret_cast<void*>(kernel_cg_grid_group_type);
   }
 #if HT_AMD
   SECTION("Base type grid group API test") {
-    kernel_func = reinterpret_cast<void* (*)()>(kernel_cg_grid_group_type_via_base_type);
+    kernel_func = reinterpret_cast<void*>(kernel_cg_grid_group_type_via_base_type);
   }
 #endif
 
   SECTION("Public API grid group test") {
-    kernel_func = reinterpret_cast<void* (*)()>(kernel_cg_grid_group_type_via_public_api);
+    kernel_func = reinterpret_cast<void*>(kernel_cg_grid_group_type_via_public_api);
   }
 
   // Test for block_size in powers of 2

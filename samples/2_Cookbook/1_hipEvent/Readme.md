@@ -7,7 +7,7 @@ This tutorial is follow-up of the previous one where we learn how to write our f
 Memory transfer and kernel execution are the most important parameter in parallel computing (specially HPC and machine learning). Memory bottlenecks is the main problem why we are not able to get the highest performance, therefore obtaining the memory transfer timing and kernel execution timing plays key role in application optimization.
 
 ## Requirement:
-For hardware requirement and software installation [Installation](https://rocm.docs.amd.com/projects/HIP/en/latest/how_to_guides/install.html)
+For hardware requirement and software installation [Installation](https://rocm.docs.amd.com/projects/HIP/en/latest/install/install.html)
 
 ## prerequiste knowledge:
 
@@ -75,7 +75,7 @@ $ make
 - Execute the sample
 ```
 $ ./hipEvent
-Device name Navi 14 [Radeon Pro W5500]
+Device name AMD Radeon RX 6900 XT
 hipMemcpyHostToDevice time taken  =  0.981ms
 kernel Execution time             =  0.539ms
 hipMemcpyDeviceToHost time taken  =  1.220ms
@@ -83,10 +83,10 @@ PASSED!
 ```
 
 ## More Info:
-- [HIP FAQ](https://rocm.docs.amd.com/projects/HIP/en/latest/user_guide/faq.html)
+- [HIP FAQ](https://rocm.docs.amd.com/projects/HIP/en/latest/how-to/faq.html)
 - [HIP Kernel Language](https://rocm.docs.amd.com/projects/HIP/en/latest/reference/kernel_language.html)
 - [HIP Runtime API (Doxygen)](https://rocm.docs.amd.com/projects/HIP/en/latest/doxygen/html/index.html)
-- [HIP Porting Guide](https://rocm.docs.amd.com/projects/HIP/en/latest/user_guide/hip_porting_guide.html)
+- [HIP Porting Guide](https://rocm.docs.amd.com/projects/HIP/en/latest/how-to/hip_porting_guide.html)
 - [HIP Terminology](https://rocm.docs.amd.com/projects/HIP/en/latest/reference/terms.html) (including comparing syntax for different compute terms across CUDA/HIP/OpenL)
 - [HIPIFY](https://rocm.docs.amd.com/projects/HIPIFY/en/latest/index.html)
-- [Developer/CONTRIBUTING Info](https://rocm.docs.amd.com/projects/HIP/en/latest/developer_guide/contributing.html)
+- [Developer/CONTRIBUTING Info](https://github.com/ROCm/HIP/blob/develop/CONTRIBUTING.md)

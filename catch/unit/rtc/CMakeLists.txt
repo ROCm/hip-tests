@@ -15,6 +15,7 @@ set(AMD_TEST_SRC
     hipRtcBfloat16.cc
     linker.cc
     shfl.cc
+    shfl_sync.cc
     stdheaders.cc
     hiprtc_MathConstants_HeaderTst.cc
     hiprtc_VectorTypes_HeaderTst.cc
@@ -36,7 +37,8 @@ add_custom_target(copyRtcHeaders ALL
 if(UNIX)
    set(AMD_TEST_SRC ${AMD_TEST_SRC}
        RtcFunctions.cpp
-       RtcUtility.cpp)
+       RtcUtility.cpp
+       hiprtcComplrOptnTesting.cc)
 endif()
 
 if(HIP_PLATFORM MATCHES "nvidia")

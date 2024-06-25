@@ -57,7 +57,10 @@ THE SOFTWARE.
  *  - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipEventElapsedTime_NullCheck") {
-  hipEvent_t start = nullptr, end = nullptr;
+  hipEvent_t start, end;
+  HIP_CHECK(hipEventCreate(&start));
+  HIP_CHECK(hipEventCreate(&end));
+
   float tms = 1.0f;
   HIP_ASSERT(hipEventElapsedTime(nullptr, start, end) == hipErrorInvalidValue);
 #ifndef __HIP_PLATFORM_NVIDIA__
@@ -65,6 +68,8 @@ TEST_CASE("Unit_hipEventElapsedTime_NullCheck") {
   HIP_ASSERT(hipEventElapsedTime(&tms, nullptr, end) == hipErrorInvalidHandle);
   HIP_ASSERT(hipEventElapsedTime(&tms, start, nullptr) == hipErrorInvalidHandle);
 #endif
+  HIP_CHECK(hipEventDestroy(start));
+  HIP_CHECK(hipEventDestroy(end));
 }
 
 /**

@@ -16,6 +16,7 @@ set(TEST_SRC
     hipGetSetDeviceFlags.cc
     hipSetGetDevice.cc
     hipDeviceGetUuid.cc
+    hipDeviceAPUCheck.cc
     hipDeviceGetDefaultMemPool.cc
     hipDeviceCanAccessPeer.cc
     hipDeviceEnableDisablePeerAccess.cc

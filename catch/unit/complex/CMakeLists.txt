@@ -34,40 +34,51 @@ hip_add_exe_to_target(NAME ComplexTest
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests
                       LINKER_LIBS ${LINKER_LIBS})
+if(UNIX)
+file(GLOB NEGATIVE_TEST_SRC
+      "complex_make_negative_kernels.cc"
+      "complex_cast_negative_kernels.cc"
+      "complex_negative_kernels_1Arg_float.cc"
+      "complex_negative_kernels_1Arg_double.cc"
+      "complex_negative_kernels_2Arg_float.cc"
+      "complex_negative_kernels_2Arg_double.cc"
+      "complex_negative_kernels_3Arg.cc"
+       )
 
-# These tests fail in PSDB
+file(COPY ${NEGATIVE_TEST_SRC} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src)
+
 #add_test(NAME Unit_Device_Complex_make_Negative
-#         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-#         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+#         COMMAND ${Python3_EXECUTABLE} ../compileAndCaptureOutput.py
+#         ./src ${HIP_PLATFORM} ${HIP_PATH}
 #         complex_make_negative_kernels.cc 54)
 #
 #add_test(NAME Unit_Device_Complex_Cast_Negative
-#         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-#         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+#         COMMAND ${Python3_EXECUTABLE} ../compileAndCaptureOutput.py
+#         ./src ${HIP_PLATFORM} ${HIP_PATH}
 #         complex_cast_negative_kernels.cc 28)
 #
 #add_test(NAME Unit_Device_Complex_Unary_float_Negative
-#         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-#         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+#         COMMAND ${Python3_EXECUTABLE} ../compileAndCaptureOutput.py
+#         ./src ${HIP_PLATFORM} ${HIP_PATH}
 #         complex_negative_kernels_1Arg_float.cc 62)
 #
 #add_test(NAME Unit_Device_Complex_Unary_double_Negative
-#         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-#         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+#         COMMAND ${Python3_EXECUTABLE} ../compileAndCaptureOutput.py
+#         ./src ${HIP_PLATFORM} ${HIP_PATH}
 #         complex_negative_kernels_1Arg_double.cc 62)
 #
 #add_test(NAME Unit_Device_Complex_Binary_float_Negative
-#         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-#         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+#         COMMAND ${Python3_EXECUTABLE} ../compileAndCaptureOutput.py
+#         ./src ${HIP_PLATFORM} ${HIP_PATH}
 #         complex_negative_kernels_2Arg_float.cc 88)
 #
 #add_test(NAME Unit_Device_Complex_Binary_double_Negative
-#         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-#         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+#         COMMAND ${Python3_EXECUTABLE} ../compileAndCaptureOutput.py
+#         ./src ${HIP_PLATFORM} ${HIP_PATH}
 #         complex_negative_kernels_2Arg_double.cc 88)
 #
 #add_test(NAME Unit_Device_Complex_hipCfma_Negative
-#         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-#         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+#         COMMAND ${Python3_EXECUTABLE} ../compileAndCaptureOutput.py
+#         ./src ${HIP_PLATFORM} ${HIP_PATH}
 #         complex_negative_kernels_3Arg.cc 60)
-
+endif()

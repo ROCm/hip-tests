@@ -45,14 +45,21 @@ elseif (HIP_PLATFORM MATCHES "nvidia")
                     COMPILE_OPTIONS -std=c++17)
 endif()
 
-# This test fails in PSDB
-#add_test(NAME Unit_Device_memcpy_Negative
-#         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-#         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
-#         memcpy_negative_kernels.cc 4)
+if(UNIX)
+file(GLOB NEGATIVE_TEST_SRC
+     "memcpy_negative_kernels.cc"
+     "memset_negative_kernels.cc"
+    )
 
-# This test fails in PSDB
+file(COPY ${NEGATIVE_TEST_SRC} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src)
+
+#add_test(NAME Unit_Device_memcpy_Negative
+#         COMMAND ${Python3_EXECUTABLE} ../compileAndCaptureOutput.py
+#         ./src ${HIP_PLATFORM} ${HIP_PATH}
+#         memcpy_negative_kernels.cc 4)
+#
 #add_test(NAME Unit_Device_memset_Negative
-#         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-#         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
+#         COMMAND ${Python3_EXECUTABLE} ../compileAndCaptureOutput.py
+#         ./src ${HIP_PLATFORM} ${HIP_PATH}
 #         memset_negative_kernels.cc 4)
+endif()

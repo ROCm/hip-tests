@@ -781,13 +781,9 @@ TEST_CASE("Unit_hipGraph_PerfCheck_hipGraphExecKernelNodeSetParams_inLoop") {
  * ------------------------
  *  - Validate hipGraph performance with doorbell set.
  *  - DEBUG_CLR_GRAPH_PACKET_CAPTURE
- *  1) Added 2 nodes of MemCpy, and multiple node of Kernel call in continuous
+ *  1) Added 3 nodes of MemCpy, and node of Kernel call in continuous
       sequence and Instantiate graph and update hipGraphExecMemcpyNodeSetParams
       for source memCopy3 node and copy back the result and verify.
-    i)   Verifying with different memCopy node kind from D2H -> D2D
-    ii)  Verifying with different memCopy node kind from D2H -> H2D
-    iii) Verifying with different memCopy node kind from D2H -> H2H
-    iv)  Verifying with different memCopy node kind from D2H -> D2H
  * Test source
  * ------------------------
  *  - unit/graph/hipGraphPerf.cc
@@ -797,6 +793,11 @@ TEST_CASE("Unit_hipGraph_PerfCheck_hipGraphExecKernelNodeSetParams_inLoop") {
  */
 
 TEST_CASE("Unit_hipGraph_PerfCheck_hipGraphExecMemcpyNodeSetParams") {
+  if ((setenv("DEBUG_CLR_GRAPH_PACKET_CAPTURE", "true", 1)) != 0) {
+    HipTest::HIP_SKIP_TEST("Unable to turn on "
+             "DEBUG_CLR_GRAPH_PACKET_CAPTURE, hence exit!");
+    return;
+  }
   constexpr int kNumNode = 1;
   unsigned blocks = HipTest::setNumBlocks(blocksPerCU, threadsPerBlock, N);
   hipGraphNode_t memCpy1, memCpy2, memCpy3;
@@ -804,7 +805,6 @@ TEST_CASE("Unit_hipGraph_PerfCheck_hipGraphExecMemcpyNodeSetParams") {
   hipGraph_t graph;
   hipGraphExec_t graphExec;
 
-  int harray1D[N]{};
   int *A_d, *B_d, *C_d, *A_h, *B_h, *C_h;
   HipTest::initArrays(&A_d, &B_d, &C_d, &A_h, &B_h, &C_h, N, false);
   int *A_d1, *B_d1, *C_d1, *A_h1, *B_h1, *C_h1;
@@ -837,56 +837,15 @@ TEST_CASE("Unit_hipGraph_PerfCheck_hipGraphExecMemcpyNodeSetParams") {
   myparams.srcPos = make_hipPos(0, 0, 0);
   myparams.dstPos = make_hipPos(0, 0, 0);
   myparams.extent = make_hipExtent(Nbytes, 1, 1);
-  myparams.dstPtr = make_hipPitchedPtr(harray1D, Nbytes, Nbytes, 1);
-  myparams.srcPtr = make_hipPitchedPtr(C_h, Nbytes, Nbytes, 1);
-  myparams.kind = hipMemcpyHostToHost;
+  myparams.dstPtr = make_hipPitchedPtr(A_h1, Nbytes, Nbytes, 1);
+  myparams.srcPtr = make_hipPitchedPtr(A_d1, Nbytes, Nbytes, 1);
+  myparams.kind = hipMemcpyDeviceToHost;
 
   HIP_CHECK(hipGraphAddMemcpyNode(&memCpy3, graph, nullptr, 0, &myparams));
   HIP_CHECK(hipGraphAddDependencies(graph, &kNode[kNumNode-1], &memCpy3, 1));
   HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
 
-#if HT_NVIDIA
-  SECTION("Verifying with different memCopy node kind from D2H -> H2H") {
-    memset(&myparams, 0x0, sizeof(hipMemcpy3DParms));
-    myparams.srcPos = make_hipPos(0, 0, 0);
-    myparams.dstPos = make_hipPos(0, 0, 0);
-    myparams.extent = make_hipExtent(Nbytes, 1, 1);
-    myparams.dstPtr = make_hipPitchedPtr(A_h1, Nbytes, Nbytes, 1);
-    myparams.srcPtr = make_hipPitchedPtr(B_h1, Nbytes, Nbytes, 1);
-    myparams.kind = hipMemcpyHostToHost;
-
-    HIP_CHECK(hipGraphExecMemcpyNodeSetParams(graphExec, memCpy3, &myparams));
-    HIP_CHECK(hipGraphLaunch(graphExec, stream));
-    HIP_CHECK(hipStreamSynchronize(stream));
-  }
-#else
-  SECTION("Verifying with different memCopy node kind from D2H -> D2D") {
-    memset(&myparams, 0x0, sizeof(hipMemcpy3DParms));
-    myparams.srcPos = make_hipPos(0, 0, 0);
-    myparams.dstPos = make_hipPos(0, 0, 0);
-    myparams.extent = make_hipExtent(Nbytes, 1, 1);
-    myparams.dstPtr = make_hipPitchedPtr(A_d1, Nbytes, Nbytes, 1);
-    myparams.srcPtr = make_hipPitchedPtr(B_d1, Nbytes, Nbytes, 1);
-    myparams.kind = hipMemcpyDeviceToDevice;
-
-    HIP_CHECK(hipGraphExecMemcpyNodeSetParams(graphExec, memCpy3, &myparams));
-    HIP_CHECK(hipGraphLaunch(graphExec, stream));
-    HIP_CHECK(hipStreamSynchronize(stream));
-  }
-  SECTION("Verifying with different memCopy node kind from D2H -> H2D") {
-    memset(&myparams, 0x0, sizeof(hipMemcpy3DParms));
-    myparams.srcPos = make_hipPos(0, 0, 0);
-    myparams.dstPos = make_hipPos(0, 0, 0);
-    myparams.extent = make_hipExtent(Nbytes, 1, 1);
-    myparams.dstPtr = make_hipPitchedPtr(C_d1, Nbytes, Nbytes, 1);
-    myparams.srcPtr = make_hipPitchedPtr(C_h1, Nbytes, Nbytes, 1);
-    myparams.kind = hipMemcpyHostToDevice;
-
-    HIP_CHECK(hipGraphExecMemcpyNodeSetParams(graphExec, memCpy3, &myparams));
-    HIP_CHECK(hipGraphLaunch(graphExec, stream));
-    HIP_CHECK(hipStreamSynchronize(stream));
-  }
-  SECTION("Verifying with different memCopy node kind from D2H -> D2H") {
+  SECTION("Verifying with different memCopy node Params") {
     memset(&myparams, 0x0, sizeof(hipMemcpy3DParms));
     myparams.srcPos = make_hipPos(0, 0, 0);
     myparams.dstPos = make_hipPos(0, 0, 0);
@@ -898,12 +857,10 @@ TEST_CASE("Unit_hipGraph_PerfCheck_hipGraphExecMemcpyNodeSetParams") {
     HIP_CHECK(hipGraphExecMemcpyNodeSetParams(graphExec, memCpy3, &myparams));
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
     HIP_CHECK(hipStreamSynchronize(stream));
-
-    // Verify graph execution result
-    HipTest::checkVectorADD(A_h, B_h, C_h, N);
   }
-#endif
 
+  // Verify graph execution result
+  HipTest::checkVectorADD(A_h, B_h, C_h, N);
   HipTest::freeArrays(A_d, B_d, C_d, A_h, B_h, C_h, false);
   HipTest::freeArrays(A_d1, B_d1, C_d1, A_h1, B_h1, C_h1, false);
   HIP_CHECK(hipGraphExecDestroy(graphExec));

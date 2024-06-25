@@ -33,7 +33,7 @@ THE SOFTWARE.
 class MemsetD16AsyncBenchmark : public Benchmark<MemsetD16AsyncBenchmark> {
  public:
   MemsetD16AsyncBenchmark(LinearAllocs allocation_type, size_t size)
-      : dst_(allocation_type, size), size_(size), stream_(Streams::created) {}
+      : dst_(allocation_type, size * sizeof(int16_t)), size_(size), stream_(Streams::created) {}
 
   void operator()() {
     TIMED_SECTION_STREAM(kTimerTypeEvent, stream_.stream()) {

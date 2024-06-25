@@ -100,3 +100,70 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyDtoDAsync_Basic", "",
     }
   }
 }
+
+/**
+* Test Description
+* ------------------------
+*  - Basic functional testcase to trigger capturehipMemcpyDtoDAsync internal api
+*  to improve code coverage.
+* Test source
+* ------------------------
+*  - unit/memory/hipMemcpyDtoDAsync.cc
+* Test requirements
+* ------------------------
+*  - HIP_VERSION >= 6.0
+*/
+TEST_CASE("Unit_hipMemcpyDtoDAsync_capturehipMemcpyDtoDAsync") {
+  int numDevices = 0;
+  HIP_CHECK(hipGetDeviceCount(&numDevices));
+  if (numDevices > 1) {
+    int canAccessPeer = 0;
+    HIP_CHECK(hipDeviceCanAccessPeer(&canAccessPeer, 0, 1));
+    if (canAccessPeer == 1) {
+      hipGraph_t graph{nullptr};
+      hipGraphExec_t graphExec{nullptr};
+      hipStream_t stream;
+      size_t Nbytes = NUM_ELM * sizeof(int);
+      HIP_CHECK(hipStreamCreate(&stream));
+      int *A_h = reinterpret_cast<int*>(malloc(Nbytes));
+      int *B_h = reinterpret_cast<int*>(malloc(Nbytes));
+      int *A_d, *B_d;
+      for (int i = 0; i < NUM_ELM; i++) {
+        A_h[i] = i;
+      }
+      HIP_CHECK(hipSetDevice(0));
+      HIP_CHECK(hipMalloc(reinterpret_cast<void**>(&A_d), Nbytes));
+      HIP_CHECK(hipMemcpy(A_d, A_h, Nbytes, hipMemcpyHostToDevice));
+
+      HIP_CHECK(hipSetDevice(1));
+      HIP_CHECK(hipMalloc(reinterpret_cast<void**>(&B_d), Nbytes));
+
+      // Start Capturing
+      HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
+      HIP_CHECK(hipMemcpyDtoDAsync((hipDeviceptr_t)B_d, (hipDeviceptr_t)A_d, Nbytes, stream));
+      // End Capture
+      HIP_CHECK(hipStreamEndCapture(stream, &graph));
+
+      // Create and Launch Executable Graphs
+      HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+      HIP_CHECK(hipGraphLaunch(graphExec, stream));
+      HIP_CHECK(hipStreamSynchronize(stream));
+
+      HIP_CHECK(hipMemcpyDtoH(B_h, (hipDeviceptr_t)B_d, Nbytes));
+      for (int i = 0; i < NUM_ELM; i++) {
+        REQUIRE(B_h[i] == A_h[i]);
+      }
+      HIP_CHECK(hipGraphExecDestroy(graphExec))
+      HIP_CHECK(hipGraphDestroy(graph));
+      HIP_CHECK(hipStreamDestroy(stream));
+      free(A_h);
+      free(B_h);
+      HIP_CHECK(hipFree(A_d));
+      HIP_CHECK(hipFree(B_d));
+    } else {
+      SUCCEED("Machine doesnt have P2P support enabled hence skipping test");
+    }
+  } else {
+    SUCCEED("Machine doesnt have multiple gpus hence skipping test");
+  }
+}

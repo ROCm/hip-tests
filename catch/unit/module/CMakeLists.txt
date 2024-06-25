@@ -32,6 +32,7 @@ set(TEST_SRC
     hipModuleLaunchCooperativeKernel.cc
     hipModuleLaunchCooperativeKernelMultiDevice.cc
     hipFuncGetAttribute.cc
+    hipGetFuncBySymbol.cc
 )
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code
@@ -68,7 +69,8 @@ add_custom_target(get_tex_ref_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/get
 if(HIP_PLATFORM MATCHES "amd")
 set(TEST_SRC
     ${TEST_SRC}
-    hipExtModuleLaunchKernel.cc)
+    hipExtModuleLaunchKernel.cc
+    hipHccModuleLaunchKernel.cc)
 
 add_custom_target(empty_module.code
                   COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
@@ -177,3 +179,6 @@ add_dependencies(build_tests copiousArgKernel.code copiousArgKernel0.code copiou
 copiousArgKernel3.code copiousArgKernel16.code copiousArgKernel17.code)
 endif()
 endif()
+
+add_executable(hipGetFuncBySymbol_exe EXCLUDE_FROM_ALL hipGetFuncBySymbol_exe.cc)
+add_dependencies(build_tests hipGetFuncBySymbol_exe)

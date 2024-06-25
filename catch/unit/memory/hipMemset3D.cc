@@ -130,3 +130,57 @@ TEST_CASE("Unit_hipMemset3DAsync_BasicFunctional") {
   HIP_CHECK(hipFree(devPitchedPtr.ptr));
   free(A_h);
 }
+
+/**
+* Test Description
+* ------------------------
+*  - Basic scenario to trigger capturehipMemset3DAsync internal
+*  api for improved code coverage
+* Test source
+* ------------------------
+*  - unit/memory/hipMemset3D.cc
+* Test requirements
+* ------------------------
+*  - HIP_VERSION >= 6.0
+*/
+TEST_CASE("Unit_hipMemset3DAsync_capturehipMemset3DAsync") {
+  char *A_h;
+  hipPitchedPtr A_d;
+  hipGraph_t graph{nullptr};
+  hipGraphExec_t graphExec{nullptr};
+  int row, col, dep;
+  row = GENERATE(3, 4, 100);
+  col = GENERATE(3, 4, 100);
+  dep = GENERATE(3, 4, 100);
+  hipStream_t stream;
+
+  A_h = reinterpret_cast<char*>(malloc(sizeof(char) * row * col * dep));
+  hipExtent extent = make_hipExtent(col, row, dep);
+  HIP_CHECK(hipMalloc3D(&A_d, extent));
+  HIP_CHECK(hipStreamCreate(&stream));
+
+  HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
+  HIP_CHECK(hipMemset3DAsync(A_d, 'a', extent, stream));
+  HIP_CHECK(hipStreamEndCapture(stream, &graph));
+
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+  HIP_CHECK(hipGraphLaunch(graphExec, stream));
+  HIP_CHECK(hipStreamSynchronize(stream));
+
+  hipMemcpy3DParms params{};
+  params.srcPos = make_hipPos(0, 0, 0);
+  params.dstPos = make_hipPos(0, 0, 0);
+  params.dstPtr = make_hipPitchedPtr(A_h, col, col, row);
+  params.srcPtr = A_d;
+  params.extent = extent;
+  params.kind = hipMemcpyDeviceToHost;
+  HIP_CHECK(hipMemcpy3D(&params));
+  for (int i = 0; i < (row * col * dep); i++) {
+    REQUIRE(A_h[i]=='a');
+  }
+  HIP_CHECK(hipGraphExecDestroy(graphExec));
+  HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipStreamDestroy(stream));
+  HIP_CHECK(hipFree(A_d.ptr));
+  free(A_h);
+}

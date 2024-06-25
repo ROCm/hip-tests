@@ -28,7 +28,7 @@ $ Building without cmake
 - Execute file
 ```
 $ ./square.out
-info: running on device Navi 14 [Radeon Pro W5500]
+info: running on device AMD Radeon RX 6900 XT
 info: allocate host mem (  7.63 MB)
 info: allocate device mem (  7.63 MB)
 info: copy Host2Device

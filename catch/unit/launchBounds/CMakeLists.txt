@@ -34,15 +34,28 @@ elseif(HIP_PLATFORM MATCHES "amd")
                           LINKER_LIBS hiprtc)
 endif()
 
-# Below tests fail in PSDB
+if(UNIX)
+file(GLOB NEGATIVE_TEST_SRC
+     "launch_bounds_compiler_error_kernels.cc"
+      "launch_bounds_parse_error_kernels.cc")
+
+file(COPY ${NEGATIVE_TEST_SRC} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src)
+
+#if(HIP_PLATFORM MATCHES "nvidia")
+# set(EXPECTED_ERRORS 2)
+#elseif(HIP_PLATFORM MATCHES "amd")
+# set(EXPECTED_ERRORS 3)
+#endif()
+#
 #add_test(NAME Unit_Kernel_Launch_bounds_Negative_Parameters_CompilerError
-#         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-#         ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
-#         launch_bounds_compiler_error_kernels.cc -1)
+#         COMMAND ${Python3_EXECUTABLE} ../compileAndCaptureOutput.py
+#         ./src ${HIP_PLATFORM} ${HIP_PATH}
+#         launch_bounds_compiler_error_kernels.cc ${EXPECTED_ERRORS})
 #
 #if(HIP_PLATFORM MATCHES "amd")
-#    add_test(NAME Unit_Kernel_Launch_bounds_Negative_Parameters_ParseError
-#            COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../compileAndCaptureOutput.py
-#            ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_PLATFORM} ${HIP_PATH}
-#            launch_bounds_parse_error_kernels.cc -1)
+#	add_test(NAME Unit_Kernel_Launch_bounds_Negative_Parameters_ParseError
+#        COMMAND ${Python3_EXECUTABLE} ../compileAndCaptureOutput.py
+#        ./src ${HIP_PLATFORM} ${HIP_PATH}
+#        launch_bounds_parse_error_kernels.cc 0 0)
 #endif()
+endif()

@@ -173,3 +173,95 @@ TEST_CASE("Unit_hipMemcpyDtoDAsync_Negative_Parameters") {
                     hipErrorContextIsDestroyed);
   }
 }
+
+/**
+* Test Description
+* ------------------------
+*  - Basic functional testcase to trigger capturehipMemcpyDtoHAsync internal api
+*  to improve code coverage.
+* Test source
+* ------------------------
+*  - unit/memory/hipMemcpyAsync_derivatives.cc
+* Test requirements
+* ------------------------
+*  - HIP_VERSION >= 6.0
+*/
+TEST_CASE("Unit_hipMemcpyDtoHAsync_capturehipMemcpyDtoHAsync") {
+  hipGraph_t graph{nullptr};
+  hipGraphExec_t graphExec{nullptr};
+  hipStream_t stream;
+  HIP_CHECK(hipStreamCreate(&stream));
+  int *A_h = reinterpret_cast<int*>(malloc(sizeof(int) * kPageSize));
+  int *B_h = reinterpret_cast<int*>(malloc(sizeof(int) * kPageSize));
+  int *A_d;
+  HIP_CHECK(hipMalloc(reinterpret_cast<void**>(&A_d), sizeof(int) * kPageSize));
+  for (int i = 0; i < kPageSize; i++) {
+    B_h[i] = i;
+  }
+  HIP_CHECK(hipMemcpyHtoD((hipDeviceptr_t)A_d, B_h, sizeof(int) * kPageSize));
+  // Start Capturing
+  HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
+  HIP_CHECK(hipMemcpyDtoHAsync(A_h, (hipDeviceptr_t)A_d, sizeof(int) * kPageSize, stream));
+  // End Capture
+  HIP_CHECK(hipStreamEndCapture(stream, &graph));
+
+  // Create and Launch Executable Graphs
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+  HIP_CHECK(hipGraphLaunch(graphExec, stream));
+  HIP_CHECK(hipStreamSynchronize(stream));
+  for (int i = 0; i < kPageSize; i++) {
+    REQUIRE(A_h[i] ==  B_h[i]);
+  }
+  HIP_CHECK(hipGraphExecDestroy(graphExec))
+  HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipStreamDestroy(stream));
+  HIP_CHECK(hipFree(A_d));
+  free(A_h);
+  free(B_h);
+}
+
+/**
+* Test Description
+* ------------------------
+*  - Basic functional testcase to trigger capturehipMemcpyHtoDAsync internal api
+*  to improve code coverage.
+* Test source
+* ------------------------
+*  - unit/memory/hipMemcpyAsync_derivatives.cc
+* Test requirements
+* ------------------------
+*  - HIP_VERSION >= 6.0
+*/
+TEST_CASE("Unit_hipMemcpyHtoDAsync_capturehipMemcpyHtoDAsync") {
+  hipGraph_t graph{nullptr};
+  hipGraphExec_t graphExec{nullptr};
+  hipStream_t stream;
+  HIP_CHECK(hipStreamCreate(&stream));
+  int *A_h = reinterpret_cast<int*>(malloc(sizeof(int) * kPageSize));
+  int *B_h = reinterpret_cast<int*>(malloc(sizeof(int) * kPageSize));
+  int *A_d;
+  HIP_CHECK(hipMalloc(reinterpret_cast<void**>(&A_d), sizeof(int) * kPageSize));
+  for (int i = 0; i < kPageSize; i++) {
+    B_h[i] = i;
+  }
+  // Start Capturing
+  HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
+  HIP_CHECK(hipMemcpyHtoDAsync((hipDeviceptr_t)A_d, B_h, sizeof(int) * kPageSize, stream));
+  // End Capture
+  HIP_CHECK(hipStreamEndCapture(stream, &graph));
+
+  // Create and Launch Executable Graphs
+  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
+  HIP_CHECK(hipGraphLaunch(graphExec, stream));
+  HIP_CHECK(hipStreamSynchronize(stream));
+  HIP_CHECK(hipMemcpyDtoH(A_h, (hipDeviceptr_t)A_d, sizeof(int) * kPageSize));
+  for (int i = 0; i < kPageSize; i++) {
+    REQUIRE(A_h[i] == B_h[i]);
+  }
+  HIP_CHECK(hipGraphExecDestroy(graphExec))
+  HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipStreamDestroy(stream));
+  HIP_CHECK(hipFree(A_d));
+  free(A_h);
+  free(B_h);
+}

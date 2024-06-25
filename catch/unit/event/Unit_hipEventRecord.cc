@@ -100,6 +100,11 @@ TEST_CASE("Unit_hipEventRecord") {
   HIP_CHECK(hipMemcpy(A_d, A_h, Nbytes, hipMemcpyHostToDevice));
   HIP_CHECK(hipMemcpy(B_d, B_h, Nbytes, hipMemcpyHostToDevice));
 
+  // Warmup
+  HipTest::launchKernel<float>(HipTest::vectorADD<float>, blocks, 1, 0, 0,
+                                 static_cast<const float*>(A_d), static_cast<const float*>(B_d),
+                                 C_d, N);
+  HIP_CHECK(hipDeviceSynchronize());
   for (int i = 0; i < iterations; i++) {
     //--- START TIMED REGION
     long long hostStart = HipTest::get_time();

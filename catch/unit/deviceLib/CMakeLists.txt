@@ -88,6 +88,7 @@ set(AMD_TEST_SRC
     bfloat16.cc
     AtomicsWithRandomActiveLanesInWavefront.cc
     fp16_ops.cc
+    fp8_host.cc
 )
 
 set(AMD_ARCH_SPEC_TEST_SRC
@@ -107,6 +108,14 @@ set(AMD_ARCH_SPEC_TEST_SRC
     unsafeAtomicAdd_NonCoherent_withoutflag.cc
     unsafeAtomicAdd_NonCoherent_withnounsafeflag.cc
     unsafeAtomicAdd_NonCoherent_withunsafeflag.cc
+)
+
+set(AMD_GFX940_SPEC_TEST_SRC
+    fp8_fnuz.cc
+)
+
+set(AMD_GFX1200_SPEC_TEST_SRC
+    fp8_ocp.cc
 )
 
 # Note to pass arch use format like -DOFFLOAD_ARCH_STR="--offload-arch=gfx900  --offload-arch=gfx906"
@@ -138,8 +147,12 @@ add_custom_target(kerDevAllocSingleKer.code
 
 # Accepted archs to compile this cmake file
 set(ACCEPTED_OFFLOAD_ARCHS gfx90a gfx940 gfx941 gfx942)
+set(ACCEPTED_GFX940_ARCH gfx940 gfx941 gfx942)
+set(ACCEPTED_GFX1200_ARCH gfx1200 gfx1201)
 function(CheckAcceptedArchs OFFLOAD_ARCH_STR_LOCAL)
   set(ARCH_CHECK -1 PARENT_SCOPE)
+  set(ARCH_GFX940 -1 PARENT_SCOPE)
+  set(ARCH_GFX1200 -1 PARENT_SCOPE)
   string(REGEX MATCHALL "--offload-arch=gfx[0-9a-z]+" OFFLOAD_ARCH_LIST ${OFFLOAD_ARCH_STR_LOCAL})
   foreach(OFFLOAD_ARCH IN LISTS OFFLOAD_ARCH_LIST)
     string(REGEX MATCHALL "--offload-arch=(gfx[0-9a-z]+)" matches ${OFFLOAD_ARCH})
@@ -147,6 +160,12 @@ function(CheckAcceptedArchs OFFLOAD_ARCH_STR_LOCAL)
       if (CMAKE_MATCH_1 IN_LIST ACCEPTED_OFFLOAD_ARCHS)
         set(ARCH_CHECK 1 PARENT_SCOPE)
       endif()         # CMAKE_MATCH_1
+      if (CMAKE_MATCH_1 IN_LIST ACCEPTED_GFX940_ARCH)
+        set(ARCH_GFX940 1 PARENT_SCOPE)
+      endif()
+      if (CMAKE_MATCH_1 IN_LIST ACCEPTED_GFX1200_ARCH)
+        set(ARCH_GFX1200 1 PARENT_SCOPE)
+      endif()
     endif()        # CMAKE_MATCH_COUNT
   endforeach()   # OFFLOAD_ARCH_LIST
 endfunction()  # CheckAcceptedArchs
@@ -158,6 +177,8 @@ if(HIP_PLATFORM MATCHES "amd")
       CheckAcceptedArchs($ENV{HCC_AMDGPU_TARGET})
     else()
       set(ARCH_CHECK -1)
+      set(ARCH_GFX940 -1)
+      set(ARCH_GFX1200 -1)
     endif()
     set(TEST_SRC ${TEST_SRC} ${AMD_TEST_SRC})
     set_source_files_properties(floatTM.cc PROPERTIES COMPILE_FLAGS -std=c++17)
@@ -176,6 +197,12 @@ if(${ARCH_CHECK} GREATER_EQUAL 0)
     set_property(SOURCE ${AtomicAdd_files} PROPERTY COMPILE_FLAGS --save-temps)
     file(GLOB unsafeAtomicAdd_files *unsafeAtomicAdd_*_*.cc)
     set_property(SOURCE ${unsafeAtomicAdd_files} PROPERTY COMPILE_FLAGS --save-temps)
+endif()
+if(${ARCH_GFX940} GREATER_EQUAL 0)
+  set(TEST_SRC ${TEST_SRC} ${AMD_GFX940_SPEC_TEST_SRC})
+endif()
+if(${ARCH_GFX1200} GREATER_EQUAL 0)
+  set(TEST_SRC ${TEST_SRC} ${AMD_GFX1200_SPEC_TEST_SRC})
 endif()
     hip_add_exe_to_target(NAME UnitDeviceTests
                       TEST_SRC ${TEST_SRC}

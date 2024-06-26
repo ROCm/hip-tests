@@ -27,18 +27,66 @@ THE SOFTWARE.
 #include <vector>
 #include <bitset>
 
+/*
+* This catch test is meant for FP8 FNUZ conversion checking
+* tests only supported on gfx940,gfx941,gfx942 archs.
+*/
+
 static_assert(sizeof(unsigned int) == sizeof(float));
+
+std::string get_arch_type()  {
+  hipDeviceProp_t prop;
+  int device;
+  HIP_CHECK(hipGetDevice(&device));
+  HIP_CHECK(hipGetDeviceProperties(&prop, device));
+  std::string gfxName(prop.gcnArchName);
+  return gfxName;
+}
+
+#define ARCH_TYPE_GFX940(name) \
+  (name.find("gfx940") != std::string::npos) || \
+  (name.find("gfx941") != std::string::npos) || \
+  (name.find("gfx942") != std::string::npos)
+
+#define FP8_FNUZ_SKIP_TEST \
+  std::string gfxName = get_arch_type(); \
+  if (!(ARCH_TYPE_GFX940(gfxName))) { \
+    HipTest::HIP_SKIP_TEST("This test can only be run on gfx940,gfx941,gfx42 arch"); \
+    return; \
+  }
+
+#define __FP8_DEVICE__ __device__ static inline
+
+template<typename T> __FP8_DEVICE__ void e4m3_fnuz_device(T *val)
+{
+  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+    __hip_fp8_e4m3_fnuz tmp(*val);
+    *val = tmp;
+  #else
+    *val = 0;
+  #endif
+}
+
+template<typename T> __FP8_DEVICE__ void e5m2_fnuz_device(T *val)
+{
+  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+    __hip_fp8_e5m2_fnuz tmp(*val);
+    *val = tmp;
+  #else
+    *val = 0;
+  #endif
+}
 
 template <typename T, bool is_e4m3_fnuz> __global__ void cvt_float_fp8_float(T* in, size_t len) {
   int i = threadIdx.x;
   if (i < len) {
-    float val = in[i];
+    T val = in[i];
     if constexpr (is_e4m3_fnuz) {
-      __hip_fp8_e4m3_fnuz tmp(val);
-      in[i] = tmp;
+      e4m3_fnuz_device<T>(&val);
+      in[i] = val;
     } else {
-      __hip_fp8_e5m2_fnuz tmp(val);
-      in[i] = tmp;
+      e5m2_fnuz_device<T>(&val);
+      in[i] = val;
     }
   }
 }
@@ -61,9 +109,9 @@ std::vector<T> cpu_cvt_float_fp8_float(const std::vector<T>& nums) {
   return ret;
 }
 
-// This test only makes sense on gfx94x where device side convert will use the builtins to convert
 // floats to fp8
-TEMPLATE_TEST_CASE("Unit_fp8_compare_host_device", "", float, double) {
+TEMPLATE_TEST_CASE("Unit_fp8_fnuz_compare_host_device", "", float, double) {
+  FP8_FNUZ_SKIP_TEST
   std::vector<TestType> numbers = {0.0f, 1.0f, 1.1f, 2.0f,  2.1f,  3.0f,  3.2f,
                                    3.3f, 4.0f, 4.5f, 10.0f, 11.0f, 12.2f, 14.1f};
   TestType* d_numbers;
@@ -98,16 +146,36 @@ TEMPLATE_TEST_CASE("Unit_fp8_compare_host_device", "", float, double) {
   }
 }
 
+__FP8_DEVICE__ void e4m3_fp8x2_fnuz_device(float2 *val)
+{
+  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+    __hip_fp8x2_e4m3_fnuz tmp(*val);
+    *val = tmp;
+  #else
+    *val = float2(0.0,0.0);
+  #endif
+}
+
+__FP8_DEVICE__ void e5m2_fp8x2_fnuz_device(float2 *val)
+{
+  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+    __hip_fp8x2_e5m2_fnuz tmp(*val);
+    *val = tmp;
+  #else
+    *val = float2(0.0,0.0);
+  #endif
+}
+
 template <bool is_e4m3_fnuz> __global__ void cvt_float2_fp8x2_float2(float2* in, size_t size) {
   int i = threadIdx.x;
   if (i < size) {
     float2 val = in[i];
     if constexpr (is_e4m3_fnuz) {
-      __hip_fp8x2_e4m3_fnuz tmp(val);
-      in[i] = tmp;
+      e4m3_fp8x2_fnuz_device(&val);
+      in[i] = val;
     } else {
-      __hip_fp8x2_e5m2_fnuz tmp(val);
-      in[i] = tmp;
+      e5m2_fp8x2_fnuz_device(&val);
+      in[i] = val;
     }
   }
 }
@@ -130,7 +198,8 @@ std::vector<float2> cpu_cvt_float2_fp8x2_float2(const std::vector<float2>& nums)
   return ret;
 }
 
-TEST_CASE("Unit_fp8x2_compare_host_device") {
+TEST_CASE("Unit_fp8x2_fnuz_compare_host_device") {
+  FP8_FNUZ_SKIP_TEST
   std::vector<float> numbers_input = {0.0f, 1.0f, 1.1f, 2.0f,  2.1f,  3.0f,  3.2f,
                                       3.3f, 4.0f, 4.5f, 10.0f, 11.0f, 12.2f, 14.1f};
 
@@ -171,7 +240,8 @@ TEST_CASE("Unit_fp8x2_compare_host_device") {
   }
 }
 
-TEST_CASE("Unit_fp8x2_split_compare") {
+TEST_CASE("Unit_fp8x2_fnuz_split_compare") {
+  FP8_FNUZ_SKIP_TEST
   std::vector<float> numbers_input = {0.0f, 1.0f, 1.1f, 2.0f,  2.1f,  3.0f,  3.2f,
                                       3.3f, 4.0f, 4.5f, 10.0f, 11.0f, 12.2f, 14.1f};
 
@@ -226,21 +296,42 @@ TEST_CASE("Unit_fp8x2_split_compare") {
   }
 }
 
+__FP8_DEVICE__ void e4m3_fp8x4_fnuz_device(float4 *val)
+{
+  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+    __hip_fp8x4_e4m3_fnuz tmp(*val);
+    *val = tmp;
+  #else
+    *val = float4(0.0,0.0,0.0,0.0);
+  #endif
+}
+
+__FP8_DEVICE__ void e5m2_fp8x4_fnuz_device(float4 *val)
+{
+  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+    __hip_fp8x4_e5m2_fnuz tmp(*val);
+    *val = tmp;
+  #else
+    *val = float4(0.0,0.0,0.0,0.0);
+  #endif
+}
+
 template <bool is_e4m3_fnuz> __global__ void cvt_float4_fp8x4_float4(float4* in, size_t size) {
   int i = threadIdx.x;
   if (i < size) {
     float4 val = in[i];
     if constexpr (is_e4m3_fnuz) {
-      __hip_fp8x4_e4m3_fnuz tmp(val);
-      in[i] = tmp;
+      e4m3_fp8x4_fnuz_device(&val);
+      in[i] = val;
     } else {
-      __hip_fp8x4_e5m2_fnuz tmp(val);
-      in[i] = tmp;
+      e5m2_fp8x4_fnuz_device(&val);
+      in[i] = val;
     }
   }
 }
 
-TEST_CASE("Unit_fp8x4_split_compare") {
+TEST_CASE("Unit_fp8x4_fnuz_split_compare") {
+  FP8_FNUZ_SKIP_TEST
   std::vector<float> numbers_input = {0.0f, 1.0f, 1.1f, 2.0f,  2.1f,  3.0f,  3.2f,
                                       3.3f, 4.0f, 4.5f, 10.0f, 11.0f, 12.2f, 14.1f};
   std::vector<float> numbers_input2 = {1.3f, 1.6f, 1.8f, 2.5f,  2.9f,  3.8f,  3.9f,
@@ -304,23 +395,47 @@ TEST_CASE("Unit_fp8x4_split_compare") {
     CHECK(cpu_result[i] == result[i]);
   }
 }
+__FP8_DEVICE__ bool e4m3_bool_fnuz_device(float val)
+{
+  bool x = false;
+  float y = val;
+  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+    __hip_fp8_e4m3_fnuz tmp(y);
+    x = tmp;
+  #else
+    x = (y == 0);
+  #endif
+  return x;
+}
+
+__FP8_DEVICE__ bool e5m2_bool_fnuz_device(float val)
+{
+  bool x = false;
+  float y = val;
+  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+    __hip_fp8_e5m2_fnuz tmp(y);
+    x = tmp;
+  #else
+    x = (y == 0);
+  #endif
+  return x;
+}
 
 template <bool is_e4m3_fnuz> __global__ void fp8_2_bool(float* f, bool* ret, size_t size) {
   int i = threadIdx.x;
   bool r = false;
   if (i < size) {
     if constexpr (is_e4m3_fnuz) {
-      __hip_fp8_e4m3_fnuz fp8(f[i]);
-      r = fp8;
+      r = e4m3_bool_fnuz_device(f[i]);
     } else {
-      __hip_fp8_e5m2_fnuz fp8(f[i]);
-      r = fp8;
+      r = e5m2_bool_fnuz_device(f[i]);
     }
     ret[i] = r;
   }
 }
 
-TEST_CASE("Unit_fp8_bool") {
+TEST_CASE("Unit_fp8_fnuz_bool_device") {
+  FP8_FNUZ_SKIP_TEST
   // clang-format off
   std::vector<float> fvals{-10.0f, -1.0f, -0.0f,  0.0f, 1.0f, 10.0f};
   std::vector<bool> tvals   {true,  true, false, false, true,  true};
@@ -328,20 +443,6 @@ TEST_CASE("Unit_fp8_bool") {
 
   bool result[] = {false, false, false,
                    false, false, false};  // cant use std::vector coz data() = delete
-
-  SECTION("e4m3_fnuz-cpu") {
-    for (size_t i = 0; i < tvals.size(); i++) {
-      __hip_fp8_e4m3_fnuz fp8(fvals[i]);
-      result[i] = fp8;
-    }
-  }
-
-  SECTION("e5m2_fnuz-cpu") {
-    for (size_t i = 0; i < tvals.size(); i++) {
-      __hip_fp8_e5m2_fnuz fp8(fvals[i]);
-      result[i] = fp8;
-    }
-  }
 
   SECTION("e4m3_fnuz-gpu") {
     float* d_in{nullptr};
@@ -394,21 +495,46 @@ std::vector<__hip_fp8_storage_t> get_all_fp8_nums() {
   return ret;
 }
 
+__FP8_DEVICE__ __hip_fp8_storage_t e4m3_fnuz_fp8_device(float val)
+{
+  __hip_fp8_storage_t x = 0;
+  float y = val;
+  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+    __hip_fp8_e4m3_fnuz tmp(y);
+    x = tmp.__x;
+  #else
+    x = (y == 0) ? 0x0 : 0x80;
+  #endif
+  return x;
+}
+
+__FP8_DEVICE__ __hip_fp8_storage_t e5m2_fnuz_fp8_device(float val)
+{
+  __hip_fp8_storage_t x = 0;
+  float y = val;
+  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+    __hip_fp8_e5m2_fnuz tmp(y);
+    x = tmp.__x;
+  #else
+    x = (y == 0) ? 0x0 : 0x80;
+  #endif
+  return x;
+}
+
 template <bool is_e4m3_fnuz>
 __global__ void Type_to_fp8(float* f, __hip_fp8_storage_t* res, size_t size) {
   auto i = blockIdx.x * blockDim.x + threadIdx.x;
   if (i < size) {
     if constexpr (is_e4m3_fnuz) {
-      __hip_fp8_e4m3_fnuz a(f[i]);
-      res[i] = a.__x;
+      res[i] = e4m3_fnuz_fp8_device(f[i]);
     } else {
-      __hip_fp8_e5m2_fnuz a(f[i]);
-      res[i] = a.__x;
+      res[i] = e5m2_fnuz_fp8_device(f[i]);
     }
   }
 }
 
-TEST_CASE("Unit_all_fp8_cvt") {
+TEST_CASE("Unit_all_fp8_fnuz_cvt") {
+  FP8_FNUZ_SKIP_TEST
   bool is_e4m3_fnuz = GENERATE(true, false);
   std::vector<float> f_vals;
   std::vector<__hip_fp8_storage_t> all_vals;
@@ -498,66 +624,60 @@ TEST_CASE("Unit_all_fp8_cvt") {
   HIP_CHECK(hipFree(d_res));
 }
 
-// test to check we are putting in data correctly in vector types
-TEST_CASE("Unit_all_fp8_vector_cvt") {
-  float2 in2{1.0f, 2.0f};
-  float4 in4{3.0f, 4.0f, 5.0f, 6.0f};
+template<typename T> __FP8_DEVICE__ void e4m3_fnuz_fp8_cvt(T val, float *cvt1, float *cvt2)
+{
+  T y = val;
+  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+    __hip_fp8_e4m3_fnuz tmp(y);
+    *cvt1 = tmp;
 
-  SECTION("e4m3_fnuz x2") {
-    __hip_fp8x2_e4m3_fnuz in(in2);
-    float2 out = in;
-    INFO("In: " << in2.x << " - " << in2.y);
-    INFO("Out: " << out.x << " - " << out.y);
-    REQUIRE(out == in2);
-  }
-  SECTION("e4m3_fnuz x4") {
-    __hip_fp8x4_e4m3_fnuz in(in4);
-    float4 out = in;
-    INFO("In: " << in4.x << " - " << in4.y << " - " << in4.z << " - " << in4.w);
-    INFO("Out: " << out.x << " - " << out.y << " - " << out.z << " - " << out.w);
-    REQUIRE(out == in4);
-  }
+    __hip_fp8_e4m3_fnuz tmp1;
+    tmp1.__x = std::is_same<T, float>::value
+          ? __hip_cvt_float_to_fp8(val, __HIP_SATFINITE, __HIP_E4M3_FNUZ)
+          : __hip_cvt_double_to_fp8(val, __HIP_SATFINITE, __HIP_E4M3_FNUZ);
+      ;
+    *cvt2 = tmp1;
+  #else
+    *cvt1 = (y == 0) ? 0 : y;
+    *cvt2 = (y == 0) ? 0 : y;
+  #endif
+}
 
-  SECTION("e5m2_fnuz x2") {
-    __hip_fp8x2_e5m2_fnuz in(in2);
-    float2 out = in;
-    INFO("In: " << in2.x << " - " << in2.y);
-    INFO("Out: " << out.x << " - " << out.y);
-    REQUIRE(out == in2);
-  }
+template<typename T> __FP8_DEVICE__ void e5m2_fnuz_fp8_cvt(T val, float *cvt1, float *cvt2)
+{
+  T y = val;
+  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+    __hip_fp8_e5m2_fnuz tmp(y);
+    *cvt1 = tmp;
 
-  SECTION("e5m2_fnuz x4") {
-    __hip_fp8x4_e5m2_fnuz in(in4);
-    float4 out = in;
-    INFO("In: " << in4.x << " - " << in4.y << " - " << in4.z << " - " << in4.w);
-    INFO("Out: " << out.x << " - " << out.y << " - " << out.z << " - " << out.w);
-    REQUIRE(out == in4);
-  }
+    __hip_fp8_e5m2_fnuz tmp1;
+    tmp1.__x = std::is_same<T, float>::value
+          ? __hip_cvt_float_to_fp8(val, __HIP_SATFINITE, __HIP_E5M2_FNUZ)
+          : __hip_cvt_double_to_fp8(val, __HIP_SATFINITE, __HIP_E5M2_FNUZ);
+      ;
+    *cvt2 = tmp1;
+  #else
+    *cvt1 = (y == 0) ? 0 : y;
+    *cvt2 = (y == 0) ? 0 : y;
+  #endif
+}
 
-  SECTION("half x2 e4m3_fnuz") {
-    __hip_fp8x2_e4m3_fnuz in(in2);
-    auto hr2 = __hip_cvt_fp8x2_to_halfraw2(in.__x, __HIP_E4M3_FNUZ);
-    float2 fout1 = in;
-    float2 fout2 = __half22float2(__half2(hr2));
-    INFO("In: " << in2.x << " - " << in2.y);
-    INFO("Out from f8  : " << fout1.x << " - " << fout1.y);
-    INFO("Out from half: " << fout2.x << " - " << fout2.y);
-    REQUIRE(fout1 == fout2);
-  }
 
-  SECTION("half x2 e5m2_fnuz") {
-    __hip_fp8x2_e5m2_fnuz in(in2);
-    auto hr2 = __hip_cvt_fp8x2_to_halfraw2(in.__x, __HIP_E5M2_FNUZ);
-    float2 fout1 = in;
-    float2 fout2 = __half22float2(__half2(hr2));
-    INFO("In: " << in2.x << " - " << in2.y);
-    INFO("Out from f8  : " << fout1.x << " - " << fout1.y);
-    INFO("Out from half: " << fout2.x << " - " << fout2.y);
-    REQUIRE(fout1 == fout2);
+template <typename T, bool is_e4m3_fnuz>
+__global__ void Type_to_fp8_cvt(T* f, float *cvt1, float *cvt2, size_t size) {
+  auto i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i < size) {
+    if constexpr (is_e4m3_fnuz) {
+      e4m3_fnuz_fp8_cvt(f[i], &cvt1[i], &cvt2[i]);
+    } else {
+      e5m2_fnuz_fp8_cvt(f[i], &cvt1[i], &cvt2[i]);
+    }
   }
 }
 
-TEMPLATE_TEST_CASE("Unit_fp8_correctness", "", float, double) {
+TEMPLATE_TEST_CASE("Unit_fp8_fnuz_correctness_device", "", float, double) {
+  FP8_FNUZ_SKIP_TEST
+
   SECTION("e4m3_fnuz") {
     /* These are basically all the fp8 - e4m3_fnuz type numbers.
      * They can be generated by iterating over 0'0000'000 and converting them to fp32 number
@@ -648,22 +768,41 @@ TEMPLATE_TEST_CASE("Unit_fp8_correctness", "", float, double) {
                                             -160,        -176,        -192,
                                             -208,        -224,        -240};
 
-    for (const auto& orig : e4m3_fnuz_nums) {
-      __hip_fp8_e4m3_fnuz fp8(orig);
-      float cvt1 = fp8;
+    size_t totalnums = e4m3_fnuz_nums.size();
+    TestType *fnums; HIP_CHECK(hipMalloc((void **)&fnums, totalnums * sizeof(TestType)));
+    float *cvt1_dev; HIP_CHECK(hipMalloc((void **)&cvt1_dev, totalnums * sizeof(TestType)));
+    float *cvt2_dev; HIP_CHECK(hipMalloc((void **)&cvt2_dev, totalnums * sizeof(TestType)));
 
-      __hip_fp8_e4m3_fnuz tmp;
-      tmp.__x = std::is_same<TestType, float>::value
-          ? __hip_cvt_float_to_fp8(orig, __HIP_SATFINITE, __HIP_E4M3_FNUZ)
-          : __hip_cvt_double_to_fp8(orig, __HIP_SATFINITE, __HIP_E4M3_FNUZ);
-      ;
-      float cvt2 = tmp;
+    HIP_CHECK(hipMemcpy(fnums, e4m3_fnuz_nums.data(), totalnums * sizeof(TestType),
+                        hipMemcpyHostToDevice));
+
+    auto fp8_kernel = Type_to_fp8_cvt<TestType, true>;
+    fp8_kernel<<<totalnums / 256 + 1, 256>>>(fnums, cvt1_dev, cvt2_dev, totalnums);
+
+    float *cvt1_host = (float *)malloc(sizeof(float) * totalnums);
+    float *cvt2_host = (float *)malloc(sizeof(float) * totalnums);
+
+    HIP_CHECK(hipMemcpy(cvt1_host, cvt1_dev, totalnums * sizeof(float) , hipMemcpyDeviceToHost));
+    HIP_CHECK(hipMemcpy(cvt2_host, cvt2_dev, totalnums * sizeof(float) , hipMemcpyDeviceToHost));
+
+    HIP_CHECK(hipDeviceSynchronize());
+
+    for (size_t idx = 0; idx < totalnums; idx++) {
+      TestType orig = e4m3_fnuz_nums[idx];
+      float cvt1 = cvt1_host[idx];
+      float cvt2 = cvt2_host[idx];
 
       INFO("Original: " << std::bitset<32>(*reinterpret_cast<const unsigned int*>(&orig)));
       INFO("Cvt back: " << std::bitset<32>(*reinterpret_cast<const unsigned int*>(&cvt1)));
       REQUIRE(cvt1 == Approx(orig));
       REQUIRE(cvt2 == cvt1);
     }
+
+    HIP_CHECK(hipFree(fnums));
+    HIP_CHECK(hipFree(cvt1_dev));
+    HIP_CHECK(hipFree(cvt2_dev));
+    free(cvt1_host);
+    free(cvt2_host);
   }
 
   SECTION("e5m2_fnuz") {
@@ -926,162 +1065,40 @@ TEMPLATE_TEST_CASE("Unit_fp8_correctness", "", float, double) {
                                             -49152,
                                             -57344};
 
-    for (const auto& orig : e5m2_fnuz_nums) {
-      __hip_fp8_e5m2_fnuz fp8(orig);
-      float cvt1 = fp8;
+    size_t totalnums = e5m2_fnuz_nums.size();
+    TestType *fnums; HIP_CHECK(hipMalloc((void **)&fnums, totalnums * sizeof(TestType)));
+    float *cvt1_dev; HIP_CHECK(hipMalloc((void **)&cvt1_dev, totalnums * sizeof(TestType)));
+    float *cvt2_dev; HIP_CHECK(hipMalloc((void **)&cvt2_dev, totalnums * sizeof(TestType)));
 
-      __hip_fp8_e5m2_fnuz tmp;
-      tmp.__x = std::is_same<TestType, float>::value
-          ? __hip_cvt_float_to_fp8(orig, __HIP_SATFINITE, __HIP_E5M2_FNUZ)
-          : __hip_cvt_double_to_fp8(orig, __HIP_SATFINITE, __HIP_E5M2_FNUZ);
-      ;
-      float cvt2 = tmp;
+    HIP_CHECK(hipMemcpy(fnums, e5m2_fnuz_nums.data(), totalnums * sizeof(TestType),
+                        hipMemcpyHostToDevice));
+
+    auto fp8_kernel = Type_to_fp8_cvt<TestType, false>;
+    fp8_kernel<<<totalnums / 256 + 1, 256>>>(fnums, cvt1_dev, cvt2_dev, totalnums);
+
+    float *cvt1_host = (float *)malloc(sizeof(float) * totalnums);
+    float *cvt2_host = (float *)malloc(sizeof(float) * totalnums);
+
+    HIP_CHECK(hipMemcpy(cvt1_host, cvt1_dev, totalnums * sizeof(float) , hipMemcpyDeviceToHost));
+    HIP_CHECK(hipMemcpy(cvt2_host, cvt2_dev, totalnums * sizeof(float) , hipMemcpyDeviceToHost));
+
+    HIP_CHECK(hipDeviceSynchronize());
+
+    for (size_t idx = 0; idx < totalnums; idx++) {
+      TestType orig = e5m2_fnuz_nums[idx];
+      float cvt1 = cvt1_host[idx];
+      float cvt2 = cvt2_host[idx];
 
       INFO("Original: " << std::bitset<32>(*reinterpret_cast<const unsigned int*>(&orig)));
       INFO("Cvt back: " << std::bitset<32>(*reinterpret_cast<const unsigned int*>(&cvt1)));
       REQUIRE(cvt1 == Approx(orig));
-      REQUIRE(cvt1 == cvt2);
+      REQUIRE(cvt2 == cvt1);
     }
-  }
-}
 
-// Check the orientation encoded is correct
-TEST_CASE("Unit_fp8_vector_basic_conversions") {
-  float f1 = 1.0f;
-  float2 f2 = {1.0f, 2.0f};
-  float4 f4 = {1.0f, 2.0f, 3.0f, 4.0f};
-
-  SECTION("e4m3-fnuz cvt float") {
-    __hip_fp8_e4m3_fnuz f8_1 = f1;
-    __hip_fp8x2_e4m3_fnuz f8_2 = f2;
-    __hip_fp8x4_e4m3_fnuz f8_4 = f4;
-
-    float cf1 = f8_1;
-    float2 cf2 = f8_2;
-    float4 cf4 = f8_4;
-
-    __hip_fp8x2_e4m3_fnuz tmp;
-    tmp.__x = __hip_cvt_float2_to_fp8x2(cf2, __HIP_SATFINITE, __HIP_E4M3_FNUZ);
-    float2 xtmp = tmp;
-
-    REQUIRE(f1 == cf1);
-    REQUIRE(f2 == cf2);
-    REQUIRE(f4 == cf4);
-
-    REQUIRE(xtmp == f2);
-  }
-
-  SECTION("e5m2-fnuz cvt float") {
-    __hip_fp8_e5m2_fnuz f8_1 = f1;
-    __hip_fp8x2_e5m2_fnuz f8_2 = f2;
-    __hip_fp8x4_e5m2_fnuz f8_4 = f4;
-
-    float cf1 = f8_1;
-    float2 cf2 = f8_2;
-    float4 cf4 = f8_4;
-
-    __hip_fp8x2_e5m2_fnuz tmp;
-    tmp.__x = __hip_cvt_float2_to_fp8x2(cf2, __HIP_SATFINITE, __HIP_E5M2_FNUZ);
-    float2 xtmp = tmp;
-
-    REQUIRE(f1 == cf1);
-    REQUIRE(f2 == cf2);
-    REQUIRE(f4 == cf4);
-
-    REQUIRE(xtmp == f2);
-  }
-
-  SECTION("e4m3-fnuz cvt double") {
-    double d1 = f1;
-    double2 d2 = {f2.x, f2.y};
-    double4 d4 = {f4.x, f4.y, f4.z, f4.w};
-    __hip_fp8_e4m3_fnuz f8_1 = d1;
-    __hip_fp8x2_e4m3_fnuz f8_2 = d2;
-    __hip_fp8x4_e4m3_fnuz f8_4 = d4;
-
-    double cf1 = f8_1;
-    float2 cf2 = f8_2;
-    float4 cf4 = f8_4;
-
-    __hip_fp8x2_e4m3_fnuz tmp;
-    tmp.__x = __hip_cvt_double2_to_fp8x2(d2, __HIP_SATFINITE, __HIP_E4M3_FNUZ);
-    float2 xtmp = tmp;
-
-    REQUIRE(d1 == cf1);
-    REQUIRE(d2 == double2{cf2.x, cf2.y});
-    REQUIRE(d4 == double4{cf4.x, cf4.y, cf4.z, cf4.w});
-
-    REQUIRE(double2{xtmp.x, xtmp.y} == d2);
-  }
-
-  SECTION("e5m2-fnuz cvt double") {
-    double d1 = f1;
-    double2 d2 = {f2.x, f2.y};
-    double4 d4 = {f4.x, f4.y, f4.z, f4.w};
-    __hip_fp8_e5m2_fnuz f8_1 = d1;
-    __hip_fp8x2_e5m2_fnuz f8_2 = d2;
-    __hip_fp8x4_e5m2_fnuz f8_4 = d4;
-
-    double cf1 = f8_1;
-    float2 cf2 = f8_2;
-    float4 cf4 = f8_4;
-
-    __hip_fp8x2_e5m2_fnuz tmp;
-    tmp.__x = __hip_cvt_double2_to_fp8x2(d2, __HIP_SATFINITE, __HIP_E5M2_FNUZ);
-    float2 xtmp = tmp;
-
-    REQUIRE(d1 == cf1);
-    REQUIRE(d2 == double2{cf2.x, cf2.y});
-    REQUIRE(d4 == double4{cf4.x, cf4.y, cf4.z, cf4.w});
-
-    REQUIRE(double2{xtmp.x, xtmp.y} == d2);
-  }
-
-  SECTION("e4m3-fnuz half2/bfloat162") {
-    auto bf16_val = __float22bfloat162_rn(f2);
-    auto half2_val = __float22half2_rn(f2);
-
-    __hip_fp8x2_e4m3_fnuz x1(bf16_val);
-    __hip_fp8x2_e4m3_fnuz x2(half2_val);
-
-    __hip_fp8x2_e4m3_fnuz tmp1;
-    tmp1.__x = __hip_cvt_bfloat16raw2_to_fp8x2(bf16_val, __HIP_SATFINITE, __HIP_E4M3_FNUZ);
-    float2 bf2_1 = tmp1;
-
-    tmp1.__x = __hip_cvt_halfraw2_to_fp8x2(half2_val, __HIP_SATFINITE, __HIP_E4M3_FNUZ);
-    float2 h2_1 = tmp1;
-
-    float2 f2_1 = x1;
-    float2 f2_2 = x2;
-
-    REQUIRE(f2_1 == f2);
-    REQUIRE(f2_2 == f2);
-
-    REQUIRE(f2 == bf2_1);
-    REQUIRE(f2 == h2_1);
-  }
-
-  SECTION("e5m2-fnuz half2/bfloat162") {
-    auto bf16_val = __float22bfloat162_rn(f2);
-    auto half2_val = __float22half2_rn(f2);
-
-    __hip_fp8x2_e5m2_fnuz x1(bf16_val);
-    __hip_fp8x2_e5m2_fnuz x2(half2_val);
-
-    __hip_fp8x2_e5m2_fnuz tmp1;
-    tmp1.__x = __hip_cvt_bfloat16raw2_to_fp8x2(bf16_val, __HIP_SATFINITE, __HIP_E5M2_FNUZ);
-    float2 bf2_1 = tmp1;
-
-    tmp1.__x = __hip_cvt_halfraw2_to_fp8x2(half2_val, __HIP_SATFINITE, __HIP_E5M2_FNUZ);
-    float2 h2_1 = tmp1;
-
-    float2 f2_1 = x1;
-    float2 f2_2 = x2;
-
-    REQUIRE(f2_1 == f2);
-    REQUIRE(f2_2 == f2);
-
-    REQUIRE(f2 == bf2_1);
-    REQUIRE(f2 == h2_1);
+    HIP_CHECK(hipFree(fnums));
+    HIP_CHECK(hipFree(cvt1_dev));
+    HIP_CHECK(hipFree(cvt2_dev));
+    free(cvt1_host);
+    free(cvt2_host);
   }
 }

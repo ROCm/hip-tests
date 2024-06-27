@@ -83,8 +83,14 @@ TEST_CASE("Unit_hipStreamDestroy_WithPendingWork") {
 
   LaunchDelayKernel(std::chrono::milliseconds(500), stream);
   setToOne<<<1, numDataPoints, 0, stream>>>(deviceData, numDataPoints);
-  HIP_CHECK_ERROR(hipStreamQuery(stream), hipErrorNotReady);
-  HIP_CHECK_ERROR(hipStreamQuery(nullptr), hipErrorNotReady);
+  SECTION("Without stream query") {
+    fprintf(stderr, "Without stream query\n");
+  }
+  SECTION("With stream query") {
+    fprintf(stderr, "With stream query\n");
+    HIP_CHECK_ERROR(hipStreamQuery(stream), hipErrorNotReady);
+    HIP_CHECK_ERROR(hipStreamQuery(nullptr), hipErrorNotReady);
+  }
   HIP_CHECK(hipStreamDestroy(stream));
   checkDataSet<numDataPoints>(deviceData);
   HIP_CHECK(hipFree(deviceData));

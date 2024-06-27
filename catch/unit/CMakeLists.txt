@@ -55,7 +55,7 @@ add_subdirectory(virtualMemoryManagement)
 
 if(HIP_PLATFORM STREQUAL "amd")
 add_subdirectory(callback)
-#add_subdirectory(clock)
+add_subdirectory(clock)
 add_subdirectory(hip_specific)
 # Vulkan interop APIs currently undefined for Nvidia
 add_subdirectory(vulkan_interop)

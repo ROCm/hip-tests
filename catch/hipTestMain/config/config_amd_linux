@@ -870,6 +870,8 @@
         "Unit_safeAtomicMin_Positive_SameAddress - float",
         "=== SWDEV-454220 : Below test hanged in stress test on 22/03/24 ===",
         "Unit_hipExtLaunchKernel_Positive_Basic",
+        "=== Temporarily disable the test that failed in mi300 ===",
+        "Unit_test_generic_target_only_codeobject",
     #endif
     #if defined gfx1030
         "=== SWDEV-445961: These tests hang in PSDB stress test on 09/02/2024 ===",

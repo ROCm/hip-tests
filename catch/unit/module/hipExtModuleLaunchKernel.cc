@@ -52,6 +52,8 @@ THE SOFTWARE.
 constexpr auto fileName = "copyKernel.code";
 constexpr auto kernel_name = "copy_ker";
 constexpr auto fileNameCompressed = "copyKernelCompressed.code";
+constexpr auto fileNameGenericTarget = "copyKernelGenericTarget.code";
+
 static constexpr auto totalWorkGroups{1024};
 static constexpr auto localWorkSize{512};
 static constexpr auto lastWorkSizeEven{256};
@@ -195,6 +197,13 @@ TEST_CASE("Unit_hipExtModuleLaunchKernel_UniformWorkGroup") {
   }
   SECTION("compressed codeobjects") {
      HIP_CHECK(hipModuleLoad(&Module, fileNameCompressed));
+  }
+  SECTION("generic target codeobjects") {
+    if (!isGenericTargetSupported()) {
+      fprintf(stderr, "Generic target test is skipped\n");
+      return;
+    }
+    HIP_CHECK(hipModuleLoad(&Module, fileNameGenericTarget));
   }
   HIP_CHECK(hipModuleGetFunction(&Function, Module, kernel_name));
   // Allocate resources

@@ -1,7 +1,10 @@
 # The test must be with CMake 3.18 or above which supports LINK_LANGUAGE that is necessary for
 # Fortran build.
 cmake_minimum_required(VERSION 3.18.0)
-
+if(ENABLE_ADDRESS_SANITIZER)
+  message(STATUS "This fortran sample is temporarily disabled due to SWDEV-462616.")
+  return()
+endif()
 project(cmake_lang_test CXX Fortran)
 
 if(UNIX)

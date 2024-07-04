@@ -70,7 +70,8 @@ if(HIP_PLATFORM MATCHES "amd")
 set(TEST_SRC
     ${TEST_SRC}
     hipExtModuleLaunchKernel.cc
-    hipHccModuleLaunchKernel.cc)
+    hipHccModuleLaunchKernel.cc
+    hipGetProcAddress_Module_APIs.cc)
 
 add_custom_target(empty_module.code
                   COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
@@ -89,6 +90,13 @@ add_custom_target(copyKernel.code
 add_custom_target(copyKernel.s
                   COMMAND ${CMAKE_CXX_COMPILER} -mcode-object-version=5 -S ${CMAKE_CURRENT_SOURCE_DIR}/copyKernel.cc
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copyKernel.s
+                  -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
+                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
+
+add_custom_target(addKernel.code
+                  COMMAND ${CMAKE_CXX_COMPILER} -mcode-object-version=5 --genco ${OFFLOAD_ARCH_STR}
+                  ${CMAKE_CURRENT_SOURCE_DIR}/addKernel.cc
+                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/addKernel.code
                   -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 
@@ -174,6 +182,7 @@ add_dependencies(ModuleTest get_tex_ref_module)
 if(HIP_PLATFORM MATCHES "amd")
 add_dependencies(build_tests empty_module.code)
 add_dependencies(build_tests copyKernel.code copyKernel.s)
+add_dependencies(build_tests addKernel.code)
 if(UNIX)
 add_dependencies(build_tests copiousArgKernel.code copiousArgKernel0.code copiousArgKernel1.code copiousArgKernel2.code
 copiousArgKernel3.code copiousArgKernel16.code copiousArgKernel17.code)

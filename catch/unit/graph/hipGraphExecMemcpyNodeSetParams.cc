@@ -229,15 +229,15 @@ TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParams_Negative_Parameters") {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParams_Negative_Changing_Memcpy_Direction") {
-
-  LinearAllocGuard<int> host(LinearAllocs::hipHostMalloc, sizeof(int));
-  LinearAllocGuard<int> dev(LinearAllocs::hipMalloc, sizeof(int));
+  int *host, *dev;
+  HIP_CHECK(hipHostMalloc(&host, sizeof(int)));
+  HIP_CHECK(hipMalloc(&dev, sizeof(int)));
 
   const auto [dir, src, dst] =
-      GENERATE_REF(std::make_tuple(hipMemcpyHostToHost, host.ptr(), host.ptr()),
-                   std::make_tuple(hipMemcpyHostToDevice, host.ptr(), dev.ptr()),
-                   std::make_tuple(hipMemcpyDeviceToHost, dev.ptr(), host.ptr()),
-                   std::make_tuple(hipMemcpyDeviceToDevice, dev.ptr(), dev.ptr()));
+      GENERATE_REF(std::make_tuple(hipMemcpyHostToHost, host, host),
+                   std::make_tuple(hipMemcpyHostToDevice, host, dev),
+                   std::make_tuple(hipMemcpyDeviceToHost, dev, host),
+                   std::make_tuple(hipMemcpyDeviceToDevice, dev, dev));
 
   hipGraph_t graph = nullptr;
   HIP_CHECK(hipGraphCreate(&graph, 0));
@@ -264,6 +264,8 @@ TEST_CASE("Unit_hipGraphExecMemcpyNodeSetParams_Negative_Changing_Memcpy_Directi
   HIP_CHECK_ERROR(hipGraphExecMemcpyNodeSetParams(graph_exec, node, &params), hipErrorInvalidValue);
   HIP_CHECK(hipGraphExecDestroy(graph_exec));
   HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipHostFree(host));
+  HIP_CHECK(hipFree(dev));
 }
 
 /**

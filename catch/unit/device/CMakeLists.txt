@@ -30,7 +30,7 @@ set(TEST_SRC
     hipDriverGetVersion.cc
 )
 
-if(HIP_PLATFORM MATCHES "amd")
+if(HIP_PLATFORM MATCHES "amd" AND BUILD_SHARED_LIBS)
   set(AMD_SRC
       hipGetProcAddressDevMgmt.cc)
   set(TEST_SRC ${TEST_SRC} ${AMD_SRC})

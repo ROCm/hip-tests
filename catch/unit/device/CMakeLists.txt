@@ -32,6 +32,9 @@ set(TEST_SRC
 if(HIP_PLATFORM MATCHES "amd" AND BUILD_SHARED_LIBS)
   set(AMD_SRC
       hipGetProcAddressDevMgmt.cc)
+  if(UNIX)
+    set(AMD_SRC ${AMD_SRC} hipGetProcAddressIpcApis.cc)
+  endif()
   set(TEST_SRC ${TEST_SRC} ${AMD_SRC})
 else()
   # The following functions are unimplemented on AMD

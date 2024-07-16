@@ -83,6 +83,13 @@ set(TEST_SRC
     hipMemsetD32Async.cc
     hipMemsetD8Async.cc)
 
+if(UNIX)
+  set(TEST_SRC ${TEST_SRC} hipMemPoolExportPointer.cc
+  hipMemPoolExportToShareableHandle.cc
+  hipMemPoolImportFromShareableHandle.cc
+  hipMemPoolImportPointer.cc)
+endif()
+
 if(HIP_PLATFORM MATCHES "amd")
   set(TEST_SRC
       ${TEST_SRC}

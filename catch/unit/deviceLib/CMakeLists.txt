@@ -88,7 +88,6 @@ set(AMD_TEST_SRC
     bfloat16.cc
     AtomicsWithRandomActiveLanesInWavefront.cc
     fp16_ops.cc
-    fp8.cpp
 )
 
 set(AMD_ARCH_SPEC_TEST_SRC

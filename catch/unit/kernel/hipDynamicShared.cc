@@ -163,13 +163,10 @@ TEST_CASE("Unit_hipDynamicShared") {
   }
 
   SECTION("test case with float for max LDS size") {
-    if(IsMi350())
-    {
-      testExternShared<float>(1024, 160*1024/sizeof(float));
-    }else
-    {
-      testExternShared<float>(1024, 64*1024/sizeof(float));
-    }
+    int maxLDS = 0;
+    HIP_CHECK(hipDeviceGetAttribute(&maxLDS,
+                                  hipDeviceAttributeMaxSharedMemoryPerBlock, 0));
+    testExternShared<float>(1024, maxLDS/sizeof(float));
   }
 }
 

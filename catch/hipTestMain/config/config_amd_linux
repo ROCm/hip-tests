@@ -761,7 +761,6 @@
         "=== SWDEV-432554:Below test failed in stress test on 10/11/23 ===",
         "Unit_hipMemcpy3DAsync_Positive_Basic",
         "Unit_hipDrvMemcpy3DAsync_Positive_Basic",
-        "Print_Out_Attributes",
         "Unit_hipExtGetLinkTypeAndHopCount_Positive_Basic",
         "Unit_hipClock64_Positive_Basic",
         "Unit_hipClock_Positive_Basic",

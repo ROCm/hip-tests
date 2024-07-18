@@ -23,7 +23,6 @@ THE SOFTWARE.
 #include <hip/hip_cooperative_groups.h>
 
 namespace {
-constexpr size_t kWarpSize = 32;
 constexpr int kMaxGPUs = 8;
 }  // namespace
 

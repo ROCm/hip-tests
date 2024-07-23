@@ -1067,7 +1067,6 @@
         "Unit_hipDeviceGetGraphMemAttribute_Functional",
         "Unit_hipDeviceGetGraphMemAttribute_Functional_Multi_Device",
         "=== SWDEV-457316 Below tests are disabled temporarily to avoid combined PSDB ===",
-        "Unit_hipGraphAddMemAllocNode_Positive_FreeSeparateGraph",
         "Unit_hipGraphAddMemFreeNode_Negative_NotSupported",
     #endif
     #if defined gfx908

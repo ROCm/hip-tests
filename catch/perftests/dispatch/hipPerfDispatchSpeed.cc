@@ -89,7 +89,7 @@ TEST_CASE("Perf_hipPerfDispatchSpeed") {
   int p_gpuDevice = 0;
   int p_tests = -1;
   hipError_t err = hipSuccess;
-  hipDeviceProp_t props = {0};
+  hipDeviceProp_t props;
   HIP_CHECK(hipGetDeviceProperties(&props, p_gpuDevice));
 
   unsigned int testListSize = sizeof(testList) / sizeof(testStruct);

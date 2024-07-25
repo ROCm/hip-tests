@@ -62,6 +62,7 @@ set(TEST_SRC
     hipHostUnregister.cc
     hipHostGetFlags.cc
     hipHostGetDevicePointer.cc
+    hipMallocHost.cc
     hipMallocManaged_MultiScenario.cc
     hipMemsetNegative.cc
     hipMemset.cc

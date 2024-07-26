@@ -24,7 +24,11 @@ set(TEST_SRC
 
 if(HIP_PLATFORM MATCHES "amd")
   set(TEST_SRC ${TEST_SRC} hipStreamGetCUMask.cc hipStreamWithCUMask.cc
-               hipStreamACb_MultiThread.cc hipStreamWaitEvent.cc)
+               hipStreamACb_MultiThread.cc hipStreamWaitEvent.cc
+	       hipStreamGetFlags_spt.cc
+               hipStreamGetPriority_spt.cc
+               hipStreamQuery_spt.cc
+               hipStreamSynchronize_spt.cc)
 else()
   set(TEST_SRC
       ${TEST_SRC}

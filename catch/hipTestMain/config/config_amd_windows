@@ -1174,6 +1174,13 @@
         "Unit_hipHostAlloc_Negative_NonCoherent",
         "Unit_hipHostAlloc_Negative_Coherent",
         "Unit_hipHostAlloc_Negative_NumaUser",
+        "=== Following tests disabled due to SWDEV-486363",
+        "Unit_hipStreamQuery_spt_WithFinishedWork",
+        "Unit_hipStreamQuery_spt_NegativeCases",
+        "Unit_hipStreamQuery_spt_WithPendingWork",
+        "Unit_hipStreamSynchronize_spt_FinishWork",
+        "Unit_hipStreamSynchronize_spt_SynchronizeStreamAndQueryNullStream",
+        "====================================================",
     #endif
         "End of json"
     ]

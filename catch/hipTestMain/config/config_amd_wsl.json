@@ -617,7 +617,6 @@
         "Unit_hipDeviceGetPCIBusId_CheckPciBusIDWithLspci",
         "Note: TDR",
         "Unit_deviceAllocation_InOneThread_AccessInAllThreads",
-        "Unit_deviceAllocation_Malloc_ComplexDataType",
         "Unit_deviceAllocation_Malloc_UnionType",
         "Unit_deviceAllocation_New_ComplexDataType",
         "Unit_deviceAllocation_New_UnionType",

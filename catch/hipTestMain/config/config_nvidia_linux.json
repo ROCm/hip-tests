@@ -74,7 +74,6 @@
         "Unit_hipDestroySurfaceObject_Negative_Parameters",
         "Unit_hipMemcpy3D_Positive_Synchronization_Behavior",
         "Unit_hipMemcpy2D_Positive_Synchronization_Behavior",
-        "Unit_hipMemcpyAsync_Positive_Synchronization_Behavior",
         "Unit_hipDrvMemcpy3D_Positive_Synchronization_Behavior",
         "Unit_hipFreeMipmappedArray_Negative_DoubleFree",
         "Unit_hipModuleLoad_Positive_Basic",

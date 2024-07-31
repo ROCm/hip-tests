@@ -1174,8 +1174,6 @@
         "Unit_dynamic_loading_device_kernels_from_library",
         "Unit_hipApiDynamicLoad",
         "Unit_hipMalloc_gpptest",
-        "Unit_cache_coherency_cpu_gpu",
-        "Unit_cache_coherency_gpu_gpu",
         "=== SWDEV-438556:Below tests failed in stress test on 15/12/23 ===",
         "=== SWDEV-439298: Below test failing in CQE staging ===",
         "Unit_hipCGMultiGridGroupType_Barrier",

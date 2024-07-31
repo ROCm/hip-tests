@@ -218,7 +218,6 @@
         "=== Below tests are failing PSDB ===",
         "Unit_hipMemcpy3D_Positive_Synchronization_Behavior",
         "Unit_hipMemcpyParam2D_Positive_Synchronization_Behavior",
-        "Unit_hipMemcpyAsync_Positive_Synchronization_Behavior",
         "Unit_hipDrvMemcpy3D_Positive_Synchronization_Behavior",
         "Unit_hipFuncSetCacheConfig_Negative_Not_Supported",
         "Unit_hipFuncSetSharedMemConfig_Negative_Not_Supported",

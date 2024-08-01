@@ -40,7 +40,7 @@ TEST_CASE("Unit_hipOccupancyMaxActiveBlocksPerMultiprocessor_Negative") {
   ret = hipOccupancyMaxActiveBlocksPerMultiprocessor(NULL, f1, blockSize, 0);
   REQUIRE(ret != hipSuccess);
 
-  ret = hipOccupancyMaxActiveBlocksPerMultiprocessor(&numBlock, NULL, blockSize, 0);
+  ret = hipOccupancyMaxActiveBlocksPerMultiprocessor(&numBlock, static_cast<void*>(NULL), blockSize, 0);
   REQUIRE(ret != hipSuccess);
 
   ret = hipOccupancyMaxActiveBlocksPerMultiprocessor(&numBlock, f1, 0, 0);

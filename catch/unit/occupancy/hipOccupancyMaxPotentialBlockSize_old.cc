@@ -37,7 +37,7 @@ TEST_CASE("Unit_hipOccupancyMaxPotentialBlockSize_Negative") {
 
 #ifndef __HIP_PLATFORM_NVIDIA__
   // nvcc doesnt support kernelfunc(NULL) for api
-  ret = hipOccupancyMaxPotentialBlockSize(&gridSize, &blockSize, NULL, 0, 0);
+  ret = hipOccupancyMaxPotentialBlockSize(&gridSize, &blockSize, static_cast<void*>(NULL), 0, 0);
   REQUIRE(ret != hipSuccess);
 #endif
 }

@@ -24,7 +24,6 @@ THE SOFTWARE.
 #define _STRESSTEST_PRINTF_COMMON_H_
 
 #include <errno.h>
-#include <error.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -47,17 +46,17 @@ struct CaptureStream {
     saved_fd = dup(orig_fd);
 
     if ((temp_fd = mkstemp(tempname)) == -1) {
-      error(0, errno, "Error");
+      fprintf(stderr, "Error: %s\n", strerror(errno));
       assert(false);
     }
 
     fflush(nullptr);
     if (dup2(temp_fd, orig_fd) == -1) {
-      error(0, errno, "Error");
+      fprintf(stderr, "Error: %s\n", strerror(errno));
       assert(false);
     }
     if (close(temp_fd) != 0) {
-      error(0, errno, "Error");
+      fprintf(stderr, "Error: %s\n", strerror(errno));
       assert(false);
     }
   }
@@ -67,11 +66,11 @@ struct CaptureStream {
       return;
     fflush(nullptr);
     if (dup2(saved_fd, orig_fd) == -1) {
-      error(0, errno, "Error");
+      fprintf(stderr, "Error: %s\n", strerror(errno));
       assert(false);
     }
     if (close(saved_fd) != 0) {
-      error(0, errno, "Error");
+      fprintf(stderr, "Error: %s\n", strerror(errno));
       assert(false);
     }
     saved_fd = -1;
@@ -90,7 +89,7 @@ struct CaptureStream {
   ~CaptureStream() {
     restoreStream();
     if (remove(tempname) != 0) {
-      error(0, errno, "Error");
+      fprintf(stderr, "Error: %s\n", strerror(errno));
       assert(false);
     }
   }

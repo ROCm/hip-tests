@@ -72,18 +72,20 @@ void Memcpy2DDeviceToDeviceShell(F memcpy_func, const hipStream_t kernel_stream 
   const size_t src_cols_mult = GENERATE(1, 2);
 
   INFO("Src device: " << src_device << ", Dst device: " << dst_device);
-
-  HIP_CHECK(hipSetDevice(src_device));
-  if constexpr (enable_peer_access) {
-    if (src_device == dst_device) {
-      return;
-    }
+  if (device_count > 1) {
     int can_access_peer = 0;
     HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, src_device, dst_device));
     if (!can_access_peer) {
       std::string msg = "Skipped as peer access cannot be enabled between devices " +
           std::to_string(src_device) + " " + std::to_string(dst_device);
       HipTest::HIP_SKIP_TEST(msg.c_str());
+      return;
+    }
+  }
+
+  HIP_CHECK(hipSetDevice(src_device));
+  if constexpr (enable_peer_access) {
+    if (src_device == dst_device) {
       return;
     }
     HIP_CHECK(hipDeviceEnablePeerAccess(dst_device, 0));

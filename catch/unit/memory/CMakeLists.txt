@@ -82,7 +82,9 @@ set(TEST_SRC
     hipMemsetD16.cc
     hipMemsetD16Async.cc
     hipMemsetD32Async.cc
-    hipMemsetD8Async.cc)
+    hipMemsetD8Async.cc
+    hipExtHostAlloc.cc
+    )
 
 if(UNIX)
   set(TEST_SRC ${TEST_SRC} hipMemPoolExportPointer.cc

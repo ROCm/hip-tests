@@ -62,6 +62,7 @@ set(TEST_SRC
     hipBindTextureToArray.cc
     hipTexRefGetFlags.cc
     hipTexRefSetAddressMode.cc
+    hipTexRefGetAddressMode.cc
 )
 
 # tests not for gfx90a+

@@ -86,7 +86,7 @@ void testExternShared(size_t N, unsigned groupElements) {
   HIP_CHECK(hipMemcpy(B_d, B_h, Nbytes, hipMemcpyHostToDevice));
 
   // calculate the amount of dynamic shared memory required
-  size_t groupMemBytes = groupElements * sizeof(double);
+  size_t groupMemBytes = groupElements * sizeof(T);
 
   // launch kernel with dynamic shared memory
   hipLaunchKernelGGL(HIP_KERNEL_NAME(testExternSharedKernel<T>), dim3(blocks),
@@ -160,6 +160,16 @@ TEST_CASE("Unit_hipDynamicShared") {
     testExternShared<double>(65536, 16);
     testExternShared<double>(65536, 32);
     testExternShared<double>(65536, 64);
+  }
+
+  SECTION("test case with float for max LDS size") {
+    if(IsMi350())
+    {
+      testExternShared<float>(1024, 160*1024/sizeof(float));
+    }else
+    {
+      testExternShared<float>(1024, 64*1024/sizeof(float));
+    }
   }
 }
 

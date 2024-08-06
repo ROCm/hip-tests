@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
+   Copyright (c) 2024 Advanced Micro Devices, Inc. All rights reserved.
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the "Software"), to deal
    in the Software without restriction, including without limitation the rights
@@ -18,6 +18,7 @@
  */
 
 #include <hip_test_common.hh>
+#include "mempool_common.hh"
 
 /**
  * @addtogroup hipMemPoolCreate hipMemPoolCreate
@@ -42,15 +43,10 @@
  *  - /unit/memory/hipMemPoolCreate.cc
  * Test requirements
  * ------------------------
- *  - HIP_VERSION >= 6.0
+ *  - HIP_VERSION >= 6.2
  */
 TEST_CASE("Unit_hipMemPoolCreate_Negative_Parameter") {
-  int mem_pool_support = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&mem_pool_support, hipDeviceAttributeMemoryPoolsSupported, 0));
-  if (!mem_pool_support) {
-    SUCCEED("Runtime doesn't support Memory Pool. Skip the test case.");
-    return;
-  }
+  checkMempoolSupported(0)
 
   int num_dev = 0;
   HIP_CHECK(hipGetDeviceCount(&num_dev));
@@ -93,12 +89,7 @@ TEST_CASE("Unit_hipMemPoolCreate_Negative_Parameter") {
 }
 
 TEST_CASE("Unit_hipMemPoolCreate_With_maxSize") {
-  int mem_pool_support = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&mem_pool_support, hipDeviceAttributeMemoryPoolsSupported, 0));
-  if (!mem_pool_support) {
-    SUCCEED("Runtime doesn't support Memory Pool. Skip the test case.");
-    return;
-  }
+  checkMempoolSupported(0)
   hipMemPoolProps pool_props;
   memset(&pool_props, 0, sizeof(pool_props));
   pool_props.allocType = hipMemAllocationTypePinned;
@@ -126,12 +117,7 @@ TEST_CASE("Unit_hipMemPoolCreate_With_maxSize") {
 }
 
 TEST_CASE("Unit_hipMemPoolCreate_Without_maxSize") {
-  int mem_pool_support = 0;
-  HIP_CHECK(hipDeviceGetAttribute(&mem_pool_support, hipDeviceAttributeMemoryPoolsSupported, 0));
-  if (!mem_pool_support) {
-    SUCCEED("Runtime doesn't support Memory Pool. Skip the test case.");
-    return;
-  }
+  checkMempoolSupported(0)
   hipMemPoolProps pool_props;
   memset(&pool_props, 0, sizeof(pool_props));
   pool_props.allocType = hipMemAllocationTypePinned;
@@ -149,6 +135,67 @@ TEST_CASE("Unit_hipMemPoolCreate_Without_maxSize") {
   HIP_CHECK(hipMallocFromPoolAsync (reinterpret_cast<void**>(&B), 1024 * 1024 * 513, mem_pool, stream));
   HIP_CHECK(hipMemPoolDestroy(mem_pool));
   HIP_CHECK(hipStreamDestroy(stream));
+}
+
+static __global__ void setKer(int *devptr) {
+  int tid = blockIdx.x * blockDim.x + threadIdx.x;
+  devptr[tid] = tid;
+}
+/**
+ * Test Description
+ * ------------------------
+ *    - hipMemPoolCreate functionality tests
+ * Create mempool for current device and other devices, if they exist, and
+ * destroy them.
+ * ------------------------
+ *    - catch\unit\memory\hipMemPoolCreate.cc
+ * Test requirements
+ * ------------------------
+ *    - HIP_VERSION >= 6.2
+ */
+TEST_CASE("Unit_hipMemPoolCreate_DeviceTest") {
+  checkMempoolSupported(0)
+  int num_devices = 0;
+  HIP_CHECK(hipGetDeviceCount(&num_devices));
+  checkIfMultiDev(num_devices)
+  // Scenario1
+  SECTION("Simple Device Test") {
+    for (int dev = 0; dev < num_devices; dev++) {
+      hipMemPool_t mem_pool;
+      hipMemPoolProps prop{};
+      prop.allocType = hipMemAllocationTypePinned;
+      prop.location.id = dev;
+      prop.location.type = hipMemLocationTypeDevice;
+      HIP_CHECK(hipMemPoolCreate(&mem_pool, &prop));
+      HIP_CHECK(hipMemPoolDestroy(mem_pool));
+    }
+  }
+  // Scenario2
+  SECTION("Accessibility Test") {
+    // Allocate a memory pool in current device
+    constexpr int N = 1 << 12;
+    constexpr int numThreadsPerBlk = 64;
+    hipMemPool_t mem_pool;
+    hipMemPoolProps prop{};
+    prop.allocType = hipMemAllocationTypePinned;
+    prop.location.id = 0;
+    prop.location.type = hipMemLocationTypeDevice;
+    HIP_CHECK(hipMemPoolCreate(&mem_pool, &prop));
+    // Try allocating from mempool in other device context
+    for (int dev = 1; dev < num_devices; dev++) {
+      int *A_d;
+      HIP_CHECK(hipSetDevice(dev));
+      HIP_CHECK(hipMallocFromPoolAsync(reinterpret_cast<void**>(&A_d),
+                                       N*sizeof(int), mem_pool, 0));
+      HIP_CHECK(hipStreamSynchronize(0));
+      HIP_CHECK(hipSetDevice(0));
+      // Launch kernel to access A_d and free it on dev 0 context
+      setKer<<<N/numThreadsPerBlk, numThreadsPerBlk, 0, 0>>>(A_d);
+      HIP_CHECK(hipFreeAsync(reinterpret_cast<void*>(A_d), 0));
+      HIP_CHECK(hipStreamSynchronize(0));
+    }
+    HIP_CHECK(hipMemPoolDestroy(mem_pool));
+  }
 }
 
 /**

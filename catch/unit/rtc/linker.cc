@@ -145,7 +145,7 @@ TEST_CASE("Unit_RTC_LinkAddFile_Negative") {
   SECTION("link add file - incorrect hiprtcLinkState") {
     hiprtcLinkState linkstate;
     REQUIRE(hiprtcLinkAddFile(linkstate, input_type, file_name, 0, nullptr, nullptr) ==
-            HIPRTC_ERROR_PROGRAM_CREATION_FAILURE);
+            HIPRTC_ERROR_INVALID_INPUT);
   }
 
   SECTION("link add file - nullptr hiprtcLinkState") {

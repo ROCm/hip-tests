@@ -39,5 +39,9 @@ add_subdirectory(17_llvm_ir_to_executable)
 add_subdirectory(18_cmake_hip_device)
 add_subdirectory(19_cmake_lang)
 add_subdirectory(21_cmake_hip_cxx_clang)
-add_subdirectory(22_cmake_hip_lang)
+# Disable hip-lang test for static builds.
+# Once the issues are fixed, will enable the test
+if(BUILD_SHARED_LIBS)
+  add_subdirectory(22_cmake_hip_lang)
+endif()
 add_subdirectory(23_cmake_hiprtc)

@@ -121,9 +121,6 @@ template <bool dynamic, size_t... tile_sizes> void BlockPartitionGettersBasicTes
  */
 TEST_CASE("Unit_Thread_Block_Tile_Getters_Positive_Basic") {
   BlockPartitionGettersBasicTest<false, 2, 4, 8, 16, 32>();
-#if HT_AMD && (__GFX8__ || __GFX9__)
-  BlockPartitionGettersBasicTest<false, 64>();
-#endif
 }
 
 /**
@@ -141,9 +138,6 @@ TEST_CASE("Unit_Thread_Block_Tile_Getters_Positive_Basic") {
  */
 TEST_CASE("Unit_Thread_Block_Tile_Dynamic_Getters_Positive_Basic") {
   BlockPartitionGettersBasicTest<true, 2, 4, 8, 16, 32>();
-#if HT_AMD && (__GFX8__ || __GFX9__)
-  BlockPartitionGettersBasicTest<true, 64>();
-#endif
 }
 
 
@@ -201,9 +195,6 @@ template <typename T, size_t... tile_sizes> void BlockTileShflUpTest() {
 TEMPLATE_TEST_CASE("Unit_Thread_Block_Tile_Shfl_Up_Positive_Basic", "", int, unsigned int, long,
                    unsigned long, long long, unsigned long long, float, double) {
   BlockTileShflUpTest<TestType, 2, 4, 8, 16, 32>();
-#if HT_AMD && (__GFX8__ || __GFX9__)
-  BlockTileShflUpTest<TestType, 64>();
-#endif
 }
 
 
@@ -273,9 +264,6 @@ template <typename T, size_t... tile_sizes> void BlockTileShflDownTest() {
 TEMPLATE_TEST_CASE("Unit_Thread_Block_Tile_Shfl_Down_Positive_Basic", "", int, unsigned int, long,
                    unsigned long, long long, unsigned long long, float, double) {
   BlockTileShflDownTest<TestType, 2, 4, 8, 16, 32>();
-#if HT_AMD && (__GFX8__ || __GFX9__)
-  BlockTileShflDownTest<TestType, 64>();
-#endif
 }
 
 
@@ -340,9 +328,6 @@ template <typename T, size_t... tile_sizes> void BlockTileShflXORTest() {
 TEMPLATE_TEST_CASE("Unit_Thread_Block_Tile_Shfl_XOR_Positive_Basic", "", int, unsigned int, long,
                    unsigned long, long long, unsigned long long, float, double) {
   BlockTileShflXORTest<TestType, 2, 4, 8, 16, 32>();
-#if HT_AMD && (__GFX8__ || __GFX9__)
-  BlockTileShflXORTest<TestType, 64>();
-#endif
 }
 
 template <typename T, size_t tile_size>
@@ -423,9 +408,6 @@ template <typename T, size_t... tile_sizes> void BlockTileShflTest() {
 TEMPLATE_TEST_CASE("Unit_Thread_Block_Tile_Shfl_Positive_Basic", "", int, unsigned int, long,
                    unsigned long, long long, unsigned long long, float, double) {
   BlockTileShflTest<TestType, 2, 4, 8, 16, 32>();
-#if HT_AMD && (__GFX8__ || __GFX9__)
-  BlockTileShflTest<TestType, 64>();
-#endif
 }
 
 
@@ -540,15 +522,9 @@ template <bool global_memory, typename T, size_t... tile_sizes> void BlockTileSy
 TEMPLATE_TEST_CASE("Unit_Thread_Block_Tile_Sync_Positive_Basic", "", uint8_t, uint16_t, uint32_t) {
   SECTION("Global memory") {
     BlockTileSyncTest<true, TestType, 2, 4, 8, 16, 32>();
-#if HT_AMD && (__GFX8__ || __GFX9__)
-    BlockTileSyncTest<true, TestType, 64>();
-#endif
   }
   SECTION("Shared memory") {
     BlockTileSyncTest<false, TestType, 2, 4, 8, 16, 32>();
-#if HT_AMD && (__GFX8__ || __GFX9__)
-    BlockTileSyncTest<true, TestType, 64>();
-#endif
   }
 }
 

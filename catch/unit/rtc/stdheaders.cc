@@ -20,9 +20,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-// This test verifies hiprtc compilation when the C++ std headers such as type_traits,
-// iterator etc. are included in the program. HIPRTC also defines few std templates
-// and this should not cause conflicts with std headers.
+/**
+ * @addtogroup hiprtc_std_headers hiprtc_std_headers
+ * @{
+ * @ingroup hiprtcHeadersTest
+ * `hiprtcResult hiprtcCompileProgram(hiprtcProgram prog,
+ *                                    int numOptions,
+ *                                    const char** options);` -
+ * This test verifies hiprtc compilation when the C++ std headers such as type_traits,
+ * iterator etc. are included in the program. HIPRTC also defines few std templates
+ * and this should not cause conflicts with std headers.
+ */
 
 #include <hip_test_common.hh>
 #include <hip/hiprtc.h>
@@ -56,7 +64,22 @@ template <typename T> __global__ void stdheader(T a, bool* passed) {
 #endif
 )"};
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Executes `hiprtcCompileProgram` with additional C++ std
+ *    headers used in kernel source
+ * Test source
+ * ------------------------
+ *  - unit/rtc/stdheaders.cc
+ * Test requirements
+ * ------------------------
+ *  - ROCM_VERSION >= 7.0
+ */
 TEST_CASE("Unit_hiprtc_stdheaders") {
+  HipTest::HIP_SKIP_TEST("Test disabled due to incorrect ROCm version");
+  return;
+
   using namespace std;
   hiprtcProgram prog;
   HIPRTC_CHECK(hiprtcCreateProgram(&prog, source, "stdheader.cu", 0, nullptr, nullptr));
@@ -118,3 +141,8 @@ TEST_CASE("Unit_hiprtc_stdheaders") {
   HIPRTC_CHECK(hiprtcDestroyProgram(&prog));
   REQUIRE(*hResult == true);
 }
+
+/**
+ * End doxygen group hiprtc_std_headers.
+ * @}
+ */

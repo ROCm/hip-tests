@@ -114,6 +114,8 @@ set(TEST_SRC
     hipMemcpyFromSymbol.cc
     hipPtrGetAttribute.cc
     hipMemPoolApi.cc
+    hipDeviceGetMemPool.cc
+    hipDeviceSetMemPool.cc
     hipMemPoolSetGetAccess.cc
     hipMemPoolSetGetAttribute.cc
     hipMemPoolCreate.cc
@@ -153,6 +155,7 @@ set(TEST_SRC
     hipMemPrefetchAsync.cc
     hipMemGetInfo.cc
     hipFree.cc
+    hipFreeArray.cc
     hipMemcpySync.cc
     hipMemsetSync.cc
     hipMemsetAsync.cc
@@ -211,6 +214,20 @@ endif()
 hip_add_exe_to_target(NAME MemoryTest2
   TEST_SRC ${TEST_SRC}
   TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
+
+if(HIP_PLATFORM MATCHES "amd")
+set(TEST_SRC
+  inlineVar.cc
+  memoryCommon.cc
+)
+
+hip_add_exe_to_target(NAME InlineVarTest
+  TEST_SRC ${TEST_SRC}
+  TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
+
+  set_target_properties(InlineVarTest PROPERTIES COMPILE_FLAGS -fgpu-rdc)
+  set_target_properties(InlineVarTest PROPERTIES LINK_FLAGS -fgpu-rdc)
+endif()
 
 set(TEST_SRC
   hipSVMTestByteGranularity.cpp

@@ -36,6 +36,7 @@ set(TEST_SRC
     hipTex1DFetchCheckModes.cc
     hipGetChanDesc.cc
     hipTexObjPitch.cc
+    hipTexRefSetArray.cc
     hipTextureObj1DFetch.cc
     hipTextureObj1DCheckModes.cc
     hipTextureObj2DCheckModes.cc

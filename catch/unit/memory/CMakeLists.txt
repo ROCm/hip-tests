@@ -139,6 +139,7 @@ set(TEST_SRC
     hipMemcpyDtoDAsync.cc
     hipHostMalloc.cc
     hipMemcpy_old.cc
+    hipHostAlloc.cc
     hipMemcpy_derivatives.cc
     hipMemcpyAsync.cc
     hipMemcpyAsync_old.cc

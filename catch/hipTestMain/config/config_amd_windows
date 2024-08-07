@@ -1444,6 +1444,12 @@
         "Unit_fp8_correctness - float",
         "Unit_fp8_correctness - double",
         "Unit_fp8_vector_basic_conversions",
+        "=== SWDEV-468258 Below tests are temporarily disabled - windows PSDB failed",
+        "Unit_hipHostAlloc_Basic",
+        "Unit_hipHostAlloc_Default",
+        "Unit_hipHostAlloc_Negative_NonCoherent",
+        "Unit_hipHostAlloc_Negative_Coherent",
+        "Unit_hipHostAlloc_Negative_NumaUser",
     #endif
         "End of json"
     ]

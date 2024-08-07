@@ -1181,6 +1181,8 @@
         "Unit_hipStreamSynchronize_spt_FinishWork",
         "Unit_hipStreamSynchronize_spt_SynchronizeStreamAndQueryNullStream",
         "====================================================",
+        "Test Unit_hipGraphUserObj_ClonedGraph disabled due to SWDEV-483112",
+        "Unit_hipGraphUserObj_ClonedGraph",
     #endif
         "End of json"
     ]

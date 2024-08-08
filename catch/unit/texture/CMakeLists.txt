@@ -45,6 +45,7 @@ set(TEST_SRC
     hipTexObjectTests.cc
     hipTextureObjectTests.cc
     hipTexRefSetAddress2D.cc
+    hipTexRefSetMaxAnisotropy.cc
 )
 
 # tests not for gfx90a+

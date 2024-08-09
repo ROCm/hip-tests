@@ -957,6 +957,8 @@
         "Unit_hipDeviceGetGraphMemAttribute_Functional_Multi_Device",
         "=== SWDEV-457316 Below tests are disabled temporarily to avoid combined PSDB ===",
         "Unit_hipGraphAddMemFreeNode_Negative_NotSupported",
+        "=== SWDEV-478776 Below test is disabled due to fix is not avaialable in mainline ===",
+        "Unit_hipStreamLegacy_hipStreamSynchronize",
     #endif
     #if defined gfx908
         "=== Below test soft hang in stress test on 29/08/23 ===",

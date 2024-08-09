@@ -1315,6 +1315,8 @@
         "Performance_hipMemcpyAsync_HostToDevice",
         "Performance_hipMemcpyAsync_DeviceToDevice_DisablePeerAccess",
         "Performance_hipMemcpyDtoHAsync",
+        "=== SWDEV-478776 Below test is disabled due to fix is not avaialable in mainline ===",
+        "Unit_hipStreamLegacy_hipStreamSynchronize",
     #endif
     #if defined gfx906
         "=== SWDEV-419112 Below tests fail in stress test on 29/08/23 ===",

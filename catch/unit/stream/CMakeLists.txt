@@ -17,6 +17,8 @@ set(TEST_SRC
     hipStreamACb_StrmSyncTiming.cc
     hipLaunchHostFunc.cc
     hipStreamGetDevice.cc
+    hipStreamLegacy_Ext.cc
+    hipStreamLegacy_compiler_options.cc
 )
 
 if(HIP_PLATFORM MATCHES "amd")
@@ -34,7 +36,17 @@ else()
   # COMPILE_FLAGS -std=c++17)
 endif()
 
+if(HIP_PLATFORM MATCHES "amd")
+        set_source_files_properties(hipStreamLegacy_compiler_options.cc PROPERTIES COMPILE_OPTIONS "-fgpu-default-stream=per-thread")
+endif()
+if(HIP_PLATFORM MATCHES "nvidia")
+        set_source_files_properties(hipStreamLegacy_compiler_options.cc PROPERTIES COMPILE_OPTIONS "--default-stream=per-thread")
+endif()
+
 hip_add_exe_to_target(
   NAME StreamTest
   TEST_SRC ${TEST_SRC} TEST_TARGET_NAME build_tests
   COMPILE_OPTIONS -std=c++17 COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
+
+add_executable(hipStreamLegacy_exe EXCLUDE_FROM_ALL hipStreamLegacy_exe.cc)
+add_dependencies(build_tests hipStreamLegacy_exe)

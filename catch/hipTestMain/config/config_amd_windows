@@ -1255,8 +1255,6 @@
         "=== SWDEV-454245, SWDEV-454247 : Below tests fail on 29/03/24 ===",
         "Unit_hipStreamBeginCaptureToGraph_IndepGraphsThreads",
         "Unit_hipStreamBeginCaptureToGraph_CaptureDepGraph",
-        "=== SWDEV-465071 Below test is temporarily disabled due to compiler change ===",
-        "Unit_hipClassKernel_Virtual",
         "=== SWDEV-486448 - Following tests disabled due to taking too much time to execute, ~700s per test",
         "Unit_Coalesced_Group_Tiled_Partition_Getters_Positive_Basic",
         "Unit_Coalesced_Group_Tiled_Partition_Shfl_Up_Positive_Basic - int",

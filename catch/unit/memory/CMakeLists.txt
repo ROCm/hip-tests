@@ -54,6 +54,7 @@ set(TEST_SRC
     hipMemcpyAtoHAsync.cc
     hipMemcpyAtoH_old.cc
     hipMemcpyHtoA.cc
+    hipMemcpyHtoAAsync.cc
     hipMemcpyAtoA.cc
     hipMemcpyHtoA_old.cc
     hipMemcpyAllApiNegative.cc

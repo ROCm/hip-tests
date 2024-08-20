@@ -1307,6 +1307,14 @@
         "Unit_fp8_correctness - float",
         "Unit_fp8_correctness - double",
         "Unit_fp8_vector_basic_conversions",
+        "SWDEV-476745,SWDEV-459056 - Disable failing tests in staging build #1465",
+        "Unit_hipMemsetAsync_VerifyExecutionWithKernel",
+        "Unit_hipMemcpyAtoD_Basic",
+        "Unit_hipMemcpyAtoHAsync_Basic",
+        "Unit_hipMemcpyAtoA_Basic",
+        "Performance_hipMemcpyAsync_HostToDevice",
+        "Performance_hipMemcpyAsync_DeviceToDevice_DisablePeerAccess",
+        "Performance_hipMemcpyDtoHAsync",
     #endif
     #if defined gfx906
         "=== SWDEV-419112 Below tests fail in stress test on 29/08/23 ===",

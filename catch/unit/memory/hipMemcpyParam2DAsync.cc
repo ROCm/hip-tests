@@ -107,6 +107,7 @@ TEST_CASE("Unit_hipMemcpyParam2DAsync_Positive_Parameters") {
 }
 
 TEST_CASE("Unit_hipMemcpyParam2DAsync_Positive_Array") {
+  CHECK_IMAGE_SUPPORT
   constexpr bool async = true;
   SECTION("Array from/to Host") {
     MemcpyParam2DArrayHostShell<async>(MemcpyParam2DAdapter<async>());

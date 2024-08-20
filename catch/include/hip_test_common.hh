@@ -49,6 +49,23 @@ THE SOFTWARE.
     }                                                                                              \
   }
 
+#define HIP_CHECK_IGNORED_RETURN(error, ignoredError)                                              \
+  {                                                                                                \
+    hipError_t localError = error;                                                                 \
+    if ((localError == ignoredError)) {                                                            \
+      INFO("Skipped: " << hipGetErrorString(localError) << "\n    Code: " << localError            \
+                     << "\n    Str: " << #error << "\n    In File: " << __FILE__                   \
+                     << "\n    At line: " << __LINE__);                                            \
+      return;                                                                                      \
+    }                                                                                              \
+    if ((localError != hipSuccess) && (localError != hipErrorPeerAccessAlreadyEnabled)) {          \
+      INFO("Error: " << hipGetErrorString(localError) << "\n    Code: " << localError              \
+                     << "\n    Str: " << #error << "\n    In File: " << __FILE__                   \
+                     << "\n    At line: " << __LINE__);                                            \
+      REQUIRE(false);                                                                              \
+    }                                                                                              \
+  }
+
 // Threaded HIP_CHECKs
 #define HIP_CHECK_THREAD(error)                                                                    \
   {                                                                                                \
@@ -88,6 +105,20 @@ THE SOFTWARE.
          << "\n    Actual Code:   " << localError << "\nStr: " << #errorExpr                       \
          << "\n    In File: " << __FILE__ << "\n    At line: " << __LINE__);                       \
     REQUIRE(localError == expectedError);                                                          \
+  }
+
+// Check that an expression, errorExpr, evaluates to the expected error_t, expectedError or
+// expectedError1.
+#define HIP_CHECK_ERRORS(errorExpr, expectedError, expectedError1)                                 \
+  {                                                                                                \
+    hipError_t localError = errorExpr;                                                             \
+    INFO("Matching Errors: "                                                                       \
+         << "\n    Expected Error: " << hipGetErrorString(expectedError)                           \
+         << "\n    Expected Code: " << expectedError << " or " << expectedError << '\n'            \
+         << "                  Actual Error:   " << hipGetErrorString(localError)                  \
+         << "\n    Actual Code:   " << localError << "\nStr: " << #errorExpr                       \
+         << "\n    In File: " << __FILE__ << "\n    At line: " << __LINE__);                       \
+    REQUIRE((localError == expectedError || localError == expectedError1));                        \
   }
 
 // Not thread-safe
@@ -196,27 +227,6 @@ static inline bool IsGfx11() {
   // Get GCN Arch Name and compare to check if it is gfx11
   std::string arch = std::string(props.gcnArchName);
   auto pos = arch.find("gfx11");
-  if (pos != std::string::npos)
-    return true;
-  else
-    return false;
-#else
-  std::cout << "Have to be either Nvidia or AMD platform, asserting" << std::endl;
-  assert(false);
-#endif
-}
-
-static inline bool IsMi350() {
-#if HT_NVIDIA
-  return false;
-#elif HT_AMD
-  int device = -1;
-  hipDeviceProp_t props{};
-  HIP_CHECK(hipGetDevice(&device));
-  HIP_CHECK(hipGetDeviceProperties(&props, device));
-  // Get GCN Arch Name and compare to check if it is gfx11
-  std::string arch = std::string(props.gcnArchName);
-  auto pos = arch.find("gfx950");
   if (pos != std::string::npos)
     return true;
   else

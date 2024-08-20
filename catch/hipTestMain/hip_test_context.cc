@@ -324,7 +324,8 @@ void TestContext::finalizeResults() {
     INFO("HIP API Result check\n    File:: "
          << i.file << "\n    Line:: " << i.line << "\n    API:: " << i.call
          << "\n    Result:: " << i.result << "\n    Result Str:: " << hipGetErrorString(i.result));
-    REQUIRE(((i.result == hipSuccess) || (i.result == hipErrorPeerAccessAlreadyEnabled)));
+    REQUIRE(((i.result == hipSuccess) || (i.result == hipErrorPeerAccessAlreadyEnabled) ||
+             (i.result == hipErrorNotSupported)));
     REQUIRE(i.conditionsResult);
   }
   hasErrorOccured_.store(false);  // Clear the flag

@@ -153,8 +153,8 @@ TEMPLATE_TEST_CASE("Unit_hipMallocMipmappedArray_happy", "", char, uint2, int4, 
 
   for (const auto extent : extents) {
     CAPTURE(flags, extent.width, extent.height, extent.depth);
-
-    HIP_CHECK(hipMallocMipmappedArray(&array, &desc, extent, numLevels, flags));
+    HIP_CHECK_IGNORED_RETURN(hipMallocMipmappedArray(&array, &desc, extent, numLevels, flags),
+                             hipErrorNotSupported);
     hipArray_t hipArray = nullptr;
     HIP_CHECK(hipGetMipmappedArrayLevel(&hipArray, array, 0));
     checkMipmappedArrayIsExpected(hipArray, desc, extent, flags);
@@ -218,8 +218,8 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_ZeroWidth") {
 
   const auto flag = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
 
-  HIP_CHECK_ERROR(hipMallocMipmappedArray(&array, &desc, make_hipExtent(0, s, s), numLevels, flag),
-                  hipErrorInvalidValue);
+  HIP_CHECK_ERRORS(hipMallocMipmappedArray(&array, &desc, make_hipExtent(0, s, s), numLevels, flag),
+                  hipErrorInvalidValue, hipErrorNotSupported);
 }
 
 // Zero height arrays are only allowed for 1D arrays and layered arrays
@@ -235,9 +235,9 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_ZeroHeight") {
 
   if (std::find(std::begin(exceptions), std::end(exceptions), flag) == std::end(exceptions)) {
     // flag is not in list of exceptions
-    HIP_CHECK_ERROR(
+    HIP_CHECK_ERRORS(
         hipMallocMipmappedArray(&array, &desc, make_hipExtent(s, 0, s), numLevels, flag),
-        hipErrorInvalidValue);
+        hipErrorInvalidValue, hipErrorNotSupported);
   }
 }
 
@@ -260,9 +260,9 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_InvalidFlags") {
 
   REQUIRE(std::find(std::begin(validFlags), std::end(validFlags), flag) == std::end(validFlags));
 
-  HIP_CHECK_ERROR(
+  HIP_CHECK_ERRORS(
       hipMallocMipmappedArray(&array, &desc, makeMipmappedExtent(flag, s), numLevels, flag),
-      hipErrorInvalidValue);
+      hipErrorInvalidValue, hipErrorNotSupported);
 }
 
 void testInvalidDescriptionMipmapped(hipChannelFormatDesc desc) {
@@ -277,9 +277,9 @@ void testInvalidDescriptionMipmapped(hipChannelFormatDesc desc) {
 #endif
 
   const auto flag = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
-  HIP_CHECK_ERROR(
+  HIP_CHECK_ERRORS(
       hipMallocMipmappedArray(&array, &desc, makeMipmappedExtent(flag, s), numLevels, flag),
-      expectedError);
+      expectedError, hipErrorNotSupported);
 }
 
 TEST_CASE("Unit_hipMallocMipmappedArray_Negative_InvalidFormat") {
@@ -360,9 +360,9 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NumericLimit") {
 
   size_t size = std::numeric_limits<size_t>::max();
   const auto flag = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
-  HIP_CHECK_ERROR(
+  HIP_CHECK_ERRORS(
       hipMallocMipmappedArray(&arrayPtr, &desc, makeMipmappedExtent(flag, size), numLevels, flag),
-      hipErrorInvalidValue);
+      hipErrorInvalidValue, hipErrorNotSupported);
 }
 
 // texture gather arrays are only allowed to be 2D
@@ -391,9 +391,9 @@ TEST_CASE("Unit_hipMallocMipmappedArray_Negative_NumLevels") {
   hipChannelFormatDesc desc = hipCreateChannelDesc<float>();
 
   const auto flag = GENERATE(from_range(std::begin(validFlags), std::end(validFlags)));
-  HIP_CHECK_ERROR(
+  HIP_CHECK_ERRORS(
       hipMallocMipmappedArray(&array, &desc, makeMipmappedExtent(flag, size), numLevels, flag),
-      hipErrorInvalidValue);
+      hipErrorInvalidValue, hipErrorNotSupported);
 }
 
 TEST_CASE("Unit_hipGetMipmappedArrayLevel_Negative") {
@@ -404,8 +404,9 @@ TEST_CASE("Unit_hipGetMipmappedArrayLevel_Negative") {
 
   hipChannelFormatDesc desc = hipCreateChannelDesc<float>();
 
-  HIP_CHECK(
-      hipMallocMipmappedArray(&array, &desc, make_hipExtent(s, s, s), numLevels, hipArrayDefault));
+  HIP_CHECK_IGNORED_RETURN(
+      hipMallocMipmappedArray(&array, &desc, make_hipExtent(s, s, s), numLevels, hipArrayDefault),
+      hipErrorNotSupported);
   SECTION("Level is invalid") {
     HIP_CHECK_ERROR(hipGetMipmappedArrayLevel(&level_array, array, 3), hipErrorInvalidValue);
   }

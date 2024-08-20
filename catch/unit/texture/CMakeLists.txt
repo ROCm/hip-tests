@@ -44,13 +44,6 @@ set(TEST_SRC
     hipTextureObj2DCheckSRGBModes.cc
     hipTexObjectTests.cc
     hipTextureObjectTests.cc
-    hipBindTextureToMipmappedArray.cc
-    hipMallocMipmappedArray.cc
-    hipFreeMipmappedArray.cc
-    hipGetMipmappedArrayLevel.cc
-    hipMipmappedArrayCreate.cc
-    hipMipmappedArrayDestroy.cc
-    hipMipmappedArrayGetLevel.cc
 )
 
 # tests not for gfx90a+
@@ -114,9 +107,17 @@ else()
   set(TEST_SRC ${TEST_SRC} ${NOT_FOR_gfx90a_AND_ABOVE_TEST})
 endif()
 
+# Mipmap APIs are not supported on Linux
 if(WIN32)
 set(TEST_SRC
     ${TEST_SRC}
+    hipBindTextureToMipmappedArray.cc
+    hipMallocMipmappedArray.cc
+    hipFreeMipmappedArray.cc
+    hipGetMipmappedArrayLevel.cc
+    hipMipmappedArrayCreate.cc
+    hipMipmappedArrayDestroy.cc
+    hipMipmappedArrayGetLevel.cc
     hipTextureMipmapObj1D.cc
     hipTextureMipmapObj2D.cc
     hipTextureMipmapObj3D.cc

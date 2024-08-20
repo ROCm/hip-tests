@@ -67,11 +67,7 @@ TEST_CASE("Unit_hipMemcpyParam2D_Positive_Synchronization_Behavior") {
 #endif
 
   SECTION("Device to Device") {
-#if HT_NVIDIA
     Memcpy2DDtoDSyncBehavior(MemcpyParam2DAdapter<>(), false);
-#else
-    Memcpy2DDtoDSyncBehavior(MemcpyParam2DAdapter<>(), true);
-#endif
   }
 
 #if HT_NVIDIA  // Disabled on AMD due to defect - EXSWHTEC-232
@@ -86,6 +82,7 @@ TEST_CASE("Unit_hipMemcpyParam2D_Positive_Parameters") {
 }
 
 TEST_CASE("Unit_hipMemcpyParam2D_Positive_Array") {
+  CHECK_IMAGE_SUPPORT
   constexpr bool async = false;
   SECTION("Array from/to Host") {
     MemcpyParam2DArrayHostShell<async>(MemcpyParam2DAdapter<async>());

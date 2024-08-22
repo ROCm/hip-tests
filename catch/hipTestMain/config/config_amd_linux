@@ -1492,6 +1492,10 @@
         "Unit_hipExtModuleLaunchKernel_Functional",
         "Unit_hipExtLaunchKernelGGL_Functional",
     #endif
+    #if defined gfx1200 || defined gfx1201
+        "=== SWDEV-470751 : Fine Grain memory is MTYPE_NC due to HW bug.",
+        "Unit_hipEventCreateWithFlags_DisableSystemFence_CohHstMem",
+    #endif
         "End of json"
     ]
 }

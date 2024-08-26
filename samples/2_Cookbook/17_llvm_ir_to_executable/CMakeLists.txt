@@ -40,10 +40,6 @@ set(SQ_IR_EXE ${CMAKE_CURRENT_BINARY_DIR}/square_ir.out)
 
 set(MCIN_OBJ_GEN ${CMAKE_CURRENT_SOURCE_DIR}/hip_obj_gen.mcin)
 
-if(NOT DEFINED GPU_ARCH)
-  set(GPU_ARCH  gfx900 gfx906 gfx908 gfx90a gfx940 gfx941 gfx942 gfx1010 gfx1030 gfx1100 gfx1101 gfx1102 gfx1103 gfx1200 gfx1201)
-endif()
-
 # Append Current device arch from rocm_agent_enumerator
 # if rocm_agent_enumerator is not found, support --offload-arch
 # to pass arch use format like -DOFFLOAD_ARCH_STR="--offload-arch=gfx1032  --offload-arch=gfx1031"
@@ -64,7 +60,6 @@ if(NOT DEFINED OFFLOAD_ARCH_STR
     if (NOT HIP_GPU_ARCH STREQUAL "")
           string(REGEX REPLACE "\n" ";" HIP_GPU_ARCH_LIST "${HIP_GPU_ARCH}")
           list(REMOVE_DUPLICATES  HIP_GPU_ARCH_LIST)
-          list(LENGTH HIP_GPU_ARCH_LIST HIP_GPU_ARCH_LEN)
           foreach(_hip_gpu_arch ${HIP_GPU_ARCH_LIST})
               list(APPEND GPU_ARCH ${_hip_gpu_arch})
           endforeach()

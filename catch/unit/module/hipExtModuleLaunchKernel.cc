@@ -346,7 +346,12 @@ void ModuleLaunchKernel::AllocateMemory() {
   HIP_CHECK(hipMemcpy(Ad, A, SIZE*sizeof(int), hipMemcpyHostToDevice));
   HIP_CHECK(hipMemcpy(Bd, B, SIZE*sizeof(int), hipMemcpyHostToDevice));
   int clkRate = 0;
+  #if HT_AMD
+  HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeWallClockRate, 0));
+  #endif
+  #if HT_NVIDIA
   HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
+  #endif
   args1._Ad = Ad;
   args1._Bd = Bd;
   args1._Cd = C;

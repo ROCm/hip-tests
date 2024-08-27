@@ -48,34 +48,32 @@ extern "C" __global__ void KernelandExtraParams(int* A, int* B, int* C,
   D[ROW * N + COL] = tmpSum;
 }
 
+__device__ void Delay(uint32_t interval, const uint32_t ticks_per_ms) {
+  while (interval--) {
+    #if HT_AMD
+    uint64_t start = wall_clock64();
+    while (wall_clock64() - start < ticks_per_ms) {
+      __builtin_amdgcn_s_sleep(10);
+    }
+    #endif
+    #if HT_NVIDIA
+    uint64_t start = clock64();
+    while (clock64() - start < ticks_per_ms) {
+    }
+    #endif
+  }
+}
+
 extern "C" __global__ void SixteenSecKernel(int clockrate) {
-  uint64_t wait_t = 16000,
-  start = clock64()/clockrate, cur;
-  do { cur = clock64()/clockrate-start;}while (cur < wait_t);
+  Delay(16000, clockrate);
 }
 
 extern "C" __global__ void TwoSecKernel(int clockrate) {
-  if (deviceGlobal == 0x2222) {
-    deviceGlobal = 0x3333;
-  }
-  uint64_t wait_t = 2000,
-  start = clock64()/clockrate, cur;
-  do { cur = clock64()/clockrate-start;}while (cur < wait_t);
-  if (deviceGlobal != 0x3333) {
-    deviceGlobal = 0x5555;
-  }
+  Delay(2000, clockrate);
 }
 
 extern "C" __global__ void FourSecKernel(int clockrate) {
-  if (deviceGlobal == 1) {
-    deviceGlobal = 0x2222;
-  }
-  uint64_t wait_t = 4000,
-  start = clock64()/clockrate, cur;
-  do { cur = clock64()/clockrate-start;}while (cur < wait_t);
-  if (deviceGlobal == 0x2222) {
-    deviceGlobal = 0x4444;
-  }
+  Delay(4000, clockrate);
 }
 
 extern "C" __global__ void dummyKernel() {

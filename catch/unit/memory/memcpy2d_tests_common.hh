@@ -47,6 +47,7 @@ void Memcpy2DDeviceToHostShell(F memcpy_func, const hipStream_t kernel_stream = 
   Iota<<<blocks, threads_per_block>>>(device_alloc.ptr(), device_alloc.pitch(),
                                       device_alloc.width_logical(), device_alloc.height(), 1);
   HIP_CHECK(hipGetLastError());
+  HIP_CHECK(hipDeviceSynchronize());
 
   HIP_CHECK(memcpy_func(host_alloc.ptr(), host_pitch, device_alloc.ptr(), device_alloc.pitch(),
                         device_alloc.width(), device_alloc.height(), kind));
@@ -104,6 +105,7 @@ void Memcpy2DDeviceToDeviceShell(F memcpy_func, const hipStream_t kernel_stream 
   Iota<<<blocks, threads_per_block>>>(src_alloc.ptr(), src_alloc.pitch(), dst_alloc.width_logical(),
                                       dst_alloc.height(), 1);
   HIP_CHECK(hipGetLastError());
+  HIP_CHECK(hipDeviceSynchronize());
 
   HIP_CHECK(memcpy_func(dst_alloc.ptr(), dst_alloc.pitch(), src_alloc.ptr(), src_alloc.pitch(),
                         dst_alloc.width(), dst_alloc.height(), kind));
@@ -511,6 +513,7 @@ void MemcpyParam2DArrayDeviceShell(F memcpy_func, const hipStream_t kernel_strea
                                       src_device.width_logical(), src_device.height(),
                                       src_device.depth());
   HIP_CHECK(hipGetLastError());
+  HIP_CHECK(hipDeviceSynchronize());
 
   // Device -> Array
   HIP_CHECK(memcpy_func(src_array.ptr(), 0, src_device.ptr(), src_device.pitch(), extent.width,

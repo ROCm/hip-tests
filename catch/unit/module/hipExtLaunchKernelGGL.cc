@@ -46,38 +46,26 @@ THE SOFTWARE.
 */
 
 __device__ int globalvar = 1;
-__global__ void TwoSecKernel(int clockrate) {
-  if (globalvar == 0x2222) {
-    globalvar = 0x3333;
-  }
-  uint64_t wait_t = 2000,
-  start = clock64()/clockrate, cur;
-  do { cur = (clock64()/clockrate)-start;}while (cur < wait_t);
-  if (globalvar != 0x3333) {
-    globalvar = 0x5555;
+__device__ void Delay(uint32_t interval, const uint32_t ticks_per_ms) {
+  while (interval--) {
+    #if HT_AMD
+    uint64_t start = wall_clock64();
+    while (wall_clock64() - start < ticks_per_ms) {
+      __builtin_amdgcn_s_sleep(10);
+    }
+    #endif
+    #if HT_NVIDIA
+    uint64_t start = clock64();
+    while (clock64() - start < ticks_per_ms) {
+    }
+    #endif
   }
 }
-__global__ void FourSecKernel_Navi3xGpu(int clockrate) {
-  if (globalvar == 1) {
-    globalvar = 0x2222;
-  }
-  uint64_t wait_t = 4000,
-  start = wall_clock64()/clockrate, cur;
-  do { cur = (wall_clock64()/clockrate)-start;}while (cur < wait_t);
-  if (globalvar == 0x2222) {
-    globalvar = 0x4444;
-  }
+__global__ void TwoSecKernel(int clockrate) {
+  Delay(2000, clockrate);
 }
 __global__ void FourSecKernel(int clockrate) {
-  if (globalvar == 1) {
-    globalvar = 0x2222;
-  }
-  uint64_t wait_t = 4000,
-  start = clock64()/clockrate, cur;
-  do { cur = (clock64()/clockrate)-start;}while (cur < wait_t);
-  if (globalvar == 0x2222) {
-    globalvar = 0x4444;
-  }
+  Delay(4000, clockrate);
 }
 
 bool DisableTimeFlag() {
@@ -88,7 +76,12 @@ bool DisableTimeFlag() {
   float time_2sec;
   hipEvent_t  start_event1, end_event1;
   int clkRate = 0;
+  #if HT_AMD
+  HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeWallClockRate, 0));
+  #endif
+  #if HT_NVIDIA
   HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
+  #endif
   HIP_CHECK(hipEventCreateWithFlags(&start_event1,
                                    hipEventDisableTiming));
   HIP_CHECK(hipEventCreateWithFlags(&end_event1,
@@ -115,7 +108,12 @@ bool ConcurencyCheck_GlobalVar(int conc_flag) {
   int deviceGlobal_h = 0;
   HIP_CHECK(hipSetDevice(0));
   int clkRate = 0;
+  #if HT_AMD
+  HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeWallClockRate, 0));
+  #endif
+  #if HT_NVIDIA
   HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
+  #endif
   HIP_CHECK(hipStreamCreate(&stream1));
   hipDeviceProp_t props{};
   int device;
@@ -123,7 +121,7 @@ bool ConcurencyCheck_GlobalVar(int conc_flag) {
   HIP_CHECK(hipGetDeviceProperties(&props, device));
   if ((std::string(props.gcnArchName).find("gfx1101") != std::string::npos) ||
       (std::string(props.gcnArchName).find("gfx1100") != std::string::npos)) {
-    hipExtLaunchKernelGGL((FourSecKernel_Navi3xGpu), dim3(1), dim3(1), 0,
+    hipExtLaunchKernelGGL((FourSecKernel), dim3(1), dim3(1), 0,
                          stream1, nullptr, nullptr, conc_flag, clkRate);
   } else {
     hipExtLaunchKernelGGL((TwoSecKernel), dim3(1), dim3(1), 0,
@@ -153,7 +151,12 @@ bool KernelTimeExecution() {
   hipEvent_t  start_event1, end_event1, start_event2, end_event2;
   float time_4sec, time_2sec;
   int clkRate = 0;
+  #if HT_AMD
+  HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeWallClockRate, 0));
+  #endif
+  #if HT_NVIDIA
   HIP_CHECK(hipDeviceGetAttribute(&clkRate, hipDeviceAttributeClockRate, 0));
+  #endif
 
   HIP_CHECK(hipEventCreate(&start_event1));
   HIP_CHECK(hipEventCreate(&end_event1));
@@ -164,14 +167,8 @@ bool KernelTimeExecution() {
   int device;
   HIP_CHECK(hipGetDevice(&device));
   HIP_CHECK(hipGetDeviceProperties(&props, device));
-  if ((std::string(props.gcnArchName).find("gfx1101") != std::string::npos) ||
-      (std::string(props.gcnArchName).find("gfx1100") != std::string::npos)) {
-    hipExtLaunchKernelGGL((FourSecKernel_Navi3xGpu), dim3(1), dim3(1), 0,
+  hipExtLaunchKernelGGL((FourSecKernel), dim3(1), dim3(1), 0,
                          stream1, start_event1, end_event1, 0, clkRate);
-  } else {
-    hipExtLaunchKernelGGL((FourSecKernel), dim3(1), dim3(1), 0,
-                         stream1, start_event1, end_event1, 0, clkRate);
-  }
   hipExtLaunchKernelGGL((TwoSecKernel), dim3(1), dim3(1), 0,
                           stream1, start_event2, end_event2, 0, clkRate);
   HIP_CHECK(hipStreamSynchronize(stream1));

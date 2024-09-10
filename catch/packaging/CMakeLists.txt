@@ -30,7 +30,6 @@ include(GNUInstallDirs)
 #############################
 # Packaging steps
 #############################
-set(CPACK_SET_DESTDIR TRUE)
 if(NOT DEFINED CPACK_INSTALL_PREFIX)
   set(CPACK_INSTALL_PREFIX "/opt/rocm/")
 endif()

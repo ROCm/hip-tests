@@ -3781,36 +3781,39 @@ TEST_CASE("Unit_hipGetProcAddress_MemoryApisMemcpy2DRelated") {
 
       if (deviceCount > 1) {
         HIP_CHECK(hipSetDevice(0));
-
-        char *sDevMem = nullptr;
-        size_t sPitch;
-        HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&sDevMem),
+        int can_access_peer = 0;
+        HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, 0, 1));
+        if (can_access_peer) {
+          char *sDevMem = nullptr;
+          size_t sPitch;
+          HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&sDevMem),
                                  &sPitch, width, height));
-        REQUIRE(sDevMem != nullptr);
-        HIP_CHECK(hipMemset2D(sDevMem, sPitch, value, width, height));
+          REQUIRE(sDevMem != nullptr);
+          HIP_CHECK(hipMemset2D(sDevMem, sPitch, value, width, height));
 
-        HIP_CHECK(hipSetDevice(1));
+          HIP_CHECK(hipSetDevice(1));
 
-        char *dDevMem = nullptr;
-        size_t dPitch;
-        HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&dDevMem),
+          char *dDevMem = nullptr;
+          size_t dPitch;
+          HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&dDevMem),
                                  &dPitch, width, height));
-        REQUIRE(dDevMem != nullptr);
-        hip_Memcpy2D desc = {};
-        desc.srcMemoryType = hipMemoryTypeDevice;
-        desc.srcDevice = hipDeviceptr_t(sDevMem);
-        desc.srcPitch = sPitch;
-        desc.dstMemoryType = hipMemoryTypeDevice;
-        desc.dstDevice = hipDeviceptr_t(dDevMem);
-        desc.dstPitch = dPitch;
-        desc.WidthInBytes = width*sizeof(char);
-        desc.Height = height;
-        HIP_CHECK(dyn_hipMemcpyParam2D_ptr(&desc));
+          REQUIRE(dDevMem != nullptr);
+          hip_Memcpy2D desc = {};
+          desc.srcMemoryType = hipMemoryTypeDevice;
+          desc.srcDevice = hipDeviceptr_t(sDevMem);
+          desc.srcPitch = sPitch;
+          desc.dstMemoryType = hipMemoryTypeDevice;
+          desc.dstDevice = hipDeviceptr_t(dDevMem);
+          desc.dstPitch = dPitch;
+          desc.WidthInBytes = width*sizeof(char);
+          desc.Height = height;
+          HIP_CHECK(dyn_hipMemcpyParam2D_ptr(&desc));
 
-        REQUIRE(validateCharDeviceArray(dDevMem, N, value) == true);
+          REQUIRE(validateCharDeviceArray(dDevMem, N, value) == true);
 
-        HIP_CHECK(hipFree(sDevMem));
-        HIP_CHECK(hipFree(dDevMem));
+          HIP_CHECK(hipFree(sDevMem));
+          HIP_CHECK(hipFree(dDevMem));
+        }
       }
     }
   }
@@ -3974,39 +3977,42 @@ TEST_CASE("Unit_hipGetProcAddress_MemoryApisMemcpy2DRelated") {
 
       if (deviceCount > 1) {
         HIP_CHECK(hipSetDevice(0));
-
-        char *sDevMem = nullptr;
-        size_t sPitch;
-        HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&sDevMem),
+        int can_access_peer = 0;
+        HIP_CHECK(hipDeviceCanAccessPeer(&can_access_peer, 0, 1));
+        if (can_access_peer) {
+          char *sDevMem = nullptr;
+          size_t sPitch;
+          HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&sDevMem),
                                  &sPitch, width, height));
-        REQUIRE(sDevMem != nullptr);
-        HIP_CHECK(hipMemset2D(sDevMem, sPitch, value, width, height));
+          REQUIRE(sDevMem != nullptr);
+          HIP_CHECK(hipMemset2D(sDevMem, sPitch, value, width, height));
 
-        HIP_CHECK(hipSetDevice(1));
+          HIP_CHECK(hipSetDevice(1));
 
-        char *dDevMem = nullptr;
-        size_t dPitch;
-        HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&dDevMem),
+          char *dDevMem = nullptr;
+          size_t dPitch;
+          HIP_CHECK(hipMallocPitch(reinterpret_cast<void**>(&dDevMem),
                                  &dPitch, width, height));
-        REQUIRE(dDevMem != nullptr);
-        hip_Memcpy2D desc = {};
-        desc.srcMemoryType = hipMemoryTypeDevice;
-        desc.srcDevice = hipDeviceptr_t(sDevMem);
-        desc.srcPitch = sPitch;
-        desc.dstMemoryType = hipMemoryTypeDevice;
-        desc.dstDevice = hipDeviceptr_t(dDevMem);
-        desc.dstPitch = dPitch;
-        desc.WidthInBytes = width*sizeof(char);
-        desc.Height = height;
-        HIP_CHECK(dyn_hipMemcpyParam2DAsync_ptr(&desc, stream));
+          REQUIRE(dDevMem != nullptr);
+          hip_Memcpy2D desc = {};
+          desc.srcMemoryType = hipMemoryTypeDevice;
+          desc.srcDevice = hipDeviceptr_t(sDevMem);
+          desc.srcPitch = sPitch;
+          desc.dstMemoryType = hipMemoryTypeDevice;
+          desc.dstDevice = hipDeviceptr_t(dDevMem);
+          desc.dstPitch = dPitch;
+          desc.WidthInBytes = width*sizeof(char);
+          desc.Height = height;
+          HIP_CHECK(dyn_hipMemcpyParam2DAsync_ptr(&desc, stream));
 
-        HIP_CHECK(hipStreamSynchronize(stream));
+          HIP_CHECK(hipStreamSynchronize(stream));
 
-        REQUIRE(validateCharDeviceArray(dDevMem, N, value) == true);
+          REQUIRE(validateCharDeviceArray(dDevMem, N, value) == true);
 
-        HIP_CHECK(hipStreamDestroy(stream));
-        HIP_CHECK(hipFree(sDevMem));
-        HIP_CHECK(hipFree(dDevMem));
+          HIP_CHECK(hipStreamDestroy(stream));
+          HIP_CHECK(hipFree(sDevMem));
+          HIP_CHECK(hipFree(dDevMem));
+        }
       }
     }
   }
@@ -6729,7 +6735,12 @@ TEST_CASE("Unit_hipGetProcAddress_MemoryApisPeerToPeer") {
 
   int canAccessPeer = 0;
   HIP_CHECK(hipDeviceCanAccessPeer(&canAccessPeer, deviceId, peerDeviceId));
-  REQUIRE(canAccessPeer == 1);
+  if (!canAccessPeer) {
+    std::string msg = "Skipped as peer access cannot be enabled between devices " +
+          std::to_string(deviceId) + " " + std::to_string(peerDeviceId);
+    HipTest::HIP_SKIP_TEST(msg.c_str());
+    return;
+  }
 
   const int N = 16;
   const int Nbytes = N * sizeof(int);

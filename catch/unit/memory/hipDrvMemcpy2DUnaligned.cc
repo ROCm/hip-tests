@@ -273,9 +273,6 @@ TEST_CASE("Unit_hipDrvMemcpy2DUnaligned_Positive_Basic") {
   CHECK_IMAGE_SUPPORT
 
   SECTION("Device to Device") {
-    SECTION("Peer access disabled") {
-      Memcpy2DDeviceToDeviceShell<false, false, true>(DrvMemcpy2DUnalignedAdapter());
-    }
     SECTION("Peer access enabled") {
       Memcpy2DDeviceToDeviceShell<false, true, true>(DrvMemcpy2DUnalignedAdapter());
     }

@@ -188,6 +188,8 @@ static void runTestShflDown_3() {
  */
 
 TEST_CASE("Unit_hipShflSync_Down") {
+  CHECK_WARP_MATCH_FUNCTIONS_SUPPORT
+
   SECTION("run test for short") {
     runTestShflDown_1<short>();
     runTestShflDown_2<short>();

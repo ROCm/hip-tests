@@ -161,6 +161,8 @@ static void runTestMatchAny_2() {
  */
 
 TEST_CASE("Unit_hipMatchSync_Any") {
+  CHECK_WARP_MATCH_FUNCTIONS_SUPPORT
+
   SECTION("run test for int") {
     runTestMatchAny_1<int>();
     runTestMatchAny_2<int>();

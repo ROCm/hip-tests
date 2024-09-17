@@ -171,6 +171,8 @@ static void runTestShflXor_3() {
  */
 
 TEST_CASE("Unit_hipShflSync_Xor") {
+  CHECK_WARP_MATCH_FUNCTIONS_SUPPORT
+
   SECTION("run test for short") {
     runTestShflXor_1<short>();
     runTestShflXor_2<short>();

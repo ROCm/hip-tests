@@ -133,6 +133,8 @@ static void runTestShfl_2() {
  */
 
 TEST_CASE("Unit_hipShflSync") {
+  CHECK_WARP_MATCH_FUNCTIONS_SUPPORT
+
   SECTION("run test for short") {
     runTestShfl_1<short>();
     runTestShfl_2<short>();

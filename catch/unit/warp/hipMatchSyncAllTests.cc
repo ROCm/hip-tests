@@ -238,6 +238,8 @@ static void runTestMatchAll_3() {
  */
 
 TEST_CASE("Unit_hipMatchSync_All") {
+  CHECK_WARP_MATCH_FUNCTIONS_SUPPORT
+
   SECTION("run test for int") {
     runTestMatchAll_1<int>();
     runTestMatchAll_2<int>();

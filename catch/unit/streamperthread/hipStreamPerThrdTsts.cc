@@ -253,6 +253,9 @@ static void EventSync() {
   } else {
     IfTestPassed = true;
   }
+
+  HIP_CHECK(hipEventDestroy(start));
+  HIP_CHECK(hipEventDestroy(end));
 }
 
 /* Launch a kernel in hipStreamPerThread, while it is in flight check for
@@ -478,6 +481,7 @@ TEST_CASE("Unit_hipStreamPerThread_StrmWaitEvt") {
   HIP_CHECK(hipEventDestroy(e1));
   HIP_CHECK(hipFree(Ad));
   HIP_CHECK(hipFree(Ad1));
+  HIP_CHECK(hipEventDestroy(e1));
   HIP_CHECK(hipStreamDestroy(Strm));
   delete[] Ah;
   delete Ah1;

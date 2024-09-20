@@ -488,12 +488,16 @@ bool validateStreamPrioritiesWithEvents() {
   OP(low, high)
   #undef OP
 
-  // free host & device memory
+  // free host & device memory & events
   #define OP(x) \
     free(src_h_##x); \
     free(dst_h_##x); \
     HIP_CHECK(hipFree(src_d_##x)); \
-    HIP_CHECK(hipFree(dst_d_##x));
+    HIP_CHECK(hipFree(dst_d_##x)); \
+    if (enable_priority_##x) { \
+      HIP_CHECK(hipEventDestroy(event_start_##x)); \
+      HIP_CHECK(hipEventDestroy(event_end_##x)); \
+    }
   OP(low)
   OP(normal)
   OP(high)

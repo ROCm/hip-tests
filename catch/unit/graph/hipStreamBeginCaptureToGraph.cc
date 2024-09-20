@@ -969,7 +969,6 @@ TEST_CASE("Unit_hipStreamBeginCaptureToGraph_StateTesting") {
   HIP_CHECK(hipStreamCreate(&stream2));
   HIP_CHECK(hipEventCreate(&e));
   hipStreamCaptureStatus captureStatus = hipStreamCaptureStatusNone;
-  HIP_CHECK(hipStreamCreate(&stream1));
   HIP_CHECK(hipGraphCreate(&graph, 0));
   HIP_CHECK(hipStreamIsCapturing(stream1, &captureStatus));
   REQUIRE(captureStatus == hipStreamCaptureStatusNone);

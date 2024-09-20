@@ -63,4 +63,6 @@ TEST_CASE("Unit_hipDrvMemcpy_Functional") {
   HIP_CHECK(hipFreeHost(Bh));
   delete[] A;
   delete[] B;
+
+  HIP_CHECK(hipStreamDestroy(stream));
 }

@@ -247,6 +247,7 @@ TEST_CASE("Unit_hipExtModuleLaunchKernel_Positive_Parameters") {
                                        start_event, nullptr));
     HIP_CHECK(hipDeviceSynchronize());
     HIP_CHECK(hipEventQuery(start_event));
+    HIP_CHECK(hipEventDestroy(start_event));
   }
 
   SECTION("Pass only stop event") {
@@ -257,6 +258,7 @@ TEST_CASE("Unit_hipExtModuleLaunchKernel_Positive_Parameters") {
                                        nullptr, stop_event));
     HIP_CHECK(hipDeviceSynchronize());
     HIP_CHECK(hipEventQuery(stop_event));
+    HIP_CHECK(hipEventDestroy(stop_event));
   }
 }
 

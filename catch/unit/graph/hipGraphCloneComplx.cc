@@ -1302,6 +1302,7 @@ static void hipGraphClone_Test_hipGraphEventRecordNodeSetEvent_and_Exec() {
                                 nullptr, nullptr, 0));
   HIP_CHECK(hipGraphLaunch(clonedGraphExec, cg.stream));
   HIP_CHECK(hipStreamSynchronize(cg.stream));
+  HIP_CHECK(hipGraphExecDestroy(clonedGraphExec));
 
   // Verify graph execution result
   HipTest::checkVectorADD(cg.B_h, cg.C_h, cg.A_h, N);
@@ -1517,6 +1518,9 @@ static void hipGraphClone_Test_hipGraphEventWaitNodeSetEvent_and_Exec() {
 
     HIP_CHECK(hipGraphEventRecordNodeSetEvent(event_rec_node, event_2));
     HIP_CHECK(hipGraphEventWaitNodeSetEvent(event_wait_node, event_2));
+
+    // Destroy clonedGraphExec before instantating a new one
+    HIP_CHECK(hipGraphExecDestroy(clonedGraphExec));
 
     // Instantiate and launch the graph
     HIP_CHECK(hipGraphInstantiate(&clonedGraphExec, clonedGraph,
@@ -2126,4 +2130,3 @@ TEST_CASE("Unit_hipGraphChild_hipUserObject_hipGraphUserObject") {
   HIP_CHECK(hipGraphDestroy(graph));
   HIP_CHECK(hipStreamDestroy(stream));
 }
-

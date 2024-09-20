@@ -284,6 +284,7 @@ static void hipGraphDebugDotPrint_Functional(const char* fName,
   free(mem_h);
   HIP_CHECK(hipFree(mem_d));
   HipTest::freeArrays(A_d, B_d, C_d, A_h, B_h, C_h, false);
+  HIP_CHECK(hipEventDestroy(event));
   HIP_CHECK(hipGraphExecDestroy(graphExec));
   HIP_CHECK(hipGraphDestroy(graph));
   HIP_CHECK(hipGraphDestroy(childGraph));

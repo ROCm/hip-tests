@@ -490,8 +490,11 @@ void SingleDeviceSingleKernelTest(const unsigned int width, const unsigned int p
     for (const auto alloc_type :
          {LA::hipMalloc, LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister}) {
       params.alloc_type = alloc_type;
-      DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
-        TestCore<TestType, operation, false, memory_scope>(params);
+
+      if (params.alloc_type != LA::hipMallocManaged || deviceSupportsManagedMemory(0)) {
+        DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
+          TestCore<TestType, operation, false, memory_scope>(params);
+        }
       }
     }
   }
@@ -526,8 +529,11 @@ void SingleDeviceMultipleKernelTest(const unsigned int kernel_count, const unsig
   for (const auto alloc_type :
        {LA::hipMalloc, LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister}) {
     params.alloc_type = alloc_type;
-    DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
-      TestCore<TestType, operation, false>(params);
+
+    if (params.alloc_type != LA::hipMallocManaged || deviceSupportsManagedMemory(0)) {
+      DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
+        TestCore<TestType, operation, false>(params);
+      }
     }
   }
 }
@@ -570,8 +576,11 @@ void MultipleDeviceMultipleKernelAndHostTest(const unsigned int num_devices,
   using LA = LinearAllocs;
   for (const auto alloc_type : {LA::hipHostMalloc, LA::hipMallocManaged, LA::mallocAndRegister}) {
     params.alloc_type = alloc_type;
-    DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
-      TestCore<TestType, operation, false, __HIP_MEMORY_SCOPE_SYSTEM>(params);
+
+    if (params.alloc_type != LA::hipMallocManaged || deviceSupportsConcurrentManagedMemory(0)) {
+      DYNAMIC_SECTION("Allocation type: " << to_string(alloc_type)) {
+        TestCore<TestType, operation, false, __HIP_MEMORY_SCOPE_SYSTEM>(params);
+      }
     }
   }
 }

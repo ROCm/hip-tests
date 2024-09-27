@@ -177,6 +177,10 @@ void thread_run(const int iThread) {
   HIP_CHECK(hipFree(gpuMatrix));
   HIP_CHECK(hipFree(gpuTransposeMatrix));
 
+  // free the event objects
+  HIP_CHECK(hipEventDestroy(start));
+  HIP_CHECK(hipEventDestroy(stop));
+
   // free the resources on host side
   free(matrix);
   free(transposeMatrix);

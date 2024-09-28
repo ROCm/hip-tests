@@ -525,6 +525,7 @@ static bool NoGpuTst_hipHostRegister() {
   } else {
     WARN("Error Code Returned by hipHostRegister: " <<hipGetErrorName(err));
   }
+  free(hostPtr);
   return passed;
 }
 

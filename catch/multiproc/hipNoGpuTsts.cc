@@ -542,6 +542,8 @@ static bool NoGpuTst_hipMemcpy() {
   } else {
     WARN("Error Code Returned by hipMemcpy: " <<hipGetErrorName(err));
   }
+  free(dst);
+  free(src);
   return passed;
 }
 

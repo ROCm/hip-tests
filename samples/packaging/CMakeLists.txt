@@ -65,7 +65,8 @@ endif()
 
 if(NOT WIN32)
 install(DIRECTORY ${SAMPLES_SRC}
-        DESTINATION ${CMAKE_INSTALL_DATADIR}/hip)
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/hip
+        USE_SOURCE_PERMISSIONS)
 
 set(CPACK_GENERATOR "TGZ;DEB;RPM" CACHE STRING "Linux package types for hip samples")
 set(CPACK_BINARY_DEB "ON")

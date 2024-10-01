@@ -484,3 +484,26 @@ class BlockingContext {
     INFO("Texture is not support on the device. Skipped.");                                        \
     return;                                                                                        \
   }
+
+// Call GENERATE_CAPTURE macro at the start of the test, before using BEGIN/END_CAPTURE.
+// Use BEGIN/END_CAPTURE macros to execute APIs in both stream capturing and non-capturing modes.
+// Place BEGIN_CAPTURE before the API call and END_CAPTURE after the call.
+#define GENERATE_CAPTURE() bool capture = GENERATE(true, false);
+
+#define BEGIN_CAPTURE(stream)                                                                      \
+  if (capture && stream != nullptr) {                                                              \
+    hipStreamCaptureMode flags = GENERATE(                                                         \
+        hipStreamCaptureModeGlobal, hipStreamCaptureModeThreadLocal, hipStreamCaptureModeRelaxed); \
+    HIP_CHECK(hipStreamBeginCapture(stream, flags));                                               \
+  }
+
+#define END_CAPTURE(stream)                                                                        \
+  if (capture && stream != nullptr) {                                                              \
+    hipGraph_t graph = nullptr;                                                                    \
+    hipGraphExec_t graph_exec = nullptr;                                                           \
+    HIP_CHECK(hipStreamEndCapture(stream, &graph));                                                \
+    HIP_CHECK(hipGraphInstantiate(&graph_exec, graph, nullptr, nullptr, 0));                       \
+    HIP_CHECK(hipGraphLaunch(graph_exec, stream));                                                 \
+    HIP_CHECK(hipGraphExecDestroy(graph_exec));                                                    \
+    HIP_CHECK(hipGraphDestroy(graph));                                                             \
+  }

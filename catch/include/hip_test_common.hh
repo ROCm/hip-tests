@@ -507,3 +507,45 @@ class BlockingContext {
     HIP_CHECK(hipGraphExecDestroy(graph_exec));                                                    \
     HIP_CHECK(hipGraphDestroy(graph));                                                             \
   }
+
+// These macros are used for testing behaviour when sync APIs are being captured. Before
+// calling BEGIN_CAPTURE_SYNC, hipError_t variable (capture_err) should be initialized to hipSuccess
+// and passed to this macro. The scenario with using this macro should look like this:
+// 1. BEGIN_CAPTURE_SYNC(capture_err)
+// 2. HIP_CHECK_ERROR(SyncAPI, capture_err)
+// 3. END_CAPTURE_SYNC(capture_err)
+// Some sync APIs are allowed in relaxed capture mode which is indicated with
+// rlx_mode_allowed variable. For other two modes, those APIs return
+// hipErrorStreamCaptureUnsupported. These macros shouldn't be used with hipStreamSync and
+// hipDeviceSync during capture.
+#define BEGIN_CAPTURE_SYNC(capture_err, rlx_mode_allowed)                                          \
+  hipStream_t stream;                                                                              \
+  GENERATE_CAPTURE();                                                                              \
+  if (capture) {                                                                                   \
+    HIP_CHECK(hipStreamCreate(&stream));                                                           \
+    hipStreamCaptureMode mode = GENERATE(                                                          \
+        hipStreamCaptureModeGlobal, hipStreamCaptureModeThreadLocal, hipStreamCaptureModeRelaxed); \
+    HIP_CHECK(hipStreamBeginCapture(stream, mode));                                                \
+    if (!rlx_mode_allowed) {                                                                       \
+      capture_err = hipErrorStreamCaptureImplicit;                                                 \
+    } else if (mode != hipStreamCaptureModeRelaxed) {                                              \
+      capture_err = hipErrorStreamCaptureUnsupported;                                              \
+    }                                                                                              \
+  }
+
+// If test has other HIP API calls that depend on sync call that is captured and fails, the rest of
+// the test (except freeing the memory) should be skipped after calling END_CAPTURE_SYNC() by
+// testing if previously created hipError_t variable (capture_err) doesn't equal hipSuccess.
+#define END_CAPTURE_SYNC(capture_err)                                                              \
+  if (capture) {                                                                                   \
+    hipGraph_t graph;                                                                              \
+    hipError_t stream_err = hipSuccess;                                                            \
+    if (capture_err != hipSuccess) {                                                               \
+      stream_err = hipErrorStreamCaptureInvalidated;                                               \
+    }                                                                                              \
+    HIP_CHECK_ERROR(hipStreamEndCapture(stream, &graph), stream_err);                              \
+    if (graph != nullptr) {                                                                        \
+      HIP_CHECK(hipGraphDestroy(graph));                                                           \
+    }                                                                                              \
+    HIP_CHECK(hipStreamDestroy(stream));                                                           \
+  }

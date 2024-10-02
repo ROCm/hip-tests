@@ -196,6 +196,10 @@ void runMultiProcKernel(ipcEventInfo_t *shmEventInfo, int index) {
             }
         }
     }
+
+    for (int i = 1; i < g_processCnt; i++) {
+      HIP_CHECK(hipEventDestroy(event[i]));
+    }
   } else {
     hipEvent_t event;
     HIP_CHECK(hipEventCreateWithFlags(&event,
@@ -389,6 +393,7 @@ TEST_CASE("Unit_hipIpcEventHandle_ParameterValidation") {
       INFO("Error returned : " << ret);
       REQUIRE(false);
     }
+    HIP_CHECK(hipEventDestroy(eventOut));
   }
 
   SECTION("Open handle in process that created it") {
@@ -398,6 +403,7 @@ TEST_CASE("Unit_hipIpcEventHandle_ParameterValidation") {
     HIP_CHECK(hipIpcGetEventHandle(&event_handle, event1));
     HIP_CHECK_ERROR(hipIpcOpenEventHandle(&event2, event_handle), hipErrorInvalidContext);
     HIP_CHECK(hipEventDestroy(event1));
+    HIP_CHECK(hipEventDestroy(event2));
   }
 
 // Disabled on AMD because of return value mismatch - EXSWHTEC-41

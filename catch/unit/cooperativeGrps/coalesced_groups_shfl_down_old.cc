@@ -232,10 +232,8 @@ TEST_CASE("Unit_coalesced_groups_shfl_down") {
     test_shfl_down();
   }
 
-  int testNo = 1;
   std::vector<unsigned int> tileSizes = {2, 4, 8, 16, 32};
   for (auto i : tileSizes) {
     test_group_partition(i);
-    testNo++;
   }
 }

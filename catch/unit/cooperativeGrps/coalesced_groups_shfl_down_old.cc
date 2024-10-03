@@ -54,7 +54,7 @@ __device__ int reduction_kernel_shfl_down(coalesced_group const& g, int val) {
   }
 }
 
-__global__ void kernel_shfl_down (int * dPtr, int *dResults, int lane_delta, int cg_sizes) {
+__global__ void kernel_shfl_down(int* dPtr, int* dResults, int lane_delta, int cg_sizes) {
   int id = threadIdx.x + blockIdx.x * blockDim.x;
 
   if (id % cg_sizes == 0) {
@@ -66,11 +66,11 @@ __global__ void kernel_shfl_down (int * dPtr, int *dResults, int lane_delta, int
   }
 }
 
-__global__ void kernel_cg_group_partition_shfl_down(int* result, unsigned int tileSz, int cg_sizes) {
-
+__global__ void kernel_cg_group_partition_shfl_down(int* result, unsigned int tileSz,
+                                                    int cg_sizes) {
   int id = threadIdx.x + blockIdx.x * blockDim.x;
   if (id % cg_sizes == 0) {
-    coalesced_group  threadBlockCGTy = coalesced_threads();
+    coalesced_group threadBlockCGTy = coalesced_threads();
     int input, outputSum, expectedSum;
 
     // Choose a leader thread to print the results
@@ -117,13 +117,6 @@ void compareResultsCoalescedGroupsShflDown(int* cpu, int* gpu, int size) {
   }
 }
 
-void printResultsCoalescedGroupsShflDown(int* ptr, int size) {
-  for (int i = 0; i < size; i++) {
-    std::cout << ptr[i] << " ";
-  }
-  std::cout << '\n';
-}
-
 static void test_group_partition(unsigned int tileSz) {
   hipError_t err;
   int blockSize = 1;
@@ -131,7 +124,6 @@ static void test_group_partition(unsigned int tileSz) {
 
   std::vector<unsigned int> cg_sizes = {1, 2, 3};
   for (auto i : cg_sizes) {
-
     int numTiles = ((blockSize * threadsPerBlock) / i) / tileSz;
     int expectedSum = ((tileSz - 1) * tileSz / 2);
     int* expectedResult = new int[numTiles];
@@ -147,29 +139,28 @@ static void test_group_partition(unsigned int tileSz) {
     int* dResult = NULL;
     int* hResult = NULL;
 
-    HIPCHECK(hipHostMalloc(&hResult, numTiles * sizeof(int), hipHostMallocDefault));
+    HIP_CHECK(hipHostMalloc(&hResult, numTiles * sizeof(int), hipHostMallocDefault));
     memset(hResult, 0, numTiles * sizeof(int));
 
-    HIPCHECK(hipMalloc(&dResult, numTiles * sizeof(int)));
-
+    HIP_CHECK(hipMalloc(&dResult, numTiles * sizeof(int)));
 
     // Launch Kernel
     hipLaunchKernelGGL(kernel_cg_group_partition_shfl_down, blockSize, threadsPerBlock,
                        threadsPerBlock * sizeof(int), 0, dResult, tileSz, i);
-    HIP_CHECK(hipGetLastError()); 
+    HIP_CHECK(hipGetLastError());
     err = hipDeviceSynchronize();
     if (err != hipSuccess) {
       fprintf(stderr, "Failed to launch kernel (error code %s)!\n", hipGetErrorString(err));
     }
 
 
-    HIPCHECK(hipMemcpy(hResult, dResult, sizeof(int) * numTiles, hipMemcpyDeviceToHost));
+    HIP_CHECK(hipMemcpy(hResult, dResult, sizeof(int) * numTiles, hipMemcpyDeviceToHost));
 
     verifyResults(hResult, expectedSum, numTiles);
 
     // Free all allocated memory on host and device
-    HIPCHECK(hipFree(dResult));
-    HIPCHECK(hipHostFree(hResult));
+    HIP_CHECK(hipFree(dResult));
+    HIP_CHECK(hipHostFree(hResult));
     delete[] expectedResult;
 
     printf("\n...PASSED.\n\n");
@@ -177,10 +168,8 @@ static void test_group_partition(unsigned int tileSz) {
 }
 
 static void test_shfl_down() {
-
   std::vector<unsigned int> cg_sizes = {1, 2, 3};
   for (auto i : cg_sizes) {
-
     hipError_t err;
     int blockSize = 1;
     int threadsPerBlock = WAVE_SIZE;
@@ -193,12 +182,10 @@ static void test_shfl_down() {
     int* dPtr = NULL;
     int* dResults = NULL;
     int lane_delta = rand() % group_size;
-    std::cout << "Testing coalesced_groups shfl_down with lane_delta " << lane_delta << "and group size "
-              << WAVE_SIZE << '\n' << std::endl;
 
     int arrSize = blockSize * threadsPerBlock * sizeof(int);
 
-    HIPCHECK(hipHostMalloc(&hPtr, arrSize));
+    HIP_CHECK(hipHostMalloc(&hPtr, arrSize));
     // Fill up the array
     for (int i = 0; i < WAVE_SIZE; i++) {
       hPtr[i] = rand() % 1000;
@@ -208,35 +195,29 @@ static void test_shfl_down() {
     for (int i = 0; i < group_size; i++) {
       cpuResultsArr[i] = (i + lane_delta >= group_size) ? hPtr[i] : hPtr[i + lane_delta];
     }
-    //printf("Array passed to GPU for computation\n");
-    //printResultsCoalescedGroupsShflDown(hPtr, WAVE_SIZE);
-    HIPCHECK(hipMalloc(&dPtr, group_size_in_bytes));
-    HIPCHECK(hipMalloc(&dResults, group_size_in_bytes));
 
-    HIPCHECK(hipMemcpy(dPtr, hPtr, group_size_in_bytes, hipMemcpyHostToDevice));
+    HIP_CHECK(hipMalloc(&dPtr, group_size_in_bytes));
+    HIP_CHECK(hipMalloc(&dResults, group_size_in_bytes));
+
+    HIP_CHECK(hipMemcpy(dPtr, hPtr, group_size_in_bytes, hipMemcpyHostToDevice));
     // Launch Kernel
-    hipLaunchKernelGGL(kernel_shfl_down, blockSize, threadsPerBlock,
-                       threadsPerBlock * sizeof(int), 0, dPtr, dResults, lane_delta, i);
-    HIP_CHECK(hipGetLastError()); 
-    HIPCHECK(hipMemcpy(hPtr, dResults, group_size_in_bytes, hipMemcpyDeviceToHost));
+    hipLaunchKernelGGL(kernel_shfl_down, blockSize, threadsPerBlock, threadsPerBlock * sizeof(int),
+                       0, dPtr, dResults, lane_delta, i);
+    HIP_CHECK(hipGetLastError());
+    HIP_CHECK(hipMemcpy(hPtr, dResults, group_size_in_bytes, hipMemcpyDeviceToHost));
     err = hipDeviceSynchronize();
     if (err != hipSuccess) {
       fprintf(stderr, "Failed to launch kernel (error code %s)!\n", hipGetErrorString(err));
     }
-    //printf("GPU results: \n");
-    //printResultsCoalescedGroupsShflDown(hPtr, WAVE_SIZE);
-    //printf("Printing cpu to be verified array\n");
-    //printResultsCoalescedGroupsShflDown(cpuResultsArr, WAVE_SIZE);
 
     compareResultsCoalescedGroupsShflDown(hPtr, cpuResultsArr, group_size_in_bytes);
-    std::cout << "Results verified!\n";
 
-    HIPCHECK(hipHostFree(hPtr));
-    HIPCHECK(hipFree(dPtr));
+    HIP_CHECK(hipHostFree(hPtr));
+    HIP_CHECK(hipFree(dPtr));
+    HIP_CHECK(hipFree(dResults));
     free(cpuResultsArr);
   }
 }
-
 
 
 TEST_CASE("Unit_coalesced_groups_shfl_down") {
@@ -247,19 +228,14 @@ TEST_CASE("Unit_coalesced_groups_shfl_down") {
   ASSERT_EQUAL(hipGetDeviceProperties(&deviceProperties, deviceId), hipSuccess);
 
   // Test shfl_down with random group sizes
-    for (int i = 0; i < 100; i++) {
-      test_shfl_down();
-    }
-
-  std::cout << "Testing static tiled_partition for different tile sizes using shfl_down"
-            << std::endl;
+  for (int i = 0; i < 100; i++) {
+    test_shfl_down();
+  }
 
   int testNo = 1;
   std::vector<unsigned int> tileSizes = {2, 4, 8, 16, 32};
   for (auto i : tileSizes) {
-    std::cout << "TEST " << testNo << ":" << '\n' << std::endl;
     test_group_partition(i);
     testNo++;
   }
-
 }

@@ -576,6 +576,7 @@ void DefaultPT2_hipMemcpy2D(int Async) {
   }
   HIP_CHECK(hipFree(DefltStrmPT::DevA));
   HIP_CHECK(hipHostFree(DefltStrmPT::HstA));
+  HIP_CHECK(hipHostFree(DefltStrmPT::HstRes));
 }
 
 

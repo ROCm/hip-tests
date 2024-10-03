@@ -42,6 +42,10 @@ static void runTestAny_1() {
   hipLaunchKernelGGL(any_1, 1, warpSize, 0, 0, d_Input, d_Output);
 
   HIP_CHECK(hipMemcpy(&Output, d_Output, 4 * size, hipMemcpyDefault));
+
+  HIP_CHECK(hipFree(d_Input));
+  HIP_CHECK(hipFree(d_Output));
+
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(Output[i] == Expected[i]);
   }
@@ -73,6 +77,10 @@ static void runTestAny_2_w64() {
   hipLaunchKernelGGL(any_2, 1, warpSize, 0, 0, d_Input, d_Output);
 
   HIP_CHECK(hipMemcpy(&Output, d_Output, 4 * size, hipMemcpyDefault));
+
+  HIP_CHECK(hipFree(d_Input));
+  HIP_CHECK(hipFree(d_Output));
+
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(Output[i] == Expected[i]);
   }
@@ -98,6 +106,10 @@ static void runTestAny_2_w32() {
   hipLaunchKernelGGL(any_2, 1, warpSize, 0, 0, d_Input, d_Output);
 
   HIP_CHECK(hipMemcpy(&Output, d_Output, 4 * size, hipMemcpyDefault));
+
+  HIP_CHECK(hipFree(d_Input));
+  HIP_CHECK(hipFree(d_Output));
+
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(Output[i] == Expected[i]);
   }
@@ -143,6 +155,10 @@ static void runTestAny_3() {
   hipLaunchKernelGGL(any_3, 1, warpSize, 0, 0, d_Input, d_Output);
 
   HIP_CHECK(hipMemcpy(&Output, d_Output, 4 * size, hipMemcpyDefault));
+
+  HIP_CHECK(hipFree(d_Input));
+  HIP_CHECK(hipFree(d_Output));
+
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(Output[i] == Expected[i]);
   }
@@ -190,6 +206,10 @@ static void runTestAny_4() {
   hipLaunchKernelGGL(any_4, 1, warpSize, 0, 0, d_Input, d_Output);
 
   HIP_CHECK(hipMemcpy(&Output, d_Output, 4 * size, hipMemcpyDefault));
+
+  HIP_CHECK(hipFree(d_Input));
+  HIP_CHECK(hipFree(d_Output));
+
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(Output[i] == Expected[i]);
   }
@@ -227,6 +247,10 @@ static void runTestAll_1_w64() {
   hipLaunchKernelGGL(all_1, 1, warpSize, 0, 0, d_Input, d_Output);
 
   HIP_CHECK(hipMemcpy(&Output, d_Output, 4 * size, hipMemcpyDefault));
+
+  HIP_CHECK(hipFree(d_Input));
+  HIP_CHECK(hipFree(d_Output));
+
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(Output[i] == Expected[i]);
   }
@@ -257,6 +281,10 @@ static void runTestAll_1_w32() {
   hipLaunchKernelGGL(all_1, 1, warpSize, 0, 0, d_Input, d_Output);
 
   HIP_CHECK(hipMemcpy(&Output, d_Output, 4 * size, hipMemcpyDefault));
+
+  HIP_CHECK(hipFree(d_Input));
+  HIP_CHECK(hipFree(d_Output));
+
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(Output[i] == Expected[i]);
   }
@@ -299,6 +327,10 @@ static void runTestAll_2() {
   hipLaunchKernelGGL(all_2, 1, warpSize, 0, 0, d_Input, d_Output);
 
   HIP_CHECK(hipMemcpy(&Output, d_Output, 4 * size, hipMemcpyDefault));
+
+  HIP_CHECK(hipFree(d_Input));
+  HIP_CHECK(hipFree(d_Output));
+
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(Output[i] == Expected[i]);
   }
@@ -344,6 +376,10 @@ static void runTestAll_3() {
   hipLaunchKernelGGL(all_3, 1, warpSize, 0, 0, d_Input, d_Output);
 
   HIP_CHECK(hipMemcpy(&Output, d_Output, 4 * size, hipMemcpyDefault));
+
+  HIP_CHECK(hipFree(d_Input));
+  HIP_CHECK(hipFree(d_Output));
+
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(Output[i] == Expected[i]);
   }
@@ -392,6 +428,10 @@ static void runTestAll_4() {
   hipLaunchKernelGGL(all_4, 1, warpSize, 0, 0, d_Input, d_Output);
 
   HIP_CHECK(hipMemcpy(&Output, d_Output, 4 * size, hipMemcpyDefault));
+
+  HIP_CHECK(hipFree(d_Input));
+  HIP_CHECK(hipFree(d_Output));
+
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(Output[i] == Expected[i]);
   }
@@ -443,6 +483,10 @@ static void runTestBallot_1() {
   hipLaunchKernelGGL(ballot_1, 1, warpSize, 0, 0, d_Input, d_Output);
 
   HIP_CHECK(hipMemcpy(&Output, d_Output, 8 * size, hipMemcpyDefault));
+
+  HIP_CHECK(hipFree(d_Input));
+  HIP_CHECK(hipFree(d_Output));
+
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(compareMaskEqual(Output, Expected, i, warpSize));
   }
@@ -494,6 +538,10 @@ static void runTestBallot_2() {
   hipLaunchKernelGGL(ballot_2, 1, warpSize, 0, 0, d_Input, d_Output);
 
   HIP_CHECK(hipMemcpy(&Output, d_Output, 8 * size, hipMemcpyDefault));
+
+  HIP_CHECK(hipFree(d_Input));
+  HIP_CHECK(hipFree(d_Output));
+
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(compareMaskEqual(Output, Expected, i, warpSize));
   }
@@ -541,6 +589,10 @@ static void runTestBallot_3() {
   hipLaunchKernelGGL(ballot_3, 1, warpSize, 0, 0, d_Input, d_Output);
 
   HIP_CHECK(hipMemcpy(&Output, d_Output, 8 * size, hipMemcpyDefault));
+
+  HIP_CHECK(hipFree(d_Input));
+  HIP_CHECK(hipFree(d_Output));
+
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(compareMaskEqual(Output, Expected, i, warpSize));
   }

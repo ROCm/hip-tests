@@ -59,6 +59,10 @@ static void runTestShflDown_1() {
   hipLaunchKernelGGL(shflDown_1<T>, 1, warpSize, 0, 0, d_Input, d_Output);
 
   HIP_CHECK(hipMemcpy(&Output, d_Output, sizeof(T) * size, hipMemcpyDefault));
+
+  HIP_CHECK(hipFree(d_Input));
+  HIP_CHECK(hipFree(d_Output));
+
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(compareEqual(Output[i], Expected[i]));
   }
@@ -105,6 +109,10 @@ static void runTestShflDown_2() {
   hipLaunchKernelGGL(shflDown_2<T>, 1, warpSize, 0, 0, d_Input, d_Output);
 
   HIP_CHECK(hipMemcpy(&Output, d_Output, sizeof(T) * size, hipMemcpyDefault));
+
+  HIP_CHECK(hipFree(d_Input));
+  HIP_CHECK(hipFree(d_Output));
+
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(compareEqual(Output[i], Expected[i]));
   }
@@ -160,6 +168,10 @@ static void runTestShflDown_3() {
   hipLaunchKernelGGL(shflDown_3<T>, 1, warpSize, 0, 0, d_Input, d_Output);
 
   HIP_CHECK(hipMemcpy(&Output, d_Output, sizeof(T) * size, hipMemcpyDefault));
+
+  HIP_CHECK(hipFree(d_Input));
+  HIP_CHECK(hipFree(d_Output));
+
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(compareEqual(Output[i], Expected[i]));
   }

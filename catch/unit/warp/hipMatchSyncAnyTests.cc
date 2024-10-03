@@ -70,6 +70,10 @@ static void runTestMatchAny_1() {
   hipLaunchKernelGGL(matchAny_1<T>, 1, warpSize, 0, 0, d_Input, d_Output);
 
   HIP_CHECK(hipMemcpy(&Output, d_Output, 8 * size, hipMemcpyDefault));
+
+  HIP_CHECK(hipFree(d_Input));
+  HIP_CHECK(hipFree(d_Output));
+
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(compareMaskEqual(Output, Expected, i, warpSize));
   }
@@ -133,6 +137,10 @@ static void runTestMatchAny_2() {
   hipLaunchKernelGGL(matchAny_2<T>, 1, warpSize, 0, 0, d_Input, d_Output);
 
   HIP_CHECK(hipMemcpy(&Output, d_Output, 8 * size, hipMemcpyDefault));
+
+  HIP_CHECK(hipFree(d_Input));
+  HIP_CHECK(hipFree(d_Output));
+
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(compareMaskEqual(Output, Expected, i, warpSize));
   }

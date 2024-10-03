@@ -61,11 +61,16 @@ static void runTestMatchAll_1() {
   hipLaunchKernelGGL(matchAll_1<T>, 1, warpSize, 0, 0, d_Input, d_Output, d_Predicate);
 
   HIP_CHECK(hipMemcpy(&Output, d_Output, 8 * size, hipMemcpyDefault));
+
+  HIP_CHECK(hipFree(d_Input));
+  HIP_CHECK(hipFree(d_Output));
+
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(compareMaskEqual(Output, Expected, i, warpSize));
   }
 
   HIP_CHECK(hipMemcpy(&Predicate, d_Predicate, 4 * size, hipMemcpyDefault));
+  HIP_CHECK(hipFree(d_Predicate));
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(Predicate[i] == ExpPredicate[i]);
   }
@@ -119,11 +124,16 @@ static void runTestMatchAll_2() {
   hipLaunchKernelGGL(matchAll_2<T>, 1, warpSize, 0, 0, d_Input, d_Output, d_Predicate);
 
   HIP_CHECK(hipMemcpy(&Output, d_Output, 8 * size, hipMemcpyDefault));
+
+  HIP_CHECK(hipFree(d_Input));
+  HIP_CHECK(hipFree(d_Output));
+
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(compareMaskEqual(Output, Expected, i, warpSize));
   }
 
   HIP_CHECK(hipMemcpy(&Predicate, d_Predicate, 4 * size, hipMemcpyDefault));
+  HIP_CHECK(hipFree(d_Predicate));
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(Predicate[i] == ExpPredicate[i]);
   }
@@ -205,11 +215,15 @@ static void runTestMatchAll_3() {
   hipLaunchKernelGGL(matchAll_3<T>, 1, warpSize, 0, 0, d_Input, d_Output, d_Predicate);
 
   HIP_CHECK(hipMemcpy(&Output, d_Output, 8 * size, hipMemcpyDefault));
+  HIP_CHECK(hipFree(d_Input));
+  HIP_CHECK(hipFree(d_Output));
+
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(compareMaskEqual(Output, Expected, i, warpSize));
   }
 
   HIP_CHECK(hipMemcpy(&Predicate, d_Predicate, 4 * size, hipMemcpyDefault));
+  HIP_CHECK(hipFree(d_Predicate));
   for (int i = 0; i != warpSize; ++i) {
     REQUIRE(Predicate[i] == ExpPredicate[i]);
   }

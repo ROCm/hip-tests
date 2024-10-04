@@ -801,6 +801,46 @@ void TestForMultipleStreamWithPriority(void) {
       REQUIRE(memcmp(dst_h_high[i], src_h_high[i], size) == 0);
     }
   }
+
+
+  //Free memory
+  for (int i = 0; i < LOW_PRIORITY_STREAMCOUNT; ++i) {
+    if (enable_priority_low) {
+      HIP_CHECK(hipStreamDestroy(stream_low[i]));
+      HIP_CHECK(hipEventDestroy(event_start_low[i]));
+      HIP_CHECK(hipEventDestroy(event_end_low[i]));
+      free(src_h_low[i]);
+      free(dst_h_low[i]);
+      HIP_CHECK(hipFree(src_d_low[i]));
+      HIP_CHECK(hipFree(dst_d_low[i]));
+    }
+  }
+
+  for (int i = 0; i < NORMAL_PRIORITY_STREAMCOUNT; ++i) {
+    if (enable_priority_normal) {
+      HIP_CHECK(hipStreamDestroy(stream_normal[i]));
+      HIP_CHECK(hipEventDestroy(event_start_normal[i]));
+      HIP_CHECK(hipEventDestroy(event_end_normal[i]));
+      free(src_h_normal[i]);
+      free(dst_h_normal[i]);
+      HIP_CHECK(hipFree(src_d_normal[i]));
+      HIP_CHECK(hipFree(dst_d_normal[i]));
+    }
+  }
+
+  for (int i = 0; i < HIGH_PRIORITY_STREAMCOUNT; ++i) {
+    if (enable_priority_high) {
+      HIP_CHECK(hipStreamDestroy(stream_high[i]));
+      HIP_CHECK(hipEventDestroy(event_start_high[i]));
+      HIP_CHECK(hipEventDestroy(event_end_high[i]));
+      free(src_h_high[i]);
+      free(dst_h_high[i]);
+      HIP_CHECK(hipFree(src_d_high[i]));
+      HIP_CHECK(hipFree(dst_d_high[i]));
+    }
+  }
+
+
 }
 }  // namespace hipStreamCreateWithPriorityTest
 

@@ -473,6 +473,7 @@ TEST_CASE("Unit_hipStreamPerThread_StrmWaitEvt") {
       MisMatch++;
     }
   }
+  HIP_CHECK(hipEventDestroy(e1));
   HIP_CHECK(hipFree(Ad));
   HIP_CHECK(hipFree(Ad1));
   HIP_CHECK(hipStreamDestroy(Strm));

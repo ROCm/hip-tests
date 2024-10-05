@@ -244,6 +244,8 @@ static void EventSync() {
     }
   }
   delete[] Ah;
+  HIP_CHECK(hipEventDestroy(start));
+  HIP_CHECK(hipEventDestroy(end));
   HIP_CHECK(hipFree(Ad));
   if (MisMatch) {
     WARN("Data Mismatch observed!!\n");

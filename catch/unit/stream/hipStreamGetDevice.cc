@@ -141,6 +141,7 @@ static bool validateStreamGetDevice() {
   HIP_CHECK(hipStreamCreate(&stream));
   HIP_CHECK(hipStreamGetDevice(stream, &device_from_stream));
 
+  HIP_CHECK(hipStreamDestroy(stream));
   REQUIRE(device_from_stream == gpu);
   return true;
 }

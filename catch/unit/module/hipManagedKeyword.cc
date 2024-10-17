@@ -51,6 +51,16 @@ TEST_CASE("Unit_hipModuleGetGlobal_Functional") {
   int data;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   for (int i = 0; i < numDevices; i++) {
+    int managed_memory = 0;
+    HIPCHECK(hipDeviceGetAttribute(&managed_memory,
+                                hipDeviceAttributeManagedMemory,
+                                i));
+    if (!managed_memory) {
+      HipTest::HIP_SKIP_TEST("managed memory access not supported on device");
+      return;
+    }
+  }
+  for (int i = 0; i < numDevices; i++) {
     HIP_CHECK(hipSetDevice(i));
     hipDevice_t device;
     hipCtx_t context;

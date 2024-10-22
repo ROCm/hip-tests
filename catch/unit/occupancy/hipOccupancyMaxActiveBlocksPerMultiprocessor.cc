@@ -16,21 +16,41 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/*
-Testcase Scenarios :
-Unit_hipOccupancyMaxActiveBlocksPerMultiprocessor_Positive_RangeValidation - Test correct execution
-of hipOccupancyMaxActiveBlocksPerMultiprocessor for diffrent parameter values
-Unit_hipOccupancyMaxActiveBlocksPerMultiprocessor_Positive_TemplateInvocation - Test correct
-execution of hipOccupancyMaxActiveBlocksPerMultiprocessor template for diffrent parameter values
-Unit_hipOccupancyMaxActiveBlocksPerMultiprocessor_Negative_Parameters - Test unsuccessful execution
-of hipOccupancyMaxActiveBlocksPerMultiprocessor api when parameters are invalid
-*/
+
 #include "occupancy_common.hh"
+
+/**
+ * @addtogroup hipOccupancyMaxActiveBlocksPerMultiprocessor
+ * hipOccupancyMaxActiveBlocksPerMultiprocessor
+ * @{
+ * @ingroup OccupancyTest
+ * `hipOccupancyMaxActiveBlocksPerMultiprocessor(int* numBlocks, const void* f,
+ * int blockSize, size_t dynSharedMemPerBlk)` -
+ * Returns occupancy for a device function.
+ */
 
 static __global__ void f1(float* a) { *a = 1.0; }
 
 template <typename T> static __global__ void f2(T* a) { *a = 1; }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates handling of invalid arguments:
+ *    -# When output pointer to the grid size is `nullptr`
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When block size is 0
+ *      - Expected output: return `hipErrorInvalidValue`
+ *    -# When pointer to the function is `nullptr`
+ *      - Platform specific (NVIDIA)
+ *      - Expected output: return `hipErrorInvalidDeviceFunction`
+ * Test source
+ * ------------------------
+ *  - unit/occupancy/hipOccupancyMaxActiveBlocksPerMultiprocessor.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipOccupancyMaxActiveBlocksPerMultiprocessor_Negative_Parameters") {
   int numBlocks = 0;
   int blockSize = 0;
@@ -53,6 +73,21 @@ TEST_CASE("Unit_hipOccupancyMaxActiveBlocksPerMultiprocessor_Negative_Parameters
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Check if grid size and block size are within valid range using basic kernel functions:
+ *    -# When `dynSharedMemPerBlk = 0`
+ *      - Expected output: return `hipSuccess`
+ *    -# When `dynSharedMemPerBlk = sharedMemPerBlock`
+ *      - Expected output: return `hipSuccess`
+ * Test source
+ * ------------------------
+ *  - unit/occupancy/hipOccupancyMaxActiveBlocksPerMultiprocessor.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipOccupancyMaxActiveBlocksPerMultiprocessor_Positive_RangeValidation") {
   hipDeviceProp_t devProp;
   int blockSize = 0;
@@ -84,6 +119,21 @@ TEST_CASE("Unit_hipOccupancyMaxActiveBlocksPerMultiprocessor_Positive_RangeValid
   }
 }
 
+/**
+ * Test Description
+ * ------------------------
+ *  - Check is number of blocks is greater than 0 when API is invoked with a template:
+ *    -# When `dynSharedMemPerBlk = 0`
+ *      - Expected output: return `hipSuccess`
+ *    -# When `dynSharedMemPerBlk = sharedMemPerBlock`
+ *      - Expected output: return `hipSuccess`
+ * Test source
+ * ------------------------
+ *  - unit/occupancy/hipOccupancyMaxActiveBlocksPerMultiprocessor.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 5.2
+ */
 TEST_CASE("Unit_hipOccupancyMaxActiveBlocksPerMultiprocessor_Positive_TemplateInvocation") {
   hipDeviceProp_t devProp;
   int blockSize = 0;
@@ -116,3 +166,19 @@ TEST_CASE("Unit_hipOccupancyMaxActiveBlocksPerMultiprocessor_Positive_TemplateIn
         blockSize, devProp.maxThreadsPerMultiProcessor);
   }
 }
+
+/**
+ * End doxygen group hipOccupancyMaxActiveBlocksPerMultiprocessor.
+ * @}
+ */
+
+/**
+ * @addtogroup hipOccupancyMaxActiveBlocksPerMultiprocessorWithFlags
+ * hipOccupancyMaxActiveBlocksPerMultiprocessorWithFlags
+ * @{
+ * @ingroup OccupancyTest
+ * `hipOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(int* numBlocks, const void* f,
+ * int blockSize, size_t dynSharedMemPerBlk, unsigned int flags __dparm(hipOccupancyDefault))` -
+ * Returns occupancy for a device function.
+ * @warning Flags ignored currently, skipped tests implementation.
+ */

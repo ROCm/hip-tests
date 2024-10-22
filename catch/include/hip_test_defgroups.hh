@@ -131,6 +131,13 @@ THE SOFTWARE.
  */
 
 /**
+ * @defgroup OccupancyTest Occupancy
+ * @{
+ * This section describes tests for the occupancy functions of HIP runtime API.
+ * @}
+ */
+
+/**
  * @defgroup PeerToPeerTest PeerToPeer Device Memory Access
  * @{
  * This section describes tests for the PeerToPeer device memory access functions of HIP runtime

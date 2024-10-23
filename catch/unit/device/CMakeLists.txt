@@ -48,6 +48,7 @@ set_source_files_properties(hipGetDeviceCount.cc PROPERTIES COMPILE_FLAGS -std=c
 set_source_files_properties(hipDeviceGetUuid.cc PROPERTIES COMPILE_FLAGS -std=c++17)
 
 add_executable(getDeviceCount EXCLUDE_FROM_ALL getDeviceCount_exe.cc)
+set_property(GLOBAL APPEND PROPERTY G_INSTALL_EXE_TARGETS getDeviceCount)
 
 hip_add_exe_to_target(NAME DeviceTest
                       TEST_SRC ${TEST_SRC}

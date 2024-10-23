@@ -145,6 +145,11 @@ add_custom_target(kerDevAllocSingleKer.code
                   -I${HIP_PATH}/include/
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 
+set_property(GLOBAL APPEND PROPERTY G_INSTALL_CUSTOM_TARGETS ${CMAKE_CURRENT_BINARY_DIR}/kerDevAllocSingleKer.code)
+set_property(GLOBAL APPEND PROPERTY G_INSTALL_CUSTOM_TARGETS ${CMAKE_CURRENT_BINARY_DIR}/kerDevFreeMultCO.code)
+set_property(GLOBAL APPEND PROPERTY G_INSTALL_CUSTOM_TARGETS ${CMAKE_CURRENT_BINARY_DIR}/kerDevWriteMultCO.code)
+set_property(GLOBAL APPEND PROPERTY G_INSTALL_CUSTOM_TARGETS ${CMAKE_CURRENT_BINARY_DIR}/kerDevAllocMultCO.code)
+
 # Accepted archs to compile this cmake file
 set(ACCEPTED_OFFLOAD_ARCHS gfx90a gfx940 gfx941 gfx942)
 set(ACCEPTED_GFX940_ARCH gfx940 gfx941 gfx942)

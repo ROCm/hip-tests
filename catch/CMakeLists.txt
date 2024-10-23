@@ -159,21 +159,20 @@ endif()
 add_definitions(-DKERNELS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/kernels/")
 
 set(CATCH_BUILD_DIR catch_tests)
-execute_process(COMMAND ${CMAKE_COMMAND} -E
-                make_directory ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/hipTestMain/config)
+set(HIP_TEST_CONFIG_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/config)
+file(MAKE_DIRECTORY ${HIP_TEST_CONFIG_BINARY_DIR})
 file(GLOB JSON_FILES "./hipTestMain/config/*.json")
 foreach(json IN LISTS JSON_FILES)
     file(COPY ${json}
-         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/hipTestMain/config/)
+         DESTINATION ${HIP_TEST_CONFIG_BINARY_DIR})
 endforeach()
+set(CATCH_SCRIPT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/script)
 file(COPY ./external/Catch2/cmake/Catch2/CatchAddTests.cmake
-     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/script)
+     DESTINATION ${CATCH_SCRIPT_BINARY_DIR})
 file(COPY ./external/Catch2/cmake/Catch2/catch_include.cmake
-     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/script)
-set(ADD_SCRIPT_PATH ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/script/CatchAddTests.cmake)
-set(CATCH_INCLUDE_PATH ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/script/catch_include.cmake)
-
-
+     DESTINATION ${CATCH_SCRIPT_BINARY_DIR})
+set(ADD_SCRIPT_PATH ${CATCH_SCRIPT_BINARY_DIR}/CatchAddTests.cmake)
+set(CATCH_INCLUDE_PATH ${CATCH_SCRIPT_BINARY_DIR}/catch_include.cmake)
 
 if (WIN32)
   configure_file(catchProp_in_rc.in ${CMAKE_CURRENT_BINARY_DIR}/catchProp.rc @ONLY)
@@ -268,12 +267,10 @@ foreach(__offload_arch ${OFFLOAD_ARCH_LIST})
     list(REMOVE_DUPLICATES  hip_gpu_arch_list)
 endforeach()
 
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/hipTestMain/config)
-set(config_gen_path ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/hipTestMain/config)
 if(WIN32)
     set(configToUse "config_amd_windows")
     set(config_file ${CMAKE_SOURCE_DIR}/hipTestMain/config/${configToUse})
-    set(json_file ${config_gen_path}/${configToUse}.json)
+    set(json_file ${HIP_TEST_CONFIG_BINARY_DIR}/${configToUse}.json)
     set(CLANG_CPP "${HIP_PATH}/../lc/bin/clang-cpp.exe")
 
     set(cmd "${CLANG_CPP} -P -DGITHASH=\"${HIP_VERSION_GITHASH}\" ${config_file}>${json_file}")
@@ -285,8 +282,7 @@ else()
     set(configToUse "config_amd_linux")
     foreach(arch ${hip_gpu_arch_list})
         set(config_file ${CMAKE_SOURCE_DIR}/hipTestMain/config/${configToUse})
-        set(config_gen_path ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/hipTestMain/config)
-        set(json_file ${config_gen_path}/${configToUse}_${arch}.json)
+        set(json_file ${HIP_TEST_CONFIG_BINARY_DIR}/${configToUse}_${arch}.json)
         set(cmd "${ROCM_PATH}/llvm/bin/clang-cpp -P -D${arch} -DGITHASH=\\\"${HIP_VERSION_GITHASH}\\\" ${config_file}>${json_file}")
         message(${cmd})
         execute_process(COMMAND bash -c ${cmd}
@@ -305,7 +301,6 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/catchInfo.txt ${_catch
 # allows user to run ctest from catch_tests level
 set(_subdirs ${_autogen} "subdirs(..)\n")
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/CTestTestfile.cmake ${_subdirs})
-
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
 # copy python script and headers to catch test package

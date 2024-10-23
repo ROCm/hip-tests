@@ -77,7 +77,8 @@ set(TEST_SRC
     ${TEST_SRC}
     hipExtModuleLaunchKernel.cc
     hipHccModuleLaunchKernel.cc
-    hipGetProcAddressModuleApis.cc)
+    hipGetProcAddressModuleApis.cc
+    hipLinkCreate.cc)
 
 add_custom_target(empty_module.code
                   COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
@@ -106,6 +107,17 @@ add_custom_target(addKernel.code
                   -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 
+add_custom_target(copySpirvBitcode ALL
+                  COMMAND ${CMAKE_COMMAND} -E copy
+                  ${CMAKE_CURRENT_SOURCE_DIR}/spirv_bc/addKernel.spv
+                  ${CMAKE_CURRENT_BINARY_DIR}/addKernel.spv)
+
+add_custom_target(copySpirvBundledBitcode ALL
+                  COMMAND ${CMAKE_COMMAND} -E copy
+                  ${CMAKE_CURRENT_SOURCE_DIR}/spirv_bc/addKernel-bundle.spv
+                  ${CMAKE_CURRENT_BINARY_DIR}/addKernel-bundle.spv)
+
+
 add_custom_target(copyKernelCompressed.code
                   COMMAND ${CMAKE_CXX_COMPILER} -mcode-object-version=5 --offload-compress --genco ${OFFLOAD_ARCH_STR}
                   ${CMAKE_CURRENT_SOURCE_DIR}/copyKernel.cc
@@ -118,6 +130,8 @@ set_property(GLOBAL APPEND PROPERTY G_INSTALL_CUSTOM_TARGETS
   ${CMAKE_CURRENT_BINARY_DIR}/copyKernel.code
   ${CMAKE_CURRENT_BINARY_DIR}/copyKernel.s
   ${CMAKE_CURRENT_BINARY_DIR}/addKernel.code
+  ${CMAKE_CURRENT_BINARY_DIR}/addKernel.spv
+  ${CMAKE_CURRENT_BINARY_DIR}/addKernel-bundle.spv
   ${CMAKE_CURRENT_BINARY_DIR}/copyKernelCompressed.code
 )
 
@@ -213,6 +227,8 @@ if(HIP_PLATFORM MATCHES "amd")
 add_dependencies(build_tests empty_module.code)
 add_dependencies(build_tests copyKernel.code copyKernel.s)
 add_dependencies(build_tests addKernel.code)
+add_dependencies(build_tests copySpirvBitcode)
+add_dependencies(build_tests copySpirvBundledBitcode)
 add_dependencies(build_tests copyKernelCompressed.code)
 if(UNIX)
 add_dependencies(build_tests copiousArgKernel.code copiousArgKernel0.code copiousArgKernel1.code copiousArgKernel2.code

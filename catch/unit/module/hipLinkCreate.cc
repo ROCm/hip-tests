@@ -29,10 +29,10 @@ THE SOFTWARE.
 #include <limits.h>
 
 
-#define SPIRV_FILE "addKernel.spv"
-#define SPIRV_BUNDLED_FILE "addKernel-bundle.spv"
-#define ARRAY_SIZE 1
-#define REF_VALUE 5
+static constexpr const char* SPIRV_FILE = "addKernel.spv";
+static constexpr const char* SPIRV_BUNDLED_FILE = "addKernel-bundle.spv";
+static constexpr int ARRAY_SIZE = 1;
+static constexpr int REF_VALUE = 5;
 
 #if HT_AMD
 static inline bool load_co_from_file(const char *filename, std::vector<char> &co_source) {
@@ -69,8 +69,8 @@ void JitLink(hipModule_t *Module, hipFunction_t *Kernel, hipLinkState_t *LinkSta
    if (!from_file) {
       std::vector<char> co_source;
       REQUIRE(load_co_from_file(filename, co_source) == true);
-      HIP_CHECK(hipLinkAddData(*LinkState,input_type,(void *)co_source.data(),
-                                co_source.size(), "LinkSPIRV1", 0, nullptr, nullptr));
+      HIP_CHECK(hipLinkAddData(*LinkState, input_type, (void*)co_source.data(), co_source.size(),
+                               "LinkSPIRV1", 0, nullptr, nullptr));
    } else {
       HIP_CHECK(hipLinkAddFile(*LinkState,input_type, filename, 0, nullptr, nullptr));
    }
@@ -91,7 +91,19 @@ void JitLink(hipModule_t *Module, hipFunction_t *Kernel, hipLinkState_t *LinkSta
 
 }
 
-
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates SPIR-V linking and kernel execution using HIP's JIT linker with both bundled and
+ * unbundled SPIR-V code objects. Tests both hipLinkAddData and hipLinkAddFile APIs
+ *
+ * Test source
+ * ------------------------
+ *  - unit/module/hipLinkCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.4
+ */
 TEST_CASE("Unit_hip_linker_spirv_input") {
     size_t N = ARRAY_SIZE;
     size_t sizeBytes = N * sizeof(int);
@@ -143,7 +155,19 @@ TEST_CASE("Unit_hip_linker_spirv_input") {
     delete[] A_h;
 }
 
-
+/**
+ * Test Description
+ * ------------------------
+ * Negative test cases for hipLinkCreate to verify it fails gracefully with invalid arguments like
+ * null pointers and mismatched option arrays.
+ *
+ * Test source
+ * ------------------------
+ *  - unit/module/hipLinkCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.4
+ */
 TEST_CASE("Unit_hipLinkCreate_Negative") {
 
     hipLinkState_t linkstate;
@@ -170,7 +194,74 @@ TEST_CASE("Unit_hipLinkCreate_Negative") {
     }
 
 }
+/**
+ * Test Description
+ * ------------------------
+ *  - Validates that unsupported CUDA only options don't crash the linker and result in the correct
+ * error.
+ *
+ * Test source
+ * ------------------------
+ *  - unit/module/hipLinkCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.4
+ */
+TEST_CASE("Unit_hipLinkCreate_AddLinker_CUDA_only_options") {
+  hipLinkState_t linkstate;
+  // Random options so that it is not null
+  const char* isaopts[] = {"-mllvm", "-inline-threshold=1", "-mllvm", "-inlinehint-threshold=1"};
+  size_t isaoptssize = 4;
+  const void* lopts[] = {(void*)isaopts, (void*)(isaoptssize)};
 
+  std::vector<hipJitOption> options = {hipJitOptionMaxRegisters,
+                                       hipJitOptionThreadsPerBlock,
+                                       hipJitOptionWallTime,
+                                       hipJitOptionInfoLogBuffer,
+                                       hipJitOptionInfoLogBufferSizeBytes,
+                                       hipJitOptionErrorLogBuffer,
+                                       hipJitOptionErrorLogBufferSizeBytes,
+                                       hipJitOptionOptimizationLevel,
+                                       hipJitOptionTargetFromContext,
+                                       hipJitOptionTarget,
+                                       hipJitOptionFallbackStrategy,
+                                       hipJitOptionGenerateDebugInfo,
+                                       hipJitOptionLogVerbose,
+                                       hipJitOptionGenerateLineInfo,
+                                       hipJitOptionCacheMode,
+                                       hipJitOptionSm3xOpt,
+                                       hipJitOptionFastCompile,
+                                       hipJitOptionGlobalSymbolNames,
+                                       hipJitOptionGlobalSymbolAddresses,
+                                       hipJitOptionGlobalSymbolCount,
+                                       hipJitOptionLto,
+                                       hipJitOptionFtz,
+                                       hipJitOptionPrecDiv,
+                                       hipJitOptionPrecSqrt,
+                                       hipJitOptionFma,
+                                       hipJitOptionPositionIndependentCode,
+                                       hipJitOptionMinCTAPerSM,
+                                       hipJitOptionMaxThreadsPerBlock,
+                                       hipJitOptionOverrideDirectiveValues,
+                                       hipJitOptionNumOptions};
+
+  HIP_CHECK_ERROR(hipLinkCreate(options.size(), options.data(), (void**)lopts, &linkstate),
+                  hipErrorInvalidValue);
+}
+
+/**
+ * Test Description
+ * ------------------------
+ *  Verifies error handling of hipLinkAddFile when given invalid parameters, input types, or
+ * nonexistent files.
+ *
+ * Test source
+ * ------------------------
+ *  - unit/module/hipLinkCreate.cc
+ * Test requirements
+ * ------------------------
+ *  - HIP_VERSION >= 6.4
+ */
 TEST_CASE("Unit_hipLinkAddFile_Negative") {
     hipLinkState_t linkstate;
     HIP_CHECK(hipLinkCreate(0, nullptr, nullptr, &linkstate));

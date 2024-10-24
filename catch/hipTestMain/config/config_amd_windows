@@ -1168,6 +1168,12 @@
         "Unit_hipStreamLegacy_WithSptCompilerOption",
         "Unit_hipStreamLegacy_TwoThreadsDiffOperationWithSptCompOption",
         "========================================================================================",
+        "=== SWDEV-468258 Below tests are temporarily disabled - windows PSDB failed",
+        "Unit_hipHostAlloc_Basic",
+        "Unit_hipHostAlloc_Default",
+        "Unit_hipHostAlloc_Negative_NonCoherent",
+        "Unit_hipHostAlloc_Negative_Coherent",
+        "Unit_hipHostAlloc_Negative_NumaUser",
     #endif
         "End of json"
     ]

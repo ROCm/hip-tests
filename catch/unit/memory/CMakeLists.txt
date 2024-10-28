@@ -83,7 +83,6 @@ set(TEST_SRC
     hipMemsetD16Async.cc
     hipMemsetD32Async.cc
     hipMemsetD8Async.cc
-    hipExtHostAlloc.cc
     )
 
 if(UNIX)
@@ -103,7 +102,8 @@ if(HIP_PLATFORM MATCHES "amd")
       hipMemVmm.cc
       hipArray.cc
       hipMemcpyDeviceToDeviceNoCU.cc
-      hipGetProcAddress_Memory_APIs.cc)
+      hipGetProcAddress_Memory_APIs.cc
+      hipExtHostAlloc.cc)
   if(UNIX)
     # Should be compiled for NVIDIA as well after EXSWHTEC-346 is addressed
     # For windows build error occurs undefined symbol: hipPointerSetAttribute

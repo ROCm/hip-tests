@@ -31,7 +31,7 @@ TEST_CASE("Unit_hipMemcpyAsync_Positive_Basic") {
   const StreamGuard stream_guard(stream_type);
   const hipStream_t stream = stream_guard.stream();
 
-  MemcpyWithDirectionCommonTests<true>(std::bind(hipMemcpyAsync, _1, _2, _3, _4, stream));
+  MemcpyWithDirectionCommonTests<true>(std::bind(hipMemcpyAsync, _1, _2, _3, _4, stream), stream);
 }
 
 TEST_CASE("Unit_hipMemcpyAsync_Positive_Synchronization_Behavior") {

@@ -55,8 +55,8 @@ TEST_CASE("Unit_hipDrvMemcpy_Functional") {
   HIP_CHECK(hipMemcpyDtoHAsync(Bh, Bd, SIZE, stream));
   HIP_CHECK(hipStreamSynchronize(stream));
   HIP_CHECK(hipStreamDestroy(stream));
-  HIP_CHECK(hipFree(Ad));
-  HIP_CHECK(hipFree(Bd));
+  HIP_CHECK(hipFree(reinterpret_cast<void*>(Ad)));
+  HIP_CHECK(hipFree(reinterpret_cast<void*>(Bd)));
 
   REQUIRE(Ah[10] == Bh[10]);
   HIP_CHECK(hipFreeHost(Ah));

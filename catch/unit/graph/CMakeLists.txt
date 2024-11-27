@@ -83,7 +83,6 @@ set(TEST_SRC
   hipStreamIsCapturing_old.cc
   hipGraphMemFreeNodeGetParams.cc
   hipGraphAsyncUserObj.cc
-  hipGraphExecBatchMemOpNodeSetParams.cc
   hipGraphAddBatchMemOpNode.cc
   hipDrvGraphExecMemcpyNodeSetParams.cc
   hipDrvGraphAddMemFreeNode.cc

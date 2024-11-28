@@ -86,7 +86,8 @@ set(TEST_SRC
   hipGraphExecBatchMemOpNodeSetParams.cc
   hipGraphAddBatchMemOpNode.cc
   hipDrvGraphExecMemcpyNodeSetParams.cc
-  hipDrvGraphAddMemFreeNode.cc)
+  hipDrvGraphAddMemFreeNode.cc
+  hipGraphBatchMemOpNodeSetParams.cc)
 
 if(HIP_PLATFORM MATCHES "amd")
   set(AMD_SRC

@@ -207,7 +207,7 @@ if(HIP_PLATFORM MATCHES "amd")
 endif()
 
 set(NOT_FOR_gfx90a_AND_ABOVE_TEST hipMallocArray.cc hipArrayCreate.cc) # tests not for gfx90a+
-set(gfx90a_AND_ABOVE_TARGETS gfx90a gfx940 gfx941 gfx942)
+set(gfx90a_AND_ABOVE_TARGETS gfx90a gfx940 gfx941 gfx942 gfx950)
 function(CheckRejectedArchs OFFLOAD_ARCH_STR_LOCAL)
   set(ARCH_CHECK -1 PARENT_SCOPE)
   set(NOT_GFX90a -1)

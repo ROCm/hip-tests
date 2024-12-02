@@ -6,9 +6,9 @@
 #include "hip_test_context.hh"
 
 std::vector<std::unordered_set<std::string>> GCNArchFeatMap = {
-  {"gfx90a", "gfx940", "gfx941", "gfx942"},               // CT_FEATURE_FINEGRAIN_HWSUPPORT
-  {"gfx90a", "gfx940", "gfx941", "gfx942"},               // CT_FEATURE_HMM
-  {"gfx90a", "gfx940", "gfx941", "gfx942"},               // CT_FEATURE_TEXTURES_NOT_SUPPORTED
+  {"gfx90a", "gfx940", "gfx941", "gfx942", "gfx950"},     // CT_FEATURE_FINEGRAIN_HWSUPPORT
+  {"gfx90a", "gfx940", "gfx941", "gfx942", "gfx950"},     // CT_FEATURE_HMM
+  {"gfx90a", "gfx940", "gfx941", "gfx942", "gfx950"},     // CT_FEATURE_TEXTURES_NOT_SUPPORTED
 };
 
 #if HT_AMD

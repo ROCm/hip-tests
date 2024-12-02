@@ -26,6 +26,9 @@ THE SOFTWARE.
 #include <type_traits>
 #include <vector>
 #include <bitset>
+#if defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)
+#define __gfx94plus_local__
+#endif
 
 /*
 * This catch test is meant for FP8 FNUZ conversion checking
@@ -59,7 +62,7 @@ std::string get_arch_type()  {
 
 template<typename T> __FP8_DEVICE__ void e4m3_fnuz_device(T *val)
 {
-  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+  #if defined(__gfx94plus_local__) && __HIP_DEVICE_COMPILE__
     __hip_fp8_e4m3_fnuz tmp(*val);
     *val = tmp;
   #else
@@ -69,7 +72,7 @@ template<typename T> __FP8_DEVICE__ void e4m3_fnuz_device(T *val)
 
 template<typename T> __FP8_DEVICE__ void e5m2_fnuz_device(T *val)
 {
-  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+  #if defined(__gfx94plus_local__) && __HIP_DEVICE_COMPILE__
     __hip_fp8_e5m2_fnuz tmp(*val);
     *val = tmp;
   #else
@@ -148,7 +151,7 @@ TEMPLATE_TEST_CASE("Unit_fp8_fnuz_compare_host_device", "", float, double) {
 
 __FP8_DEVICE__ void e4m3_fp8x2_fnuz_device(float2 *val)
 {
-  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+  #if defined(__gfx94plus_local__) && __HIP_DEVICE_COMPILE__
     __hip_fp8x2_e4m3_fnuz tmp(*val);
     *val = tmp;
   #else
@@ -158,7 +161,7 @@ __FP8_DEVICE__ void e4m3_fp8x2_fnuz_device(float2 *val)
 
 __FP8_DEVICE__ void e5m2_fp8x2_fnuz_device(float2 *val)
 {
-  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+  #if defined(__gfx94plus_local__) && __HIP_DEVICE_COMPILE__
     __hip_fp8x2_e5m2_fnuz tmp(*val);
     *val = tmp;
   #else
@@ -298,7 +301,7 @@ TEST_CASE("Unit_fp8x2_fnuz_split_compare") {
 
 __FP8_DEVICE__ void e4m3_fp8x4_fnuz_device(float4 *val)
 {
-  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+  #if defined(__gfx94plus_local__) && __HIP_DEVICE_COMPILE__
     __hip_fp8x4_e4m3_fnuz tmp(*val);
     *val = tmp;
   #else
@@ -308,7 +311,7 @@ __FP8_DEVICE__ void e4m3_fp8x4_fnuz_device(float4 *val)
 
 __FP8_DEVICE__ void e5m2_fp8x4_fnuz_device(float4 *val)
 {
-  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+  #if defined(__gfx94plus_local__) && __HIP_DEVICE_COMPILE__
     __hip_fp8x4_e5m2_fnuz tmp(*val);
     *val = tmp;
   #else
@@ -399,7 +402,7 @@ __FP8_DEVICE__ bool e4m3_bool_fnuz_device(float val)
 {
   bool x = false;
   float y = val;
-  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+  #if defined(__gfx94plus_local__) && __HIP_DEVICE_COMPILE__
     __hip_fp8_e4m3_fnuz tmp(y);
     x = tmp;
   #else
@@ -412,7 +415,7 @@ __FP8_DEVICE__ bool e5m2_bool_fnuz_device(float val)
 {
   bool x = false;
   float y = val;
-  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+  #if defined(__gfx94plus_local__) && __HIP_DEVICE_COMPILE__
     __hip_fp8_e5m2_fnuz tmp(y);
     x = tmp;
   #else
@@ -499,7 +502,7 @@ __FP8_DEVICE__ __hip_fp8_storage_t e4m3_fnuz_fp8_device(float val)
 {
   __hip_fp8_storage_t x = 0;
   float y = val;
-  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+  #if defined(__gfx94plus_local__) && __HIP_DEVICE_COMPILE__
     __hip_fp8_e4m3_fnuz tmp(y);
     x = tmp.__x;
   #else
@@ -512,7 +515,7 @@ __FP8_DEVICE__ __hip_fp8_storage_t e5m2_fnuz_fp8_device(float val)
 {
   __hip_fp8_storage_t x = 0;
   float y = val;
-  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+  #if defined(__gfx94plus_local__) && __HIP_DEVICE_COMPILE__
     __hip_fp8_e5m2_fnuz tmp(y);
     x = tmp.__x;
   #else
@@ -627,7 +630,7 @@ TEST_CASE("Unit_all_fp8_fnuz_cvt") {
 template<typename T> __FP8_DEVICE__ void e4m3_fnuz_fp8_cvt(T val, float *cvt1, float *cvt2)
 {
   T y = val;
-  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+  #if defined(__gfx94plus_local__) && __HIP_DEVICE_COMPILE__
     __hip_fp8_e4m3_fnuz tmp(y);
     *cvt1 = tmp;
 
@@ -646,7 +649,7 @@ template<typename T> __FP8_DEVICE__ void e4m3_fnuz_fp8_cvt(T val, float *cvt1, f
 template<typename T> __FP8_DEVICE__ void e5m2_fnuz_fp8_cvt(T val, float *cvt1, float *cvt2)
 {
   T y = val;
-  #if (defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)) && __HIP_DEVICE_COMPILE__
+  #if defined(__gfx94plus_local__) && __HIP_DEVICE_COMPILE__
     __hip_fp8_e5m2_fnuz tmp(y);
     *cvt1 = tmp;
 

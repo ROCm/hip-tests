@@ -36,6 +36,9 @@ std::string TestContext::substringFound(std::vector<std::string> list, std::stri
 }
 
 std::string TestContext::getCurrentArch() {
+#if HIPTEST_SPIRV_MODE
+  return "amdgcnspirv";
+#endif
 #if HT_LINUX
   const char* cmd = "/opt/rocm/bin/rocm_agent_enumerator | sort -u | xargs | sed -e 's/ /;/g'";
   std::array<char, 1024> buffer;

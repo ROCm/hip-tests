@@ -2,7 +2,14 @@
 set(TEST_SRC
     copy_coherency.cc
 )
-add_custom_target(memcpyInt.hsaco COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
+
+if(HIPTEST_SPIRV_MODE)
+  set(HIPCC_COMPILE_COMMANDS "${OFFLOAD_ARCH_STR} -D__AMDGCN_WAVEFRONT_SIZE=32 ")
+else()
+  set(HIPCC_COMPILE_COMMANDS "${OFFLOAD_ARCH_STR}")
+endif()
+
+add_custom_target(memcpyInt.hsaco COMMAND ${CMAKE_CXX_COMPILER} --genco ${HIPCC_COMPILE_COMMANDS}
                   ${CMAKE_CURRENT_SOURCE_DIR}/memcpyIntDevice.cpp -o
                   ${CMAKE_CURRENT_BINARY_DIR}/../synchronization/memcpyInt.hsaco -I
                   ${HIP_PATH}/include -I

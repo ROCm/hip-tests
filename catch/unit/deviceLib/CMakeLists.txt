@@ -119,28 +119,34 @@ set(AMD_GFX1200_SPEC_TEST_SRC
     fp8_ocp.cc
 )
 
+if(HIPTEST_SPIRV_MODE)
+  set(HIPCC_COMPILE_COMMANDS "${OFFLOAD_ARCH_STR} -D__AMDGCN_WAVEFRONT_SIZE=32 ")
+else()
+  set(HIPCC_COMPILE_COMMANDS "${OFFLOAD_ARCH_STR}")
+endif()
+
 # Note to pass arch use format like -DOFFLOAD_ARCH_STR="--offload-arch=gfx900  --offload-arch=gfx906"
-# having space at the start/end of OFFLOAD_ARCH_STR can cause build failures
+# having space at the start/end of HIPCC_COMPILE_COMMANDS can cause build failures
 add_custom_target(kerDevAllocMultCO.code
-                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
+                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${HIPCC_COMPILE_COMMANDS}
                   ${CMAKE_CURRENT_SOURCE_DIR}/kerDevAllocMultCO.cc
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/deviceLib/kerDevAllocMultCO.code
                   -I${HIP_PATH}/include/
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 add_custom_target(kerDevWriteMultCO.code
-                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
+                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${HIPCC_COMPILE_COMMANDS}
                   ${CMAKE_CURRENT_SOURCE_DIR}/kerDevWriteMultCO.cc
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/deviceLib/kerDevWriteMultCO.code
                   -I${HIP_PATH}/include/
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 add_custom_target(kerDevFreeMultCO.code
-                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
+                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${HIPCC_COMPILE_COMMANDS}
                   ${CMAKE_CURRENT_SOURCE_DIR}/kerDevFreeMultCO.cc
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/deviceLib/kerDevFreeMultCO.code
                   -I${HIP_PATH}/include/
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
 add_custom_target(kerDevAllocSingleKer.code
-                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
+                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${HIPCC_COMPILE_COMMANDS}
                   ${CMAKE_CURRENT_SOURCE_DIR}/kerDevAllocSingleKer.cc
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/deviceLib/kerDevAllocSingleKer.code
                   -I${HIP_PATH}/include/
@@ -177,8 +183,8 @@ function(CheckAcceptedArchs OFFLOAD_ARCH_STR_LOCAL)
 endfunction()  # CheckAcceptedArchs
 
 if(HIP_PLATFORM MATCHES "amd")
-    if (DEFINED OFFLOAD_ARCH_STR)
-      CheckAcceptedArchs(${OFFLOAD_ARCH_STR})
+    if (DEFINED HIPCC_COMPILE_COMMANDS)
+      CheckAcceptedArchs(${HIPCC_COMPILE_COMMANDS})
     elseif(DEFINED $ENV{HCC_AMDGPU_TARGET})
       CheckAcceptedArchs($ENV{HCC_AMDGPU_TARGET})
     else()

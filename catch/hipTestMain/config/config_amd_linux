@@ -747,7 +747,7 @@
         "Unit_hipCreateTextureObject_LinearResource",
         "Unit_hipCreateTextureObject_Pitch2DResource",
     #endif
-    #if defined gfx908
+    #if defined gfx908 || defined amdgcnspirv
         "=== Below test soft hang in stress test on 29/08/23 ===",
         "Unit_hipMultiThreadStreams2",
         "=== SWDEV-425248:Below tests failed in stress test on 11/10/23 ===",
@@ -766,7 +766,7 @@
         "=== SWDEV-443630 - Below tests failed in stress test on 19/01/23 ===",
         "Unit_hipGetSetDevice_MultiThreaded",
     #endif
-    #if defined gfx90a || defined  gfx940 || defined gfx941 || defined gfx942
+    #if defined gfx90a || defined  gfx940 || defined gfx941 || defined gfx942 || defined amdgcnspirv
         "Unit_hipStreamPerThread_DeviceReset_1",
         "Unit_hipDeviceGetPCIBusId_Negative_PartialFill",
         "Unit_hipInit_Negative",
@@ -869,11 +869,11 @@
         "Unit_atomicMin_system_Positive_Peer_GPUs_Same_Address - float",
         "Unit_atomicMin_system_Positive_Peer_GPUs_Same_Address - double",
     #endif
-    #if defined gfx1030
+    #if defined gfx1030 || defined amdgcnspirv
         "=== SWDEV-445961: These tests hang in PSDB stress test on 09/02/2024 ===",
         "Unit_hipStreamBeginCapture_hipStreamPerThread",
     #endif
-    #if defined gfx1100 || defined gfx1102
+    #if defined gfx1100 || defined gfx1102 || defined amdgcnspirv
         "=== Below tests soft hang in stress test on 13/09/23 ===",
         "Unit_hipMemsetFunctional_ZeroValue_hipMemsetD16",
         "Unit_hipIpcMemAccess_Semaphores",
@@ -906,7 +906,7 @@
         "Unit_UUID_setEnv_Thread_Lock",
         "====================================================",
     #endif
-    #if defined gfx1200 || defined gfx1201
+    #if defined gfx1200 || defined gfx1201 || defined amdgcnspirv
         "=== SWDEV-470751 : Fine Grain memory is MTYPE_NC due to HW bug.",
         "Unit_hipEventCreateWithFlags_DisableSystemFence_CohHstMem",
     #endif

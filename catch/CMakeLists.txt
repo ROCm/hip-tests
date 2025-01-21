@@ -8,7 +8,6 @@ project(hiptests)
 
 option(ENABLE_ADDRESS_SANITIZER "Option to enable ASAN build" OFF)
 option(BUILD_SHARED_LIBS "Option for testing shared libraries" ON)
-option(HIPTEST_SPIRV_MODE "Set SPIRV Mode" OFF)
 
 option(TEST_CLOCK_CYCLE "Option to use clock64" OFF)
 if (TEST_CLOCK_CYCLE)
@@ -217,7 +216,6 @@ message(STATUS "CMAKE HIP ARCHITECTURES: ${CMAKE_HIP_ARCHITECTURES}")
 # OFFLOAD_ARCH_STR
 # rocm_agent_enumerator
 if(NOT DEFINED OFFLOAD_ARCH_STR
-   AND NOT HIPTEST_SPIRV_MODE
    AND EXISTS "${ROCM_PATH}/bin/rocm_agent_enumerator"
    AND HIP_PLATFORM STREQUAL "amd" AND UNIX)
     execute_process(COMMAND "${ROCM_PATH}/bin/rocm_agent_enumerator"
@@ -239,10 +237,6 @@ if(NOT DEFINED OFFLOAD_ARCH_STR
     endif()
 elseif(DEFINED OFFLOAD_ARCH_STR)
     string(REPLACE "--offload-arch=" "" HIP_GPU_ARCH_LIST ${OFFLOAD_ARCH_STR})
-elseif(HIPTEST_SPIRV_MODE)
-    set(OFFLOAD_ARCH_STR "--offload-arch=amdgcnspirv")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__AMDGCN_WAVEFRONT_SIZE=32 -DHIPTEST_SPIRV_MODE=1 ")
-    message(STATUS "CXXFLAGS: ${CMAKE_CXX_FLAGS} ")
 endif()
 
 if(DEFINED OFFLOAD_ARCH_STR)

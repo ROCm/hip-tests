@@ -584,7 +584,7 @@ __global__ void myKernel(T1 a, T2 b) {}
 #define MY_LAUNCH_WITH_PAREN(command, doTrace, msg)                 \
     {                                                               \
         if (doTrace) printf("TRACE: %s %s\n", msg, #command);       \
-        void(command);                                              \
+        (command);                                                  \
     }
 
 /**

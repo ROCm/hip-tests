@@ -26,16 +26,10 @@ set(TEST_SRC
     hipKernelNameRef.cc
 )
 
-if(HIPTEST_SPIRV_MODE)
-  set(HIPCC_COMPILE_COMMANDS "${OFFLOAD_ARCH_STR} -D__AMDGCN_WAVEFRONT_SIZE=32 ")
-else()
-  set(HIPCC_COMPILE_COMMANDS "${OFFLOAD_ARCH_STR}")
-endif()
-
 if(UNIX)
     set(TEST_SRC ${TEST_SRC} hipKernelNameRefByPtr.cc)
 
-    add_custom_target(SimpleKernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${HIPCC_COMPILE_COMMANDS}
+    add_custom_target(SimpleKernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
                       ${CMAKE_CURRENT_SOURCE_DIR}/SimpleKernel.cc
                       -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/callback/SimpleKernel.code
                       -I${HIP_PATH}/include -I${CMAKE_CURRENT_SOURCE_DIR}/../../include)

@@ -765,7 +765,7 @@
         "Unit_unsafeAtomicMax_Positive_Multi_Kernel_Same_Address - double",
         "Unit_hipMemAddressReserve_AlignmentTest",
     #endif
-    #if defined gfx908 || defined amdgcnspirv
+    #if defined gfx908
         "=== Below test soft hang in stress test on 29/08/23 ===",
         "Unit_hipMultiThreadStreams2",
         "=== SWDEV-425248:Below tests failed in stress test on 11/10/23 ===",
@@ -799,7 +799,7 @@
         "Unit_atomicMin_system_Positive_Peer_GPUs_Same_Address - float",
         "Unit_atomicMin_system_Positive_Peer_GPUs_Same_Address - double",
     #endif
-    #if defined gfx90a || defined  gfx940 || defined gfx941 || defined gfx942 || defined amdgcnspirv
+    #if defined gfx90a || defined  gfx940 || defined gfx941 || defined gfx942
         "Unit_hipStreamPerThread_DeviceReset_1",
         "Unit_hipDeviceGetPCIBusId_Negative_PartialFill",
         "Unit_hipInit_Negative",
@@ -922,13 +922,13 @@
         "Unit_hipTexRefGetArray_Positive",
         "Unit_hipTexRefGetArray_Negative",
     #endif
-    #if defined gfx1030 || defined amdgcnspirv
+    #if defined gfx1030
         "=== SWDEV-445961: These tests hang in PSDB stress test on 09/02/2024 ===",
         "Unit_hipStreamBeginCapture_hipStreamPerThread",
         "=== SWDEV-504859 Below test failed in staging build #1741 ===",
         "Unit_hipGraphDebugDotPrint_Functional",
     #endif
-    #if defined gfx1100 || defined gfx1101 || defined gfx1102 || defined amdgcnspirv
+    #if defined gfx1100 || defined gfx1101 || defined gfx1102
         "=== Below tests soft hang in stress test on 13/09/23 ===",
         "Unit_hipMemsetFunctional_ZeroValue_hipMemsetD16",
         "Unit_hipIpcMemAccess_Semaphores",
@@ -971,7 +971,7 @@
         "Unit_hipMemcpy3D_multiDevice-OnPeerDevice",
         "====================================================",
     #endif
-    #if defined gfx1103 || defined amdgcnspirv
+    #if defined gfx1103
         "=== SWDEV-500201 Below tests failed in staging build #1732 ===",
         "Unit_UUID_setEnv_Thread",
         "Unit_UUID_setEnv_Thread_Lock",
@@ -986,7 +986,7 @@
         "Performance_hipMemcpy2D_HostToHost",
         "Performance_hipExtLaunchKernelGGL_QueryGPUFrequency",
     #endif
-    #if defined gfx1200 || defined gfx1201 || defined amdgcnspirv
+    #if defined gfx1200 || defined gfx1201
         "=== SWDEV-470751 : Fine Grain memory is MTYPE_NC due to HW bug.",
         "Unit_hipEventCreateWithFlags_DisableSystemFence_CohHstMem",
         "=== SWDEV-500407 Below tests failed in staging build #1732 ===",

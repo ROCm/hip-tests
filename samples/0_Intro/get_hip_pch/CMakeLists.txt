@@ -1,5 +1,4 @@
-
-# Copyright (c) 2016 - 2023 Advanced Micro Devices, Inc. All rights reserved.
+# Copyright (c) 2020 - 2023 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -19,9 +18,39 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-add_custom_target(build_intro)
-add_subdirectory(bit_extract)
-add_subdirectory(module_api)
-add_subdirectory(module_api_global)
-add_subdirectory(square)
-add_subdirectory(get_hip_pch)
+project(get_hip_pch)
+
+cmake_minimum_required(VERSION 3.10)
+
+if(UNIX)
+  if(NOT DEFINED ROCM_PATH)
+    set(ROCM_PATH "/opt/rocm" CACHE STRING "Default ROCM installation directory.")
+  endif()
+  # Search for rocm in common locations
+  list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
+endif()
+
+# Find hip
+find_package(hip)
+
+# Set compiler and linker
+set(CMAKE_CXX_COMPILER ${HIP_HIPCC_EXECUTABLE})
+
+set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
+
+# Create the excutable
+if(TARGET build_intro)
+set(EXCLUDE_OPTION EXCLUDE_FROM_ALL)
+else()
+set(EXCLUDE_OPTION )
+endif()
+add_executable(get_hip_pch ${EXCLUDE_OPTION} get_hip_pch.cpp)
+
+target_include_directories(get_hip_pch PRIVATE ../../common)
+
+# Link with HIP
+target_link_libraries(get_hip_pch hip::host)
+
+if(TARGET build_intro)
+  add_dependencies(build_intro get_hip_pch)
+endif()

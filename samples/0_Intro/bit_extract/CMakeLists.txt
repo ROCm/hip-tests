@@ -22,14 +22,6 @@ project(bit_extract)
 
 cmake_minimum_required(VERSION 3.10)
 
-if(NOT WIN32 AND NOT DEFINED __HIP_ENABLE_PCH)
-  set(__HIP_ENABLE_PCH ON CACHE BOOL "enable/disable pre-compiled hip headers")
-endif()
-
-if(${__HIP_ENABLE_PCH})
-  add_definitions(-D__HIP_ENABLE_PCH)
-endif()
-
 if(UNIX)
   if(NOT DEFINED ROCM_PATH)
     set(ROCM_PATH "/opt/rocm" CACHE STRING "Default ROCM installation directory.")

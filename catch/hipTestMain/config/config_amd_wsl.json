@@ -639,6 +639,8 @@
         "Note: test dropped in latest gerritgit",
         "Unit_hipStreamCreate_WithPriorityPerformance_Default_high",
         "Unit_hipStreamCreate_WithPriorityPerformance_Nonblocking_high",
-        "Unit_hipStreamCreate_WithPriorityPerformance_Default_low"
+        "Unit_hipStreamCreate_WithPriorityPerformance_Default_low",
+        "=== Following tests disabled as it should be a local perf test",
+        "Performance_hipExtLaunchKernelGGL_QueryGPUFrequency"
     ]
 }

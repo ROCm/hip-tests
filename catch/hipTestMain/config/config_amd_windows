@@ -751,6 +751,8 @@
         "Unit_hipGraphInstantiateWithFlags_AutoFreeOnLaunchDoubleKernel",
         "Unit_hipGraphInstantiateWithFlags_WithDefaultAndAutoFreeOnLaunch",
     #endif
+        "=== Following tests disabled as it should be a local perf test",
+        "Performance_hipExtLaunchKernelGGL_QueryGPUFrequency",
         "End of json"
     ]
 }

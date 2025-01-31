@@ -912,6 +912,8 @@
         "=== SWDEV-470751 : Fine Grain memory is MTYPE_NC due to HW bug.",
         "Unit_hipEventCreateWithFlags_DisableSystemFence_CohHstMem",
     #endif
+        "=== Following tests disabled as it should be a local perf test",
+        "Performance_hipExtLaunchKernelGGL_QueryGPUFrequency",
         "End of json"
     ]
 }

@@ -182,7 +182,7 @@ TEST_CASE("Unit_hipGetProcAddress_VMM") {
 
   hipMemAllocationProp prop{};
   prop.type = hipMemAllocationTypePinned;
-  prop.requestedHandleType = hipMemHandleTypeNone;
+  prop.requestedHandleTypes = hipMemHandleTypeNone;
   prop.location.type = hipMemLocationTypeDevice;
   prop.location.id = 0;
 
@@ -238,7 +238,7 @@ TEST_CASE("Unit_hipGetProcAddress_VMM") {
   HIP_CHECK(dyn_hipMemGetAllocationPropertiesFromHandle_ptr(
             &requiredProp, handle));
   REQUIRE(requiredProp.type == hipMemAllocationTypePinned);
-  REQUIRE(requiredProp.requestedHandleType == hipMemHandleTypeNone);
+  REQUIRE(requiredProp.requestedHandleTypes == hipMemHandleTypeNone);
   REQUIRE(requiredProp.location.type == hipMemLocationTypeDevice);
   REQUIRE(requiredProp.location.id == 0);
 

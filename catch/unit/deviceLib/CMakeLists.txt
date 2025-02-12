@@ -90,6 +90,7 @@ set(AMD_TEST_SRC
     AtomicsWithRandomActiveLanesInWavefront.cc
     fp16_ops.cc
     fp8_host.cc
+    fp4_ocp.cc
 )
 
 set(AMD_ARCH_SPEC_TEST_SRC

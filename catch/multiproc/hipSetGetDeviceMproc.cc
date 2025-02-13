@@ -189,7 +189,7 @@ static void testValidDevices(int numDevices, bool useRocrEnv, int *deviceList,
   if (cPid == 0) {
 #ifdef __HIP_PLATFORM_NVIDIA__
     unsetenv("CUDA_VISIBLE_DEVICES");
-    setenv("CUDA_VISIBLE_DEVICES", visibleDeviceString, 1);
+    setenv("CUDA_VISIBLE_DEVICES", visibleDeviceString.c_str(), 1);
 #else
     unsetenv("ROCR_VISIBLE_DEVICES");
     unsetenv("HIP_VISIBLE_DEVICES");

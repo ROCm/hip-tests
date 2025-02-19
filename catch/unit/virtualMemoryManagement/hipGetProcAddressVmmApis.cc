@@ -46,6 +46,17 @@ TEST_CASE("Unit_hipGetProcAddress_VMM") {
     return;
   }
 
+  hipDeviceProp_t devProp;
+  int device;
+  bool xnackEnabled = false;
+  HIP_CHECK(hipGetDevice(&device));
+  HIP_CHECK(hipGetDeviceProperties(&devProp, device));
+  std::string gfxName(devProp.gcnArchName);
+
+  if (gfxName.find("xnack+") != std::string::npos) {
+    xnackEnabled = true;
+  }
+
   void* hipMemGetAllocationGranularity_ptr = nullptr;
   void* hipMemCreate_ptr = nullptr;
   void* hipMemAddressReserve_ptr = nullptr;
@@ -242,7 +253,9 @@ TEST_CASE("Unit_hipGetProcAddress_VMM") {
   HIP_CHECK(dyn_hipMemRelease_ptr(handle));
 
   // Performing operation on ptr, to check it is invalidated or not
-  REQUIRE(hipMemcpy(ptr, hostMem, Nbytes, hipMemcpyHostToDevice)
+  if (!xnackEnabled) {
+    REQUIRE(hipMemcpy(ptr, hostMem, Nbytes, hipMemcpyHostToDevice)
           == hipErrorInvalidValue);
+  }
   free(hostMem);
 }

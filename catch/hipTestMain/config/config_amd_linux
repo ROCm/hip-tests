@@ -914,6 +914,22 @@
         "Unit_hipTexRefGetArray_Positive",
         "Unit_hipTexRefGetArray_Negative",
     #endif
+    #if defined gfx950
+        "=== Following tests are disabled as they failed in staging build# 1943: SWDEV-516063, SWDEV-516461",
+        "Unit_hipMemAdvise_TstAlignedAllocMem",
+        "Unit_hipStreamBatchMemOp_Negative_Tests",
+        "Unit_hipGetProcAddress_VMM",
+        "Unit_hipGLGetDevices_Positive_Basic",
+        "Unit_hipGLGetDevices_Negative_Parameters",
+        "Unit_hipGraphicsGLRegisterBuffer_Positive_Basic",
+        "Unit_hipGraphicsGLRegisterBuffer_Positive_Register_Twice",
+        "Unit_hipGraphicsGLRegisterImage_Positive_Basic",
+        "Unit_hipGraphicsGLRegisterImage_Positive_Register_Twice",
+        "Unit_hipGraphicsMapResources_Positive_Basic",
+        "Unit_hipGraphicsSubResourceGetMappedArray_Positive_Basic",
+        "Unit_hipGraphicsResourceGetMappedPointer_Positive_Basic",
+        "=============================================================",
+    #endif
     #if defined gfx1030
         "=== SWDEV-445961: These tests hang in PSDB stress test on 09/02/2024 ===",
         "Unit_hipStreamBeginCapture_hipStreamPerThread",

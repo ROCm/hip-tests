@@ -745,6 +745,11 @@
         "====================================================",
         "=== SWDEV-508023 Below tests are temporarily disabled - windows PSDB failed",
         "Unit_hipDeviceGetGraphMemAttribute_Positive_DoubleMemory",
+        "=== SWDEV-517063 Below tests are temporarily disabled due to PSDB failure",
+        "Unit_hipGraphInstantiateWithFlags_AutoFreeOnLaunchInLoop",
+        "Unit_hipGraphInstantiateWithFlags_AutoFreeOnLaunchFillKernel",
+        "Unit_hipGraphInstantiateWithFlags_AutoFreeOnLaunchDoubleKernel",
+        "Unit_hipGraphInstantiateWithFlags_WithDefaultAndAutoFreeOnLaunch",
     #endif
         "End of json"
     ]

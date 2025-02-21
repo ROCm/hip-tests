@@ -745,6 +745,13 @@
         "Unit_hipIpcCloseMemHandle_Positive_Reference_Counting",
         "=== SWDEV-508023 Below tests are temporarily disabled - Linux PSDB failed",
         "Unit_hipDeviceGetGraphMemAttribute_Positive_DoubleMemory",
+        "=== SWDEV-517063 Below tests are temporarily disabled due to PSDB failure",
+        "Unit_hipGraphInstantiateWithFlags_FlagAutoFreeOnLaunch_check",
+        "Unit_hipGraphInstantiateWithFlags_AutoFreeOnLaunchInLoop",
+        "Unit_hipGraphInstantiateWithFlags_AutoFreeOnLaunchFillKernel",
+        "Unit_hipGraphInstantiateWithFlags_AutoFreeOnLaunchDoubleKernel",
+        "Unit_hipGraphInstantiateWithFlags_AutoFreeOnLaunchMultiProcess",
+        "Unit_hipGraphInstantiateWithFlags_WithDefaultAndAutoFreeOnLaunch",
     #endif
     #if defined gfx908
         "=== Below test soft hang in stress test on 29/08/23 ===",

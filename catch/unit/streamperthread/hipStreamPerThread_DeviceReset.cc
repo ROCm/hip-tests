@@ -88,6 +88,9 @@ TEST_CASE("Unit_hipStreamPerThread_DeviceReset_2") {
   if (status != hipSuccess) return;
   HIP_CHECK(hipStreamSynchronize(hipStreamPerThread));
 
+  // Host Memory is not destroyed with hipDeviceReset, need to free it
+  // explicitly to avoid memory leaks
+  HIP_CHECK(hipHostFree(A_h));
   HIP_CHECK(hipDeviceReset());
 
   // After reset all memory objects will be destroyed hence allocating them again

@@ -613,7 +613,6 @@
         "Unit_hipMemset2DAsync_capturehipMemset2DAsync",
         "Unit_hipOccupancyMaxPotBlkSizeVariableSMemWithFlags_Functional",
         "Unit_hipDynamicShared",
-        "Unit___hip_atomic_fetch_min_Positive_Workgroup_Scattered_Addresses - double",
         "Unit_atomicExch_Positive - int",
         "Unit_atomicExch_Positive - unsigned int",
         "Unit_atomicExch_Positive - unsigned long",

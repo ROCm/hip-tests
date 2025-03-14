@@ -26,7 +26,7 @@ THE SOFTWARE.
 #include <limits>
 
 struct CmdOptions {
-  int iterations = 10;
+  int iterations = 2;
   int warmups = 100;
   int cg_extended_run = 5;
   int cg_iterations = 5;

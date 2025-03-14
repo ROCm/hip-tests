@@ -508,13 +508,11 @@ void SingleDeviceSingleKernelTest(const unsigned int width, const unsigned int p
       }
     }
   }
-#ifdef __linux__
    SECTION("Shared memory") {
     params.blocks = dim3(1);
     params.alloc_type = LinearAllocs::hipMalloc;
     TestCore<TestType, operation, true, memory_scope>(params);
   }
-#endif
 }
 
 // Configures and creates the TestCore for a single device, and multiple kernel launches

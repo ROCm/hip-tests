@@ -91,6 +91,7 @@ set(AMD_TEST_SRC
     fp16_ops.cc
     fp8_host.cc
     fp4_ocp.cc
+    fp6_ocp.cc
 )
 
 set(AMD_ARCH_SPEC_TEST_SRC

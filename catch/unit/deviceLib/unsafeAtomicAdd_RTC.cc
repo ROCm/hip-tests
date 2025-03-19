@@ -141,7 +141,7 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_CoherentRTCnounsafeatomicflag", "",
     }
     HIP_CHECK(hipModuleUnload(module));
   } else {
-      SUCCEED("Memory model feature is only supported for gfx90a, gfx940, gfx941, gfx942, gfx950,"
+      SUCCEED("Memory model feature is only supported for gfx90a, gfx942, gfx950,"
           "Hence skipping the testcase for this GPU " << device);
   }
 }
@@ -238,7 +238,7 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_CoherentRTCunsafeatomicflag", "",
     }
     HIP_CHECK(hipModuleUnload(module));
   } else {
-      SUCCEED("Memory model feature is only supported for gfx90a, gfx940, gfx941, gfx942, gfx950,"
+      SUCCEED("Memory model feature is only supported for gfx90a, gfx942, gfx950,"
           "Hence skipping the testcase for this GPU " << device);
   }
 }
@@ -331,7 +331,7 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_CoherentRTCwithoutflag", "",
     }
     HIP_CHECK(hipModuleUnload(module));
   } else {
-      SUCCEED("Memory model feature is only supported for gfx90a, gfx940, gfx941, gfx942, gfx950,"
+      SUCCEED("Memory model feature is only supported for gfx90a, gfx942, gfx950,"
           "Hence skipping the testcase for this GPU " << device);
   }
 }
@@ -417,7 +417,7 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_NonCoherentRTCnounsafeatomicflag", "",
     }
     HIP_CHECK(hipModuleUnload(module));
   } else {
-      SUCCEED("Memory model feature is only supported for gfx90a, gfx940, gfx941, gfx942, gfx950,"
+      SUCCEED("Memory model feature is only supported for gfx90a, gfx942, gfx950,"
           "Hence skipping the testcase for this GPU " << device);
   }
 }
@@ -505,7 +505,7 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_NonCoherentRTCunsafeatomicflag", "",
     }
     HIP_CHECK(hipModuleUnload(module));
   } else {
-      SUCCEED("Memory model feature is only supported for gfx90a, gfx940, gfx941, gfx942, gfx950,"
+      SUCCEED("Memory model feature is only supported for gfx90a, gfx942, gfx950,"
           "Hence skipping the testcase for this GPU " << device);
   }
 }
@@ -593,7 +593,7 @@ TEMPLATE_TEST_CASE("Unit_unsafeAtomicAdd_NonCoherentRTC", "",
     }
     HIP_CHECK(hipModuleUnload(module));
   } else {
-      SUCCEED("Memory model feature is only supported for gfx90a, gfx940, gfx941, gfx942, gfx950,"
+      SUCCEED("Memory model feature is only supported for gfx90a, gfx942, gfx950,"
           "Hence skipping the testcase for this GPU " << device);
   }
 }

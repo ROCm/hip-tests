@@ -26,13 +26,13 @@ THE SOFTWARE.
 #include <type_traits>
 #include <vector>
 #include <bitset>
-#if defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)
+#ifdef __gfx942__
 #define __gfx94plus_local__
 #endif
 
 /*
 * This catch test is meant for FP8 FNUZ conversion checking
-* tests only supported on gfx940,gfx941,gfx942 archs.
+* tests only supported on gfx942 archs.
 */
 
 static_assert(sizeof(unsigned int) == sizeof(float));
@@ -47,14 +47,12 @@ std::string get_arch_type()  {
 }
 
 #define ARCH_TYPE_GFX940(name) \
-  (name.find("gfx940") != std::string::npos) || \
-  (name.find("gfx941") != std::string::npos) || \
   (name.find("gfx942") != std::string::npos)
 
 #define FP8_FNUZ_SKIP_TEST \
   std::string gfxName = get_arch_type(); \
   if (!(ARCH_TYPE_GFX940(gfxName))) { \
-    HipTest::HIP_SKIP_TEST("This test can only be run on gfx940,gfx941,gfx42 arch"); \
+    HipTest::HIP_SKIP_TEST("This test can only be run on gfx942 arch"); \
     return; \
   }
 

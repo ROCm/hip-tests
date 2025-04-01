@@ -692,7 +692,6 @@
         "Unit_atomicDec_Negative_Parameters_RTC",
         "Unit_atomicCAS_Negative_Parameters_RTC",
         "SWDEV-445928: These tests fail in PSDB stress test on 09/02/2024",
-        "Unit_hipCreateSurfaceObject_Negative_Parameters",
         "Unit_Device___float2half_rd_Accuracy_Limited_Positive",
         "Unit_Device___float2half_ru_Accuracy_Limited_Positive",
         "Unit_Device___float2half_rz_Accuracy_Limited_Positive",

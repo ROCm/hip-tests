@@ -20,6 +20,7 @@ THE SOFTWARE.
 #pragma once
 
 #define HIP_ENABLE_WARP_SYNC_BUILTINS
+#define HIP_ENABLE_EXTRA_WARP_SYNC_TYPES
 
 #include <hip_test_common.hh>
 #include <resource_guards.hh>

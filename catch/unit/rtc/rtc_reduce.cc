@@ -1,4 +1,6 @@
 #define HIP_ENABLE_WARP_SYNC_BUILTINS
+#define HIP_ENABLE_EXTRA_WARP_SYNC_TYPES
+
 #include "warp_common.hh"
 #include <hip/hip_runtime.h>
 #include <tuple>
@@ -110,7 +112,7 @@ void compileProgram(hiprtcProgram& prog, const std::tuple<>&)
   size_t logSize;
   std::string scalarName, intrinsicName;
   hiprtcResult compileResult;
-  const char* options[] = { "-DHIP_ENABLE_WARP_SYNC_BUILTINS" };
+  const char* options[] = { "-DHIP_ENABLE_WARP_SYNC_BUILTINS -DHIP_ENABLE_EXTRA_WARP_SYNC_TYPES" };
 
   opToString<int, Op>(scalarName, intrinsicName);
   compileResult = hiprtcResult {hiprtcCompileProgram(prog, 1, options)};

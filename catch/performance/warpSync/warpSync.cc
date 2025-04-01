@@ -17,6 +17,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #define HIP_ENABLE_WARP_SYNC_BUILTINS
+#define HIP_ENABLE_EXTRA_WARP_SYNC_TYPES
+
 #include "warp_common.hh"
 #include <hip/hip_runtime.h>
 #include <hip/hip_fp16.h>

@@ -56,4 +56,10 @@ TEST_CASE("Unit_hipModuleLoad_Negative_Load_From_A_File_That_Is_Not_A_Module") {
   hipModule_t module;
 
   HIP_CHECK_ERROR(hipModuleLoad(&module, "not_a_module.txt"), hipErrorInvalidImage);
+
+#if HT_AMD
+  HIP_CHECK_ERROR(hipModuleLoad(&module, "empty_file.txt"), hipErrorInvalidValue);
+#else
+  HIP_CHECK_ERROR(hipModuleLoad(&module, "empty_file.txt"), hipErrorInvalidImage);
+#endif
 }

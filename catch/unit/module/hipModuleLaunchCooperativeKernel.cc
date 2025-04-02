@@ -56,13 +56,13 @@ TEST_CASE("Unit_hipModuleLaunchCooperativeKernel_Positive_Basic") {
   }
 
   SECTION("Cooperative kernel with no arguments") {
-    hipFunction_t f = GetKernel(mg.module(), "CoopKernel");
+    hipFunction_t f = GetKernel(GetModule(), "CoopKernel");
     HIP_CHECK(hipModuleLaunchCooperativeKernel(f, 2, 2, 1, 1, 1, 1, 0, nullptr, nullptr));
     HIP_CHECK(hipDeviceSynchronize());
   }
 
   SECTION("Kernel with arguments using kernelParams") {
-    hipFunction_t f = GetKernel(mg.module(), "Kernel42");
+    hipFunction_t f = GetKernel(GetModule(), "Kernel42");
 
     LinearAllocGuard<int> result_dev(LinearAllocs::hipMalloc, sizeof(int));
     HIP_CHECK(hipMemset(result_dev.ptr(), 0, sizeof(*result_dev.ptr())));
@@ -94,7 +94,7 @@ TEST_CASE("Unit_hipModuleLaunchCooperativeKernel_Positive_Parameters") {
     return;
   }
 
-  hipFunction_t f = GetKernel(mg.module(), "NOPKernel");
+  hipFunction_t f = GetKernel(GetModule(), "NOPKernel");
 
   SECTION("blockDim.x == maxBlockDimX") {
     const unsigned int x = GetDeviceAttribute(hipDeviceAttributeMaxBlockDimX, 0);
@@ -129,7 +129,7 @@ TEST_CASE("Unit_hipModuleLaunchCooperativeKernel_Negative_Parameters") {
     return;
   }
 
-  hipFunction_t f = GetKernel(mg.module(), "NOPKernel");
+  hipFunction_t f = GetKernel(GetModule(), "NOPKernel");
 
   SECTION("f == nullptr") {
     HIP_CHECK_ERROR(

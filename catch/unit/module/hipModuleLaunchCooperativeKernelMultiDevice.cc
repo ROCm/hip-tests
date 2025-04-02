@@ -163,7 +163,7 @@ TEST_CASE("Unit_hipModuleLaunchCooperativeKernelMultiDevice_Negative_Parameters"
 
   if (device_count > 1) {
     SECTION("launchParamsList.func doesn't match across all devices") {
-      params_list[1].function = GetKernel(mg.module(), "NOPKernel");
+      params_list[1].function = GetKernel(GetModule(), "NOPKernel");
 #if HT_AMD
       HIP_CHECK_ERROR(
           hipModuleLaunchCooperativeKernelMultiDevice(params_list.data(), device_count, 0u),

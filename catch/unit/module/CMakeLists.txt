@@ -36,185 +36,84 @@ set(TEST_SRC
     hipDrvLaunchKernelEx.cc
 )
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code
-                   COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} --std=c++17 ${CMAKE_CURRENT_SOURCE_DIR}/get_function_module.cc
-                   -o get_function_module.code
-                   -I${HIP_PATH}/include/ --hip-path=${HIP_PATH}
-                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/get_function_module.cc)
-add_custom_target(get_function_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code)
+function(add_custom_module target module_name source_file_name flags offload_arch_str)
+  set(output_file ${CMAKE_CURRENT_BINARY_DIR}/${module_name})
+  set(source_file ${CMAKE_CURRENT_SOURCE_DIR}/${source_file_name})
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/launch_kernel_module.code
-                   COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} --std=c++17 ${CMAKE_CURRENT_SOURCE_DIR}/launch_kernel_module.cc
-                   -o launch_kernel_module.code
-                   -I${HIP_PATH}/include/ --hip-path=${HIP_PATH}
-                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/launch_kernel_module.cc)
-add_custom_target(launch_kernel_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/launch_kernel_module.code)
+  # Note to pass arch use format like -DOFFLOAD_ARCH_STR="--offload-arch=gfx900
+  # --offload-arch=gfx906" having space at the start/end of OFFLOAD_ARCH_STR can
+  # cause build failures
+  add_custom_target(
+    ${module_name}
+    COMMAND
+      ${CMAKE_CXX_COMPILER} ${flags} ${offload_arch_str} ${source_file}
+      -o ${output_file} -I${HIP_PATH}/include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include
+      --hip-path=${HIP_PATH})
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/get_global_test_module.code
-                   COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} --std=c++17 ${CMAKE_CURRENT_SOURCE_DIR}/get_global_test_module.cc
-                   -o get_global_test_module.code
-                   -I${HIP_PATH}/include/ --hip-path=${HIP_PATH}
-                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/get_global_test_module.cc)
-add_custom_target(get_global_test_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/get_global_test_module.code)
+  set_property(GLOBAL APPEND PROPERTY G_INSTALL_CUSTOM_TARGETS ${output_file})
+  add_dependencies(${target} ${module_name})
+endfunction()
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/get_tex_ref_module.code
-                   COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} --std=c++17 ${CMAKE_CURRENT_SOURCE_DIR}/get_tex_ref_module.cc
-                   -o get_tex_ref_module.code
-                   -I${HIP_PATH}/include/ --hip-path=${HIP_PATH}
-                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/get_tex_ref_module.cc)
-add_custom_target(get_tex_ref_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/get_tex_ref_module.code)
+add_custom_module(build_tests get_function_module.code get_function_module.cc "--genco" ${OFFLOAD_ARCH_STR})
+add_custom_module(build_tests launch_kernel_module.code launch_kernel_module.cc "--genco" ${OFFLOAD_ARCH_STR})
+add_custom_module(build_tests get_global_test_module.code get_global_test_module.cc "--genco" ${OFFLOAD_ARCH_STR})
+add_custom_module(build_tests get_tex_ref_module.code get_tex_ref_module.cc "--genco" ${OFFLOAD_ARCH_STR})
+add_custom_module(build_tests empty_module.code empty_module.cc "--genco" ${OFFLOAD_ARCH_STR})
+add_custom_module(build_tests coopKernel.code coopKernel.cpp "--genco" ${OFFLOAD_ARCH_STR})
 
-add_custom_target(coopKernel.code
-                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
-                  ${CMAKE_CURRENT_SOURCE_DIR}/coopKernel.cpp
-                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/coopKernel.code
-                  -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include)
-
-set_property(GLOBAL APPEND PROPERTY G_INSTALL_CUSTOM_TARGETS
-  ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code
-  ${CMAKE_CURRENT_BINARY_DIR}/launch_kernel_module.code
-  ${CMAKE_CURRENT_BINARY_DIR}/get_global_test_module.code
-  ${CMAKE_CURRENT_BINARY_DIR}/get_tex_ref_module.code
-  ${CMAKE_CURRENT_BINARY_DIR}/coopKernel.code
-)
-# Note to pass arch use format like -DOFFLOAD_ARCH_STR="--offload-arch=gfx900  --offload-arch=gfx906"
-# having space at the start/end of OFFLOAD_ARCH_STR can cause build failures
+set_property(GLOBAL APPEND PROPERTY G_INSTALL_CUSTOM_TARGETS ${CMAKE_CURRENT_SOURCE_DIR}/not_a_module.txt)
+set_property(GLOBAL APPEND PROPERTY G_INSTALL_CUSTOM_TARGETS ${CMAKE_CURRENT_SOURCE_DIR}/empty_file.txt)
 
 if(HIP_PLATFORM MATCHES "amd")
-set(TEST_SRC
-    ${TEST_SRC}
-    hipExtModuleLaunchKernel.cc
-    hipHccModuleLaunchKernel.cc
-    hipGetProcAddressModuleApis.cc)
+  set(TEST_SRC ${TEST_SRC} hipExtModuleLaunchKernel.cc
+               hipHccModuleLaunchKernel.cc hipGetProcAddressModuleApis.cc)
 
-add_custom_target(empty_module.code
-                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
-                  ${CMAKE_CURRENT_SOURCE_DIR}/empty_module.cc
-                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/empty_module.code
-                  -I${HIP_PATH}/include/ --hip-path=${HIP_PATH}
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include)
+  set(OFFLOAD_ARCH_GENERIC_STR "--offload-arch=gfx9-generic --offload-arch=gfx9-4-generic:sramecc+:xnack- --offload-arch=gfx9-4-generic:sramecc-:xnack- --offload-arch=gfx9-4-generic:xnack+ --offload-arch=gfx10-1-generic --offload-arch=gfx10-3-generic --offload-arch=gfx11-generic --offload-arch=gfx12-generic")
 
-add_custom_target(copyKernel.code
-                  COMMAND ${CMAKE_CXX_COMPILER} -mcode-object-version=5 --genco ${OFFLOAD_ARCH_STR}
-                  ${CMAKE_CURRENT_SOURCE_DIR}/copyKernel.cc
-                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copyKernel.code
-                  -I${HIP_PATH}/include/ --hip-path=${HIP_PATH}
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include)
+  add_custom_module(build_tests addKernel.code addKernel.cc
+                    "--genco -mcode-object-version=5" ${OFFLOAD_ARCH_STR})
+  add_custom_module(build_tests copyKernelCompressed.code copyKernel.cc
+                    "--genco -mcode-object-version=5 --offload-compress" ${OFFLOAD_ARCH_STR})
+  add_custom_module(build_tests copyKernel.code copyKernel.cc
+                    "--genco -mcode-object-version=5" ${OFFLOAD_ARCH_STR})
+  add_custom_module(build_tests copyKernel.s copyKernel.cc
+                    "-mcode-object-version=5;-S;" "")
+  add_custom_module(build_tests copyKernelGenericTarget.code copyKernel.cc
+                    "--genco -mcode-object-version=6" ${OFFLOAD_ARCH_GENERIC_STR})
+  add_custom_module(build_tests copyKernelGenericTargetCompressed.code copyKernel.cc
+                    "--genco -mcode-object-version=6 --offload-compress" ${OFFLOAD_ARCH_GENERIC_STR})
 
-add_custom_target(copyKernel.s
-                  COMMAND ${CMAKE_CXX_COMPILER} -mcode-object-version=5 -S ${CMAKE_CURRENT_SOURCE_DIR}/copyKernel.cc
-                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copyKernel.s
-                  -I${HIP_PATH}/include/ --hip-path=${HIP_PATH}
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include)
+  if(UNIX)
+    set(TEST_SRC ${TEST_SRC} hipKerArgOptimization.cc)
 
-add_custom_target(addKernel.code
-                  COMMAND ${CMAKE_CXX_COMPILER} -mcode-object-version=5 --genco ${OFFLOAD_ARCH_STR}
-                  ${CMAKE_CURRENT_SOURCE_DIR}/addKernel.cc
-                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/addKernel.code
-                  -I${HIP_PATH}/include/ --hip-path=${HIP_PATH}
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include)
-
-add_custom_target(copyKernelCompressed.code
-                  COMMAND ${CMAKE_CXX_COMPILER} -mcode-object-version=5 --offload-compress --genco ${OFFLOAD_ARCH_STR}
-                  ${CMAKE_CURRENT_SOURCE_DIR}/copyKernel.cc
-                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copyKernelCompressed.code
-                  -I${HIP_PATH}/include/ --hip-path=${HIP_PATH}
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include)
-
-set(OFFLOAD_ARCH_GENERIC_STR "--offload-arch=gfx9-generic --offload-arch=gfx9-4-generic:sramecc+:xnack- --offload-arch=gfx9-4-generic:sramecc-:xnack- --offload-arch=gfx9-4-generic:xnack+ --offload-arch=gfx10-1-generic --offload-arch=gfx10-3-generic --offload-arch=gfx11-generic --offload-arch=gfx12-generic")
-add_custom_target(copyKernelGenericTarget.code
-                  COMMAND ${CMAKE_CXX_COMPILER} -mcode-object-version=6 --genco ${OFFLOAD_ARCH_GENERIC_STR}
-                  ${CMAKE_CURRENT_SOURCE_DIR}/copyKernel.cc
-                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copyKernelGenericTarget.code
-                  -I${HIP_PATH}/include/ --hip-path=${HIP_PATH}
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include)
-
-add_custom_target(copyKernelGenericTargetCompressed.code
-                  COMMAND ${CMAKE_CXX_COMPILER} -mcode-object-version=6 --offload-compress --genco ${OFFLOAD_ARCH_GENERIC_STR}
-                  ${CMAKE_CURRENT_SOURCE_DIR}/copyKernel.cc
-                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copyKernelGenericTargetCompressed.code
-                  -I${HIP_PATH}/include/ --hip-path=${HIP_PATH}
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include)
-set_property(GLOBAL APPEND PROPERTY G_INSTALL_CUSTOM_TARGETS
-  ${CMAKE_CURRENT_BINARY_DIR}/empty_module.code
-  ${CMAKE_CURRENT_BINARY_DIR}/copyKernel.code
-  ${CMAKE_CURRENT_BINARY_DIR}/copyKernel.s
-  ${CMAKE_CURRENT_BINARY_DIR}/addKernel.code
-  ${CMAKE_CURRENT_BINARY_DIR}/copyKernelCompressed.code
-  ${CMAKE_CURRENT_BINARY_DIR}/copyKernelGenericTarget.code
-  ${CMAKE_CURRENT_BINARY_DIR}/copyKernelGenericTargetCompressed.code
-)
-
-if(UNIX)
-set(TEST_SRC
-    ${TEST_SRC}
-    hipKerArgOptimization.cc)
-
-add_custom_target(copiousArgKernel.code
-                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
-                  ${CMAKE_CURRENT_SOURCE_DIR}/copiousArgKernel.cc
-                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copiousArgKernel.code
-                  -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
-
-add_custom_target(copiousArgKernel0.code
-                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
-                  -mllvm -amdgpu-kernarg-preload-count=0
-                  ${CMAKE_CURRENT_SOURCE_DIR}/copiousArgKernel.cc
-                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copiousArgKernel0.code
-                  -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
-
-add_custom_target(copiousArgKernel1.code
-                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
-                  -mllvm -amdgpu-kernarg-preload-count=1
-                  ${CMAKE_CURRENT_SOURCE_DIR}/copiousArgKernel.cc
-                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copiousArgKernel1.code
-                  -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
-
-add_custom_target(copiousArgKernel2.code
-                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
-                  -mllvm -amdgpu-kernarg-preload-count=2
-                  ${CMAKE_CURRENT_SOURCE_DIR}/copiousArgKernel.cc
-                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copiousArgKernel2.code
-                  -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
-
-add_custom_target(copiousArgKernel3.code
-                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
-                  -mllvm -amdgpu-kernarg-preload-count=3
-                  ${CMAKE_CURRENT_SOURCE_DIR}/copiousArgKernel.cc
-                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copiousArgKernel3.code
-                  -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
-
-add_custom_target(copiousArgKernel16.code
-                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
-                  -mllvm -amdgpu-kernarg-preload-count=16
-                  ${CMAKE_CURRENT_SOURCE_DIR}/copiousArgKernel.cc
-                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copiousArgKernel16.code
-                  -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
-
-add_custom_target(copiousArgKernel17.code
-                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
-                  -mllvm -amdgpu-kernarg-preload-count=17
-                  ${CMAKE_CURRENT_SOURCE_DIR}/copiousArgKernel.cc
-                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/copiousArgKernel17.code
-                  -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
-set_property(GLOBAL APPEND PROPERTY G_INSTALL_CUSTOM_TARGETS
-  ${CMAKE_CURRENT_BINARY_DIR}/copiousArgKernel.code
-  ${CMAKE_CURRENT_BINARY_DIR}/copiousArgKernel0.code
-  ${CMAKE_CURRENT_BINARY_DIR}/copiousArgKernel1.code
-  ${CMAKE_CURRENT_BINARY_DIR}/copiousArgKernel2.code
-  ${CMAKE_CURRENT_BINARY_DIR}/copiousArgKernel3.code
-  ${CMAKE_CURRENT_BINARY_DIR}/copiousArgKernel16.code
-  ${CMAKE_CURRENT_BINARY_DIR}/copiousArgKernel17.code
-)
-endif()
+    add_custom_module(build_tests copiousArgKernel.code copiousArgKernel.cc
+      "--genco -I${CMAKE_CURRENT_SOURCE_DIR}/../../include" ${OFFLOAD_ARCH_STR})
+    add_custom_module(build_tests copiousArgKernel0.code copiousArgKernel.cc
+      "--genco -mllvm -amdgpu-kernarg-preload-count=0 -I${CMAKE_CURRENT_SOURCE_DIR}/../../include"
+      ${OFFLOAD_ARCH_STR}
+    )
+    add_custom_module(
+      build_tests copiousArgKernel1.code copiousArgKernel.cc
+      "--genco -mllvm -amdgpu-kernarg-preload-count=1 -I${CMAKE_CURRENT_SOURCE_DIR}/../../include"
+      ${OFFLOAD_ARCH_STR}
+    )
+    add_custom_module(build_tests copiousArgKernel2.code copiousArgKernel.cc
+      "--genco -mllvm -amdgpu-kernarg-preload-count=2 -I${CMAKE_CURRENT_SOURCE_DIR}/../../include"
+      ${OFFLOAD_ARCH_STR}
+    )
+    add_custom_module(build_tests copiousArgKernel3.code copiousArgKernel.cc
+      "--genco -mllvm -amdgpu-kernarg-preload-count=3 -I${CMAKE_CURRENT_SOURCE_DIR}/../../include"
+      ${OFFLOAD_ARCH_STR}
+    )
+    add_custom_module(build_tests copiousArgKernel16.code copiousArgKernel.cc
+      "--genco -mllvm -amdgpu-kernarg-preload-count=16 -I${CMAKE_CURRENT_SOURCE_DIR}/../../include"
+      ${OFFLOAD_ARCH_STR}
+    )
+    add_custom_module(build_tests copiousArgKernel17.code copiousArgKernel.cc
+      "--genco -mllvm -amdgpu-kernarg-preload-count=17 -I${CMAKE_CURRENT_SOURCE_DIR}/../../include"
+      ${OFFLOAD_ARCH_STR}
+    )
+  endif()
 endif()
 
 if(HIP_PLATFORM MATCHES "amd")
@@ -230,20 +129,7 @@ hip_add_exe_to_target(NAME ModuleTest
   COMMON_SHARED_SRC ${COMMON_SHARED_SRC}
   COMPILE_OPTIONS -std=c++17)
 
-add_dependencies(ModuleTest coopKernel.code)
-add_dependencies(ModuleTest get_function_module)
-add_dependencies(ModuleTest launch_kernel_module)
-add_dependencies(ModuleTest get_global_test_module)
-add_dependencies(ModuleTest get_tex_ref_module)
-
 if(HIP_PLATFORM MATCHES "amd")
-add_dependencies(build_tests empty_module.code)
-add_dependencies(build_tests copyKernel.code copyKernel.s)
-add_dependencies(build_tests addKernel.code)
-add_dependencies(build_tests copyKernelCompressed.code)
-add_dependencies(build_tests copyKernelGenericTarget.code)
-add_dependencies(build_tests copyKernelGenericTargetCompressed.code)
-
 if(UNIX)
 add_dependencies(build_tests copiousArgKernel.code copiousArgKernel0.code copiousArgKernel1.code copiousArgKernel2.code
 copiousArgKernel3.code copiousArgKernel16.code copiousArgKernel17.code)
@@ -276,34 +162,30 @@ hip_add_exe_to_target(NAME module
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests)
 
-add_custom_target(managed_kernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/managed_kernel.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../module/managed_kernel.code -I${HIP_PATH}/include -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --hip-path=${HIP_PATH})
-
 hip_add_exe_to_target(NAME managedKernel
                       TEST_SRC ${LINUX_TEST_SRC}
                       TEST_TARGET_NAME build_tests
                       LINKER_LIBS ${CMAKE_DL_LIBS})
-
-add_custom_target(vcpy_kernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/vcpy_kernel.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../module/vcpy_kernel.code -I${HIP_PATH}/include -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --hip-path=${HIP_PATH})
 
 hip_add_exe_to_target(NAME VcpyKernel
                       TEST_SRC ${LINUX_TEST_SRC}
                       TEST_TARGET_NAME build_tests
                       LINKER_LIBS ${CMAKE_DL_LIBS})
 
-add_custom_target(matmul.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/matmul.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../module/matmul.code -I${HIP_PATH}/include -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --hip-path=${HIP_PATH})
-
 hip_add_exe_to_target(NAME matmul
                       TEST_SRC ${LINUX_TEST_SRC}
                       TEST_TARGET_NAME build_tests
                       LINKER_LIBS ${CMAKE_DL_LIBS})
 
-add_custom_target(kernel_composite_test.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/kernel_composite_test.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../module/kernel_composite_test.code -I${HIP_PATH}/include -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --hip-path=${HIP_PATH})
-set_property(GLOBAL APPEND PROPERTY G_INSTALL_CUSTOM_TARGETS
-  ${CMAKE_CURRENT_BINARY_DIR}/kernel_composite_test.code
-  ${CMAKE_CURRENT_BINARY_DIR}/matmul.code
-  ${CMAKE_CURRENT_BINARY_DIR}/vcpy_kernel.code
-  ${CMAKE_CURRENT_BINARY_DIR}/managed_kernel.code
-)
+add_custom_module(module managed_kernel.code managed_kernel.cpp
+                  "--genco -I${CMAKE_CURRENT_SOURCE_DIR}/../../include" ${OFFLOAD_ARCH_STR})
+add_custom_module(module vcpy_kernel.code vcpy_kernel.cpp
+                  "--genco -I${CMAKE_CURRENT_SOURCE_DIR}/../../include" ${OFFLOAD_ARCH_STR})
+add_custom_module(module matmul.code matmul.cpp
+                  "--genco -I${CMAKE_CURRENT_SOURCE_DIR}/../../include" ${OFFLOAD_ARCH_STR})
+add_custom_module(module kernel_composite_test.code kernel_composite_test.cpp
+                  "--genco -I${CMAKE_CURRENT_SOURCE_DIR}/../../include" ${OFFLOAD_ARCH_STR})
+
 add_executable(testhipModuleLoadUnloadFunc_exe EXCLUDE_FROM_ALL testhipModuleLoadUnloadFunc_exe.cc)
 set_property(GLOBAL APPEND PROPERTY G_INSTALL_EXE_TARGETS testhipModuleLoadUnloadFunc_exe)
 
@@ -311,4 +193,5 @@ hip_add_exe_to_target(NAME compositeKernel
                       TEST_SRC ${LINUX_TEST_SRC}
                       TEST_TARGET_NAME build_tests
                       LINKER_LIBS ${CMAKE_DL_LIBS})
-add_dependencies(module managed_kernel.code vcpy_kernel.code matmul.code kernel_composite_test.code testhipModuleLoadUnloadFunc_exe)
+
+add_dependencies(module testhipModuleLoadUnloadFunc_exe)

@@ -27,12 +27,11 @@ THE SOFTWARE.
 #include <resource_guards.hh>
 #include <utils.hh>
 
-inline ModuleGuard InitModule() {
+static hipModule_t GetModule() {
   HIP_CHECK(hipFree(nullptr));
-  return ModuleGuard::LoadModule("launch_kernel_module.code");
+  static const auto mg = ModuleGuard::LoadModule("launch_kernel_module.code");
+  return mg.module();
 }
-
-inline ModuleGuard mg{InitModule()};
 
 using ExtModuleLaunchKernelSig = hipError_t(hipFunction_t, uint32_t, uint32_t, uint32_t, uint32_t,
                                             uint32_t, uint32_t, size_t, hipStream_t, void**, void**,
@@ -40,13 +39,13 @@ using ExtModuleLaunchKernelSig = hipError_t(hipFunction_t, uint32_t, uint32_t, u
 
 template <ExtModuleLaunchKernelSig* func> void ModuleLaunchKernelPositiveBasic() {
   SECTION("Kernel with no arguments") {
-    hipFunction_t f = GetKernel(mg.module(), "NOPKernel");
+    hipFunction_t f = GetKernel(GetModule(), "NOPKernel");
     HIP_CHECK(func(f, 1, 1, 1, 1, 1, 1, 0, nullptr, nullptr, nullptr, nullptr, nullptr, 0u));
     HIP_CHECK(hipDeviceSynchronize());
   }
 
   SECTION("Kernel with arguments using kernelParams") {
-    hipFunction_t f = GetKernel(mg.module(), "Kernel42");
+    hipFunction_t f = GetKernel(GetModule(), "Kernel42");
     LinearAllocGuard<int> result_dev(LinearAllocs::hipMalloc, sizeof(int));
     HIP_CHECK(hipMemset(result_dev.ptr(), 0, sizeof(*result_dev.ptr())));
     int* result_ptr = result_dev.ptr();
@@ -58,7 +57,7 @@ template <ExtModuleLaunchKernelSig* func> void ModuleLaunchKernelPositiveBasic()
   }
 
   SECTION("Kernel with arguments using extra") {
-    hipFunction_t f = GetKernel(mg.module(), "Kernel42");
+    hipFunction_t f = GetKernel(GetModule(), "Kernel42");
     LinearAllocGuard<int> result_dev(LinearAllocs::hipMalloc, sizeof(int));
     HIP_CHECK(hipMemset(result_dev.ptr(), 0, sizeof(*result_dev.ptr())));
     int* result_ptr = result_dev.ptr();
@@ -81,7 +80,7 @@ template <ExtModuleLaunchKernelSig* func> void ModuleLaunchKernelPositiveParamet
   const auto LaunchNOPKernel = [=](unsigned int gridDimX, unsigned int gridDimY,
                                    unsigned int gridDimZ, unsigned int blockDimX,
                                    unsigned int blockDimY, unsigned int blockDimZ) {
-    hipFunction_t f = GetKernel(mg.module(), "NOPKernel");
+    hipFunction_t f = GetKernel(GetModule(), "NOPKernel");
     HIP_CHECK(func(f, gridDimX, gridDimY, gridDimZ, blockDimX, blockDimY, blockDimZ, 0, nullptr,
                    nullptr, nullptr, nullptr, nullptr, 0u));
     HIP_CHECK(hipDeviceSynchronize());
@@ -120,8 +119,8 @@ template <ExtModuleLaunchKernelSig* func> void ModuleLaunchKernelPositiveParamet
 
 template <ExtModuleLaunchKernelSig* func> void ModuleLaunchKernelNegativeParameters(
                                                            bool extLaunch = false) {
-  hipFunction_t f = GetKernel(mg.module(), "NOPKernel");
-  hipError_t expectedErrorLaunchParam = (extLaunch == true) ? hipErrorInvalidConfiguration
+  hipFunction_t f = GetKernel(GetModule(), "NOPKernel");
+  hipError_t expectedErrorZeroBlockDim = (extLaunch == true) ? hipErrorInvalidConfiguration
                                                              : hipErrorInvalidValue;
   hipError_t expectedErrorOverCapacityGridDim = (extLaunch == true) ? hipSuccess
                                                                     : hipErrorInvalidValue;
@@ -213,7 +212,7 @@ template <ExtModuleLaunchKernelSig* func> void ModuleLaunchKernelNegativeParamet
   }
 
   SECTION("Passing kernel_args and extra simultaneously") {
-    hipFunction_t f = GetKernel(mg.module(), "Kernel42");
+    hipFunction_t f = GetKernel(GetModule(), "Kernel42");
     LinearAllocGuard<int> result_dev(LinearAllocs::hipMalloc, sizeof(int));
     int* result_ptr = result_dev.ptr();
     size_t size = sizeof(result_ptr);
@@ -230,7 +229,7 @@ template <ExtModuleLaunchKernelSig* func> void ModuleLaunchKernelNegativeParamet
   }
 
   SECTION("Invalid extra") {
-    hipFunction_t f = GetKernel(mg.module(), "Kernel42");
+    hipFunction_t f = GetKernel(GetModule(), "Kernel42");
     void* extra[0] = {};
     HIP_CHECK_ERROR(func(f, 1, 1, 1, 1, 1, 1, 0, nullptr, nullptr, extra, nullptr, nullptr, 0u),
                     hipErrorInvalidValue);

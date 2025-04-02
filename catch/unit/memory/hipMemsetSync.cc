@@ -442,10 +442,6 @@ static void doMemsetTest(allocType mallocType, memSetType memset_type, MultiDDat
 }
 
 TEST_CASE("Unit_hipMemsetSync") {
-#if HT_NVIDIA
-  HipTest::HIP_SKIP_TEST("EXSWCPHIPT-86");
-  return;
-#endif
   allocType type = GENERATE(allocType::deviceMalloc, allocType::hostMalloc, allocType::hostRegisted,
                             allocType::devRegistered);
   memSetType memset_type = memSetType::hipMemset;
@@ -455,10 +451,6 @@ TEST_CASE("Unit_hipMemsetSync") {
 }
 
 TEMPLATE_TEST_CASE("Unit_hipMemsetDSync", "", int8_t, int16_t, uint32_t) {
-#if HT_NVIDIA
-  HipTest::HIP_SKIP_TEST("EXSWCPHIPT-86");
-  return;
-#endif
   allocType mallocType = GENERATE(allocType::hostRegisted, allocType::deviceMalloc,
                                   allocType::hostMalloc, allocType::devRegistered);
   memSetType memset_type;
@@ -477,10 +469,6 @@ TEMPLATE_TEST_CASE("Unit_hipMemsetDSync", "", int8_t, int16_t, uint32_t) {
 }
 
 TEST_CASE("Unit_hipMemset2DSync") {
-#if HT_NVIDIA
-  HipTest::HIP_SKIP_TEST("EXSWCPHIPT-86");
-  return;
-#endif
   allocType mallocType = GENERATE(allocType::deviceMalloc, allocType::hostMalloc,
                                   allocType::hostRegisted, allocType::devRegistered);
   memSetType memset_type = memSetType::hipMemset2D;
@@ -492,10 +480,6 @@ TEST_CASE("Unit_hipMemset2DSync") {
 }
 
 TEST_CASE("Unit_hipMemset3DSync") {
-#if HT_NVIDIA
-  HipTest::HIP_SKIP_TEST("EXSWCPHIPT-86");
-  return;
-#endif
   allocType mallocType = GENERATE(allocType::deviceMalloc, allocType::hostMalloc,
                                   allocType::hostRegisted, allocType::devRegistered);
   memSetType memset_type = memSetType::hipMemset3D;

@@ -189,7 +189,6 @@
         "Unit_hipMemcpyParam2DAsync_Positive_Basic",
         "SWDEV-442583: Below tests failing in stress test on 12/01/24 ===",
         "Unit_hipLaunchCooperativeKernelMultiDevice_Negative_Parameters",
-        "Unit_hipLaunchCooperativeKernelMultiDevice_Negative_MultiKernelSameDevice",
         "Unit_hipExtLaunchMultiKernelMultiDevice_Negative_MultiKernelSameDevice",
         "=== Below tests are failing PSDB ===",
         "Unit_hipMemcpy3D_Positive_Synchronization_Behavior",

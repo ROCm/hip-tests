@@ -297,7 +297,6 @@ TEST_CASE("Unit_Uuid_FntlTstsFor_SetEnv_HIP_VISIBLE_DEVICES") {
       REQUIRE(proc.run(t_uuid) == 1);
       unsetenv("HIP_VISIBLE_DEVICES");
     }
-    #if 0  // Disabling below 2 tests due to the defect SWDEV-467665
     SECTION("Set Env in parent and verify UUID in Grand child") {
       std::string uuid = uuid_map[0].data();
       std::string uuidEnv = uuid.substr(0, 20);
@@ -307,7 +306,6 @@ TEST_CASE("Unit_Uuid_FntlTstsFor_SetEnv_HIP_VISIBLE_DEVICES") {
       REQUIRE(proc.run(uuidEnv)== 1);
       unsetenv("HIP_VISIBLE_DEVICES");
     }
-
     SECTION("Reset Env in child and verify UUID in Grand child") {
       if (uuid_map.size() >= 2) {
         std::string uuid = uuid_map[1].data();
@@ -321,7 +319,6 @@ TEST_CASE("Unit_Uuid_FntlTstsFor_SetEnv_HIP_VISIBLE_DEVICES") {
         HipTest::HIP_SKIP_TEST("Skipping because this machine has total GPUs < 2");  // NOLINT
       }
     }
-    #endif
     SECTION("Get Dev Count from Child") {
       if (uuid_map.size() >= 2) {
         std::string uuid = uuid_map[0].data();

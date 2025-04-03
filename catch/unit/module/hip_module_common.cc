@@ -54,6 +54,7 @@ std::vector<char> LoadModuleIntoBuffer(const char* path_string) {
   std::vector<char> empty_module((std::istreambuf_iterator<char>(file_stream)),
                                  std::istreambuf_iterator<char>());
   file_stream.close();
+  empty_module.push_back('\0');
   return empty_module;
 }
 

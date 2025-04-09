@@ -8,6 +8,8 @@
 #include <functional>
 #include <algorithm>
 
+#define NELEMS(array) (sizeof(array) / sizeof(array[0]))
+
 // compiles the program, reusing the same compiling session for all the types
 // (as opposed as calling the rtc compiler for each of the types)
 template <template <typename> class Op, class T, typename... Types>
@@ -112,10 +114,10 @@ void compileProgram(hiprtcProgram& prog, const std::tuple<>&)
   size_t logSize;
   std::string scalarName, intrinsicName;
   hiprtcResult compileResult;
-  const char* options[] = { "-DHIP_ENABLE_WARP_SYNC_BUILTINS -DHIP_ENABLE_EXTRA_WARP_SYNC_TYPES" };
+  const char* options[] = { "-DHIP_ENABLE_WARP_SYNC_BUILTINS", "-DHIP_ENABLE_EXTRA_WARP_SYNC_TYPES" };
 
   opToString<int, Op>(scalarName, intrinsicName);
-  compileResult = hiprtcResult {hiprtcCompileProgram(prog, 1, options)};
+  compileResult = hiprtcResult {hiprtcCompileProgram(prog, NELEMS(options), options)};
   HIPRTC_CHECK(hiprtcGetProgramLogSize(prog, &logSize));
 
   if (compileResult != HIPRTC_SUCCESS || logSize > 0) {

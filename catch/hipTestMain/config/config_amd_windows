@@ -344,7 +344,6 @@
         "Unit_hipMallocMipmappedArray_MultiThread",
         "Unit_hipMallocMipmappedArray_Negative_InvalidFlags",
         "Unit_hipGetMipmappedArrayLevel_Negative",
-        "Unit_hipFreeMipmappedArray_Negative_DoubleFree",
         "Unit_hipFreeMipmappedArrayMultiTArray - int",
         "Unit_hipMemcpy3D_Positive_Synchronization_Behavior",
         "Unit_hipMemcpyParam2D_Positive_Synchronization_Behavior",

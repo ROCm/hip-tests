@@ -81,9 +81,12 @@ TEST_CASE("Unit_hipGraphInstantiateWithParams_Negative") {
     hipGraphExec_t graphExec;
     hipGraphInstantiateParams params;
     params.flags = 10;
+    // Cuda segfaults here!
+#if HT_AMD
     REQUIRE(hipGraphInstantiateWithParams(&graphExec,
                                        graph, &params) == hipErrorInvalidValue);
     REQUIRE(params.result_out == hipGraphInstantiateError);
+#endif
   }
 }
 

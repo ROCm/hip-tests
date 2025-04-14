@@ -150,7 +150,14 @@ TEMPLATE_TEST_CASE("Unit_hipReduceMultipleMasks", "",
   if (getWarpSize() == 64) {
     unsigned long long masks[] = { 0b0110011, 0x0F0F0F0F00000000, 0xF0F0F0F000000000,
                                  0x000000000F0F0F00, 0b0000100};
+    // these divergent masks, when combined, occupy the whole set of lanes
+    unsigned long long fullMasks[] = { 0xFFFF000000000000, 0x0000FFFFFFFF0000, 0x000000000000FFFF};
+    unsigned long long fullMasksEvenOdd[] = { 0x5555555555555555, // even lanes
+                                              0xAAAAAAAAAAAAAAAA }; // odd lanes
+
     runTestMultipleMasks<TestType>(masks, NELEMS(masks));
+    runTestMultipleMasks<TestType>(fullMasks, NELEMS(fullMasks));
+    runTestMultipleMasks<TestType>(fullMasksEvenOdd, NELEMS(fullMasksEvenOdd));
   } else {
     unsigned long long masks1[] = { 0x0F0F0F0F, 0xF0F0F0F0 };
     unsigned long long masks2[] = { 0b0110011, 0x0F0F0F00, 0b0000100};

@@ -39,12 +39,22 @@ template <class T>
 // @masks a list of masks, none of them sharing bits
 __global__ void multipleMasksKernel(T* output, const T* input, const unsigned long long* masks, int numMasks)
 {
-  for (int numMask = 0; numMask < numMasks; numMask++) {
-    unsigned long long mask = masks[numMask];
+  bool isInAnyOfTheMasks = false;
+  int numMask = 0;
+  unsigned long long mask;
 
+  while (numMask < numMasks && !isInAnyOfTheMasks) {
+    mask = masks[numMask];
     if ((1ul << threadIdx.x) & mask)
-      output[threadIdx.x] = __reduce_add_sync<decltype(mask)>(mask, input[threadIdx.x]);
+      isInAnyOfTheMasks = true;
+
+    numMask++;
   }
+
+  if (!isInAnyOfTheMasks)
+    return;
+
+  output[threadIdx.x] = __reduce_add_sync<decltype(mask)>(mask, input[threadIdx.x]);
 }
 
 template <class T, class Op, class MaskType>

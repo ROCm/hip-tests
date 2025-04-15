@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2024 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -91,7 +91,7 @@ struct AtomicXorOp {
   }
 };
 
-// uses atomics to reduce the whole warp; ideally our reduce should be faster
+// uses atomics to reduce the whole warp; depending on the mask our reduce should be faster
 // @output   to store the result, one per warp
 // @numItems must be a multiple of warpSize
 template <class T, template <typename> class Op>
@@ -153,7 +153,7 @@ __global__ void reduceOpSync(T* __restrict__ output, const T* __restrict__ input
 template <class T, template <typename> class Op>
 class AtomicBenchmark : public Benchmark<AtomicBenchmark<T, Op>> {
 public:
-  void operator()(T* output, T* input, int numItems, unsigned long long mask)
+  void operator()(T* output, const T* input, int numItems, unsigned long long mask)
   {
     dim3 blockDim = { kBlockDim };
     dim3 gridDim = { static_cast<uint32_t>(std::ceil(numItems / static_cast<float>(blockDim.x))) };
@@ -172,7 +172,7 @@ public:
       else if constexpr (std::is_same<Op<T>, XorOp<T>>::value)
         reduceAllAtomics<T, AtomicXorOp><<<gridDim, blockDim>>>(output, input, mask);
       else
-  static_assert(std::is_void<T>::value, "Unsupported operator");
+        static_assert(std::is_void<T>::value, "Unsupported operator");
 
       HIP_CHECK(hipDeviceSynchronize());
     }
@@ -203,6 +203,7 @@ void checkResults(T* d_atomicsResult, T* d_reduceResult, size_t numBytes, unsign
   LinearAllocGuard<T> outputReduce(LinearAllocs::malloc, numBytes);
   bool memcmpResult = std::memcmp(outputAtomic.ptr(), outputReduce.ptr(), numBytes);
 
+  assert(numBytes % sizeof(T) == 0 && "numBytes needs to be a multiple of sizeof(T)");
   HIP_CHECK(hipMemcpy(outputAtomic.ptr(), d_atomicsResult, numBytes, hipMemcpyDeviceToHost));
   HIP_CHECK(hipMemcpy(outputReduce.ptr(), d_reduceResult, numBytes, hipMemcpyDeviceToHost));
 
@@ -216,7 +217,7 @@ void checkResults(T* d_atomicsResult, T* d_reduceResult, size_t numBytes, unsign
         // for integral types or min/max the result should match exactly
         REQUIRE(atomicResult == reduceResult);
       else
-        // floating point types or operations which that are lossy in terms of precision
+        // floating point types or operations which are lossy in terms of precision
         REQUIRE_THAT(reduceResult, WithinRel(atomicResult));
     }
   }
@@ -338,7 +339,7 @@ struct ReduceBenchmark {
 
     printf("\n--- reduce %s %s--- \n", opStr, typeStr);
 
-    for (auto& mask : masks) {
+    for (const auto& mask : masks) {
       printf("%s %llx\n", mask.first.c_str(), mask.second);
       benchmarkReduce.Run((d_outputReduce++)->ptr(), d_input.ptr(), numItems, mask.second);
     }
@@ -348,7 +349,7 @@ struct ReduceBenchmark {
     if constexpr (HasAtomicOps<T>::value) {
       printf("Checking results...\n");
 
-      for (auto& mask : masks) {
+      for (const auto& mask : masks) {
         checkResults<T, Op>(d_outputsAtomic[pos].ptr(), d_outputsReduce[pos].ptr(), outputNumBytes, mask.second);
         pos++;
       }

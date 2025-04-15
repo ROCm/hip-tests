@@ -123,7 +123,6 @@
         "Unit_hipMemSetAccess_FuncTstOnMultDev",
         "Unit_hipMemSetAccess_Vmm2PeerDevMemCpy",
         "Unit_hipMemSetAccess_Vmm2VMMInterDevMemCpy",
-        "Unit_hipMemSetAccess_MapPhysChksFromMulDev",
         "Unit_hipMemSetAccess_GrowVMM",
         "Unit_hipMemMap_PhysicalMemory_Map2MultVMMs",
         "Unit_hipMemSetAccess_MultiProc",

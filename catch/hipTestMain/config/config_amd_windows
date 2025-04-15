@@ -235,7 +235,6 @@
         "Unit_hipMemSetAccess_Vmm2UnifiedMemCpy",
         "Unit_hipMemSetAccess_Vmm2DevMemCpy",
         "Unit_hipMemSetAccess_Vmm2VMMInterDevMemCpy",
-        "Unit_hipMemSetAccess_MapPhysChksFromMulDev",
         "Unit_hipMemSetAccess_GrowVMM",
         "Unit_hipMemSetAccess_negative",
         "=== SWDEV-434171: Below tests took long time to complete in stress test on 17/11/23 ===",

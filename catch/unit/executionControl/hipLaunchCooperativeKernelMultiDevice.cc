@@ -75,8 +75,6 @@ TEST_CASE("Unit_hipLaunchCooperativeKernelMultiDevice_Negative_Parameters") {
     return;
   }
 
-  const auto device_count = HipTest::getDeviceCount();
-
   std::vector<hipLaunchParams> params_list(device_count);
 
   int device = 0;

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2024 Advanced Micro Devices, Inc. All rights reserved.
+   Copyright (c) 2024-25 Advanced Micro Devices, Inc. All rights reserved.
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the "Software"), to deal
    in the Software without restriction, including without limitation the rights
@@ -12,9 +12,9 @@
    IMPLIED, INNCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
    FITNNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANNY CLAIM, DAMAGES OR OTHER
-   LIABILITY, WHETHER INN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-   OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-   THE SOFTWARE.
+   LIABILITY, WHETHER INN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR INN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+   IN THE SOFTWARE.
  */
 
 #include "mempool_common.hh"
@@ -29,17 +29,16 @@ static hipMemPool_t mem_pool_common;
  * @addtogroup hipMallocFromPoolAsync hipMallocFromPoolAsync
  * @{
  * @ingroup StreamOTest
- * `hipMallocFromPoolAsync(void** dev_ptr, size_t size, hipMemPool_t mem_pool, hipStream_t stream)`
+ * `hipMallocFromPoolAsync(void** dev_ptr, size_t size, hipMemPool_t mem_pool,
+ * hipStream_t stream)`
  * - Allocates memory from a specified pool with stream ordered semantics
  */
-
 
 /**
  * Test Description
  * ------------------------
- *  - Basic test to verify proper allocation and stream ordering of hipMallocFromPoolAsync when one
- * memory allocation is performed.
- * Test source
+ *  - Basic test to verify proper allocation and stream ordering of
+ * hipMallocFromPoolAsync when one memory allocation is performed. Test source
  * ------------------------
  *  - /unit/memory/hipMallocFromPoolAsync.cc
  * Test requirements
@@ -48,19 +47,18 @@ static hipMemPool_t mem_pool_common;
  */
 TEST_CASE("Unit_hipMallocFromPoolAsync_Basic_OneAlloc") {
   MallocMemPoolAsync_OneAlloc(
-      [](void** dev_ptr, size_t size, hipMemPool_t mem_pool, hipStream_t stream) {
+      [](void **dev_ptr, size_t size, hipMemPool_t mem_pool,
+         hipStream_t stream) {
         return hipMallocFromPoolAsync(dev_ptr, size, mem_pool, stream);
       },
       MemPools::created);
 }
 
-
 /**
  * Test Description
  * ------------------------
- *  - Basic test to verify proper allocation and stream ordering of hipMallocFromPoolAsync when two
- * memory allocations are performed.
- * Test source
+ *  - Basic test to verify proper allocation and stream ordering of
+ * hipMallocFromPoolAsync when two memory allocations are performed. Test source
  * ------------------------
  *  - /unit/memory/hipMallocFromPoolAsync.cc
  * Test requirements
@@ -69,7 +67,8 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_Basic_OneAlloc") {
  */
 TEST_CASE("Unit_hipMallocFromPoolAsync_Basic_TwoAllocs") {
   MallocMemPoolAsync_TwoAllocs(
-      [](void** dev_ptr, size_t size, hipMemPool_t mem_pool, hipStream_t stream) {
+      [](void **dev_ptr, size_t size, hipMemPool_t mem_pool,
+         hipStream_t stream) {
         return hipMallocFromPoolAsync(dev_ptr, size, mem_pool, stream);
       },
       MemPools::created);
@@ -78,8 +77,8 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_Basic_TwoAllocs") {
 /**
  * Test Description
  * ------------------------
- *  - Basic test to verify that memory allocated with hipMallocFromPoolAsync can be properly reused.
- * Test source
+ *  - Basic test to verify that memory allocated with hipMallocFromPoolAsync can
+ * be properly reused. Test source
  * ------------------------
  *  - /unit/memory/hipMallocFromPoolAsync.cc
  * Test requirements
@@ -88,7 +87,8 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_Basic_TwoAllocs") {
  */
 TEST_CASE("Unit_hipMallocFromPoolAsync_Basic_Reuse") {
   MallocMemPoolAsync_Reuse(
-      [](void** dev_ptr, size_t size, hipMemPool_t mem_pool, hipStream_t stream) {
+      [](void **dev_ptr, size_t size, hipMemPool_t mem_pool,
+         hipStream_t stream) {
         return hipMallocFromPoolAsync(dev_ptr, size, mem_pool, stream);
       },
       MemPools::created);
@@ -116,27 +116,28 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_Negative_Parameters") {
 
   checkMempoolSupported(0);
 
-  void* p = nullptr;
+  void *p = nullptr;
   size_t max_size = std::numeric_limits<size_t>::max();
   size_t alloc_size = 1024;
   MemPoolGuard mempool(MemPools::created, device_id);
   StreamGuard stream(Streams::created);
 
   SECTION("dev_ptr is nullptr") {
-    HIP_CHECK_ERROR(hipMallocFromPoolAsync(nullptr, alloc_size, mempool.mempool(), stream.stream()),
+    HIP_CHECK_ERROR(hipMallocFromPoolAsync(nullptr, alloc_size,
+                                           mempool.mempool(), stream.stream()),
                     hipErrorInvalidValue);
   }
 
   SECTION("Mempool not created") {
     hipMemPool_t dummy_mem_pool = nullptr;
-    HIP_CHECK_ERROR(hipMallocFromPoolAsync(static_cast<void**>(&p), alloc_size, dummy_mem_pool,
-                                           stream.stream()),
+    HIP_CHECK_ERROR(hipMallocFromPoolAsync(static_cast<void **>(&p), alloc_size,
+                                           dummy_mem_pool, stream.stream()),
                     hipErrorInvalidValue);
   }
 
   SECTION("Size is max size_t") {
-    HIP_CHECK_ERROR(hipMallocFromPoolAsync(static_cast<void**>(&p), max_size, mempool.mempool(),
-                                           stream.stream()),
+    HIP_CHECK_ERROR(hipMallocFromPoolAsync(static_cast<void **>(&p), max_size,
+                                           mempool.mempool(), stream.stream()),
                     hipErrorOutOfMemory);
   }
 }
@@ -191,10 +192,10 @@ static bool checkMempoolMultStreamSync(int N) {
  * for all the streams to complete and validate result.
  */
 static bool checkMempoolMultStreamConcurrentExec(int N,
-                                bool useDefStrm = true) {
-  streamMemAllocTest testObj[3] = {streamMemAllocTest(N),
-                                   streamMemAllocTest(N),
+                                                 bool useDefStrm = true) {
+  streamMemAllocTest testObj[3] = {streamMemAllocTest(N), streamMemAllocTest(N),
                                    streamMemAllocTest(N)};
+  GENERATE_CAPTURE();
   // create multiple streams
   hipStream_t testStreams[3];
   HIP_CHECK(hipStreamCreate(&testStreams[0]));
@@ -213,6 +214,7 @@ static bool checkMempoolMultStreamConcurrentExec(int N,
   HIP_CHECK(hipMemPoolCreate(&mem_pool_common, &pool_props));
   bool results = true;
   for (int idx = 0; idx < 3; idx++) {
+    BEGIN_CAPTURE(testStreams[idx]);
     // Create mempool in current device = 0
     testObj[idx].useCommonMempool(mem_pool_common);
     // Create host buffer with test data
@@ -224,6 +226,7 @@ static bool checkMempoolMultStreamConcurrentExec(int N,
     testObj[idx].runKernel(testStreams[idx]);
     testObj[idx].transferFromMempool(testStreams[idx]);
     testObj[idx].freeDevBuf(testStreams[idx]);
+    END_CAPTURE(testStreams[idx]);
   }
   for (int idx = 0; idx < 3; idx++) {
     HIP_CHECK(hipStreamSynchronize(testStreams[idx]));
@@ -245,7 +248,38 @@ static bool checkMempoolMultStreamConcurrentExec(int N,
  * Local function to test hipMemPoolAttrReleaseThreshold.
  */
 static bool checkMaximumAndDefaultThreshold(hipStream_t stream, int N,
-                            enum eTestValue testtype, int dev = 0) {
+                                            enum eTestValue testtype,
+                                            int dev = 0) {
+  GENERATE_CAPTURE();
+  streamMemAllocTest testObj(N);
+  // Create host buffer with test data
+  testObj.createHostBufferWithData();
+  // Create mempool in current device = dev
+  testObj.createMempool(hipMemPoolAttrReleaseThreshold, testtype, dev);
+  bool results = true;
+  for (int iter = 0; iter < LAUNCH_ITERATIONS; iter++) {
+    // Allocate memory and initialize it on stream
+    BEGIN_CAPTURE(stream);
+    testObj.allocFromMempool(stream);
+    testObj.transferToMempool(stream);
+    testObj.runKernel(stream);
+    testObj.transferFromMempool(stream);
+    // validate
+    testObj.freeDevBuf(stream);
+    END_CAPTURE(stream);
+    HIP_CHECK(hipStreamSynchronize(stream));
+    results = testObj.validateResult();
+    if (!results) {
+      break;
+    }
+  }
+  testObj.freeMempool();
+  testObj.freeHostBuf();
+  return results;
+}
+static bool checkMaximumAndDefaultThreshold_Thread(hipStream_t stream, int N,
+                                                   enum eTestValue testtype,
+                                                   int dev = 0) {
   streamMemAllocTest testObj(N);
   // Create host buffer with test data
   testObj.createHostBufferWithData();
@@ -270,7 +304,6 @@ static bool checkMaximumAndDefaultThreshold(hipStream_t stream, int N,
   testObj.freeHostBuf();
   return results;
 }
-
 /**
  * Test Description
  * ------------------------
@@ -291,14 +324,12 @@ static bool checkMaximumAndDefaultThreshold(hipStream_t stream, int N,
  */
 TEST_CASE("Unit_hipMallocFromPoolAsync_ReleaseThreshold") {
   checkMempoolSupported(0)
-  // create a stream
-  hipStream_t stream;
+      // create a stream
+      hipStream_t stream;
   HIP_CHECK(hipStreamCreate(&stream));
   constexpr int N = 1 << 20;
-  REQUIRE(true == checkMaximumAndDefaultThreshold(stream, N,
-        testdefault));
-  REQUIRE(true == checkMaximumAndDefaultThreshold(stream, N,
-        testMaximum));
+  REQUIRE(true == checkMaximumAndDefaultThreshold(stream, N, testdefault));
+  REQUIRE(true == checkMaximumAndDefaultThreshold(stream, N, testMaximum));
   HIP_CHECK(hipStreamDestroy(stream));
 }
 
@@ -313,12 +344,9 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_ReleaseThreshold") {
  *    - HIP_VERSION >= 6.2
  */
 TEST_CASE("Unit_hipMallocFromPoolAsync_NullStream") {
-  checkMempoolSupported(0)
-  constexpr int N = 1 << 20;
-  REQUIRE(true == checkMaximumAndDefaultThreshold(0, N,
-        testdefault));
-  REQUIRE(true == checkMaximumAndDefaultThreshold(0, N,
-        testMaximum));
+  checkMempoolSupported(0) constexpr int N = 1 << 20;
+  REQUIRE(true == checkMaximumAndDefaultThreshold(0, N, testdefault));
+  REQUIRE(true == checkMaximumAndDefaultThreshold(0, N, testMaximum));
 }
 
 /**
@@ -332,12 +360,11 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_NullStream") {
  *    - HIP_VERSION >= 6.2
  */
 TEST_CASE("Unit_hipMallocFromPoolAsync_hipStreamPerThread") {
-  checkMempoolSupported(0)
-  constexpr int N = 1 << 20;
-  REQUIRE(true == checkMaximumAndDefaultThreshold(hipStreamPerThread, N,
-        testdefault));
-  REQUIRE(true == checkMaximumAndDefaultThreshold(hipStreamPerThread, N,
-        testMaximum));
+  checkMempoolSupported(0) constexpr int N = 1 << 20;
+  REQUIRE(true ==
+          checkMaximumAndDefaultThreshold(hipStreamPerThread, N, testdefault));
+  REQUIRE(true ==
+          checkMaximumAndDefaultThreshold(hipStreamPerThread, N, testMaximum));
 }
 
 /**
@@ -355,15 +382,14 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_ReleaseThreshold_Mgpu") {
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   for (int dev = 0; dev < numDevices; dev++) {
-    checkMempoolSupported(dev)
-    HIP_CHECK(hipSetDevice(dev));
+    checkMempoolSupported(dev) HIP_CHECK(hipSetDevice(dev));
     // create a stream
     hipStream_t stream;
     HIP_CHECK(hipStreamCreate(&stream));
-    REQUIRE(true == checkMaximumAndDefaultThreshold(stream, N,
-            testdefault, dev));
-    REQUIRE(true == checkMaximumAndDefaultThreshold(stream, N,
-            testMaximum, dev));
+    REQUIRE(true ==
+            checkMaximumAndDefaultThreshold(stream, N, testdefault, dev));
+    REQUIRE(true ==
+            checkMaximumAndDefaultThreshold(stream, N, testMaximum, dev));
     HIP_CHECK(hipStreamDestroy(stream));
   }
 }
@@ -371,8 +397,8 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_ReleaseThreshold_Mgpu") {
 /**
  * Local Thread Functions
  */
-static void threadQAsyncCommands(streamMemAllocTest* testObj,
-                                hipStream_t strm) {
+static void threadQAsyncCommands(streamMemAllocTest *testObj,
+                                 hipStream_t strm) {
   // Create host buffer with test data.
   testObj->createHostBufferWithData();
   // Allocate device memory and transfer data to it asyncronously on stream.
@@ -385,14 +411,13 @@ static void threadQAsyncCommands(streamMemAllocTest* testObj,
   testObj->freeDevBuf(strm);
 }
 
-static void thread_Test1(hipStream_t stream, int N,
-            enum eTestValue testtype, int threadNum) {
+static void thread_Test1(hipStream_t stream, int N, enum eTestValue testtype,
+                         int threadNum) {
   thread_results[threadNum] =
-  checkMaximumAndDefaultThreshold(stream, N, testtype, 0);
+      checkMaximumAndDefaultThreshold_Thread(stream, N, testtype, 0);
 }
 
-static bool test_hipMallocFromPoolAsync_MThread(
-                    enum eTestValue testtype) {
+static bool test_hipMallocFromPoolAsync_MThread(enum eTestValue testtype) {
   // create a stream
   constexpr int N = 1 << 20;
   std::vector<std::thread> tests;
@@ -404,8 +429,7 @@ static bool test_hipMallocFromPoolAsync_MThread(
   }
   // Spawn the test threads
   for (int idx = 0; idx < NUMBER_OF_THREADS; idx++) {
-    tests.push_back(std::thread(thread_Test1, stream[idx],
-                                N, testtype, idx));
+    tests.push_back(std::thread(thread_Test1, stream[idx], N, testtype, idx));
   }
   // Wait for all threads to complete
   for (std::thread &t : tests) {
@@ -420,8 +444,8 @@ static bool test_hipMallocFromPoolAsync_MThread(
   return status;
 }
 
-static void thread_Test2(hipMemPool_t mempool, hipStream_t stream,
-                        int N, int threadNum) {
+static void thread_Test2(hipMemPool_t mempool, hipStream_t stream, int N,
+                         int threadNum) {
   streamMemAllocTest testObj(N);
   // Create host buffer with test data
   testObj.createHostBufferWithData();
@@ -446,8 +470,9 @@ static void thread_Test2(hipMemPool_t mempool, hipStream_t stream,
   thread_results[threadNum] = results;
 }
 
-static bool test_hipMallocFromPoolAsync_MThread_CommonMpool(
-            enum eTestValue testtype, bool bUseDefault = false) {
+static bool
+test_hipMallocFromPoolAsync_MThread_CommonMpool(enum eTestValue testtype,
+                                                bool bUseDefault = false) {
   // create a stream
   constexpr int N = 1 << 20;
   std::vector<std::thread> tests;
@@ -464,8 +489,8 @@ static bool test_hipMallocFromPoolAsync_MThread_CommonMpool(
   }
   if (testtype == testMaximum) {
     uint64_t setThreshold = UINT64_MAX;
-    HIP_CHECK(hipMemPoolSetAttribute(mem_pool_common,
-              hipMemPoolAttrReleaseThreshold, &setThreshold));
+    HIP_CHECK(hipMemPoolSetAttribute(
+        mem_pool_common, hipMemPoolAttrReleaseThreshold, &setThreshold));
   }
   // Initialize and create streams
   for (int idx = 0; idx < NUMBER_OF_THREADS; idx++) {
@@ -474,8 +499,8 @@ static bool test_hipMallocFromPoolAsync_MThread_CommonMpool(
   }
   // Spawn the test threads
   for (int idx = 0; idx < NUMBER_OF_THREADS; idx++) {
-    tests.push_back(std::thread(thread_Test2, mem_pool_common,
-                                stream[idx], N, idx));
+    tests.push_back(
+        std::thread(thread_Test2, mem_pool_common, stream[idx], N, idx));
   }
   // Wait for all threads to complete
   for (std::thread &t : tests) {
@@ -502,8 +527,7 @@ static bool checkReuseFollowEventDepFlag(int N, enum eTestValue testtype) {
   // Create host buffer with test data
   testObj.createHostBufferWithData();
   // Create mempool in current device = 0
-  testObj.createMempool(hipMemPoolReuseFollowEventDependencies,
-                        testtype, 0);
+  testObj.createMempool(hipMemPoolReuseFollowEventDependencies, testtype, 0);
   hipStream_t testStream1, testStream2;
   HIP_CHECK(hipStreamCreate(&testStream1));
   HIP_CHECK(hipStreamCreate(&testStream2));
@@ -545,7 +569,8 @@ static bool checkReuseFollowEventDepFlag(int N, enum eTestValue testtype) {
  * hipMemPoolReuseAllowInternalDependencies.
  */
 static bool checkReuseAllowOtherFlags(int N, hipMemPoolAttr attr,
-                                    enum eTestValue testtype) {
+                                      enum eTestValue testtype) {
+  GENERATE_CAPTURE();
   streamMemAllocTest testObj(N);
   // Create host buffer with test data
   testObj.createHostBufferWithData();
@@ -557,11 +582,13 @@ static bool checkReuseAllowOtherFlags(int N, hipMemPoolAttr attr,
   bool results = true;
   for (int iter = 0; iter < LAUNCH_ITERATIONS; iter++) {
     // Allocate memory and initialize it on testStream1
+    BEGIN_CAPTURE(testStream1);
     testObj.allocFromMempool(testStream1);
     testObj.transferToMempool(testStream1);
     testObj.runKernel(testStream1);
     testObj.transferFromMempool(testStream1);
     testObj.freeDevBuf(testStream1);
+    END_CAPTURE(testStream1);
     // Allocate memory and initialize it on testStream2
     testObj.allocFromMempool(testStream2);
     testObj.transferToMempool(testStream2);
@@ -598,16 +625,16 @@ static bool checkReuseAllowOtherFlags(int N, hipMemPoolAttr attr,
 #if HT_AMD
 TEST_CASE("Unit_hipMallocFromPoolAsync_Multidevice_Concurrent") {
   auto testType = GENERATE(testdefault, testMaximum);
+  GENERATE_CAPTURE();
   constexpr int N = 1 << 20;
   int num_devices;
   HIP_CHECK(hipGetDeviceCount(&num_devices));
-  checkIfMultiDev(num_devices)
-  hipStream_t *stream_buf = new hipStream_t[num_devices];
-  std::vector<streamMemAllocTest*> tesObjBuf;
+  checkIfMultiDev(num_devices) hipStream_t *stream_buf =
+      new hipStream_t[num_devices];
+  std::vector<streamMemAllocTest *> tesObjBuf;
   // Allocate resources in each device
   for (int idx = 0; idx < num_devices; idx++) {
-    checkMempoolSupported(idx)
-    HIP_CHECK(hipSetDevice(idx));
+    checkMempoolSupported(idx) HIP_CHECK(hipSetDevice(idx));
     HIP_CHECK(hipStreamCreate(&stream_buf[idx]));
     streamMemAllocTest *testObj = new streamMemAllocTest(N);
     testObj->createMempool(hipMemPoolAttrReleaseThreshold, testType, idx);
@@ -616,7 +643,9 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_Multidevice_Concurrent") {
   // Queue commands in each device
   for (int idx = 0; idx < num_devices; idx++) {
     HIP_CHECK(hipSetDevice(idx));
+    BEGIN_CAPTURE(stream_buf[idx]);
     std::thread test(threadQAsyncCommands, tesObjBuf[idx], stream_buf[idx]);
+    END_CAPTURE(stream_buf[idx]);
     test.join();
   }
   // Wait for the streams
@@ -653,18 +682,18 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_Multidevice_Concurrent") {
 TEST_CASE("Unit_hipMallocFromPoolAsync_Multidevice_MultiStream") {
   int num_devices;
   auto testType = GENERATE(testdefault, testMaximum);
+  GENERATE_CAPTURE();
   constexpr int N = 1 << 20;
   HIP_CHECK(hipGetDeviceCount(&num_devices));
   checkIfMultiDev(num_devices)
-  // 2 stream per ASIC
-  hipStream_t *stream_buf = new hipStream_t[streamPerAsic*num_devices];
-  std::vector<streamMemAllocTest*> tesObjBuf;
+      // 2 stream per ASIC
+      hipStream_t *stream_buf = new hipStream_t[streamPerAsic * num_devices];
+  std::vector<streamMemAllocTest *> tesObjBuf;
   // Allocate resources in each device
   for (int idx = 0; idx < num_devices; idx++) {
-    checkMempoolSupported(idx)
-    HIP_CHECK(hipSetDevice(idx));
-    HIP_CHECK(hipStreamCreate(&stream_buf[streamPerAsic*idx]));
-    HIP_CHECK(hipStreamCreate(&stream_buf[streamPerAsic*idx + 1]));
+    checkMempoolSupported(idx) HIP_CHECK(hipSetDevice(idx));
+    HIP_CHECK(hipStreamCreate(&stream_buf[streamPerAsic * idx]));
+    HIP_CHECK(hipStreamCreate(&stream_buf[streamPerAsic * idx + 1]));
     streamMemAllocTest *testObj1 = new streamMemAllocTest(N);
     testObj1->createMempool(hipMemPoolAttrReleaseThreshold, testType, idx);
     tesObjBuf.push_back(testObj1);
@@ -675,34 +704,36 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_Multidevice_MultiStream") {
   // Queue commands in each device
   for (int idx = 0; idx < num_devices; idx++) {
     HIP_CHECK(hipSetDevice(idx));
-    std::thread test1(threadQAsyncCommands, tesObjBuf[streamPerAsic*idx],
-                    stream_buf[streamPerAsic*idx]);
-    std::thread test2(threadQAsyncCommands, tesObjBuf[streamPerAsic*idx + 1],
-                    stream_buf[streamPerAsic*idx + 1]);
+    BEGIN_CAPTURE(stream_buf[streamPerAsic * idx]);
+    std::thread test1(threadQAsyncCommands, tesObjBuf[streamPerAsic * idx],
+                      stream_buf[streamPerAsic * idx]);
+    std::thread test2(threadQAsyncCommands, tesObjBuf[streamPerAsic * idx + 1],
+                      stream_buf[streamPerAsic * idx + 1]);
+    END_CAPTURE(stream_buf[streamPerAsic * idx]);
     test1.join();
     test2.join();
   }
   // Wait for the streams
   for (int idx = 0; idx < num_devices; idx++) {
     HIP_CHECK(hipSetDevice(idx));
-    HIP_CHECK(hipStreamSynchronize(stream_buf[streamPerAsic*idx]));
-    HIP_CHECK(hipStreamSynchronize(stream_buf[streamPerAsic*idx + 1]));
+    HIP_CHECK(hipStreamSynchronize(stream_buf[streamPerAsic * idx]));
+    HIP_CHECK(hipStreamSynchronize(stream_buf[streamPerAsic * idx + 1]));
     // verify and validate
-    REQUIRE(true == tesObjBuf[streamPerAsic*idx]->validateResult());
-    REQUIRE(true == tesObjBuf[streamPerAsic*idx + 1]->validateResult());
+    REQUIRE(true == tesObjBuf[streamPerAsic * idx]->validateResult());
+    REQUIRE(true == tesObjBuf[streamPerAsic * idx + 1]->validateResult());
   }
   // Deallocate resources in each device
   for (int idx = 0; idx < num_devices; idx++) {
     HIP_CHECK(hipSetDevice(idx));
     // Destroy resources
-    tesObjBuf[streamPerAsic*idx]->freeMempool();
-    tesObjBuf[streamPerAsic*idx]->freeHostBuf();
-    tesObjBuf[streamPerAsic*idx + 1]->freeMempool();
-    tesObjBuf[streamPerAsic*idx + 1]->freeHostBuf();
-    HIP_CHECK(hipStreamDestroy(stream_buf[streamPerAsic*idx]));
-    HIP_CHECK(hipStreamDestroy(stream_buf[streamPerAsic*idx + 1]));
-    delete tesObjBuf[streamPerAsic*idx];
-    delete tesObjBuf[streamPerAsic*idx + 1];
+    tesObjBuf[streamPerAsic * idx]->freeMempool();
+    tesObjBuf[streamPerAsic * idx]->freeHostBuf();
+    tesObjBuf[streamPerAsic * idx + 1]->freeMempool();
+    tesObjBuf[streamPerAsic * idx + 1]->freeHostBuf();
+    HIP_CHECK(hipStreamDestroy(stream_buf[streamPerAsic * idx]));
+    HIP_CHECK(hipStreamDestroy(stream_buf[streamPerAsic * idx + 1]));
+    delete tesObjBuf[streamPerAsic * idx];
+    delete tesObjBuf[streamPerAsic * idx + 1];
   }
   delete[] stream_buf;
 }
@@ -720,12 +751,12 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_Multidevice_MultiStream") {
  */
 TEST_CASE("Unit_hipMallocFromPoolAsync_MThread_DefaultThresh") {
   checkMempoolSupported(0)
-  REQUIRE(true == test_hipMallocFromPoolAsync_MThread(testdefault));
+      REQUIRE(true == test_hipMallocFromPoolAsync_MThread(testdefault));
 }
 
 TEST_CASE("Unit_hipMallocFromPoolAsync_MThread_MaxThresh") {
   checkMempoolSupported(0)
-  REQUIRE(true == test_hipMallocFromPoolAsync_MThread(testMaximum));
+      REQUIRE(true == test_hipMallocFromPoolAsync_MThread(testMaximum));
 }
 
 /**
@@ -742,14 +773,14 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_MThread_MaxThresh") {
  */
 TEST_CASE("Unit_hipMallocFromPoolAsync_MThread_CommonMpool_DefaultMempool") {
   checkMempoolSupported(0)
-  REQUIRE(true == test_hipMallocFromPoolAsync_MThread_CommonMpool(
-                testdefault, true));
+      REQUIRE(true == test_hipMallocFromPoolAsync_MThread_CommonMpool(
+                          testdefault, true));
 }
 
 TEST_CASE("Unit_hipMallocFromPoolAsync_MThread_CommonMpool_MaxThresh") {
   checkMempoolSupported(0)
-  REQUIRE(true == test_hipMallocFromPoolAsync_MThread_CommonMpool(
-                testMaximum, false));
+      REQUIRE(true == test_hipMallocFromPoolAsync_MThread_CommonMpool(
+                          testMaximum, false));
 }
 
 /**
@@ -766,16 +797,15 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_MThread_CommonMpool_MaxThresh") {
  *    - HIP_VERSION >= 6.2
  */
 TEST_CASE("Unit_hipMallocFromPoolAsync_MultStream_Sync") {
-  checkMempoolSupported(0)
-  constexpr int N = 1 << 20;
+  checkMempoolSupported(0) constexpr int N = 1 << 20;
   REQUIRE(true == checkMempoolMultStreamSync(N));
 }
 
 /**
  * Test Description
  * ------------------------
- *    - Multiple stream concurrent execution scenario: Create common memory pool.
- * Execute mempool functionality on a user created stream, null stream and
+ *    - Multiple stream concurrent execution scenario: Create common memory
+ * pool. Execute mempool functionality on a user created stream, null stream and
  * hipStreamPerThread concurrently. Wait for all the streams to complete and
  * validate result.
  * ------------------------
@@ -785,17 +815,16 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_MultStream_Sync") {
  *    - HIP_VERSION >= 6.2
  */
 TEST_CASE("Unit_hipMallocFromPoolAsync_MultStream_DefaultStreams") {
-  checkMempoolSupported(0)
-  constexpr int N = 1 << 20;
+  checkMempoolSupported(0) constexpr int N = 1 << 20;
   REQUIRE(true == checkMempoolMultStreamConcurrentExec(N, true));
 }
 
 /**
  * Test Description
  * ------------------------
- *    - Multiple stream concurrent execution scenario: Create common memory pool.
- * Execute mempool functionality on multiple user created streams concurrently.
- * Wait for all the streams to complete and validate result.
+ *    - Multiple stream concurrent execution scenario: Create common memory
+ * pool. Execute mempool functionality on multiple user created streams
+ * concurrently. Wait for all the streams to complete and validate result.
  * ------------------------
  *    - catch\unit\memory\hipMallocFromPoolAsync.cc
  * Test requirements
@@ -803,8 +832,7 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_MultStream_DefaultStreams") {
  *    - HIP_VERSION >= 6.2
  */
 TEST_CASE("Unit_hipMallocFromPoolAsync_MultStream_UserStreams") {
-  checkMempoolSupported(0)
-  constexpr int N = 1 << 20;
+  checkMempoolSupported(0) constexpr int N = 1 << 20;
   REQUIRE(true == checkMempoolMultStreamConcurrentExec(N, false));
 }
 
@@ -820,8 +848,7 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_MultStream_UserStreams") {
  *    - HIP_VERSION >= 6.2
  */
 TEST_CASE("Unit_hipMallocFromPoolAsync_ReuseFollowEventDependencies") {
-  checkMempoolSupported(0)
-  constexpr int N = 1 << 20;
+  checkMempoolSupported(0) constexpr int N = 1 << 20;
   REQUIRE(true == checkReuseFollowEventDepFlag(N, testDisabled));
   REQUIRE(true == checkReuseFollowEventDepFlag(N, testEnabled));
 }
@@ -838,12 +865,11 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_ReuseFollowEventDependencies") {
  *    - HIP_VERSION >= 6.2
  */
 TEST_CASE("Unit_hipMallocFromPoolAsync_ReuseAllowOpportunistic") {
-  checkMempoolSupported(0)
-  constexpr int N = 1 << 20;
-  REQUIRE(true == checkReuseAllowOtherFlags(N,
-        hipMemPoolReuseAllowOpportunistic, testDisabled));
-  REQUIRE(true == checkReuseAllowOtherFlags(N,
-        hipMemPoolReuseAllowOpportunistic, testEnabled));
+  checkMempoolSupported(0) constexpr int N = 1 << 20;
+  REQUIRE(true == checkReuseAllowOtherFlags(
+                      N, hipMemPoolReuseAllowOpportunistic, testDisabled));
+  REQUIRE(true == checkReuseAllowOtherFlags(
+                      N, hipMemPoolReuseAllowOpportunistic, testEnabled));
 }
 
 /**
@@ -858,15 +884,16 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_ReuseAllowOpportunistic") {
  *    - HIP_VERSION >= 6.2
  */
 TEST_CASE("Unit_hipMallocFromPoolAsync_ReuseAllowInternalDependencies") {
-  checkMempoolSupported(0)
-  constexpr int N = 1 << 20;
-  REQUIRE(true == checkReuseAllowOtherFlags(N,
-        hipMemPoolReuseAllowInternalDependencies, testDisabled));
-  REQUIRE(true == checkReuseAllowOtherFlags(N,
-        hipMemPoolReuseAllowInternalDependencies, testEnabled));
+  checkMempoolSupported(0) constexpr int N = 1 << 20;
+  REQUIRE(true ==
+          checkReuseAllowOtherFlags(N, hipMemPoolReuseAllowInternalDependencies,
+                                    testDisabled));
+  REQUIRE(true ==
+          checkReuseAllowOtherFlags(N, hipMemPoolReuseAllowInternalDependencies,
+                                    testEnabled));
 }
 
 /**
-* End doxygen group StreamOTest.
-* @}
-*/
+ * End doxygen group StreamOTest.
+ * @}
+ */

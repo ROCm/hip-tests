@@ -95,9 +95,8 @@ TEST_CASE("Unit_hipFreeAsync_Negative_Parameters") {
  *  - HIP_VERSION >= 6.0
  */
 TEST_CASE("Unit_hipFreeAsync_capturehipFreeAsync") {
+   GENERATE_CAPTURE();
   HIP_CHECK(hipSetDevice(0));
-  hipGraph_t graph{nullptr};
-  hipGraphExec_t graphExec{nullptr};
   hipStream_t stream;
   hipMemPool_t memPool;
   int rows, cols;
@@ -105,23 +104,18 @@ TEST_CASE("Unit_hipFreeAsync_capturehipFreeAsync") {
   cols = GENERATE(3, 4, 1024);
   HIP_CHECK(hipDeviceGetDefaultMemPool(&memPool, 0));
   HIP_CHECK(hipStreamCreate(&stream));
-  int* devMem;
-
-  // Start Capturing
-  HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
-  HIP_CHECK(hipMallocFromPoolAsync(reinterpret_cast<void**>(&devMem),
-                                   sizeof(int) * rows * cols, memPool,
-                                   stream));
+  int *devMem;
+  BEGIN_CAPTURE(stream);
+  HIP_CHECK(hipMallocFromPoolAsync(reinterpret_cast<void **>(&devMem),
+                                   sizeof(int) * rows * cols, memPool, stream));
   HIP_CHECK(hipFreeAsync(devMem, stream));
-  // End Capture
-  HIP_CHECK(hipStreamEndCapture(stream, &graph));
-
-  // Create and Launch Executable Graphs
-  HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
-  HIP_CHECK(hipGraphLaunch(graphExec, stream));
+  END_CAPTURE(stream);
   HIP_CHECK(hipStreamSynchronize(stream));
-
-  HIP_CHECK(hipGraphExecDestroy(graphExec));
-  HIP_CHECK(hipGraphDestroy(graph));
   HIP_CHECK(hipStreamDestroy(stream));
 }
+
+/**
+ *
+ * End doxygen group StreamOTest.
+ * @}
+ */

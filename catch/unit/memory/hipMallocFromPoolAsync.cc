@@ -38,7 +38,8 @@ static hipMemPool_t mem_pool_common;
  * Test Description
  * ------------------------
  *  - Basic test to verify proper allocation and stream ordering of
- * hipMallocFromPoolAsync when one memory allocation is performed. Test source
+ * hipMallocFromPoolAsync when one memory allocation is performed.
+ * Test source
  * ------------------------
  *  - /unit/memory/hipMallocFromPoolAsync.cc
  * Test requirements
@@ -58,7 +59,8 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_Basic_OneAlloc") {
  * Test Description
  * ------------------------
  *  - Basic test to verify proper allocation and stream ordering of
- * hipMallocFromPoolAsync when two memory allocations are performed. Test source
+ * hipMallocFromPoolAsync when two memory allocations are performed.
+ * Test source
  * ------------------------
  *  - /unit/memory/hipMallocFromPoolAsync.cc
  * Test requirements
@@ -78,7 +80,8 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_Basic_TwoAllocs") {
  * Test Description
  * ------------------------
  *  - Basic test to verify that memory allocated with hipMallocFromPoolAsync can
- * be properly reused. Test source
+ * be properly reused.
+ * Test source
  * ------------------------
  *  - /unit/memory/hipMallocFromPoolAsync.cc
  * Test requirements
@@ -316,6 +319,7 @@ static bool checkMaximumAndDefaultThreshold_Thread(hipStream_t stream, int N,
  * LOOP for 10 times: {Allocate A_d2, B_d2, C_d2 from pool2, memcpy data to
  * (A_d2, B_d2). Launch kernel to perform C_d2(x)=A_d2(x)+B_d2(x), verify
  * result and free the memory.} After loop free the pool.
+ * Test source
  * ------------------------
  *    - catch\unit\memory\hipMallocFromPoolAsync.cc
  * Test requirements
@@ -337,6 +341,7 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_ReleaseThreshold") {
  * Test Description
  * ------------------------
  *    - Validate hipMallocFromPoolAsync functionality on null stream.
+ *  Test source
  * ------------------------
  *    - catch\unit\memory\hipMallocFromPoolAsync.cc
  * Test requirements
@@ -353,6 +358,7 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_NullStream") {
  * Test Description
  * ------------------------
  *    - Validate hipMallocFromPoolAsync functionality on hipStreamPerThread.
+ *  Test source
  * ------------------------
  *    - catch\unit\memory\hipMallocFromPoolAsync.cc
  * Test requirements
@@ -371,6 +377,7 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_hipStreamPerThread") {
  * Test Description
  * ------------------------
  *    - Check Release Threshold for multiple device.
+ * Test source
  * ------------------------
  *    - catch\unit\memory\hipMallocFromPoolAsync.cc
  * Test requirements
@@ -612,10 +619,11 @@ static bool checkReuseAllowOtherFlags(int N, hipMemPoolAttr attr,
 /**
  * Test Description
  * ------------------------
- *    - Queue the following commands hipMallocFromPoolAsync, transfer data to it
+ * - Queue the following commands hipMallocFromPoolAsync, transfer data to it
  * asynchrously, launch Kernel, transfer results back to host asynchronously and
  * free buffer async in streams across all GPUs. The execution in of the queued
  * commands must happen concurrently.
+ * Test source
  * ------------------------
  *    - catch\unit\memory\hipMallocFromPoolAsync.cc
  * Test requirements
@@ -673,6 +681,7 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_Multidevice_Concurrent") {
  *    - Queue the following commands hipMallocFromPoolAsync, transfer data to it
  * asynchrously, launch Kernel, transfer results back to host asynchronously and
  * free buffer async in streams across all GPUs using multiple streams per GPU.
+ * Test source
  * ------------------------
  *    - catch\unit\memory\hipMallocFromPoolAsync.cc
  * Test requirements
@@ -743,6 +752,7 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_Multidevice_MultiStream") {
  * ------------------------
  *    - Validate memory pool creation, allocation of memory from the
  * memory pool and usage in multithreaded environment.
+ * Test source
  * ------------------------
  *    - catch\unit\memory\hipMallocFromPoolAsync.cc
  * Test requirements
@@ -750,7 +760,7 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_Multidevice_MultiStream") {
  *    - HIP_VERSION >= 6.2
  */
 TEST_CASE("Unit_hipMallocFromPoolAsync_MThread_DefaultThresh") {
-  checkMempoolSupported(0)
+  checkMempoolSupported(0);
       REQUIRE(true == test_hipMallocFromPoolAsync_MThread(testdefault));
 }
 
@@ -765,6 +775,7 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_MThread_MaxThresh") {
  *    - Validate memory pool creation in main thread and its usage -
  * device memory allocation, data transfer to and from device and
  * kernel launch from multiple threads.
+ * Test source
  * ------------------------
  *    - catch\unit\memory\hipMallocFromPoolAsync.cc
  * Test requirements
@@ -772,7 +783,7 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_MThread_MaxThresh") {
  *    - HIP_VERSION >= 6.2
  */
 TEST_CASE("Unit_hipMallocFromPoolAsync_MThread_CommonMpool_DefaultMempool") {
-  checkMempoolSupported(0)
+  checkMempoolSupported(0);
       REQUIRE(true == test_hipMallocFromPoolAsync_MThread_CommonMpool(
                           testdefault, true));
 }
@@ -790,6 +801,7 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_MThread_CommonMpool_MaxThresh") {
  * Allocate device memory and initialize on 1st stream, Invoke kernel to
  * perform operation on 2nd stream and Free the device memory on 3rd stream.
  * Synchronize between stream1, stream2 and stream3 using events.
+ * Test source
  * ------------------------
  *    - catch\unit\memory\hipMallocFromPoolAsync.cc
  * Test requirements
@@ -797,7 +809,8 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_MThread_CommonMpool_MaxThresh") {
  *    - HIP_VERSION >= 6.2
  */
 TEST_CASE("Unit_hipMallocFromPoolAsync_MultStream_Sync") {
-  checkMempoolSupported(0) constexpr int N = 1 << 20;
+  checkMempoolSupported(0);
+  constexpr int N = 1 << 20;
   REQUIRE(true == checkMempoolMultStreamSync(N));
 }
 
@@ -808,6 +821,7 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_MultStream_Sync") {
  * pool. Execute mempool functionality on a user created stream, null stream and
  * hipStreamPerThread concurrently. Wait for all the streams to complete and
  * validate result.
+ * Test source
  * ------------------------
  *    - catch\unit\memory\hipMallocFromPoolAsync.cc
  * Test requirements
@@ -815,7 +829,8 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_MultStream_Sync") {
  *    - HIP_VERSION >= 6.2
  */
 TEST_CASE("Unit_hipMallocFromPoolAsync_MultStream_DefaultStreams") {
-  checkMempoolSupported(0) constexpr int N = 1 << 20;
+  checkMempoolSupported(0);
+  constexpr int N = 1 << 20;
   REQUIRE(true == checkMempoolMultStreamConcurrentExec(N, true));
 }
 
@@ -841,6 +856,7 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_MultStream_UserStreams") {
  * ------------------------
  *    - Test to validate mempool functionality when enabling and disabling
  * hipMemPoolReuseFollowEventDependencies attribute.
+ * Test source
  * ------------------------
  *    - catch\unit\memory\hipMallocFromPoolAsync.cc
  * Test requirements
@@ -848,7 +864,8 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_MultStream_UserStreams") {
  *    - HIP_VERSION >= 6.2
  */
 TEST_CASE("Unit_hipMallocFromPoolAsync_ReuseFollowEventDependencies") {
-  checkMempoolSupported(0) constexpr int N = 1 << 20;
+  checkMempoolSupported(0);
+  constexpr int N = 1 << 20;
   REQUIRE(true == checkReuseFollowEventDepFlag(N, testDisabled));
   REQUIRE(true == checkReuseFollowEventDepFlag(N, testEnabled));
 }
@@ -858,6 +875,7 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_ReuseFollowEventDependencies") {
  * ------------------------
  *    - Test to validate mempool functionality when enabling and disabling
  * hipMemPoolReuseAllowOpportunistic attribute.
+ * Test source
  * ------------------------
  *    - catch\unit\memory\hipMallocFromPoolAsync.cc
  * Test requirements
@@ -865,7 +883,8 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_ReuseFollowEventDependencies") {
  *    - HIP_VERSION >= 6.2
  */
 TEST_CASE("Unit_hipMallocFromPoolAsync_ReuseAllowOpportunistic") {
-  checkMempoolSupported(0) constexpr int N = 1 << 20;
+  checkMempoolSupported(0);
+  constexpr int N = 1 << 20;
   REQUIRE(true == checkReuseAllowOtherFlags(
                       N, hipMemPoolReuseAllowOpportunistic, testDisabled));
   REQUIRE(true == checkReuseAllowOtherFlags(
@@ -877,6 +896,7 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_ReuseAllowOpportunistic") {
  * ------------------------
  *    - Test to validate mempool functionality when enabling and disabling
  * hipMemPoolReuseAllowInternalDependencies attribute.
+ * Test source
  * ------------------------
  *    - catch\unit\memory\hipMallocFromPoolAsync.cc
  * Test requirements
@@ -884,7 +904,8 @@ TEST_CASE("Unit_hipMallocFromPoolAsync_ReuseAllowOpportunistic") {
  *    - HIP_VERSION >= 6.2
  */
 TEST_CASE("Unit_hipMallocFromPoolAsync_ReuseAllowInternalDependencies") {
-  checkMempoolSupported(0) constexpr int N = 1 << 20;
+  checkMempoolSupported(0);
+  constexpr int N = 1 << 20;
   REQUIRE(true ==
           checkReuseAllowOtherFlags(N, hipMemPoolReuseAllowInternalDependencies,
                                     testDisabled));

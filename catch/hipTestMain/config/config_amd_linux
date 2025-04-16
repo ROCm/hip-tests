@@ -224,8 +224,6 @@
         "Unit_atomicXor_Negative_Parameters_RTC",
         "Unit_atomicMin_Negative_Parameters_RTC",
         "Unit_atomicMax_Negative_Parameters_RTC",
-        "Unit_Kernel_Launch_bounds_Negative_OutOfBounds",
-        "Unit_Kernel_Launch_bounds_Negative_Parameters_RTC",
         "Unit_Device_sin_Accuracy_Positive - float",
         "Unit_Device_sin_Accuracy_Positive - double",
         "Unit_Device_cos_Accuracy_Positive - float",

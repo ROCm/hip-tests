@@ -18,13 +18,12 @@ THE SOFTWARE.
 */
 
 #include <hip_test_checkers.hh>
+#include <performance_common.hh>
 
 /**
  * The tests in this file is added to see the performance improvement with the
  * Design Memory manager for memory pool performance task : SWDEV-497841
  */
-
-constexpr size_t ONE_GB = 1024 * 1024 * 1024;
 
 /*
  * Helper function to get and print the Total device and free device memory,
@@ -39,10 +38,10 @@ void getAndPrintMemoryDetails(const hipMemPool_t &pool) {
   HIP_CHECK(hipMemPoolGetAttribute(pool, hipMemPoolAttrUsedMemCurrent,
                                    &usedCurrent));
 
-  std::cout << "\n Total device memory (GB) : " << totalVRAM / ONE_GB;
-  std::cout << "\n Free device memory (GB)  : " << freeVRAM / ONE_GB;
-  std::cout << "\n Pool Reserved current(GB): " << reservedCurrent / ONE_GB;
-  std::cout << "\n Pool Used current (GB)   : " << usedCurrent / ONE_GB;
+  std::cout << "\n Total device memory (GB) : " << totalVRAM / 1_GB;
+  std::cout << "\n Free device memory (GB)  : " << freeVRAM / 1_GB;
+  std::cout << "\n Pool Reserved current(GB): " << reservedCurrent / 1_GB;
+  std::cout << "\n Pool Used current (GB)   : " << usedCurrent / 1_GB;
   std::cout << std::endl;
 }
 
@@ -70,7 +69,7 @@ void getAndPrintMemoryDetails(const hipMemPool_t &pool) {
 TEST_CASE("Perf_MempoolManager_hipMallocAsync_hipFreeAsync") {
   size_t free = 0, total = 0;
   HIP_CHECK(hipMemGetInfo(&free, &total));
-  if (free < 30 * ONE_GB) {
+  if (free < 30_GB) {
     HipTest::HIP_SKIP_TEST("Test requires 30 GB of device memory, skipping");
     return;
   }
@@ -80,7 +79,7 @@ TEST_CASE("Perf_MempoolManager_hipMallocAsync_hipFreeAsync") {
   HIP_CHECK(hipSetDevice(device));
   HIP_CHECK(hipDeviceGetDefaultMemPool(&pool, device));
 
-  uint64_t threshold = 30 * ONE_GB;
+  uint64_t threshold = 30_GB;
   HIP_CHECK(hipMemPoolSetAttribute(pool, hipMemPoolAttrReleaseThreshold,
                                    &threshold));
 
@@ -99,9 +98,9 @@ TEST_CASE("Perf_MempoolManager_hipMallocAsync_hipFreeAsync") {
   // Allocate 30 GB (In 2GB and 1GB chunks)
   for (int i = 0; i < ptrs; i++) {
     if (i % 2 == 0) {
-      HIP_CHECK(hipMallocAsync(&dPtr[i], 2 * ONE_GB, stream));
+      HIP_CHECK(hipMallocAsync(&dPtr[i], 2_GB, stream));
     } else {
-      HIP_CHECK(hipMallocAsync(&dPtr[i], 1 * ONE_GB, stream));
+      HIP_CHECK(hipMallocAsync(&dPtr[i], 1_GB, stream));
     }
   }
   HIP_CHECK(hipStreamSynchronize(stream));

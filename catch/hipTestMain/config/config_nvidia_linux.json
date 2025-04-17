@@ -31,7 +31,6 @@
         "Unit_hipMemcpyParam2D_multiDevice-D2D - long double",
         "Unit_hipMemcpyParam2DAsync_multiDevice-StreamOnDiffDevice - char",
         "Unit_hipMemsetFunctional_ZeroValue_hipMemsetD16",
-        "Unit_hipIpcMemAccess_Semaphores",
         "Unit_hipStreamAttachMemAsync_Negative_Parameters",
         "hipStreamPerThread_CoopLaunch",
         "hipCGMultiGridGroupType",

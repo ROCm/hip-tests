@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2022-25 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -16,7 +16,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-
 /*
 hipMalloc3D API test scenarios
 1. Basic Functionality
@@ -24,7 +23,6 @@ hipMalloc3D API test scenarios
 3. Allocating Small and big chunk data
 4. Multithreaded scenario
 */
-
 #include <hip_test_common.hh>
 static constexpr auto SMALL_SIZE{4};
 static constexpr auto CHUNK_LOOP{100};
@@ -53,46 +51,42 @@ static void MemoryAlloc3DDiffSizes(int gpu) {
     }
   }
 }
-
 static void Malloc3DThreadFunc(int gpu) {
   MemoryAlloc3DDiffSizes(gpu);
 }
-
 /*
  * This verifies the hipMalloc3D API by
  * assigning width,height and depth as 10
  */
 TEST_CASE("Unit_hipMalloc3D_Basic") {
   CHECK_IMAGE_SUPPORT
-
   size_t width = SMALL_SIZE * sizeof(char);
   size_t height{SMALL_SIZE}, depth{SMALL_SIZE};
   hipPitchedPtr devPitchedPtr;
   hipExtent extent = make_hipExtent(width, height, depth);
   size_t tot, avail, ptot, pavail;
   HIP_CHECK(hipMemGetInfo(&pavail, &ptot));
-
-  REQUIRE(hipMalloc3D(&devPitchedPtr, extent) == hipSuccess);
-  HIPCHECK(hipFree(devPitchedPtr.ptr));
-
-  HIP_CHECK(hipMemGetInfo(&avail, &tot));
-
-  if (pavail != avail) {
-    WARN("Memory leak of hipMalloc3D API in multithreaded scenario");
-    REQUIRE(false);
+  hipError_t memcpy_err = hipSuccess;
+  BEGIN_CAPTURE_SYNC(memcpy_err, true);
+  HIP_CHECK_ERROR(hipMalloc3D(&devPitchedPtr, extent), memcpy_err);
+  END_CAPTURE_SYNC(memcpy_err);
+  if (memcpy_err == hipSuccess) {
+    HIPCHECK(hipFree(devPitchedPtr.ptr));
+    HIP_CHECK(hipMemGetInfo(&avail, &tot));
+    if (pavail != avail) {
+      WARN("Memory leak of hipMalloc3D API in multithreaded scenario");
+      REQUIRE(false);
+    }
   }
 }
-
 /*
 This testcase verifies the hipMalloc3D API by allocating
 smaller and big chunk data.
 */
 TEST_CASE("Unit_hipMalloc3D_SmallandBigChunks") {
   CHECK_IMAGE_SUPPORT
-
   MemoryAlloc3DDiffSizes(0);
 }
-
 /*
 This testcase verifies the hipMalloc3D API in multithreaded
 scenario by launching threads in parallel on multiple GPUs
@@ -100,16 +94,12 @@ and verifies the hipMalloc3D API with small and big chunks data
 */
 TEST_CASE("Unit_hipMalloc3D_MultiThread") {
   CHECK_IMAGE_SUPPORT
-
   std::vector<std::thread> threadlist;
   int devCnt = 0;
-
   devCnt = HipTest::getDeviceCount();
-
   for (int i = 0; i < devCnt; i++) {
     threadlist.push_back(std::thread(Malloc3DThreadFunc, i));
   }
-
   for (auto &t : threadlist) {
     t.join();
   }

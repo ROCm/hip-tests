@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2023-25 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -16,16 +16,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-
 #include <string.h>
-
 #include <cstring>
 #include <vector>
-
 #include <hip_test_common.hh>
 #include <hip_test_defgroups.hh>
 #include <resource_guards.hh>
-
 static bool testPassed1D = false;
 static bool testPassed2D = false;
 static constexpr auto NUM_ELM{1024};
@@ -36,7 +32,6 @@ static constexpr auto NUM_ELM{1024};
 * hipError_t hipArrayGetDescriptor(HIP_ARRAY_DESCRIPTOR* pArrayDescriptor, hipArray* array) -
 * Gets a 1D or 2D array descriptor
 */
-
 // Create 1D array
 hipArray_t arrayCreate1D(int format, int channel) {
   hipArray_t array;
@@ -87,7 +82,6 @@ hipArray_t arrayCreate1D(int format, int channel) {
   HIP_CHECK(hipArrayCreate(&array, &desc));
   return array;
 }
-
 // Create 2D array
 hipArray_t arrayCreate2D(int format, int channel) {
   hipArray_t array;
@@ -235,7 +229,6 @@ float* funcToChkArray(hipArray_t array) {
  */
 TEST_CASE("Unit_hipArrayGetDescriptor_1D_2D_ArrayParameterChk") {
   CHECK_IMAGE_SUPPORT
-
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   for (int i = 0; i < numDevices; i++) {
@@ -261,7 +254,6 @@ TEST_CASE("Unit_hipArrayGetDescriptor_1D_2D_ArrayParameterChk") {
           hipArray_t array1D1 = arrayCreate1D(i, j);
           HIP_ARRAY_DESCRIPTOR desc1;
           HIP_CHECK(hipArrayGetDescriptor(&desc1, array1D1));
-
           // Verify Num Of Channels
           REQUIRE(desc1.NumChannels == j);
           // Verify format of Array
@@ -278,7 +270,6 @@ TEST_CASE("Unit_hipArrayGetDescriptor_1D_2D_ArrayParameterChk") {
           j = 3;
       }
     }
-
     SECTION("2D Array parameters verification") {
       hipArray_t array2D = arrayCreate2D(1, 1);
       HIP_ARRAY_DESCRIPTOR desc;
@@ -328,7 +319,6 @@ TEST_CASE("Unit_hipArrayGetDescriptor_1D_2D_ArrayParameterChk") {
  */
 TEST_CASE("Unit_hipArrayGetDescriptor_MultiThreadScenarioFor1D_2D_Array") {
   CHECK_IMAGE_SUPPORT
-
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   for (int i = 0; i < numDevices; i++) {
@@ -377,7 +367,6 @@ TEST_CASE("Unit_hipArrayGetDescriptor_MultiThreadScenarioFor1D_2D_Array") {
  */
 TEST_CASE("Unit_hipArrayGetDescriptor_Host2Array_Array2Host") {
   CHECK_IMAGE_SUPPORT
-
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   for (int k = 0; k < numDevices; k++) {
@@ -413,7 +402,6 @@ TEST_CASE("Unit_hipArrayGetDescriptor_Host2Array_Array2Host") {
       A_h2 = reinterpret_cast<float*>(malloc(mem_size1));
       for (int i = 0; i < NUM_ELM; i++) {
         A_h2[i] = 2.0;}
-
       hipArray_t arraySimple2D = arrayCreateSimple2D();
       HIP_CHECK(hipMemcpyHtoA(arraySimple2D, 0, A_h2, mem_size1));
       float *A_h3 = funcToChkArray(arraySimple2D);
@@ -462,7 +450,6 @@ TEST_CASE("Unit_hipArrayGetDescriptor_Negative_Scenarios") {
   }
   #endif
 }
-
 /**
  * @addtogroup hipArrayGetDescriptor hipArrayGetDescriptor
  * @{
@@ -470,7 +457,6 @@ TEST_CASE("Unit_hipArrayGetDescriptor_Negative_Scenarios") {
  * `hipArrayGetDescriptor(HIP_ARRAY_DESCRIPTOR* pArrayDescriptor, hipArray* array)` -
  * Gets a 1D or 2D array descriptor.
  */
-
 /**
  * Test Description
  * ------------------------
@@ -484,28 +470,27 @@ TEST_CASE("Unit_hipArrayGetDescriptor_Negative_Scenarios") {
  */
 TEST_CASE("Unit_hipArrayGetDescriptor_Positive_Basic") {
   CHECK_IMAGE_SUPPORT
-
   HIP_ARRAY_DESCRIPTOR expected_desc{};
   using vec_info = vector_info<float>;
   expected_desc.Format = vec_info::format;
   expected_desc.NumChannels = vec_info::size;
   expected_desc.Width = 1024 / sizeof(float);
   expected_desc.Height = 4;
-
   hipArray_t ptr;
   HIP_CHECK(hipArrayCreate(&ptr, &expected_desc));
-
   HIP_ARRAY_DESCRIPTOR desc;
-  HIP_CHECK(hipArrayGetDescriptor(&desc, ptr));
-
-  REQUIRE(desc.Format == expected_desc.Format);
-  REQUIRE(desc.NumChannels == expected_desc.NumChannels);
-  REQUIRE(desc.Width == expected_desc.Width);
-  REQUIRE(desc.Height == expected_desc.Height);
-
+  hipError_t memcpy_err = hipSuccess;
+  BEGIN_CAPTURE_SYNC(memcpy_err, true);
+  HIP_CHECK_ERROR(hipArrayGetDescriptor(&desc, ptr), memcpy_err);
+  END_CAPTURE_SYNC(memcpy_err);
+  if (memcpy_err == hipSuccess) {
+    REQUIRE(desc.Format == expected_desc.Format);
+    REQUIRE(desc.NumChannels == expected_desc.NumChannels);
+    REQUIRE(desc.Width == expected_desc.Width);
+    REQUIRE(desc.Height == expected_desc.Height);
+  }
   HIP_CHECK(hipArrayDestroy(ptr));
 }
-
 /**
  * Test Description
  * ------------------------
@@ -519,36 +504,29 @@ TEST_CASE("Unit_hipArrayGetDescriptor_Positive_Basic") {
  */
 TEST_CASE("Unit_hipArrayGetDescriptor_Negative_Parameters") {
   CHECK_IMAGE_SUPPORT
-
   HIP_ARRAY_DESCRIPTOR expected_desc{};
   using vec_info = vector_info<float>;
   expected_desc.Format = vec_info::format;
   expected_desc.NumChannels = vec_info::size;
   expected_desc.Width = 1024 / sizeof(float);
   expected_desc.Height = 4;
-
   hipArray_t ptr;
   HIP_CHECK(hipArrayCreate(&ptr, &expected_desc));
-
   HIP_ARRAY_DESCRIPTOR desc;
-
   SECTION("desc is nullptr") {
     HIP_CHECK_ERROR(hipArrayGetDescriptor(nullptr, ptr), hipErrorInvalidValue);
   }
-
   SECTION("array is nullptr") {
     HIP_CHECK_ERROR(hipArrayGetDescriptor(&desc, nullptr), hipErrorInvalidHandle);
   }
-
   SECTION("array is freed") {
     HIP_CHECK(hipArrayDestroy(ptr));
     HIP_CHECK_ERROR(hipArrayGetDescriptor(&desc, ptr), hipErrorInvalidHandle);
   }
-
   static_cast<void>(hipArrayDestroy(ptr));
 }
-
 /**
 * End doxygen group MemoryTest.
 * @}
 */
+

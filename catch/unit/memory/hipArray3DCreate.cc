@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2022-2025 Advanced Micro Devices, Inc. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -82,9 +82,15 @@ TEMPLATE_TEST_CASE("Unit_hipArray3DCreate_happy", "", char, uchar2, uint2, int4,
     CAPTURE(desc.Width, desc.Height, desc.Depth);
 
     hipArray_t array;
-    HIP_CHECK(hipArray3DCreate(&array, &desc));
-    checkArrayIsExpected(array, desc);
-    HIP_CHECK(hipArrayDestroy(array));
+    hipError_t memcpy_err = hipSuccess;
+    BEGIN_CAPTURE_SYNC(memcpy_err, true);
+    HIP_CHECK_ERROR(hipArray3DCreate(&array, &desc), memcpy_err);
+    END_CAPTURE_SYNC(memcpy_err);
+
+    if (memcpy_err == hipSuccess) {
+      checkArrayIsExpected(array, desc);
+      HIP_CHECK(hipArrayDestroy(array));
+    }
   }
 }
 

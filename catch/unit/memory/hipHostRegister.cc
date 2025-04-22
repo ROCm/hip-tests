@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <hip_test_helper.hh>
 #include <hip_test_process.hh>
- 
+
 #include <utils.hh>
 
 #define OFFSET 128
@@ -997,6 +997,22 @@ TEMPLATE_TEST_CASE("Unit_hipHostRegister_Negative", "", int, float, double) {
   SECTION("hipHostRegister Negative Test - freed memory") {
     HIP_CHECK_ERROR(hipHostRegister(hostPtr, 0, 0), hipErrorInvalidValue);
   }
+}
+
+TEST_CASE("Unit_hipHostRegister_StreamCaptureBehavior") {
+  hipError_t err = hipSuccess;
+  bool rlx_mode_allowed = true;
+  size_t size = 1024;
+  int *ptr = (int*)malloc(size);
+  BEGIN_CAPTURE_SYNC(err, rlx_mode_allowed);
+  HIP_CHECK_ERROR(hipHostRegister(ptr, size, 0), err);
+  END_CAPTURE_SYNC(err);
+
+  if (err == hipSuccess) {
+    HIP_CHECK(hipHostUnregister(ptr));
+  }
+
+  free(ptr);
 }
 
 /**

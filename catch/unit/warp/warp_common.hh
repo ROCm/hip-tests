@@ -19,8 +19,6 @@ THE SOFTWARE.
 
 #pragma once
 
-#define HIP_ENABLE_WARP_SYNC_BUILTINS
-
 #include <hip_test_common.hh>
 #include <hip/hip_cooperative_groups.h>
 #include <hip/hip_fp16.h>

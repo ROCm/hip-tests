@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (c) 2021-25 Advanced Micro Devices, Inc. All rights reserved.
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -105,24 +105,26 @@ static bool testhipMemsetAsync(T *A_h, T *A_d, T memsetval,
   A_h = reinterpret_cast<T*> (malloc(Nbytes));
   REQUIRE(A_h != nullptr);
 
+  GENERATE_CAPTURE();
   for (int offset = MAX_OFFSET; offset >= 0; offset --) {
+    BEGIN_CAPTURE(stream);
     if (type == hipMemsetTypeDefault) {
       HIP_CHECK(hipMemsetAsync(A_d + offset, memsetval, numElements - offset,
-                                                                      stream));
+                                            stream));
 
     } else if (type == hipMemsetTypeD8) {
       HIP_CHECK(hipMemsetD8Async((hipDeviceptr_t)(A_d + offset), memsetval,
-                                                numElements - offset, stream));
+                                            numElements - offset, stream));
 
     } else if (type == hipMemsetTypeD16) {
       HIP_CHECK(hipMemsetD16Async((hipDeviceptr_t)(A_d + offset), memsetval,
-                                                numElements - offset, stream));
+                                            numElements - offset, stream));
 
     } else if (type == hipMemsetTypeD32) {
       HIP_CHECK(hipMemsetD32Async((hipDeviceptr_t)(A_d + offset), memsetval,
-                                                numElements - offset, stream));
+                                            numElements - offset, stream));
     }
-
+    END_CAPTURE(stream);
     HIP_CHECK(hipStreamSynchronize(stream));
     HIP_CHECK(hipMemcpy(A_h, A_d, Nbytes, hipMemcpyDeviceToHost));
     for (size_t i = offset; i < numElements; i++) {
@@ -133,7 +135,6 @@ static bool testhipMemsetAsync(T *A_h, T *A_d, T memsetval,
       }
     }
   }
-
   HIP_CHECK(hipFree(A_d));
   HIP_CHECK(hipStreamDestroy(stream));
   free(A_h);
@@ -263,14 +264,21 @@ TEST_CASE("Unit_hipMemset_2AsyncOperations") {
   HIP_CHECK(hipMalloc(reinterpret_cast<void**>(&p2), 4096 + 4096*2));
   p3 = p2+2048;
   hipStream_t s;
+
+  GENERATE_CAPTURE();
   HIP_CHECK(hipStreamCreate(&s));
+  BEGIN_CAPTURE(s);
   HIP_CHECK(hipMemsetAsync(p2, 0, 32*32*4, s));
   HIP_CHECK(hipMemsetD32Async((hipDeviceptr_t)p3, 0x3fe00000, 32*32, s));
+  END_CAPTURE(s);
   HIP_CHECK(hipStreamSynchronize(s));
+
+  BEGIN_CAPTURE(s);
   for (int i = 0; i < 256; ++i) {
     HIP_CHECK(hipMemsetAsync(p2, 0, 32*32*4, s));
     HIP_CHECK(hipMemsetD32Async((hipDeviceptr_t)p3, 0x3fe00000, 32*32, s));
   }
+  END_CAPTURE(s);
   HIP_CHECK(hipStreamSynchronize(s));
   HIP_CHECK(hipDeviceSynchronize());
   HIP_CHECK(hipMemcpy(&v[0], p2, 1024, hipMemcpyDeviceToHost));
@@ -282,3 +290,4 @@ TEST_CASE("Unit_hipMemset_2AsyncOperations") {
   HIP_CHECK(hipFree(p2));
   HIP_CHECK(hipStreamDestroy(s));
 }
+

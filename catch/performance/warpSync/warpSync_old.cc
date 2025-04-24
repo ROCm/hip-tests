@@ -91,91 +91,74 @@ struct AtomicXorOp {
   }
 };
 
-struct maskstruct{
- unsigned long long* masks;
- int size; 
-};
-
 // uses atomics to reduce the whole warp; depending on the mask our reduce should be faster
 // @output   to store the result, one per warp
 // @numItems must be a multiple of warpSize
-// template <class T, template <typename> class Op>
-// __global__ void reduceAllAtomics(T* __restrict__ output, const T* __restrict__ input, unsigned long long mask)
-// {
-//   int idx = threadIdx.x + blockIdx.x * kBlockDim;
-//   __shared__ T result[kBlockDim / warpSize]; // one per warp
-//   Op<T> op;
-//   int numWarp = threadIdx.x / warpSize;
+template <class T, template <typename> class Op>
+__global__ void reduceAllAtomics(T* __restrict__ output, const T* __restrict__ input, unsigned long long mask)
+{
+  int idx = threadIdx.x + blockIdx.x * kBlockDim;
+  __shared__ T result[kBlockDim / warpSize]; // one per warp
+  Op<T> op;
+  int numWarp = threadIdx.x / warpSize;
 
-//   // initialize result[numWarp] to the "identity" element for Op
-//   if constexpr (std::is_same<Op<T>, AtomicMinOp<T>>::value)
-//     result[numWarp] = std::numeric_limits<T>::max();
-//   else if constexpr (std::is_same<Op<T>, AtomicMaxOp<T>>::value)
-//     result[numWarp] = std::numeric_limits<T>::lowest();
-//   else if constexpr (std::is_same<Op<T>, AtomicAndOp<T>>::value)
-//     result[numWarp] = 1;
-//   else
-//     result[numWarp] = 0;
+  // initialize result[numWarp] to the "identity" element for Op
+  if constexpr (std::is_same<Op<T>, AtomicMinOp<T>>::value)
+    result[numWarp] = std::numeric_limits<T>::max();
+  else if constexpr (std::is_same<Op<T>, AtomicMaxOp<T>>::value)
+    result[numWarp] = std::numeric_limits<T>::lowest();
+  else if constexpr (std::is_same<Op<T>, AtomicAndOp<T>>::value)
+    result[numWarp] = 1;
+  else
+    result[numWarp] = 0;
 
-//   __syncthreads();
+  __syncthreads();
 
-//   if (mask & (1ul << __ockl_lane_u32()))
-//     op(&result[numWarp], input[idx]);
+  if (mask & (1ul << __ockl_lane_u32()))
+    op(&result[numWarp], input[idx]);
 
-//   __syncthreads();
+  __syncthreads();
 
-//   if (__ockl_lane_u32() == 0)
-//     output[idx / warpSize] = result[numWarp];
-// }
-
+  if (__ockl_lane_u32() == 0)
+    output[idx / warpSize] = result[numWarp];
+}
 
 template <class T>
 __global__ void reduce_compiler_builtin(T* __restrict__ output, const T* __restrict__ input, unsigned long long mask){
   int idx = threadIdx.x + blockIdx.x * kBlockDim;
-  // int laneid = __ockl_lane_u32();
-  // unsigned long long currmask = 0;
-  // for(int i=0; i<mst.size; i++){
-  //   currmask = mst.masks[i];
-  //   if(currmask & (1ul << laneid)) break;
-  // }
-  // assert(currmask == 0 && "incorrect mask semantics\n");
-  // unsigned long long currmask = (mask & (1ul << __ockl_lane_u32())) ? mask : ~mask;
-  // output[idx] = __builtin_amdgcn_wave_reduce_wrt_divergent_mask_max_i32(input[idx],currmask,1);
+  T result;
 
-    if (mask & (1ul << __ockl_lane_u32())) {
-      output[idx] = __builtin_amdgcn_wave_reduce_wrt_divergent_mask_max_i32(input[idx],mask,1);
-    }
+  if (mask & (1ul << __ockl_lane_u32())) {
+    result = __builtin_amdgcn_wave_reduce_wrt_divergent_mask_max_i32(input[idx],mask,1);
+    if (__ockl_activelane_u32() == 0)
+      output[idx / warpSize] = result;
+  }
 }
 
 template <class T, template<typename> class Op>
-__global__ void reduceOpSync(T* __restrict__ output, const T* __restrict__ input, unsigned long long currmask)
+__global__ void reduceOpSync(T* __restrict__ output, const T* __restrict__ input, unsigned long long mask)
 {
   int idx = threadIdx.x + blockIdx.x * kBlockDim;
   T result;
-  // int laneid = __ockl_lane_u32();
-  // unsigned long long currmask = 0;
-  // for(int i=0; i<mst.size; i++){
-  //   currmask = mst.masks[i];
-  //   if(currmask & (1ul << laneid)) break;
-  // }
-  // assert(currmask == 0 && "incorrect mask semantics\n");
-  // unsigned long long currmask = (mask & (1ul << __ockl_lane_u32())) ? mask : ~mask;
-  if (currmask & (1ul << __ockl_lane_u32())) {
+
+  if (mask & (1ul << __ockl_lane_u32())) {
     if constexpr (std::is_same<Op<T>, std::plus<T>>::value)
-      result = __reduce_add_sync(currmask, input[idx]);
+      result = __reduce_add_sync(mask, input[idx]);
     else if constexpr (std::is_same<Op<T>, MinOp<T>>::value)
-      result = __reduce_min_sync(currmask, input[idx]);
+      result = __reduce_min_sync(mask, input[idx]);
     else if constexpr (std::is_same<Op<T>, MaxOp<T>>::value)
-      result = __reduce_max_sync(currmask, input[idx]);
+      result = __reduce_max_sync(mask, input[idx]);
     else if constexpr (std::is_same<Op<T>, std::logical_and<T>>::value)
-      result = __reduce_and_sync(currmask, input[idx]);
+      result = __reduce_and_sync(mask, input[idx]);
     else if constexpr (std::is_same<Op<T>, std::logical_or<T>>::value)
-      result = __reduce_or_sync(currmask, input[idx]);
+      result = __reduce_or_sync(mask, input[idx]);
     else if constexpr (std::is_same<Op<T>, XorOp<T>>::value)
-      result = __reduce_xor_sync(currmask, input[idx]);
+      result = __reduce_xor_sync(mask, input[idx]);
     else
       static_assert(std::is_void<T>::value, "Unsupported operator");
-    output[idx] = result;
+
+    if (__ockl_activelane_u32() == 0)
+      output[idx / warpSize] = result;
   }
 }
 
@@ -184,11 +167,11 @@ class AtomicBenchmark : public Benchmark<AtomicBenchmark<T, Op>> {
 public:
   void operator()(T* output, const T* input, int numItems, unsigned long long mask)
   {
-    // dim3 blockDim = { kBlockDim };
-    // dim3 gridDim = { static_cast<uint32_t>(std::ceil(numItems / static_cast<float>(blockDim.x))) };
+    dim3 blockDim = { kBlockDim };
+    dim3 gridDim = { static_cast<uint32_t>(std::ceil(numItems / static_cast<float>(blockDim.x))) };
 
     TIMED_SECTION(kTimerTypeEvent) {
-      reduce_compiler_builtin<T><<<12800, 1024>>>(output, input, mask);
+      reduce_compiler_builtin<T><<<gridDim, blockDim>>>(output, input, mask);//reduce_compiler_builtin
       HIP_CHECK(hipDeviceSynchronize());
     }
   }
@@ -199,12 +182,12 @@ class ReduceSyncBenchmark : public Benchmark<ReduceSyncBenchmark<T, Op>> {
 public:
   void operator()(T* output, T* input, int numItems, unsigned long long mask)
   {
-    // dim3 blockDim = { kBlockDim }; //1024
-    // dim3 gridDim = { static_cast<uint32_t>(std::ceil(numItems / static_cast<float>(blockDim.x))) }; //12800
+    dim3 blockDim = { kBlockDim }; //1024
+    dim3 gridDim = { static_cast<uint32_t>(std::ceil(numItems / static_cast<float>(blockDim.x))) };//12800
+    
 
-    // std::cout << "gridDim:" << std::ceil(numItems / static_cast<float>(blockDim.x)) << "\n"; 
     TIMED_SECTION(kTimerTypeEvent) {
-      reduceOpSync<T, Op><<<12800, 1024>>>(output, input, mask);
+      reduceOpSync<T, Op><<<gridDim, blockDim>>>(output, input, mask);
       HIP_CHECK(hipDeviceSynchronize());
     }
   }
@@ -213,7 +196,6 @@ public:
 template <class T, template <typename> class Op>
 void checkResults(T* d_atomicsResult, T* d_reduceResult, size_t numBytes, unsigned long long mask)
 {
-  // std::cout << std::hex << "mask:" << mask << std::dec << "\n";
   using namespace Catch::Matchers;
   LinearAllocGuard<T> outputAtomic(LinearAllocs::malloc, numBytes);
   LinearAllocGuard<T> outputReduce(LinearAllocs::malloc, numBytes);
@@ -227,8 +209,7 @@ void checkResults(T* d_atomicsResult, T* d_reduceResult, size_t numBytes, unsign
     for (int i = 0; i < numBytes / sizeof(T); i++) {
       auto& atomicResult = outputAtomic.ptr()[i];
       auto& reduceResult = outputReduce.ptr()[i];
-      // std::cout << "outputAtomic[" << i << "]:" << atomicResult << "\n";
-      // std::cout << "outputReduce[" << i << "]:" << reduceResult << "\n";
+
       if constexpr (std::is_integral<T>::value || std::is_same<Op<T>, MinOp<T>>::value ||
                     std::is_same<Op<T>, MaxOp<T>>::value)
         // for integral types or min/max the result should match exactly
@@ -277,35 +258,26 @@ struct HasAtomicOps<long long> {
   static constexpr bool value = false;
 };
 
-void printmasks(struct maskstruct m){
-  for(int i=0; i<m.size; i++){
-    std::cout << std::hex << std::uppercase << m.masks[i] << ",";
-  }
-  std::cout << "\n" ;
-}
-
 template <class T, template <typename> class Op>
 struct ReduceBenchmark {
   void Run()
   {
-    static constexpr int numMasks = 7;
+    static constexpr int numMasks = 6;
     using distribution = typename DistributionType<T>::type;
     ReduceSyncBenchmark<T, Op> benchmarkReduce;
-    // uint64_t inputSize = cmd_options.reduce_input_size; //* 1_MB; 
-    int noOfWaves = 204800;
+    uint64_t inputSize = cmd_options.reduce_input_size * 1_MB;
+    int numItems = inputSize / sizeof(T);
     int wavefrontSize = getWarpSize();
-    int numItems = noOfWaves * wavefrontSize;// / sizeof(T);//13107200
-    uint64_t inputSize = numItems * sizeof(T);
-    std::cout << "wfs:" << wavefrontSize << "\n";
-    std::cout << "sizeoft:" << sizeof(T) << "\n"; 
-    // int outputNumBytes = noOfWaves * sizeof(T);
+    int outputNumBytes = inputSize / wavefrontSize;
+    std::cout << "op:" << outputNumBytes << "\n"; //819200
+    std::cout << "numItems:" << numItems << "\n"; //13107200
     LinearAllocGuard<T> input(LinearAllocs::malloc, inputSize);
     LinearAllocGuard<T> d_input(LinearAllocs::hipMalloc, inputSize);
     LinearAllocGuard<T> d_outputsAtomic[numMasks];
     LinearAllocGuard<T> d_outputsReduce[numMasks];
     LinearAllocGuard<T>* d_outputAtomic = &d_outputsAtomic[0];
     LinearAllocGuard<T>* d_outputReduce = &d_outputsReduce[0];
-    std::mt19937_64 gen(15);
+    std::mt19937_64 gen(123);
     distribution dist;
     int halfWaveSize = wavefrontSize / 2;
     unsigned long long halfBitsOn = (1ul << (wavefrontSize / 2)) - 1;
@@ -314,8 +286,7 @@ struct ReduceBenchmark {
                        high16BitsOn = halfBitsOn << (wavefrontSize - 16),
                        high8BitsOn = halfBitsOn << (wavefrontSize - 8),
                        high4BitsOn = halfBitsOn << (wavefrontSize - 4),
-                       allButOne = -1 & ~1,
-                       alternatingOnes = 0x5555555555555555;
+                       allButOne = -1 & ~1;
     const char* typeStr = typeToString<T>();
     const char* opStr = opToString<T, Op>();
     std::map<std::string, unsigned long long> masks;
@@ -324,8 +295,7 @@ struct ReduceBenchmark {
                                                                 { "high order 16 bits on", high16BitsOn },
                                                                 { "high order 8 bits on", high8BitsOn },
                                                                 { "high order 4 bits on", high4BitsOn },
-                                                                { "all but one", allButOne },
-                                                                { "alternating 1s", alternatingOnes} };
+                                                                { "all but one", allButOne } };
     int pos = 0, numMask = 0;
 
     for (auto& mask : masksPairs) {
@@ -341,22 +311,17 @@ struct ReduceBenchmark {
     // atomicAnd/Or() are bitwise operations, not logical
     if constexpr (IsLogicalOp<T, Op>::value)
       dist = distribution(0, 1);
-    // else
-    //   dist = distribution(0, 10);
 
     for (int i = 0; i < numItems; i++) {
       input.ptr()[i] = dist(gen);
-      // std::cout << "inp["<<i<<"]:"<<input.ptr()[i]<<"\n";
     }
 
     for (auto& buffer : d_outputsAtomic) {
-      buffer = LinearAllocGuard<T>(LinearAllocs::hipMalloc, inputSize);
-      HIP_CHECK(hipMemset(buffer.ptr(), 0, inputSize));
+      buffer = LinearAllocGuard<T>(LinearAllocs::hipMalloc, outputNumBytes);
     }
 
     for (auto& buffer : d_outputsReduce) {
-      buffer = LinearAllocGuard<T>(LinearAllocs::hipMalloc, inputSize);
-      HIP_CHECK(hipMemset(buffer.ptr(), 0, inputSize));
+      buffer = LinearAllocGuard<T>(LinearAllocs::hipMalloc, outputNumBytes);
     }
 
     HIP_CHECK(hipMemcpy(d_input.ptr(), input.ptr(), inputSize, hipMemcpyHostToDevice));
@@ -364,7 +329,7 @@ struct ReduceBenchmark {
     if constexpr (HasAtomicOps<T>::value) {
       AtomicBenchmark<T, Op> benchmarkAtomics;
 
-      printf("\n--- compiler builtin %s %s---\n", opStr, typeStr);
+      printf("\n--- atomics %s %s---\n", opStr, typeStr);
 
       for (auto& mask : masks) {
         printf("%s %llx\n", mask.first.c_str(), mask.second);
@@ -372,7 +337,7 @@ struct ReduceBenchmark {
       }
     }
 
-    printf("\n--- CLR builtin %s %s--- \n", opStr, typeStr);
+    printf("\n--- reduce %s %s--- \n", opStr, typeStr);
 
     for (const auto& mask : masks) {
       printf("%s %llx\n", mask.first.c_str(), mask.second);
@@ -385,7 +350,7 @@ struct ReduceBenchmark {
       printf("Checking results...\n");
 
       for (const auto& mask : masks) {
-        checkResults<T, Op>(d_outputsAtomic[pos].ptr(), d_outputsReduce[pos].ptr(),inputSize, mask.second);
+        checkResults<T, Op>(d_outputsAtomic[pos].ptr(), d_outputsReduce[pos].ptr(), outputNumBytes, mask.second);
         pos++;
       }
     }

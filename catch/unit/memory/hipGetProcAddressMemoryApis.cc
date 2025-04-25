@@ -2835,9 +2835,9 @@ TEST_CASE("Unit_hipGetProcAddress_MemoryApisMemset2D3D") {
     }
 
     for ( int s = 0; s < Ns; s++ ) {
-      int startIndex = s * (N/Ns);
-      HIP_CHECK(dyn_hipMemset2DAsync_ptr(devMem + startIndex, pitch/Ns,
-                value, width/Ns, height/Ns, stream[s]));
+      int startIndex = s * ((pitch * height) / Ns);
+      HIP_CHECK(dyn_hipMemset2DAsync_ptr(devMem + startIndex, pitch,
+                value, width, height/Ns, stream[s]));
     }
     for ( int s = 0; s < Ns; s++ ) {
       HIP_CHECK(hipStreamSynchronize(stream[s]));

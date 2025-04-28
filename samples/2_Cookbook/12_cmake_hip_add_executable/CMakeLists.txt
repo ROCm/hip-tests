@@ -19,10 +19,12 @@
 # THE SOFTWARE.
 
 cmake_minimum_required(VERSION 3.10)
-if(UNIX)
-  if(NOT DEFINED ROCM_PATH)
-    set(ROCM_PATH "/opt/rocm"  CACHE STRING "Default ROCM installation directory.")
-  endif()
+if(NOT DEFINED ROCM_PATH)
+    if(UNIX)
+        set(ROCM_PATH "/opt/rocm"  CACHE STRING "Default ROCM installation directory.")
+    else()
+        set(ROCM_PATH ${CMAKE_MODULE_PATH})
+    endif()
 endif()
 
 if(NOT DEFINED HIP_PATH)
@@ -32,10 +34,13 @@ if(NOT DEFINED HIP_PATH)
         set(HIP_PATH $ENV{HIP_PATH} CACHE PATH "Path to which HIP has been installed")
     endif()
 endif()
+
 # Search for rocm in common locations
 list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
 
 set(CMAKE_MODULE_PATH "${HIP_PATH}/lib/cmake/hip/" ${CMAKE_MODULE_PATH})
+cmake_path(SET CMAKE_MODULE_PATH NORMALIZE "${CMAKE_MODULE_PATH}")
+
 set(CMAKE_HIP_ARCHITECTURES OFF)
 project(12_cmake)
 

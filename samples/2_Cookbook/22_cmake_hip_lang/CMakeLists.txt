@@ -25,13 +25,18 @@ if(UNIX)
     set(ROCM_PATH "/opt/rocm" CACHE STRING "Default ROCM installation directory.")
     list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
   endif()
+  set(CMAKE_HIP_COMPILER ${ROCM_PATH}/llvm/bin/clang++)
+else()
+  if(NOT DEFINED ROCM_PATH)
+    set(ROCM_PATH ${CMAKE_PREFIX_PATH} CACHE STRING "Default ROCM installation directory.")
+  endif()
+  set(CMAKE_HIP_COMPILER ${ROCM_PATH}/bin/clang++.exe)
 endif()
 
 if( NOT DEFINED CMAKE_HIP_COMPILER_ROCM)
- set(CMAKE_HIP_COMPILER_ROCM_ROOT ${ROCM_PATH})
+  cmake_path(SET ROCM_PATH NORMALIZE "${ROCM_PATH}")
+  set(CMAKE_HIP_COMPILER_ROCM_ROOT ${ROCM_PATH})
 endif()
-
-set(CMAKE_HIP_COMPILER ${ROCM_PATH}/llvm/bin/clang++)
 
 project(cmake_hip_lang_support VERSION 1.0
         DESCRIPTION "HIP Language Support with upstream CMake"

@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <dirent.h>
 #include <hip_test_common.hh>
 #include <picojson.h>
 #include <fstream>
@@ -37,10 +38,29 @@ std::string TestContext::substringFound(std::vector<std::string> list, std::stri
 
 std::string TestContext::getCurrentArch() {
 #if HT_LINUX
-  const char* cmd = "/opt/rocm/bin/rocm_agent_enumerator | sort -u | xargs | sed -e 's/ /;/g'";
+  char* cmd;
+  size_t size_cmd = 128;
+  if (getenv("ROCM_PATH")) {
+    char *rocm_path = getenv("ROCM_PATH");
+    size_cmd += strlen(rocm_path);
+    cmd = (char *) malloc (size_cmd);
+    snprintf(cmd, size_cmd, "%s", rocm_path);
+  } else {
+    cmd = (char *) malloc (size_cmd);
+    DIR *dir = opendir("/opt/rocm");
+    if (dir) {
+      snprintf(cmd, size_cmd, "/opt/rocm");
+      closedir(dir);
+    } else {
+      snprintf(cmd, size_cmd, "/usr");
+    }
+  }
+  strncat(cmd, "/bin/rocm_agent_enumerator | sort -u | xargs | sed -e 's/ /;/g'", size_cmd);
+
   std::array<char, 1024> buffer;
   std::string result;
   std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+  free(cmd);
   if (!pipe) {
     printf("popen() failed!");
     return "";

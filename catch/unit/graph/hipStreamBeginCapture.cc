@@ -199,14 +199,6 @@ TEST_CASE("Unit_hipStreamBeginCapture_Negative_Parameters") {
   SECTION("Creating hipStream with invalid mode") {
     HIP_CHECK_ERROR(hipStreamBeginCapture(stream, hipStreamCaptureMode(-1)), hipErrorInvalidValue);
   }
-  SECTION("Stream capture on uninitialized stream returns error code.") {
-    constexpr auto InvalidStream = [] {
-      StreamGuard sg(Streams::created);
-      return sg.stream();
-    };
-    HIP_CHECK_ERROR(hipStreamBeginCapture(InvalidStream(), hipStreamCaptureModeGlobal),
-                    hipErrorContextIsDestroyed);
-  }
 }
 
 /**

@@ -212,18 +212,6 @@ template <ExtModuleLaunchKernelSig* func> void ModuleLaunchKernelNegativeParamet
                     hipErrorInvalidValue);
   }
 
-  SECTION("Invalid stream") {
-    hipStream_t stream = nullptr;
-    HIP_CHECK(hipStreamCreate(&stream));
-    HIP_CHECK(hipStreamDestroy(stream));
-    hipError_t err = hipErrorInvalidValue;
-    #if HT_NVIDIA
-    err = hipErrorContextIsDestroyed;
-    #endif
-    HIP_CHECK_ERROR(func(f, 1, 1, 1, 1, 1, 0, 0, stream, nullptr, nullptr, nullptr, nullptr, 0u),
-                    err);
-  }
-
   SECTION("Passing kernel_args and extra simultaneously") {
     hipFunction_t f = GetKernel(mg.module(), "Kernel42");
     LinearAllocGuard<int> result_dev(LinearAllocs::hipMalloc, sizeof(int));

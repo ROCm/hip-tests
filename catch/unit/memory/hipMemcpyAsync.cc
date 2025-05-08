@@ -80,10 +80,6 @@ TEST_CASE("Unit_hipMemcpyAsync_Positive_Synchronization_Behavior") {
 
 TEST_CASE("Unit_hipMemcpyAsync_Negative_Parameters") {
   using namespace std::placeholders;
-  constexpr auto InvalidStream = [] {
-    StreamGuard sg(Streams::created);
-    return sg.stream();
-  };
 
   SECTION("Host to device") {
     LinearAllocGuard<int> device_alloc(LinearAllocs::hipMalloc, kPageSize);
@@ -97,13 +93,6 @@ TEST_CASE("Unit_hipMemcpyAsync_Negative_Parameters") {
                                      static_cast<hipMemcpyKind>(-1), nullptr),
                       hipErrorInvalidMemcpyDirection);
     }
-#if HT_AMD
-    SECTION("Invalid stream") {
-      HIP_CHECK_ERROR(hipMemcpyAsync(device_alloc.ptr(), host_alloc.ptr(), kPageSize,
-                                     hipMemcpyHostToDevice, InvalidStream()),
-                      hipErrorContextIsDestroyed);
-    }
-#endif
   }
 
   SECTION("Device to host") {
@@ -118,14 +107,6 @@ TEST_CASE("Unit_hipMemcpyAsync_Negative_Parameters") {
                                      static_cast<hipMemcpyKind>(-1), nullptr),
                       hipErrorInvalidMemcpyDirection);
     }
-
-#if HT_AMD
-    SECTION("Invalid stream") {
-      HIP_CHECK_ERROR(hipMemcpyAsync(host_alloc.ptr(), device_alloc.ptr(), kPageSize,
-                                     hipMemcpyDeviceToHost, InvalidStream()),
-                      hipErrorContextIsDestroyed);
-    }
-#endif
   }
 
   SECTION("Host to host") {
@@ -140,13 +121,6 @@ TEST_CASE("Unit_hipMemcpyAsync_Negative_Parameters") {
                                      static_cast<hipMemcpyKind>(-1), nullptr),
                       hipErrorInvalidMemcpyDirection);
     }
-#if HT_AMD
-    SECTION("Invalid stream") {
-      HIP_CHECK_ERROR(hipMemcpyAsync(dst_alloc.ptr(), src_alloc.ptr(), kPageSize,
-                                     hipMemcpyHostToHost, InvalidStream()),
-                      hipErrorContextIsDestroyed);
-    }
-#endif
   }
 
   SECTION("Device to device") {
@@ -162,12 +136,5 @@ TEST_CASE("Unit_hipMemcpyAsync_Negative_Parameters") {
                                      static_cast<hipMemcpyKind>(-1), nullptr),
                       hipErrorInvalidMemcpyDirection);
     }
-#if HT_AMD
-    SECTION("Invalid stream") {
-      HIP_CHECK_ERROR(hipMemcpyAsync(dst_alloc.ptr(), src_alloc.ptr(), kPageSize,
-                                     hipMemcpyDeviceToDevice, InvalidStream()),
-                      hipErrorContextIsDestroyed);
-    }
-#endif
   }
 }

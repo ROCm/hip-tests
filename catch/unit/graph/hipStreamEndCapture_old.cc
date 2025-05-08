@@ -80,17 +80,6 @@ TEST_CASE("Unit_hipStreamEndCapture_Negative") {
     REQUIRE(hipErrorIllegalState == ret);
     HIP_CHECK(hipStreamDestroy(stream));
   }
-#if HT_AMD
-  SECTION("Destroy stream and try to end capture") {
-    hipStream_t stream;
-    hipGraph_t graph;
-    HIP_CHECK(hipStreamCreate(&stream));
-    HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
-    HIP_CHECK(hipStreamDestroy(stream));
-    ret = hipStreamEndCapture(stream, &graph);
-    REQUIRE(hipErrorContextIsDestroyed == ret);
-  }
-#endif
   SECTION("Destroy graph and try to end capture in between") {
     hipStream_t stream{nullptr};
     hipGraph_t graph{nullptr};

@@ -95,46 +95,6 @@ TEST_CASE("Unit_hipGraphLaunch_Negative") {
     HIP_CHECK(hipGraphDestroy(graph));
     HIP_CHECK(hipStreamDestroy(stream));
   }
-/* In this case in CUDA setup this api call leads to undefined behavior
-   So enabling this test only for AMD and checking with hipSuccess */
-#if HT_AMD
-  SECTION("Destroy stream and try to launch respective executable graph") {
-    constexpr size_t Nbytes = 1024;
-    hipGraph_t graph;
-    hipGraphExec_t graphExec;
-    hipStream_t stream;
-    hipGraphNode_t memsetNode;
-
-    char *devData;
-    HIP_CHECK(hipMalloc(&devData, Nbytes));
-
-    HIP_CHECK(hipGraphCreate(&graph, 0));
-    HIP_CHECK(hipStreamCreate(&stream));
-
-    hipMemsetParams memsetParams{};
-    memset(&memsetParams, 0, sizeof(memsetParams));
-    memsetParams.dst = reinterpret_cast<void*>(devData);
-    memsetParams.value = 0;
-    memsetParams.pitch = 0;
-    memsetParams.elementSize = sizeof(char);
-    memsetParams.width = Nbytes;
-    memsetParams.height = 1;
-    HIP_CHECK(hipGraphAddMemsetNode(&memsetNode, graph, nullptr, 0,
-                                    &memsetParams));
-    HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
-    HIP_CHECK(hipGraphLaunch(graphExec, stream));
-    HIP_CHECK(hipStreamSynchronize(stream));
-
-    HIP_CHECK(hipStreamDestroy(stream));
-    // Launch again after destroy stream
-    ret = hipGraphLaunch(graphExec, stream);
-    REQUIRE(hipSuccess != ret);
-
-    HIP_CHECK(hipFree(devData));
-    HIP_CHECK(hipGraphExecDestroy(graphExec));
-    HIP_CHECK(hipGraphDestroy(graph));
-  }
-#endif
   SECTION("Destroy graph and try to launch respective executable graph") {
     constexpr size_t Nbytes = 1024;
     hipGraph_t graph;

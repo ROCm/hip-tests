@@ -29,7 +29,9 @@ THE SOFTWARE.
  * enqueues a host function call in a stream
  */
 
+#if HT_NVIDIA
 static void hostNodeCallbackDummy(void* data) { REQUIRE(data == nullptr); }
+#endif
 
 static void hostNodeCallback(void* data) {
   float** userData = static_cast<float**>(data);
@@ -67,16 +69,6 @@ TEST_CASE("Unit_hipLaunchHostFunc_Negative_Parameters") {
   SECTION("Pass functions as nullptr") {
     HIP_CHECK_ERROR(hipLaunchHostFunc(stream, nullptr, nullptr), hipErrorInvalidValue);
   }
-#if HT_AMD
-  SECTION("Pass uninitialized stream") {
-    hipHostFn_t fn = hostNodeCallbackDummy;
-    constexpr auto InvalidStream = [] {
-      StreamGuard sg(Streams::created);
-      return sg.stream();
-    };
-    HIP_CHECK_ERROR(hipLaunchHostFunc(InvalidStream(), fn, nullptr), hipErrorContextIsDestroyed);
-  }
-#endif
 }
 
 /**

@@ -113,13 +113,13 @@ TEST_CASE("Unit_hipMemExportToShareableHandle_Negative_Parameters") {
   }
 #endif
 
-#if HT_AMD
   SECTION("handle == nullptr") {
-    HIP_CHECK_ERROR(hipMemExportToShareableHandle(&shareable_handle, nullptr,
-                                                  hipMemHandleTypePosixFileDescriptor, 0),
-                    hipErrorInvalidValue);
+    HIP_CHECK_ERROR(
+        hipMemExportToShareableHandle(&shareable_handle,
+                                      (hipMemGenericAllocationHandle_t)nullptr,
+                                      hipMemHandleTypePosixFileDescriptor, 0),
+        hipErrorInvalidValue);
   }
-#endif
 
   SECTION("invalid handleType") {
     HIP_CHECK_ERROR(

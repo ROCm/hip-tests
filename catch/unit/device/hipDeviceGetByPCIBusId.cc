@@ -28,7 +28,7 @@
  * Returns a handle to a compute device.
  */
 
-#define SIZE 13
+#define SIZE 20
 
 /**
  * Test Description
@@ -53,9 +53,10 @@ TEST_CASE("Unit_hipDeviceGetByPCIBusId_Functional") {
     int pciDomainID = -1;
     int tempPciBusId = -1;
     int tempDeviceId = -1;
+    int pciFunction = -1;
     HIP_CHECK(hipDeviceGetPCIBusId(&pciBusId[0], SIZE, i));
-    sscanf(pciBusId, "%04x:%02x:%02x", &pciDomainID,
-           &pciBusID, &pciDeviceID);
+    REQUIRE(sscanf(pciBusId, "%x:%x:%x.%x", &pciDomainID,
+           &pciBusID, &pciDeviceID, &pciFunction) == 4);
     HIP_CHECK(hipDeviceGetAttribute(&tempPciBusId,
            hipDeviceAttributePciBusId, i));
 

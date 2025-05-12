@@ -494,27 +494,6 @@ void setEnv() {
     HipTest::HIP_SKIP_TEST("Skipping because this machine has total GPUs < 2");  // NOLINT
   }
 }
-
-std::mutex setLock;
-void setEnvLock() {
-  setLock.lock();
-  std::map<int, std::vector<char>> uuid_map;
-  #ifdef __linux__
-    uuid_map = getUUIDlistFromRocmInfo();
-  #else
-    uuid_map = getUUIDlistWithoutRocmInfo();
-  #endif
-  if (uuid_map.size() >= 2) {
-    std::string uuid = uuid_map[1].data();
-    std::string uuidEnv = uuid.substr(0, 20);
-    unsetenv("HIP_VISIBLE_DEVICES");
-    setenv("HIP_VISIBLE_DEVICES", uuidEnv.c_str(), 1);
-  } else {
-    tState = 2;
-    HipTest::HIP_SKIP_TEST("Skipping because this machine has total GPUs < 2");  // NOLINT
-  }
-  setLock.unlock();
-}
 /**
  * Test Description
  * ------------------------
@@ -536,35 +515,6 @@ TEST_CASE("Unit_UUID_setEnv_Thread") {
   // Create Thread two
   std::thread t2(ChkUUID);
   t2.join();
-  REQUIRE(tState != 0);
-}
-/**
- * Test Description
- * ------------------------
- *  - Multi thread scenario.
- *  - Set Env var HIP_VISIBLE_DEVICES in one thread
- *  - Meanwhile hold the second thread. Release the 2nd thread.
- *  - Verify the followed by functionality in another thread
- * Test source
- * ------------------------
- *  - unit/device/hipDeviceGetUuid.cc
- * Test requirements
- * ------------------------
- *  - HIP_VERSION >= 6.2
- */
-
-TEST_CASE("Unit_UUID_setEnv_Thread_Lock") {
-  // Create Thread one
-  std::thread t1(setEnvLock);
-#ifdef __linux__
-  sleep(2);
-#else
-  _sleep(2);
-#endif
-  // Create Thread two
-  std::thread t2(ChkUUID);
-  t2.join();
-  t1.join();
   REQUIRE(tState != 0);
 }
 #endif

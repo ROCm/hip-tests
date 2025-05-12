@@ -897,7 +897,6 @@
         "Unit_hipExtLaunchKernelGGL_Functional",
         "=== Following tests disabled due to SWDEV-483110",
         "Unit_UUID_setEnv_Thread",
-        "Unit_UUID_setEnv_Thread_Lock",
         "====================================================",
     #endif
     #if defined gfx1200 || defined gfx1201

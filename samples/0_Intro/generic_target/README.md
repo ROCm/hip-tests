@@ -55,7 +55,7 @@ info: copy Device2Host
 info: check result
 PASSED: generic targets!
 
-$./saxyGenericTarget
+$./saxpyGenericTarget
 Find generic target gfx11-generic
 SAXPY test passed
 ```

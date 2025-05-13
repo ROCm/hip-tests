@@ -37,7 +37,7 @@ TEST_CASE("Unit_hipModuleLoadData_Positive_Basic") {
   }
 
 #if HT_AMD
-  SECTION("Load compiled module from file with compressed code objects") {
+  SECTION("Load compiled module from file with regular target in compressed fatbin") {
     const auto loaded_module = LoadModuleIntoBuffer("copyKernelCompressed.code");
     HIP_CHECK(hipModuleLoadData(&module, loaded_module.data()));
     REQUIRE(module != nullptr);
@@ -47,12 +47,26 @@ TEST_CASE("Unit_hipModuleLoadData_Positive_Basic") {
     HIP_CHECK(hipModuleUnload(module));
   }
 
-  SECTION("Load compiled module from file with generic target code objects") {
+  SECTION("Load compiled module from file with generic target in regular fatbin") {
     if (!isGenericTargetSupported()) {
       fprintf(stderr, "Generic target test is skipped\n");
       return;
     }
     const auto loaded_module = LoadModuleIntoBuffer("copyKernelGenericTarget.code");
+    HIP_CHECK(hipModuleLoadData(&module, loaded_module.data()));
+    REQUIRE(module != nullptr);
+    hipFunction_t kernel = nullptr;
+    HIP_CHECK(hipModuleGetFunction(&kernel, module, "copy_ker"));
+    REQUIRE(kernel != nullptr);
+    HIP_CHECK(hipModuleUnload(module));
+  }
+
+  SECTION("Load compiled module from file with generic target in compressed fatbin") {
+    if (!isGenericTargetSupported()) {
+      fprintf(stderr, "Generic target test is skipped\n");
+      return;
+    }
+    const auto loaded_module = LoadModuleIntoBuffer("copyKernelGenericTargetCompressed.code");
     HIP_CHECK(hipModuleLoadData(&module, loaded_module.data()));
     REQUIRE(module != nullptr);
     hipFunction_t kernel = nullptr;

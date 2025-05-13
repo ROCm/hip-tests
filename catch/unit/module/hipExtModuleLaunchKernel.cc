@@ -53,6 +53,7 @@ constexpr auto fileName = "copyKernel.code";
 constexpr auto kernel_name = "copy_ker";
 constexpr auto fileNameCompressed = "copyKernelCompressed.code";
 constexpr auto fileNameGenericTarget = "copyKernelGenericTarget.code";
+constexpr auto fileNameGenericTargetCompressed = "copyKernelGenericTargetCompressed.code";
 
 static constexpr auto totalWorkGroups{1024};
 static constexpr auto localWorkSize{512};
@@ -192,18 +193,25 @@ TEST_CASE("Unit_hipExtModuleLaunchKernel_UniformWorkGroup") {
   // Get module and function from module
   hipModule_t Module;
   hipFunction_t Function;
-  SECTION("uncompressed codeobjects") {
+  SECTION("regular fatbin") {
      HIP_CHECK(hipModuleLoad(&Module, fileName));
   }
-  SECTION("compressed codeobjects") {
+  SECTION("compressed fatbin") {
      HIP_CHECK(hipModuleLoad(&Module, fileNameCompressed));
   }
-  SECTION("generic target codeobjects") {
+  SECTION("generic target in regular fatbin") {
     if (!isGenericTargetSupported()) {
       fprintf(stderr, "Generic target test is skipped\n");
       return;
     }
     HIP_CHECK(hipModuleLoad(&Module, fileNameGenericTarget));
+  }
+  SECTION("generic target in compressed fatbin") {
+    if (!isGenericTargetSupported()) {
+      fprintf(stderr, "Generic target test is skipped\n");
+      return;
+    }
+    HIP_CHECK(hipModuleLoad(&Module, fileNameGenericTargetCompressed));
   }
   HIP_CHECK(hipModuleGetFunction(&Function, Module, kernel_name));
   // Allocate resources

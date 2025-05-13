@@ -34,8 +34,11 @@ static __global__ void vector_square_generic(T* C_d, const T* A_d, size_t N) {
   }
 }
 
-
-TEST_CASE("Unit_test_generic_target_codeobject") {
+#ifdef GENERIC_COMPRESSED
+TEST_CASE("Unit_test_generic_target_in_compressed_fatbin") {
+#else
+TEST_CASE("Unit_test_generic_target_in_regular_fatbin ") {
+#endif
   if (!isGenericTargetSupported()) {
     fprintf(stderr, "Generic target test is skipped\n");
     return;
@@ -95,14 +98,24 @@ TEST_CASE("Unit_test_generic_target_codeobject") {
 }
 
 #ifndef NO_GENERIC_TARGET_ONLY_TEST
-TEST_CASE("Unit_test_generic_target_only_codeobject") {
+#ifdef GENERIC_COMPRESSED
+TEST_CASE("Unit_test_generic_target_only_in_compressed_fatbin") {
+#ifdef __linux__
+  char *cmd = "chmod  u+x ./hipSquareGenericTargetOnlyCompressed && ./hipSquareGenericTargetOnlyCompressed";
+#else
+  char *cmd = "hipSquareGenericTargetOnlyCompressed.exe";
+#endif
+#else // else GENERIC_COMPRESSED
+TEST_CASE("Unit_test_generic_target_only_in_regular_fatbin ") {
 #ifdef __linux__
   char *cmd = "chmod  u+x ./hipSquareGenericTargetOnly && ./hipSquareGenericTargetOnly";
 #else
   char *cmd = "hipSquareGenericTargetOnly.exe";
 #endif
+#endif // GENERIC_COMPRESSED
+
   printf("Run %s\n", cmd);
   REQUIRE(std::system(cmd) == 0);
   printf("PASSED!\n");
 }
-#endif
+#endif // NO_GENERIC_TARGET_ONLY_TEST

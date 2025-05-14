@@ -744,26 +744,6 @@
         "=== SWDEV-530762 : This test fails in Linux PSDB ===",
         "Unit_hipDeviceGetGraphMemAttribute_Positive_DoubleMemory",
     #endif
-    #if defined gfx908
-        "=== Below test soft hang in stress test on 29/08/23 ===",
-        "Unit_hipMultiThreadStreams2",
-        "=== SWDEV-425248:Below tests failed in stress test on 11/10/23 ===",
-        "Unit_hipHostRegister_Memcpy - double",
-        "Unit_hipP2pLinkTypeAndHopFunc",
-        "=== SWDEV-426219:This test fails in integrity test & PSDB ===",
-        "Unit_hipLaunchParm",
-        "=== SWDEV-432554:Below test failed in stress test on 10/11/23 ===",
-        "Unit_hipMemcpy3DAsync_Positive_Basic",
-        "Unit_hipDrvMemcpy3DAsync_Positive_Basic",
-        "Print_Out_Attributes",
-        "Unit_hipExtGetLinkTypeAndHopCount_Positive_Basic",
-        "Unit_hipClock64_Positive_Basic",
-        "Unit_hipClock_Positive_Basic",
-        "=== Below tests failed in integrity test on 08/12/23 ===",
-        "=== SWDEV-438556:Below tests failed in stress test on 15/12/23 ===",
-        "=== SWDEV-443630 - Below tests failed in stress test on 19/01/23 ===",
-        "Unit_hipGetSetDevice_MultiThreaded",
-    #endif
     #if defined gfx90a || defined gfx942 || defined gfx950
         "Unit_hipStreamPerThread_DeviceReset_1",
         "Unit_hipDeviceGetPCIBusId_Negative_PartialFill",

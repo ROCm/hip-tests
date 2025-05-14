@@ -142,6 +142,7 @@ set(TEST_SRC
     hipMemPoolSetGetAttribute.cc
     hipMemPoolCreate.cc
     hipMemPoolDestroy.cc
+    hipMemPoolMaxAlloc.cc
     hipMemPoolTrimTo.cc
     hipMallocFromPoolAsync.cc
     hipMemcpyPeer.cc

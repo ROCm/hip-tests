@@ -236,6 +236,10 @@ static bool testDeviceMemMulProc(bool testmalloc) {
   // fork process
   childpid = fork();
   if (childpid > 0) {  // Parent
+    if (!HipTest::isPcieAtomicSupported()) {
+      INFO("pcie Atomic not supported on device. Skipped.");
+      return false;
+    }
     close(fd[1]);
     int *result_d{nullptr}, *result_h{nullptr};
     HIP_CHECK(hipMalloc(&result_d, sizeof(int)));
@@ -278,6 +282,10 @@ static bool testDeviceMemMulProc(bool testmalloc) {
     // wait for child exit
     wait(NULL);
   } else if (!childpid) {  // Child
+    if (!HipTest::isPcieAtomicSupported()) {
+      INFO("pcie Atomic not supported on device. Skipped.");
+      return false;
+    }
     // Wait for hipDeviceSetLimit() completion in parent.
     close(fd[0]);
     int *result_d{nullptr}, *result_h{nullptr};

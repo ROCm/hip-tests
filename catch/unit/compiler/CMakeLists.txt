@@ -43,7 +43,7 @@ if(HIP_PLATFORM MATCHES "amd")
                   -o ${CMAKE_CURRENT_BINARY_DIR}/${GENERIC_TARGET_ONLY_EXE}
                   -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../external/Catch2
+                  -I${catch2_SOURCE_DIR}/single_include
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../external/picojson ${LIBFS})
   add_custom_target(hipSquareGenericTargetOnlyCompressed ALL
                   COMMAND ${CMAKE_CXX_COMPILER} -DNO_GENERIC_TARGET_ONLY_TEST -DGENERIC_COMPRESSED --std=c++17 -mcode-object-version=6 --offload-compress -w "${OFFLOAD_ARCH_GENERIC_STR}"
@@ -54,7 +54,7 @@ if(HIP_PLATFORM MATCHES "amd")
                   -o ${CMAKE_CURRENT_BINARY_DIR}/${GENERIC_TARGET_ONLY_COMPRESSED_EXE}
                   -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include
-                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../external/Catch2
+                  -I${catch2_SOURCE_DIR}/single_include
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../external/picojson ${LIBFS})
   set_property(GLOBAL APPEND PROPERTY G_INSTALL_CUSTOM_TARGETS ${CMAKE_CURRENT_BINARY_DIR}/${GENERIC_TARGET_ONLY_EXE})
   set_property(GLOBAL APPEND PROPERTY G_INSTALL_CUSTOM_TARGETS ${CMAKE_CURRENT_BINARY_DIR}/${GENERIC_TARGET_ONLY_COMPRESSED_EXE})

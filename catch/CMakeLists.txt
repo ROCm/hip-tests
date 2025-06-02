@@ -4,23 +4,6 @@ cmake_minimum_required(VERSION 3.16.8)
 set(CMAKE_C_COMPILER_WORKS 1)
 set(CMAKE_CXX_COMPILER_WORKS 1)
 
-project(hiptests)
-
-option(ENABLE_ADDRESS_SANITIZER "Option to enable ASAN build" OFF)
-option(BUILD_SHARED_LIBS "Option for testing shared libraries" ON)
-
-option(TEST_CLOCK_CYCLE "Option to use clock64" OFF)
-if (TEST_CLOCK_CYCLE)
-    add_definitions(-DTEST_CLOCK_CYCLE)
-endif()
-
-# flag to generate standalone exe per src file.
-message(STATUS "STANDALONE_TESTS : ${STANDALONE_TESTS}")
-
-if(NOT WIN32)
-    set(CPACK_SET_DESTDIR ON CACHE BOOL "Installer package will install hip catch to CMAKE_INSTALL_PREFIX instead of CPACK_PACKAGING_INSTALL_PREFIX")
-endif()
-
 # Check if platform is set
 if(NOT HIP_PLATFORM STREQUAL "amd" AND NOT HIP_PLATFORM STREQUAL "nvidia")
     message(FATAL_ERROR "Unexpected HIP_PLATFORM: " ${HIP_PLATFORM})
@@ -73,6 +56,21 @@ endif()
 
 set(CMAKE_C_COMPILER   "${HIP_PATH}/bin/${HIPCC_EXEC}")
 set(CMAKE_CXX_COMPILER "${HIP_PATH}/bin/${HIPCC_EXEC}")
+
+project(hiptests)
+
+option(ENABLE_ADDRESS_SANITIZER "Option to enable ASAN build" OFF)
+option(BUILD_SHARED_LIBS "Option for testing shared libraries" ON)
+
+option(TEST_CLOCK_CYCLE "Option to use clock64" OFF)
+if (TEST_CLOCK_CYCLE)
+    add_definitions(-DTEST_CLOCK_CYCLE)
+endif()
+
+if(NOT WIN32)
+    set(CPACK_SET_DESTDIR ON CACHE BOOL "Installer package will install hip catch to CMAKE_INSTALL_PREFIX instead of CPACK_PACKAGING_INSTALL_PREFIX")
+endif()
+
 execute_process(COMMAND ${HIP_PATH}/bin/${HIPCONFIG_EXEC} --version
                 OUTPUT_VARIABLE HIP_VERSION
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -113,14 +111,25 @@ else()
    set(HIP_PACKAGING_VERSION_PATCH ${HIP_VERSION_PATCH}-${HIP_VERSION_GITHASH})
 endif()
 
-if(NOT DEFINED CATCH2_PATH)
-    if(DEFINED ENV{CATCH2_PATH})
-        set(CATCH2_PATH $ENV{CATCH2_PATH} CACHE STRING "Catch2 Path")
-    else()
-        set(CATCH2_PATH "${CMAKE_CURRENT_LIST_DIR}/external/Catch2")
-    endif()
+if(NOT DEFINED CATCH2_URL)
+    set(CATCH2_URL "https://github.com/catchorg/Catch2.git")
 endif()
-message(STATUS "Catch2 Path: ${CATCH2_PATH}")
+
+include(FetchContent)
+FetchContent_Declare(
+  Catch2
+  GIT_REPOSITORY ${CATCH2_URL}
+  GIT_TAG        v2.13.10
+  GIT_PROGRESS   TRUE
+  FIND_PACKAGE_ARGS)
+FetchContent_MakeAvailable(Catch2)
+
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/contrib)
+
+include(hip-tests)
+include(Catch)
+include(CTest)
 
 # Set JSON Parser path
 if(NOT DEFINED JSON_PARSER)
@@ -131,26 +140,12 @@ if(NOT DEFINED JSON_PARSER)
     endif()
 endif()
 
-message(STATUS "Searching Catch2 in: ${CMAKE_CURRENT_LIST_DIR}/external")
-find_package(Catch2 REQUIRED
-    PATHS
-        ${CMAKE_CURRENT_LIST_DIR}/external
-    PATH_SUFFIXES
-    Catch2/cmake/Catch2
-)
-include(Catch)
-include(CTest)
-
-# path used for generating the *_include.cmake file
-set(CATCH2_INCLUDE ${CATCH2_PATH}/cmake/Catch2/catch_include.cmake.in)
-
 include_directories(
-    ${CATCH2_PATH}
+    ${catch2_SOURCE_DIR}/single_include
     "./include"
     "./kernels"
     ${HIP_PATH}/include
-    ${JSON_PARSER}
-)
+    ${JSON_PARSER})
 
 option(RTC_TESTING "Run tests using HIP RTC to compile the kernels" OFF)
 if (RTC_TESTING)
@@ -166,13 +161,6 @@ foreach(json IN LISTS JSON_FILES)
     file(COPY ${json}
          DESTINATION ${HIP_TEST_CONFIG_BINARY_DIR})
 endforeach()
-set(CATCH_SCRIPT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/script)
-file(COPY ./external/Catch2/cmake/Catch2/CatchAddTests.cmake
-     DESTINATION ${CATCH_SCRIPT_BINARY_DIR})
-file(COPY ./external/Catch2/cmake/Catch2/catch_include.cmake
-     DESTINATION ${CATCH_SCRIPT_BINARY_DIR})
-set(ADD_SCRIPT_PATH ${CATCH_SCRIPT_BINARY_DIR}/CatchAddTests.cmake)
-set(CATCH_INCLUDE_PATH ${CATCH_SCRIPT_BINARY_DIR}/catch_include.cmake)
 
 if (WIN32)
   configure_file(catchProp_in_rc.in ${CMAKE_CURRENT_BINARY_DIR}/catchProp.rc @ONLY)
@@ -313,7 +301,7 @@ file(COPY ./unit/compileAndCaptureOutput.py
 
 file(COPY ./include/hip_test_common.hh DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/${CATCH_INCLUDE_DIR})
 file(COPY ./include/hip_test_context.hh DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/${CATCH_INCLUDE_DIR})
-file(COPY ./external/Catch2/catch.hpp DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/${CATCH_INCLUDE_DIR})
+file(COPY ${catch2_SOURCE_DIR}/single_include/catch2/catch.hpp DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CATCH_BUILD_DIR}/${CATCH_INCLUDE_DIR})
 
 # Enable device lambda on nvidia platforms
 if(HIP_PLATFORM STREQUAL "nvidia")

@@ -22,7 +22,7 @@ THE SOFTWARE.
 
 #pragma once
 
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 // Define a new MatcherBase class with a public 'describe' member function because
 // Catch::MatcherBase::describe is protected and thus can't be used via a pointer to

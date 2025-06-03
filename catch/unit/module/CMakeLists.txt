@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2024 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2023-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@ set(TEST_SRC
     hipModuleLaunchCooperativeKernelMultiDevice.cc
     hipFuncGetAttribute.cc
     hipGetFuncBySymbol.cc
+    hipDrvLaunchKernelEx.cc
 )
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code
@@ -63,11 +64,19 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/get_tex_ref_module.code
                    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/get_tex_ref_module.cc)
 add_custom_target(get_tex_ref_module ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/get_tex_ref_module.code)
 
+add_custom_target(coopKernel.code
+                  COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
+                  ${CMAKE_CURRENT_SOURCE_DIR}/coopKernel.cpp
+                  -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/module/coopKernel.code
+                  -I${HIP_PATH}/include/ --rocm-path=${ROCM_PATH}
+                  -I${CMAKE_CURRENT_SOURCE_DIR}/../../include)
+
 set_property(GLOBAL APPEND PROPERTY G_INSTALL_CUSTOM_TARGETS
   ${CMAKE_CURRENT_BINARY_DIR}/get_function_module.code
   ${CMAKE_CURRENT_BINARY_DIR}/launch_kernel_module.code
   ${CMAKE_CURRENT_BINARY_DIR}/get_global_test_module.code
   ${CMAKE_CURRENT_BINARY_DIR}/get_tex_ref_module.code
+  ${CMAKE_CURRENT_BINARY_DIR}/coopKernel.code
 )
 # Note to pass arch use format like -DOFFLOAD_ARCH_STR="--offload-arch=gfx900  --offload-arch=gfx906"
 # having space at the start/end of OFFLOAD_ARCH_STR can cause build failures
@@ -213,6 +222,7 @@ if(HIP_PLATFORM MATCHES "amd")
 else()
     set(RTCLIB "nvrtc")
 endif()
+
 hip_add_exe_to_target(NAME ModuleTest
   TEST_SRC ${TEST_SRC}
   TEST_TARGET_NAME build_tests
@@ -220,6 +230,7 @@ hip_add_exe_to_target(NAME ModuleTest
   COMMON_SHARED_SRC ${COMMON_SHARED_SRC}
   COMPILE_OPTIONS -std=c++17)
 
+add_dependencies(ModuleTest coopKernel.code)
 add_dependencies(ModuleTest get_function_module)
 add_dependencies(ModuleTest launch_kernel_module)
 add_dependencies(ModuleTest get_global_test_module)

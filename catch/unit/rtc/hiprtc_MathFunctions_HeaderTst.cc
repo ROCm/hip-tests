@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include <hip/hip_runtime.h>
 #include <hip/math_functions.h>
 #include <hip_test_common.hh>
+#include "hip_test_rtc.hh"
 
 static constexpr auto mathFuntn_string {
 R"(

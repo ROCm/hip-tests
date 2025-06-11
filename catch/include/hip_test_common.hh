@@ -23,7 +23,6 @@ THE SOFTWARE.
 #pragma once
 #pragma clang diagnostic ignored "-Wsign-compare"
 #include "hip_test_context.hh"
-#include "hip_test_rtc.hh"
 
 #include <catch.hpp>
 #include <atomic>

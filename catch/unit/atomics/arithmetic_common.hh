@@ -443,7 +443,7 @@ void TestCore(const TestParams& p) {
   mem_devs.emplace_back(LinearAllocs::hipHostMalloc, mem_alloc_size);
   PerformHostAtomicOperation<TestType, operation>(p, mem_devs[p.num_devices].host_ptr(), old_vals.data());
 
-
+  HIP_CHECK(hipDeviceSynchronize());
   // Copy results back to Host
   for (auto i = 0u; i < p.num_devices; ++i) {
     HIP_CHECK(hipSetDevice(i));

@@ -279,6 +279,7 @@ void TestCore(const TestParams& p) {
                                                                       old_vals);
     }
   }
+  HIP_CHECK(hipDeviceSynchronize());
   // Copy results back to Host
   for (auto i = 0u; i < p.num_devices; ++i) {
     const auto device_offset = i * p.kernel_count * p.ThreadCount();

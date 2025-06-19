@@ -124,7 +124,7 @@ TEST_CASE("Unit_hipDrvLaunchKernelEx_NegTsts") {
   SECTION("Invalid Kernel config") {
     HIP_CHECK_ERROR(
         hipDrvLaunchKernelEx(&invalidConfig, function, kernelParams, NULL),
-        hipErrorInvalidValue);
+        hipErrorInvalidConfiguration);
   }
 }
 

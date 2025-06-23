@@ -120,7 +120,7 @@ template <ExtModuleLaunchKernelSig* func> void ModuleLaunchKernelPositiveParamet
 template <ExtModuleLaunchKernelSig* func> void ModuleLaunchKernelNegativeParameters(
                                                            bool extLaunch = false) {
   hipFunction_t f = GetKernel(GetModule(), "NOPKernel");
-  hipError_t expectedErrorZeroBlockDim = (extLaunch == true) ? hipErrorInvalidConfiguration
+  hipError_t expectedErrorLaunchParam = (extLaunch == true) ? hipErrorInvalidConfiguration
                                                              : hipErrorInvalidValue;
   hipError_t expectedErrorOverCapacityGridDim = (extLaunch == true) ? hipSuccess
                                                                     : hipErrorInvalidValue;

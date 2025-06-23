@@ -53,6 +53,21 @@ function(add_custom_module target module_name source_file_name flags)
   add_dependencies(${target} ${module_name})
 endfunction()
 
+function(add_custom_file target output_name source_file_name flags)
+  set(output_file ${CMAKE_CURRENT_BINARY_DIR}/${output_name})
+  set(source_file ${CMAKE_CURRENT_SOURCE_DIR}/${source_file_name})
+
+  add_custom_command(
+    OUTPUT ${output_file}
+    COMMAND ${CMAKE_COMMAND} -E copy ${source_file} ${output_file}
+    DEPENDS ${source_file}
+  )
+
+  add_custom_target(${output_name} ALL DEPENDS ${output_file})
+  set_property(GLOBAL APPEND PROPERTY G_INSTALL_CUSTOM_TARGETS ${output_file})
+  add_dependencies(${target} ${output_name})
+endfunction()
+
 add_custom_module(build_tests get_function_module.code get_function_module.cc "--genco;${OFFLOAD_ARCH_STR}")
 add_custom_module(build_tests launch_kernel_module.code launch_kernel_module.cc "--genco;${OFFLOAD_ARCH_STR}")
 add_custom_module(build_tests get_global_test_module.code get_global_test_module.cc "--genco;${OFFLOAD_ARCH_STR}")
@@ -60,14 +75,18 @@ add_custom_module(build_tests get_tex_ref_module.code get_tex_ref_module.cc "--g
 add_custom_module(build_tests empty_module.code empty_module.cc "--genco;${OFFLOAD_ARCH_STR}")
 add_custom_module(build_tests coopKernel.code coopKernel.cpp "--genco";${OFFLOAD_ARCH_STR})
 
-set_property(GLOBAL APPEND PROPERTY G_INSTALL_CUSTOM_TARGETS ${CMAKE_CURRENT_SOURCE_DIR}/not_a_module.txt)
-set_property(GLOBAL APPEND PROPERTY G_INSTALL_CUSTOM_TARGETS ${CMAKE_CURRENT_SOURCE_DIR}/empty_file.txt)
+add_custom_file(build_tests empty_file.txt empty_file.txt "")
+add_custom_file(build_tests not_a_module.txt not_a_module.txt "")
 
 if(HIP_PLATFORM MATCHES "amd")
   set(TEST_SRC ${TEST_SRC} hipExtModuleLaunchKernel.cc
                hipHccModuleLaunchKernel.cc hipGetProcAddressModuleApis.cc)
 
-  set(OFFLOAD_ARCH_GENERIC_STR "--offload-arch=gfx9-generic --offload-arch=gfx9-4-generic:sramecc+:xnack- --offload-arch=gfx9-4-generic:sramecc-:xnack- --offload-arch=gfx9-4-generic:xnack+ --offload-arch=gfx10-1-generic --offload-arch=gfx10-3-generic --offload-arch=gfx11-generic --offload-arch=gfx12-generic")
+  set(OFFLOAD_ARCH_GENERIC_STR
+    "--offload-arch=gfx9-generic --offload-arch=gfx9-4-generic:sramecc+:xnack- \
+     --offload-arch=gfx9-4-generic:sramecc-:xnack- --offload-arch=gfx9-4-generic:xnack+ \
+     --offload-arch=gfx10-1-generic --offload-arch=gfx10-3-generic --offload-arch=gfx11-generic \
+     --offload-arch=gfx12-generic")
 
   add_custom_module(build_tests addKernel.code addKernel.cc
                     "-mcode-object-version=5 --genco;${OFFLOAD_ARCH_STR}")

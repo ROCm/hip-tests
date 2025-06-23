@@ -77,7 +77,6 @@ set(TEST_SRC
   hipGraphExecMemcpyNodeSetParams_old.cc
   hipStreamBeginCapture.cc
   hipGraphAddMemcpyNode1D_old.cc
-  hipGraphAddMemcpyNode1D.cc
   hipStreamBeginCapture_old.cc
   hipStreamIsCapturing.cc
   hipStreamIsCapturing_old.cc
@@ -151,8 +150,6 @@ set(TEST_SRC
   hipGraphCloneComplx.cc
   hipGraphNodeSetEnabled.cc
   hipGraphNodeGetEnabled.cc
-  hipGraphCreate.cc
-  hipGraphDestroy.cc
   hipGraphExecDestroy.cc
   hipGraphUpload.cc
   hipGraphKernelNodeCopyAttributes.cc

@@ -64,11 +64,6 @@ if(HIP_PLATFORM MATCHES "nvidia")
   set_source_files_properties(hipTestHost.cc PROPERTIES COMPILE_OPTIONS "--expt-relaxed-constexpr")
 endif()
 
-if(UNIX)
-    set(TEST_SRC ${TEST_SRC}
-        deviceAllocation.cc)
-endif()
-
 # AMD only tests
 set(AMD_TEST_SRC
     unsafeAtomicAdd.cc

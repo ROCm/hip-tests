@@ -58,6 +58,7 @@ TEST_CASE("Unit_hipGraphInstantiateWithParams_Negative") {
     HIP_CHECK(hipGraphCreate(&graph, 0));
     REQUIRE(hipGraphInstantiateWithParams(nullptr,
                                        graph, &params) == hipErrorInvalidValue);
+    HIP_CHECK(hipGraphDestroy(graph));
   }
 
   SECTION("Passing nullptr to graph") {
@@ -73,6 +74,7 @@ TEST_CASE("Unit_hipGraphInstantiateWithParams_Negative") {
     hipGraphExec_t graphExec;
     REQUIRE(hipGraphInstantiateWithParams(&graphExec,
                                        graph, nullptr) == hipErrorInvalidValue);
+    HIP_CHECK(hipGraphDestroy(graph));
   }
 
   SECTION("Passing invalid flag") {
@@ -81,12 +83,10 @@ TEST_CASE("Unit_hipGraphInstantiateWithParams_Negative") {
     hipGraphExec_t graphExec;
     hipGraphInstantiateParams params;
     params.flags = 10;
-    // Cuda segfaults here!
-#if HT_AMD
     REQUIRE(hipGraphInstantiateWithParams(&graphExec,
                                        graph, &params) == hipErrorInvalidValue);
     REQUIRE(params.result_out == hipGraphInstantiateError);
-#endif
+    HIP_CHECK(hipGraphDestroy(graph));
   }
 }
 

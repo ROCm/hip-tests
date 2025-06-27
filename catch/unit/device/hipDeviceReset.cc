@@ -155,6 +155,6 @@ TEST_CASE("Unit_hipDeviceReset_Positive_Threaded") {
 }
 
 /**
-* End doxygen group DeviceTest.
-* @}
-*/
+ * End doxygen group DeviceTest.
+ * @}
+ */

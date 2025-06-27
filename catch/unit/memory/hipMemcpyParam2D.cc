@@ -61,9 +61,7 @@ TEST_CASE("Unit_hipMemcpyParam2D_Positive_Synchronization_Behavior") {
     Memcpy2DDtoHPinnedSyncBehavior(MemcpyParam2DAdapter<>(), true);
   }
 
-  SECTION("Device to Device") {
-    Memcpy2DDtoDSyncBehavior(MemcpyParam2DAdapter<>(), false);
-  }
+  SECTION("Device to Device") { Memcpy2DDtoDSyncBehavior(MemcpyParam2DAdapter<>(), false); }
 
   SECTION("Host to Host") { Memcpy2DHtoHSyncBehavior(MemcpyParam2DAdapter<>(), true); }
 }

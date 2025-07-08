@@ -87,6 +87,10 @@ TEST_CASE("Unit_hipStreamIsCapturing_Functional_Basic") {
     HIP_CHECK(hipStreamIsCapturing(hipStreamPerThread, &cStatus));
     REQUIRE(hipStreamCaptureStatusNone == cStatus);
   }
+  SECTION("Check capture status with hipStreamLegacy.") {
+    HIP_CHECK(hipStreamIsCapturing(hipStreamLegacy, &cStatus));
+    REQUIRE(hipStreamCaptureStatusNone == cStatus);
+  }
 }
 
 /**

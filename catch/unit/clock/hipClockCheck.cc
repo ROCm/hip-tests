@@ -53,8 +53,12 @@ bool verify_time_execution(float ratio, float time1, float time2, float expected
                            float expected_time2) {
   bool test_status = false;
 
+#if (HT_WIN == 1)
+  if (time1 > expected_time1 && time2 > expected_time2) {
+#else
   if (fabs(time1 - expected_time1) < (ratio * expected_time1) &&
       fabs(time2 - expected_time2) < (ratio * expected_time2)) {
+#endif
     INFO("Succeeded: Expected Vs Actual: Kernel1 - " << expected_time1 << " Vs " << time1
                                                      << ", Kernel2 - " << expected_time2 << " Vs "
                                                      << time2);

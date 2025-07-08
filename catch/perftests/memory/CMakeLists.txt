@@ -31,7 +31,11 @@ set(TEST_SRC
   hipPerfSharedMemReadSpeed.cc
   hipPerfBufferCopySpeedP2P.cc
   hipPerfBufferCopySpeedAll2All.cc
+  hipPerfMempool.cc
+  hipPerfDeviceHeapMemory.cc
   hipPerfBufferCopyInterGpuPerformance.cc
+  hipPerfMemcpyAsyncSpeed.cc
+  hipPerfMemsetAsyncSpeed.cc
 )
 
 if(HIP_PLATFORM MATCHES "amd")

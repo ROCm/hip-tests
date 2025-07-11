@@ -98,6 +98,6 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyDtoD_Basic", "",
     HIP_CHECK(hipFree(X_d));
     HIP_CHECK(hipFree(Y_d));
     HIP_CHECK(hipFree(Z_d));
-    hipGetLastError();
+    (void)hipGetLastError();
   }
 }

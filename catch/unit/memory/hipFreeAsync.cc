@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2022-2025 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -79,9 +79,9 @@ TEST_CASE("Unit_hipFreeAsync_Negative_Parameters") {
 }
 
 /**
-* End doxygen group StreamOTest.
-* @}
-*/
+ * End doxygen group StreamOTest.
+ * @}
+ */
 
 /**
  * Test Description
@@ -95,7 +95,7 @@ TEST_CASE("Unit_hipFreeAsync_Negative_Parameters") {
  *  - HIP_VERSION >= 6.0
  */
 TEST_CASE("Unit_hipFreeAsync_capturehipFreeAsync") {
-   GENERATE_CAPTURE();
+  GENERATE_CAPTURE();
   HIP_CHECK(hipSetDevice(0));
   hipStream_t stream;
   hipMemPool_t memPool;
@@ -104,10 +104,10 @@ TEST_CASE("Unit_hipFreeAsync_capturehipFreeAsync") {
   cols = GENERATE(3, 4, 1024);
   HIP_CHECK(hipDeviceGetDefaultMemPool(&memPool, 0));
   HIP_CHECK(hipStreamCreate(&stream));
-  int *devMem;
+  int* devMem;
   BEGIN_CAPTURE(stream);
-  HIP_CHECK(hipMallocFromPoolAsync(reinterpret_cast<void **>(&devMem),
-                                   sizeof(int) * rows * cols, memPool, stream));
+  HIP_CHECK(hipMallocFromPoolAsync(reinterpret_cast<void**>(&devMem), sizeof(int) * rows * cols,
+                                   memPool, stream));
   HIP_CHECK(hipFreeAsync(devMem, stream));
   END_CAPTURE(stream);
   HIP_CHECK(hipStreamSynchronize(stream));

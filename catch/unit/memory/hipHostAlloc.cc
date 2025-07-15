@@ -201,27 +201,24 @@ TEST_CASE("Unit_hipHostAlloc_Basic") {
   } else {
     float *A_h, *B_h, *C_h;
     float *A_d, *B_d, *C_d;
+    unsigned int flag = 0;
     HIP_CHECK(hipHostAlloc(reinterpret_cast<void **>(&A_h), SIZE,
                            hipHostAllocWriteCombined | hipHostAllocMapped));
-    SECTION("hipHostAllocDefault") {
-      HIP_CHECK(hipHostAlloc(reinterpret_cast<void **>(&B_h), SIZE,
-                             hipHostAllocDefault));
-    }
-#if (HT_AMD == 1) && (HT_LINUX == 1)
-    SECTION("hipHostAllocUncached") {
-      HIP_CHECK(hipHostAlloc(reinterpret_cast<void**>(&B_h), SIZE,
-                             hipHostAllocUncached));
-    }
-#endif
-    HIP_CHECK(hipHostAlloc(reinterpret_cast<void **>(&C_h), SIZE,
-                           hipHostAllocMapped));
 
-    HIP_CHECK(hipHostGetDevicePointer(reinterpret_cast<void **>(&A_d), A_h, 0));
-    HIP_CHECK(hipHostGetDevicePointer(reinterpret_cast<void **>(&C_d), C_h, 0));
+    SECTION("hipHostAllocDefault") { flag = hipHostAllocDefault; }
+#if (HT_AMD == 1) && (HT_LINUX == 1)
+    SECTION("hipHostAllocUncached") { flag = hipHostAllocUncached; }
+#endif
+
+    HIP_CHECK(hipHostAlloc(reinterpret_cast<void**>(&B_h), SIZE, flag));
+    HIP_CHECK(hipHostAlloc(reinterpret_cast<void**>(&C_h), SIZE, hipHostAllocMapped));
+
+    HIP_CHECK(hipHostGetDevicePointer(reinterpret_cast<void**>(&A_d), A_h, 0));
+    HIP_CHECK(hipHostGetDevicePointer(reinterpret_cast<void**>(&C_d), C_h, 0));
 
     HipTest::setDefaultData<float>(LEN, A_h, B_h, C_h);
 
-    HIP_CHECK(hipMalloc(reinterpret_cast<void **>(&B_d), SIZE));
+    HIP_CHECK(hipMalloc(reinterpret_cast<void**>(&B_d), SIZE));
     HIP_CHECK(hipMemcpy(B_d, B_h, SIZE, hipMemcpyHostToDevice));
 
     dim3 dimGrid(LEN / 512, 1, 1);

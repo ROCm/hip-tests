@@ -73,7 +73,7 @@ add_custom_module(build_tests launch_kernel_module.code launch_kernel_module.cc 
 add_custom_module(build_tests get_global_test_module.code get_global_test_module.cc "--genco;${OFFLOAD_ARCH_STR}")
 add_custom_module(build_tests get_tex_ref_module.code get_tex_ref_module.cc "--genco;${OFFLOAD_ARCH_STR}")
 add_custom_module(build_tests empty_module.code empty_module.cc "--genco;${OFFLOAD_ARCH_STR}")
-add_custom_module(build_tests coopKernel.code coopKernel.cpp "--genco";${OFFLOAD_ARCH_STR})
+add_custom_module(build_tests coopKernel.code coopKernel.cpp "--genco;${OFFLOAD_ARCH_STR}")
 
 add_custom_file(build_tests empty_file.txt empty_file.txt "")
 add_custom_file(build_tests not_a_module.txt not_a_module.txt "")

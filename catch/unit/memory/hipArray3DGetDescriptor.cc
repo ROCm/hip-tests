@@ -84,4 +84,3 @@ TEST_CASE("Unit_hipArray3DGetDescriptor_Negative_Parameters") {
 * End doxygen group MemoryTest.
 * @}
 */
-

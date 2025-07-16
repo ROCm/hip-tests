@@ -48,27 +48,29 @@ TEST_CASE("Unit_hipExtMallocWithFlags_Positive_Basic") {
   }
 }
 TEST_CASE("Unit_hipExtMallocWithFlags_Capture") {
+  GENERATE_CAPTURE();
   void* ptr = nullptr;
-  hipError_t memcpy_err = hipSuccess;
-  BEGIN_CAPTURE_SYNC(memcpy_err, true);
-  HIP_CHECK_ERROR(hipExtMallocWithFlags(&ptr, 8, hipMallocSignalMemory), memcpy_err);
-  END_CAPTURE_SYNC(memcpy_err);
-  if (memcpy_err == hipSuccess) {
-    CHECK(ptr != nullptr);
-    HIP_CHECK(hipFree(ptr));
-  }
+  hipStream_t stream{nullptr};
+  HIP_CHECK(hipStreamCreate(&stream));
+  BEGIN_CAPTURE(stream);
+  HIP_CHECK(hipExtMallocWithFlags(&ptr, 8, hipMallocSignalMemory));
+  END_CAPTURE(stream);
+  CHECK(ptr != nullptr);
+  HIP_CHECK(hipFree(ptr));
 }
+
 TEST_CASE("Unit_hipExtMallocWithFlags_Positive_Zero_Size") {
+  GENERATE_CAPTURE();
+  hipStream_t stream{nullptr};
+  HIP_CHECK(hipStreamCreate(&stream));
   void* ptr = reinterpret_cast<void*>(0x1);
   const auto flag = GENERATE(hipDeviceMallocDefault, hipDeviceMallocFinegrained);
-  hipError_t memcpy_err = hipSuccess;
-  BEGIN_CAPTURE_SYNC(memcpy_err, true);
-  HIP_CHECK_ERROR(hipExtMallocWithFlags(&ptr, 0, flag), memcpy_err);
-  END_CAPTURE_SYNC(memcpy_err);
-  if (memcpy_err == hipSuccess) {
-    REQUIRE(ptr == nullptr);
-  }
+  BEGIN_CAPTURE(stream);
+  HIP_CHECK(hipExtMallocWithFlags(&ptr, 0, flag));
+  END_CAPTURE(stream);
+  REQUIRE(ptr == nullptr);
 }
+
 TEST_CASE("Unit_hipExtMallocWithFlags_Positive_Alignment") {
   void *ptr1 = nullptr, *ptr2 = nullptr;
   const auto flag = GENERATE(hipDeviceMallocDefault, hipDeviceMallocFinegrained);
@@ -129,4 +131,4 @@ TEST_CASE("Unit_hipExtMallocWithFlags_Negative_Parameters") {
       HIP_CHECK_ERROR(hipExtMallocWithFlags(&ptr, 16, hipMallocSignalMemory), hipErrorInvalidValue);
     }
   }
-}
+

@@ -56,24 +56,21 @@ TEST_CASE("Unit_hipGraphInstantiateWithParams_Negative") {
     hipGraph_t graph;
     hipGraphInstantiateParams params;
     HIP_CHECK(hipGraphCreate(&graph, 0));
-    REQUIRE(hipGraphInstantiateWithParams(nullptr,
-                                       graph, &params) == hipErrorInvalidValue);
+    REQUIRE(hipGraphInstantiateWithParams(nullptr, graph, &params) == hipErrorInvalidValue);
     HIP_CHECK(hipGraphDestroy(graph));
   }
 
   SECTION("Passing nullptr to graph") {
     hipGraphExec_t graphExec;
     hipGraphInstantiateParams params;
-    REQUIRE(hipGraphInstantiateWithParams(&graphExec,
-                                     nullptr, &params) == hipErrorInvalidValue);
+    REQUIRE(hipGraphInstantiateWithParams(&graphExec, nullptr, &params) == hipErrorInvalidValue);
   }
 
   SECTION("Passing nullptr to params") {
     hipGraph_t graph;
     HIP_CHECK(hipGraphCreate(&graph, 0));
     hipGraphExec_t graphExec;
-    REQUIRE(hipGraphInstantiateWithParams(&graphExec,
-                                       graph, nullptr) == hipErrorInvalidValue);
+    REQUIRE(hipGraphInstantiateWithParams(&graphExec, graph, nullptr) == hipErrorInvalidValue);
     HIP_CHECK(hipGraphDestroy(graph));
   }
 
@@ -83,8 +80,7 @@ TEST_CASE("Unit_hipGraphInstantiateWithParams_Negative") {
     hipGraphExec_t graphExec;
     hipGraphInstantiateParams params;
     params.flags = 10;
-    REQUIRE(hipGraphInstantiateWithParams(&graphExec,
-                                       graph, &params) == hipErrorInvalidValue);
+    REQUIRE(hipGraphInstantiateWithParams(&graphExec, graph, &params) == hipErrorInvalidValue);
     REQUIRE(params.result_out == hipGraphInstantiateError);
     HIP_CHECK(hipGraphDestroy(graph));
   }

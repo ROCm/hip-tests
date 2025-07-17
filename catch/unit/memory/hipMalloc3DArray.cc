@@ -44,15 +44,15 @@ static constexpr auto ARRAY_LOOP{100};
  */
 static void Malloc3DArray_DiffSizes(int gpu) {
   HIP_CHECK_THREAD(hipSetDevice(gpu));
-  //Use of GENERATE in thead function causes random failures with multithread condition.
-  std::vector<size_t> runs {ARRAY_SIZE, BIG_ARRAY_SIZE};
+  // Use of GENERATE in thead function causes random failures with multithread condition.
+  std::vector<size_t> runs{ARRAY_SIZE, BIG_ARRAY_SIZE};
   for (const auto& size : runs) {
     size_t width{size}, height{size}, depth{size};
     hipChannelFormatDesc channelDesc = hipCreateChannelDesc<float>();
     std::array<hipArray_t, ARRAY_LOOP> arr;
     for (int i = 0; i < ARRAY_LOOP; i++) {
       HIP_CHECK_THREAD(hipMalloc3DArray(&arr[i], &channelDesc, make_hipExtent(width, height, depth),
-                                      hipArrayDefault));
+                                        hipArrayDefault));
     }
     for (int i = 0; i < ARRAY_LOOP; i++) {
       HIP_CHECK_THREAD(hipFreeArray(arr[i]));

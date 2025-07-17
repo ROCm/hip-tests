@@ -18,7 +18,7 @@ THE SOFTWARE.
 */
 #include <hip_test_common.hh>
 TEST_CASE("Unit_hipMemGetInfo_FreeLessThanTotal") {
-  unsigned int *A_mem{nullptr};
+  unsigned int* A_mem{nullptr};
   size_t freeMemInit, totalMemInit;
   size_t freeMem, totalMem;
   GENERATE_CAPTURE();

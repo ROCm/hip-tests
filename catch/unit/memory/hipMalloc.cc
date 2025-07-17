@@ -44,7 +44,7 @@ TEST_CASE("Unit_hipMalloc_Positive_Basic") {
   }
 }
 TEST_CASE("Unit_hipMalloc_Positive_Zero_Size") {
-  void *ptr = reinterpret_cast<void *>(0x1);
+  void* ptr = reinterpret_cast<void*>(0x1);
   HIP_CHECK(hipMalloc(&ptr, 0));
   REQUIRE(ptr == nullptr);
 }
@@ -63,13 +63,10 @@ TEST_CASE("Unit_hipMalloc_Positive_Alignment") {
   }
 }
 TEST_CASE("Unit_hipMalloc_Negative_Parameters") {
-  SECTION("ptr == nullptr") {
-    HIP_CHECK_ERROR(hipMalloc(nullptr, 4096), hipErrorInvalidValue);
-  }
+  SECTION("ptr == nullptr") { HIP_CHECK_ERROR(hipMalloc(nullptr, 4096), hipErrorInvalidValue); }
   SECTION("size == max size_t") {
-    void *ptr;
-    HIP_CHECK_ERROR(hipMalloc(&ptr, std::numeric_limits<size_t>::max()),
-                    hipErrorOutOfMemory);
+    void* ptr;
+    HIP_CHECK_ERROR(hipMalloc(&ptr, std::numeric_limits<size_t>::max()), hipErrorOutOfMemory);
   }
 }
 /**
@@ -108,7 +105,7 @@ static inline size_t getAvailableRAM() {
 /**
  * In addKernel function, all elements of the array a increased by 1
  */
-static __global__ void addKernel(char *a, size_t size) {
+static __global__ void addKernel(char* a, size_t size) {
   for (int i = 0; i < size; i++) {
     a[i] += 1;
   }
@@ -116,7 +113,7 @@ static __global__ void addKernel(char *a, size_t size) {
 /**
  * Local Function to perform some operations on device memory and validate it
  */
-static void performOperations(char *devMem, size_t size) {
+static void performOperations(char* devMem, size_t size) {
   /**
    * Validating 1MB or less than that, since the most of the scenarios uses
    * this function allocates memory in GB's and execution time will be more
@@ -125,12 +122,11 @@ static void performOperations(char *devMem, size_t size) {
   constexpr char value = 'A';
   HIP_CHECK(hipMemset(devMem, value, sizeToCheck));
   addKernel<<<1, 1>>>(devMem, sizeToCheck);
-  char *arrToCheck = new char[sizeToCheck];
+  char* arrToCheck = new char[sizeToCheck];
   memset(arrToCheck, '0', sizeToCheck);
   HIP_CHECK(hipMemcpy(arrToCheck, devMem, sizeToCheck, hipMemcpyDeviceToHost));
   for (int i = 0; i < sizeToCheck; i++) {
-    INFO("At index : " << i << " Got value : " << arrToCheck[i]
-                       << " Expected value : B ");
+    INFO("At index : " << i << " Got value : " << arrToCheck[i] << " Expected value : B ");
     REQUIRE(arrToCheck[i] == 'B');
   }
   delete[] arrToCheck;
@@ -147,7 +143,7 @@ static void performOperations(char *devMem, size_t size) {
  * - unit/memory/hipMalloc.cc
  */
 TEST_CASE("Unit_hipMalloc_Allocate90PercentOfDeviceMemory") {
-  char *devMem = nullptr;
+  char* devMem = nullptr;
   size_t freeVRAM = 0, totalVRAM = 0;
   HIP_CHECK(hipMemGetInfo(&freeVRAM, &totalVRAM));
   INFO("Available device memory : " << freeVRAM);
@@ -306,7 +302,7 @@ TEST_CASE("Unit_hipMalloc_AllocateAvailableVRAMAndPossibleRAM") {
  * - HIP_VERSION >= 6.4
  */
 TEST_CASE("Unit_hipMalloc_AllocateMoreThanTotalRAM") {
-  char *devMem = nullptr;
+  char* devMem = nullptr;
   size_t totalRAM = getTotalRAM();
   INFO("Total RAM : " << totalRAM);
   size_t size = totalRAM + ONE_MB;

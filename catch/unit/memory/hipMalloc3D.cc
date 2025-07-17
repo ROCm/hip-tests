@@ -36,7 +36,7 @@ static void MemoryAlloc3DDiffSizes(int gpu) {
   std::vector<size_t> array_size;
   array_size.push_back(SMALL_SIZE);
   array_size.push_back(BIG_SIZE);
-  for (auto &sizes : array_size) {
+  for (auto& sizes : array_size) {
     size_t width = sizes * sizeof(float);
     size_t height{sizes}, depth{sizes};
     hipPitchedPtr devPitchedPtr[CHUNK_LOOP];
@@ -51,9 +51,7 @@ static void MemoryAlloc3DDiffSizes(int gpu) {
     }
   }
 }
-static void Malloc3DThreadFunc(int gpu) {
-  MemoryAlloc3DDiffSizes(gpu);
-}
+static void Malloc3DThreadFunc(int gpu) { MemoryAlloc3DDiffSizes(gpu); }
 /*
  * This verifies the hipMalloc3D API by
  * assigning width,height and depth as 10
@@ -100,7 +98,7 @@ TEST_CASE("Unit_hipMalloc3D_MultiThread") {
   for (int i = 0; i < devCnt; i++) {
     threadlist.push_back(std::thread(Malloc3DThreadFunc, i));
   }
-  for (auto &t : threadlist) {
+  for (auto& t : threadlist) {
     t.join();
   }
 }

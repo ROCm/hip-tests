@@ -131,3 +131,4 @@ TEST_CASE("Unit_hipExtMallocWithFlags_Negative_Parameters") {
       HIP_CHECK_ERROR(hipExtMallocWithFlags(&ptr, 16, hipMallocSignalMemory), hipErrorInvalidValue);
     }
   }
+}

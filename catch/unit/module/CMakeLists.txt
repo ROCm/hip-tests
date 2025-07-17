@@ -36,25 +36,25 @@ set(TEST_SRC
     hipDrvLaunchKernelEx.cc
 )
 
-function(add_custom_module target module_name source_file_name flags)
-  set(output_file ${CMAKE_CURRENT_BINARY_DIR}/${module_name})
+function(add_custom_module target module_name source_file_name flags type)
+  set(output_file ${CMAKE_CURRENT_BINARY_DIR}/${module_name}.${type})
   set(source_file ${CMAKE_CURRENT_SOURCE_DIR}/${source_file_name})
 
-  # Note to pass arch use format like -DOFFLOAD_ARCH_STR="--offload-arch=gfx900
-  # --offload-arch=gfx906" having space at the start/end of OFFLOAD_ARCH_STR can
-  # cause build failures
-  add_custom_target(
-    ${module_name}
-    COMMAND
-      ${CMAKE_CXX_COMPILER} ${flags} ${source_file} -o ${output_file} -I${HIP_PATH}/include/
-      -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --hip-path=${HIP_PATH})
+  add_custom_command(
+    OUTPUT ${output_file}
+    COMMAND ${CMAKE_CXX_COMPILER} ${flags} ${source_file} -o ${output_file}
+            -I${HIP_PATH}/include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --hip-path=${HIP_PATH}
+    DEPENDS ${source_file}
+  )
 
+  set(custom_target_name ${module_name}_${type})
+  add_custom_target(${custom_target_name} ALL DEPENDS ${output_file})
   set_property(GLOBAL APPEND PROPERTY G_INSTALL_CUSTOM_TARGETS ${output_file})
-  add_dependencies(${target} ${module_name})
+  add_dependencies(${target} ${custom_target_name})
 endfunction()
 
-function(add_custom_file target output_name source_file_name flags)
-  set(output_file ${CMAKE_CURRENT_BINARY_DIR}/${output_name})
+function(add_custom_file target module_name source_file_name flags)
+  set(output_file ${CMAKE_CURRENT_BINARY_DIR}/${module_name}.txt)
   set(source_file ${CMAKE_CURRENT_SOURCE_DIR}/${source_file_name})
 
   add_custom_command(
@@ -63,20 +63,20 @@ function(add_custom_file target output_name source_file_name flags)
     DEPENDS ${source_file}
   )
 
-  add_custom_target(${output_name} ALL DEPENDS ${output_file})
+  add_custom_target(${module_name} ALL DEPENDS ${output_file})
   set_property(GLOBAL APPEND PROPERTY G_INSTALL_CUSTOM_TARGETS ${output_file})
-  add_dependencies(${target} ${output_name})
+  add_dependencies(${target} ${module_name})
 endfunction()
 
-add_custom_module(build_tests get_function_module.code get_function_module.cc "--genco;${OFFLOAD_ARCH_STR}")
-add_custom_module(build_tests launch_kernel_module.code launch_kernel_module.cc "--genco;${OFFLOAD_ARCH_STR}")
-add_custom_module(build_tests get_global_test_module.code get_global_test_module.cc "--genco;${OFFLOAD_ARCH_STR}")
-add_custom_module(build_tests get_tex_ref_module.code get_tex_ref_module.cc "--genco;${OFFLOAD_ARCH_STR}")
-add_custom_module(build_tests empty_module.code empty_module.cc "--genco;${OFFLOAD_ARCH_STR}")
-add_custom_module(build_tests coopKernel.code coopKernel.cpp "--genco;${OFFLOAD_ARCH_STR}")
+add_custom_module(build_tests get_function_module get_function_module.cc "--genco;${OFFLOAD_ARCH_STR}" "code")
+add_custom_module(build_tests launch_kernel_module launch_kernel_module.cc "--genco;${OFFLOAD_ARCH_STR}" "code")
+add_custom_module(build_tests get_global_test_module get_global_test_module.cc "--genco;${OFFLOAD_ARCH_STR}" "code")
+add_custom_module(build_tests get_tex_ref_module get_tex_ref_module.cc "--genco;${OFFLOAD_ARCH_STR}" "code")
+add_custom_module(build_tests empty_module empty_module.cc "--genco;${OFFLOAD_ARCH_STR}" "code")
+add_custom_module(build_tests coopKernel coopKernel.cpp "--genco;${OFFLOAD_ARCH_STR}" "code")
 
-add_custom_file(build_tests empty_file.txt empty_file.txt "")
-add_custom_file(build_tests not_a_module.txt not_a_module.txt "")
+add_custom_file(build_tests empty_file empty_file.txt "")
+add_custom_file(build_tests not_a_module not_a_module.txt "")
 
 if(HIP_PLATFORM MATCHES "amd")
   set(TEST_SRC ${TEST_SRC} hipExtModuleLaunchKernel.cc
@@ -88,42 +88,42 @@ if(HIP_PLATFORM MATCHES "amd")
      --offload-arch=gfx10-1-generic --offload-arch=gfx10-3-generic --offload-arch=gfx11-generic \
      --offload-arch=gfx12-generic")
 
-  add_custom_module(build_tests addKernel.code addKernel.cc
-                    "-mcode-object-version=5 --genco;${OFFLOAD_ARCH_STR}")
-  add_custom_module(build_tests copyKernelCompressed.code copyKernel.cc
-                    "-mcode-object-version=5 --genco;--offload-compress;${OFFLOAD_ARCH_STR}")
-  add_custom_module(build_tests copyKernel.code copyKernel.cc
-                    "-mcode-object-version=5 --genco;${OFFLOAD_ARCH_STR}")
-  add_custom_module(build_tests copyKernel.s copyKernel.cc
-                    "-mcode-object-version=5;-S;")
-  add_custom_module(build_tests copyKernelGenericTarget.code copyKernel.cc
-                    "--genco -mcode-object-version=6;" ${OFFLOAD_ARCH_GENERIC_STR})
-  add_custom_module(build_tests copyKernelGenericTargetCompressed.code copyKernel.cc
-                    "--genco -mcode-object-version=6;--offload-compress" ${OFFLOAD_ARCH_GENERIC_STR})
+  add_custom_module(build_tests addKernel addKernel.cc
+                    "-mcode-object-version=5;--genco;${OFFLOAD_ARCH_STR};" "code")
+  add_custom_module(build_tests copyKernelCompressed copyKernel.cc
+                    "-mcode-object-version=5;--genco;--offload-compress;${OFFLOAD_ARCH_STR};" "code")
+  add_custom_module(build_tests copyKernel copyKernel.cc
+                    "-mcode-object-version=5;--genco;${OFFLOAD_ARCH_STR};" "code")
+  add_custom_module(build_tests copyKernel copyKernel.cc
+                    "-mcode-object-version=5;-S;" "s")
+  add_custom_module(build_tests copyKernelGenericTarget copyKernel.cc
+                    "-mcode-object-version=6;--genco;${OFFLOAD_ARCH_GENERIC_STR};" "code")
+  add_custom_module(build_tests copyKernelGenericTargetCompressed copyKernel.cc
+                    "-mcode-object-version=6;--offload-compress;--genco;${OFFLOAD_ARCH_GENERIC_STR}" "code")
 
   if(UNIX)
     set(TEST_SRC ${TEST_SRC} hipKerArgOptimization.cc)
 
-    add_custom_module(build_tests copiousArgKernel.code copiousArgKernel.cc
-      "--genco;${OFFLOAD_ARCH_STR}")
-    add_custom_module(build_tests copiousArgKernel0.code copiousArgKernel.cc
-      "-mllvm -amdgpu-kernarg-preload-count=0 --genco;${OFFLOAD_ARCH_STR}"
+    add_custom_module(build_tests copiousArgKernel copiousArgKernel.cc
+      "--genco;${OFFLOAD_ARCH_STR}" "code")
+    add_custom_module(build_tests copiousArgKernel0 copiousArgKernel.cc
+      "-mllvm;-amdgpu-kernarg-preload-count=0;--genco;${OFFLOAD_ARCH_STR}" "code"
     )
     add_custom_module(
-      build_tests copiousArgKernel1.code copiousArgKernel.cc
-      "-mllvm -amdgpu-kernarg-preload-count=1 --genco;${OFFLOAD_ARCH_STR}"
+      build_tests copiousArgKernel1 copiousArgKernel.cc
+      "-mllvm;-amdgpu-kernarg-preload-count=1;--genco;${OFFLOAD_ARCH_STR}" "code"
     )
-    add_custom_module(build_tests copiousArgKernel2.code copiousArgKernel.cc
-      "-mllvm -amdgpu-kernarg-preload-count=2 --genco;${OFFLOAD_ARCH_STR}"
+    add_custom_module(build_tests copiousArgKernel2 copiousArgKernel.cc
+      "-mllvm;-amdgpu-kernarg-preload-count=2;--genco;${OFFLOAD_ARCH_STR}" "code"
     )
-    add_custom_module(build_tests copiousArgKernel3.code copiousArgKernel.cc
-      "-mllvm -amdgpu-kernarg-preload-count=3 --genco;${OFFLOAD_ARCH_STR}"
+    add_custom_module(build_tests copiousArgKernel3 copiousArgKernel.cc
+      "-mllvm;-amdgpu-kernarg-preload-count=3;--genco;${OFFLOAD_ARCH_STR}" "code"
     )
-    add_custom_module(build_tests copiousArgKernel16.code copiousArgKernel.cc
-      "-mllvm -amdgpu-kernarg-preload-count=16 --genco;${OFFLOAD_ARCH_STR}"
+    add_custom_module(build_tests copiousArgKernel16 copiousArgKernel.cc
+      "-mllvm;-amdgpu-kernarg-preload-count=16;--genco;${OFFLOAD_ARCH_STR}" "code"
     )
-    add_custom_module(build_tests copiousArgKernel17.code copiousArgKernel.cc
-      "-mllvm -amdgpu-kernarg-preload-count=17 --genco;${OFFLOAD_ARCH_STR}"
+    add_custom_module(build_tests copiousArgKernel17 copiousArgKernel.cc
+      "-mllvm;-amdgpu-kernarg-preload-count=17;--genco;${OFFLOAD_ARCH_STR}" "code"
     )
   endif()
 endif()
@@ -140,13 +140,6 @@ hip_add_exe_to_target(NAME ModuleTest
   LINKER_LIBS ${RTCLIB}
   COMMON_SHARED_SRC ${COMMON_SHARED_SRC}
   COMPILE_OPTIONS -std=c++17)
-
-if(HIP_PLATFORM MATCHES "amd")
-if(UNIX)
-add_dependencies(build_tests copiousArgKernel.code copiousArgKernel0.code copiousArgKernel1.code copiousArgKernel2.code
-copiousArgKernel3.code copiousArgKernel16.code copiousArgKernel17.code)
-endif()
-endif()
 
 add_executable(hipGetFuncBySymbol_exe EXCLUDE_FROM_ALL hipGetFuncBySymbol_exe.cc)
 add_dependencies(build_tests hipGetFuncBySymbol_exe)
@@ -189,10 +182,10 @@ hip_add_exe_to_target(NAME matmul
                       TEST_TARGET_NAME build_tests
                       LINKER_LIBS ${CMAKE_DL_LIBS})
 
-add_custom_module(module managed_kernel.code managed_kernel.cpp "--genco;${OFFLOAD_ARCH_STR}")
-add_custom_module(module vcpy_kernel.code vcpy_kernel.cpp "--genco;${OFFLOAD_ARCH_STR}")
-add_custom_module(module matmul.code matmul.cpp "--genco;${OFFLOAD_ARCH_STR}")
-add_custom_module(module kernel_composite_test.code kernel_composite_test.cpp "--genco;${OFFLOAD_ARCH_STR}")
+add_custom_module(module managed_kernel managed_kernel.cpp "--genco;${OFFLOAD_ARCH_STR}" "code")
+add_custom_module(module vcpy_kernel vcpy_kernel.cpp "--genco;${OFFLOAD_ARCH_STR}" "code")
+add_custom_module(module matmul matmul.cpp "--genco;${OFFLOAD_ARCH_STR}" "code")
+add_custom_module(module kernel_composite_test kernel_composite_test.cpp "--genco;${OFFLOAD_ARCH_STR}" "code")
 
 add_executable(testhipModuleLoadUnloadFunc_exe EXCLUDE_FROM_ALL testhipModuleLoadUnloadFunc_exe.cc)
 set_property(GLOBAL APPEND PROPERTY G_INSTALL_EXE_TARGETS testhipModuleLoadUnloadFunc_exe)

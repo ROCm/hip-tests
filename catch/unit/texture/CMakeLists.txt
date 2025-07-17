@@ -64,6 +64,8 @@ set(TEST_SRC
     hipTexRefGetFlags.cc
     hipTexRefSetAddressMode.cc
     hipTexRefGetAddressMode.cc
+    hipTextureStreamCapture.cc
+    hipTexObjectStreamCapture.cc
 )
 
 # tests not for gfx90a+

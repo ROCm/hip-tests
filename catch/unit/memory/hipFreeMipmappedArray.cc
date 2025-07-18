@@ -24,21 +24,24 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include "hipArrayCommon.hh"
 #include "utils.hh"
+#include <array>
+
 
 /*
  * hipFreeMipmappedArray API test scenarios
  * 1. Check that hipFreeMipmappedArray implicitly synchronises the device.
- * 2. Perform multiple allocations and then call hipFreeMipmappedArray on each pointer concurrently (from unique
- * threads) for different memory types and different allocation sizes.
+ * 2. Perform multiple allocations and then call hipFreeMipmappedArray on each pointer concurrently
+ * (from unique threads) for different memory types and different allocation sizes.
  * 3. Pass nullptr as argument and check that correct error code is returned.
- * 4. Call hipFreeMipmappedArray twice on the same pointer and check that the implementation handles the second
- * call correctly.
+ * 4. Call hipFreeMipmappedArray twice on the same pointer and check that the implementation handles
+ * the second call correctly.
  */
-
 TEMPLATE_TEST_CASE("Unit_hipFreeMipmappedArrayImplicitSyncArray", "", char, float) {
   hipMipmappedArray_t arrayPtr{};
   hipExtent extent{};
   hipChannelFormatDesc desc = hipCreateChannelDesc<TestType>();
+  hipDeviceProp_t props;
+  std::array<unsigned int, 3> levels = {1, 5, 7};
 
 #if HT_AMD
   const unsigned int flags = hipArrayDefault;
@@ -50,16 +53,30 @@ TEMPLATE_TEST_CASE("Unit_hipFreeMipmappedArrayImplicitSyncArray", "", char, floa
   extent.height = GENERATE(64, 256, 1024);
   extent.depth = GENERATE(0, 64, 256, 1024);
 
-  const unsigned int numLevels = GENERATE(1, 5, 7);
+  HIP_CHECK(hipGetDeviceProperties(&props, 0))
 
-  HIP_CHECK_IGNORED_RETURN(hipMallocMipmappedArray(&arrayPtr, &desc, extent, numLevels, flags),
-                           hipErrorNotSupported);
+  for (auto numLevels : levels) {
+    if (extent.width * extent.height * extent.depth * numLevels * sizeof(TestType) >
+        props.totalGlobalMem) {
+      // some devices will not have enough memory allocate the 6GB required for the biggest extent
+      // We skip the test in that case (and no warning is needed)
+      SUCCEED(
+          "Device does not have enough global memory to allocate a mipmapped array using this "
+          " extent: ("
+          << extent.width << ", " << extent.height << ", " << extent.depth << ") and " << numLevels
+          << " levels");
+      continue;
+    }
 
-  LaunchDelayKernel(std::chrono::milliseconds{50}, nullptr);
-  // make sure device is busy
-  HIP_CHECK_ERROR(hipStreamQuery(nullptr), hipErrorNotReady);
-  HIP_CHECK(hipFreeMipmappedArray(arrayPtr));
-  HIP_CHECK(hipStreamQuery(nullptr));
+    HIP_CHECK_IGNORED_RETURN(hipMallocMipmappedArray(&arrayPtr, &desc, extent, numLevels, flags),
+                             hipErrorNotSupported);
+
+    LaunchDelayKernel(std::chrono::milliseconds{50}, nullptr);
+    // make sure device is busy
+    HIP_CHECK_ERROR(hipStreamQuery(nullptr), hipErrorNotReady);
+    HIP_CHECK(hipFreeMipmappedArray(arrayPtr));
+    HIP_CHECK(hipStreamQuery(nullptr));
+  }
 }
 
 TEST_CASE("Unit_hipFreeMipmappedArray_Negative_Nullptr") {
@@ -111,14 +128,13 @@ TEMPLATE_TEST_CASE("Unit_hipFreeMipmappedArrayMultiTArray", "", char, int) {
 
   int i = 0;
   for (; i < ptrs.size(); i++) {
-    if (hipErrorOutOfMemory == hipMallocMipmappedArray(&ptrs[i], &desc, extent,
-                                                       numLevels, flags)) {
+    if (hipErrorOutOfMemory == hipMallocMipmappedArray(&ptrs[i], &desc, extent, numLevels, flags)) {
       break;
     }
   }
 
   for (int j = 0; j < i; j++) {
-    threads.emplace_back([ptrs,j] {
+    threads.emplace_back([ptrs, j] {
       if (hipSuccess != hipFreeMipmappedArray(ptrs[j])) {
         return;
       }

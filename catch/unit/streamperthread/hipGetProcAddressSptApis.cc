@@ -672,22 +672,23 @@ TEST_CASE("Unit_hipGetProcAddress_spt_Memset2D3D") {
   void* hipMemset2DAsync_spt_ptr = nullptr;
   void* hipMemset3D_spt_ptr = nullptr;
   void* hipMemset3DAsync_spt_ptr = nullptr;
+  hipDriverProcAddressQueryResult symbolStatus = HIP_GET_PROC_ADDRESS_SYMBOL_NOT_FOUND;
 
   int currentHipVersion = 0;
   HIP_CHECK(hipRuntimeGetVersion(&currentHipVersion));
 
-  HIP_CHECK(hipGetProcAddress("hipMemset2D_spt",
-                              &hipMemset2D_spt_ptr,
-                              currentHipVersion, 0, nullptr));
-  HIP_CHECK(hipGetProcAddress("hipMemset2DAsync_spt",
-                              &hipMemset2DAsync_spt_ptr,
-                              currentHipVersion, 0, nullptr));
-  HIP_CHECK(hipGetProcAddress("hipMemset3D_spt",
-                              &hipMemset3D_spt_ptr,
-                              currentHipVersion, 0, nullptr));
-  HIP_CHECK(hipGetProcAddress("hipMemset3DAsync_spt",
-                              &hipMemset3DAsync_spt_ptr,
-                              currentHipVersion, 0, nullptr));
+  HIP_CHECK(hipGetProcAddress("hipMemset2D_spt", &hipMemset2D_spt_ptr, currentHipVersion, 0,
+                              &symbolStatus));
+  REQUIRE(symbolStatus == HIP_GET_PROC_ADDRESS_SUCCESS);
+  HIP_CHECK(hipGetProcAddress("hipMemset2DAsync_spt", &hipMemset2DAsync_spt_ptr, currentHipVersion,
+                              0, &symbolStatus));
+  REQUIRE(symbolStatus == HIP_GET_PROC_ADDRESS_SUCCESS);
+  HIP_CHECK(hipGetProcAddress("hipMemset3D_spt", &hipMemset3D_spt_ptr, currentHipVersion, 0,
+                              &symbolStatus));
+  REQUIRE(symbolStatus == HIP_GET_PROC_ADDRESS_SUCCESS);
+  HIP_CHECK(hipGetProcAddress("hipMemset3DAsync_spt", &hipMemset3DAsync_spt_ptr, currentHipVersion,
+                              0, &symbolStatus));
+  REQUIRE(symbolStatus == HIP_GET_PROC_ADDRESS_SUCCESS);
 
   hipError_t (*dyn_hipMemset2D_spt_ptr)(void *, size_t, int, size_t, size_t) =
     reinterpret_cast<hipError_t (*)(void *, size_t, int, size_t, size_t)>
@@ -747,12 +748,17 @@ TEST_CASE("Unit_hipGetProcAddress_spt_Memset2D3D") {
       HIP_CHECK(hipStreamCreate(&stream[s]));
     }
 
+    // set the whole matrix first to something different than 'value'
+    HIP_CHECK(dyn_hipMemset2DAsync_spt_ptr(devMem, pitch, 5, width, height, 0));
+    HIP_CHECK(hipStreamSynchronize(0));
+
     for ( int s = 0; s < Ns; s++ ) {
       int startIndex = s * (N/Ns);
-      HIP_CHECK(dyn_hipMemset2DAsync_spt_ptr(devMem + startIndex, pitch/Ns,
-                                             value, width/Ns, height/Ns,
+      int row = startIndex / width;
+      HIP_CHECK(dyn_hipMemset2DAsync_spt_ptr(devMem + row * pitch, pitch, value, width, height / Ns,
                                              stream[s]));
     }
+
     for ( int s = 0; s < Ns; s++ ) {
       HIP_CHECK(hipStreamSynchronize(stream[s]));
     }

@@ -6,6 +6,6 @@ on:
 
 jobs:  
   call-workflow:  
-    uses: AMD-ROCm-Internal/rocm_ci_infra/.github/workflows/nvidia_nightly@mainline
+    uses: AMD-ROCm-Internal/rocm_ci_infra/.github/workflows/nvidia_nightly.yml@mainline
     secrets: inherit  
 

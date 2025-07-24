@@ -157,8 +157,9 @@ TEST_CASE("Unit_hipStreamPerthread_StreamCapture_MultipleThreads") {
     REQUIRE(devArr[i] != nullptr);
   }
 
-  /* Not capturing for hipStreamCaptureModeGlobal mode as in case of
-   * Multi-threading the behaviour is undeterministic.
+  /* Not capturing for hipStreamCaptureModeGlobal mode in case of
+   * Multi-threading as hipStreamSynchronize used in launchFunction
+   * and it cannot be called from different threads in Global mode
    */
   hipStreamCaptureMode flags =
       GENERATE(hipStreamCaptureModeThreadLocal, hipStreamCaptureModeRelaxed);

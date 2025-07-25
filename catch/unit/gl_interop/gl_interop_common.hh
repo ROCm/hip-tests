@@ -214,6 +214,12 @@ class GLContextScopeGuard {
   static constexpr char kEnvarName[] = "GL_CONTEXT_TYPE";
 
   GLContextScopeGuard() {
+
+    if(!HipTest::isImageSupported()) {
+      HipTest::HIP_SKIP_TEST("Image is not supported on the device. Skipped.");
+      exit(1);
+    }
+
     char* val = std::getenv(kEnvarName);
     std::string val_str = val == NULL ? "" : val;
 

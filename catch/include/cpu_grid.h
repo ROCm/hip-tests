@@ -114,13 +114,13 @@ inline dim3 GenerateThreadDimensions() {
       dim3(1, 1, 1), dim3(props.maxThreadsDim[0], 1, 1), dim3(1, props.maxThreadsDim[1], 1),
       dim3(1, 1, props.maxThreadsDim[2]),
       map([max = props.maxThreadsDim[0], warp_size = props.warpSize](
-              double i) { return dim3(std::min(static_cast<int>(i * warp_size), max), 1, 1); },
+              double i) { return dim3(std::clamp(static_cast<int>(i * warp_size), 1, max), 1, 1); },
           values(multipliers)),
       map([max = props.maxThreadsDim[1], warp_size = props.warpSize](
-              double i) { return dim3(1, std::min(static_cast<int>(i * warp_size), max), 1); },
+              double i) { return dim3(1, std::clamp(static_cast<int>(i * warp_size), 1, max), 1); },
           values(multipliers)),
       map([max = props.maxThreadsDim[2], warp_size = props.warpSize](
-              double i) { return dim3(1, 1, std::min(static_cast<int>(i * warp_size), max)); },
+              double i) { return dim3(1, 1, std::clamp(static_cast<int>(i * warp_size), 1, max)); },
           values(multipliers)),
       dim3(16, 8, 8), dim3(32, 32, 1), dim3(64, 8, 2), dim3(16, 16, 3), dim3(props.warpSize - 1, 3, 3),
       dim3(props.warpSize + 1, 3, 3));
@@ -133,13 +133,13 @@ inline dim3 GenerateBlockDimensions() {
   const auto multipliers = {0.5, 0.9, 1.0, 1.1, 1.5, 1.9, 2.0, 3.0, 4.0};
   return GENERATE_COPY(dim3(1, 1, 1),
                        map([sm = props.multiProcessorCount](
-                               double i) { return dim3(static_cast<int>(i * sm), 1, 1); },
+                               double i) { return dim3(std::max(static_cast<int>(i * sm), 1), 1, 1); },
                            values(multipliers)),
                        map([sm = props.multiProcessorCount](
-                               double i) { return dim3(1, static_cast<int>(i * sm), 1); },
+                               double i) { return dim3(1, std::max(static_cast<int>(i * sm), 1), 1); },
                            values(multipliers)),
                        map([sm = props.multiProcessorCount](
-                               double i) { return dim3(1, 1, static_cast<int>(i * sm)); },
+                               double i) { return dim3(1, 1, std::max(static_cast<int>(i * sm), 1)); },
                            values(multipliers)),
                        dim3(5, 5, 5));
 }
@@ -153,13 +153,13 @@ inline dim3 GenerateThreadDimensionsForShuffle() {
       dim3(1, 1, 1), dim3(props.maxThreadsDim[0], 1, 1), dim3(1, props.maxThreadsDim[1], 1),
       dim3(1, 1, props.maxThreadsDim[2]),
       map([max = props.maxThreadsDim[0], warp_size = props.warpSize](
-              double i) { return dim3(std::min(static_cast<int>(i * warp_size), max), 1, 1); },
+              double i) { return dim3(std::clamp(static_cast<int>(i * warp_size), 1, max), 1, 1); },
           values(multipliers)),
       map([max = props.maxThreadsDim[1], warp_size = props.warpSize](
-              double i) { return dim3(1, std::min(static_cast<int>(i * warp_size), max), 1); },
+              double i) { return dim3(1, std::clamp(static_cast<int>(i * warp_size), 1, max), 1); },
           values(multipliers)),
       map([max = props.maxThreadsDim[2], warp_size = props.warpSize](
-              double i) { return dim3(1, 1, std::min(static_cast<int>(i * warp_size), max)); },
+              double i) { return dim3(1, 1, std::clamp(static_cast<int>(i * warp_size), 1, max)); },
           values(multipliers)),
       dim3(16, 8, 8), dim3(32, 32, 1), dim3(64, 8, 2), dim3(16, 16, 3), dim3(props.warpSize - 1, 3, 3),
       dim3(props.warpSize + 1, 3, 3));
@@ -172,13 +172,13 @@ inline dim3 GenerateBlockDimensionsForShuffle() {
   const auto multipliers = {0.5, 1.0};
   return GENERATE_COPY(dim3(1, 1, 1),
                        map([sm = props.multiProcessorCount](
-                               double i) { return dim3(static_cast<int>(i * sm), 1, 1); },
+                               double i) { return dim3(std::max(static_cast<int>(i * sm), 1), 1, 1); },
                            values(multipliers)),
                        map([sm = props.multiProcessorCount](
-                               double i) { return dim3(1, static_cast<int>(i * sm), 1); },
+                               double i) { return dim3(1, std::max(static_cast<int>(i * sm), 1), 1); },
                            values(multipliers)),
                        map([sm = props.multiProcessorCount](
-                               double i) { return dim3(1, 1, static_cast<int>(i * sm)); },
+                               double i) { return dim3(1, 1, std::max(static_cast<int>(i * sm), 1)); },
                            values(multipliers)),
                        dim3(5, 5, 5));
 }

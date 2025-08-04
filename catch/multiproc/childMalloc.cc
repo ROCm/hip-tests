@@ -48,6 +48,7 @@ bool testMallocFromChild() {
 
     // close the write descriptor:
     close(fd[1]);
+    HIP_CHECK(hipFree(A_d));
     exit(0);
   }
   return false;

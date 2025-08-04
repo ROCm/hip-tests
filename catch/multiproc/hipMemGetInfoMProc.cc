@@ -203,6 +203,7 @@ TEST_CASE("Unit_hipMemGetInfo_Functional_scenario4") {
     // Allocate the memory
     void* A_d = nullptr;
     HIP_CHECK(hipMalloc(&A_d, size));
+    HIP_CHECK(hipFree(A_d));
     exit(0);
   } else {    // Parent
     // wait for child exit
@@ -328,6 +329,7 @@ static bool testHiddenFreeMemFromChild() {
     // Wait for signal from parent
     read(fd_p2c[ReadEnd], &result_dummy, sizeof(result_dummy));
     close(fd_p2c[ReadEnd]);
+    HIP_CHECK(hipFree(d_ptr));
     exit(0);
   } else if (cPid > 0) {  // parent
     close(fd_c2p[WriteEnd]);

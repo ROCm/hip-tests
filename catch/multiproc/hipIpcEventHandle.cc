@@ -390,6 +390,9 @@ TEST_CASE("Unit_hipIpcEventHandle_ParameterValidation") {
       INFO("Error returned : " << ret);
       REQUIRE(false);
     }
+    #if HT_AMD
+    HIP_CHECK(hipEventDestroy(eventOut));
+    #endif
   }
 
   SECTION("Open handle in process that created it") {
@@ -399,6 +402,9 @@ TEST_CASE("Unit_hipIpcEventHandle_ParameterValidation") {
     HIP_CHECK(hipIpcGetEventHandle(&event_handle, event1));
     HIP_CHECK_ERROR(hipIpcOpenEventHandle(&event2, event_handle), hipErrorInvalidContext);
     HIP_CHECK(hipEventDestroy(event1));
+    #if HT_AMD
+    HIP_CHECK(hipEventDestroy(event2));
+    #endif
   }
 
 // Disabled on AMD because of return value mismatch - EXSWHTEC-41
@@ -412,6 +418,7 @@ TEST_CASE("Unit_hipIpcEventHandle_ParameterValidation") {
     HIP_CHECK(hipEventDestroy(event));
   }
 #endif
+  HIP_CHECK(hipEventDestroy(event));
 }
 
 /**

@@ -135,4 +135,7 @@ TEST_CASE("Unit_hipStreamPerThread_MemcpyAsync") {
   for (unsigned int i = 0; i < ele_size; ++i) {
     REQUIRE(A_h[i] == 123);
   }
+  // Clean-up
+  HIP_CHECK(hipHostFree(A_h));
+  HIP_CHECK(hipFree(A_d));
 }

@@ -127,26 +127,16 @@ TEST_CASE("Unit_hipHostMalloc_Basic") {
   } else {
     float *A_h, *B_h, *C_h;
     float *A_d, *B_d, *C_d;
+    unsigned int flag = 0;
     HIP_CHECK(hipHostMalloc(reinterpret_cast<void**>(&A_h), SIZE,
                            hipHostMallocWriteCombined | hipHostMallocMapped));
-    SECTION("hipHostMallocDefault") {
-      HIP_CHECK(hipHostMalloc(reinterpret_cast<void**>(&B_h), SIZE,
-                             hipHostMallocDefault));
-    }
+    SECTION("hipHostMallocDefault") { flag = hipHostMallocDefault; }
 #if (HT_AMD == 1) && (HT_LINUX == 1)
-    SECTION("hipHostMallocUncached") {
-      HIP_CHECK(hipHostMalloc(reinterpret_cast<void**>(&B_h), SIZE,
-                              hipHostMallocUncached));
-    }
-    SECTION("hipHostMallocCoherent") {
-      HIP_CHECK(hipHostMalloc(reinterpret_cast<void**>(&B_h), SIZE,
-                              hipHostMallocCoherent));
-    }
-    SECTION("hipHostMallocNonCoherent") {
-      HIP_CHECK(hipHostMalloc(reinterpret_cast<void**>(&B_h), SIZE,
-                              hipHostMallocNonCoherent));
-    }
+    SECTION("hipHostMallocUncached") { flag = hipHostMallocUncached; }
+    SECTION("hipHostMallocCoherent") { flag = hipHostMallocCoherent; }
+    SECTION("hipHostMallocNonCoherent") { flag = hipHostMallocNonCoherent; }
 #endif
+    HIP_CHECK(hipHostMalloc(reinterpret_cast<void**>(&B_h), SIZE, flag));
     HIP_CHECK(hipHostMalloc(reinterpret_cast<void**>(&C_h), SIZE,
                            hipHostMallocMapped));
 

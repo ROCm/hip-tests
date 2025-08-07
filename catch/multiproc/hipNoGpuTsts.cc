@@ -372,7 +372,7 @@ static bool NoGpuTst_hipPointerGetAttributes() {
   bool passed = false;
   hipError_t err;
   hipPointerAttribute_t attributes = {};
-  char* A_d;
+  char* A_d = nullptr;
   err = hipPointerGetAttributes(&attributes, A_d);
   if (err == hipErrorNoDevice) {
     passed = true;

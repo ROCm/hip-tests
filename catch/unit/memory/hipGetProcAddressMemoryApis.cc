@@ -6313,8 +6313,7 @@ TEST_CASE("Unit_hipGetProcAddress_MemoryApisStreamOrderedMemory") {
     HIP_CHECK(hipMemPtrGetInfo(dPtr, &size));
     REQUIRE(size == 1024);
     void *dPtr2 = nullptr;
-    REQUIRE(dyn_hipMallocFromPoolAsync_ptr(&dPtr2, 1, mem_pool, stream) ==
-                                           hipErrorOutOfMemory);
+    REQUIRE(dyn_hipMallocFromPoolAsync_ptr(&dPtr2, 1, mem_pool, stream) == hipErrorOutOfMemory);
 
     HIP_CHECK(dyn_hipFreeAsync_ptr(dPtr, stream));
     HIP_CHECK(hipMemPoolDestroy(mem_pool));

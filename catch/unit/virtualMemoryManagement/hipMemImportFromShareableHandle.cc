@@ -82,7 +82,9 @@ TEST_CASE("Unit_hipMemImportFromShareableHandle_Positive_Basic") {
   hipMemGenericAllocationHandle_t imported_handle;
   HIP_CHECK(hipMemImportFromShareableHandle(&imported_handle, &shareable_handle,
                                             hipMemHandleTypePosixFileDescriptor));
+
   HIP_CHECK(hipMemRelease(handle));
+  HIP_CHECK(hipMemRelease(imported_handle));
   CTX_DESTROY();
 }
 

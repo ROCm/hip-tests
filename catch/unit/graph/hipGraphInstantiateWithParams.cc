@@ -58,6 +58,7 @@ TEST_CASE("Unit_hipGraphInstantiateWithParams_Negative") {
     HIP_CHECK(hipGraphCreate(&graph, 0));
     REQUIRE(hipGraphInstantiateWithParams(nullptr,
                                        graph, &params) == hipErrorInvalidValue);
+    HIP_CHECK(hipGraphDestroy(graph));
   }
 
   SECTION("Passing nullptr to graph") {
@@ -73,6 +74,7 @@ TEST_CASE("Unit_hipGraphInstantiateWithParams_Negative") {
     hipGraphExec_t graphExec;
     REQUIRE(hipGraphInstantiateWithParams(&graphExec,
                                        graph, nullptr) == hipErrorInvalidValue);
+    HIP_CHECK(hipGraphDestroy(graph));
   }
 
   SECTION("Passing invalid flag") {
@@ -84,6 +86,7 @@ TEST_CASE("Unit_hipGraphInstantiateWithParams_Negative") {
     REQUIRE(hipGraphInstantiateWithParams(&graphExec,
                                        graph, &params) == hipErrorInvalidValue);
     REQUIRE(params.result_out == hipGraphInstantiateError);
+    HIP_CHECK(hipGraphDestroy(graph));
   }
 }
 
@@ -203,19 +206,17 @@ void GraphInstantiateWithParams_StreamCapture() {
   HIP_CHECK(hipMalloc(&C_d, Nbytes));
   REQUIRE(A_d != nullptr);
   REQUIRE(C_d != nullptr);
-  HIP_CHECK(hipGraphCreate(&graph, 0));
-
 
   HIP_CHECK(hipStreamCreate(&stream));
+  HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
+
+  HIP_CHECK(hipMemcpyAsync(A_d, A_h, Nbytes, hipMemcpyHostToDevice, stream));
+  HIP_CHECK(hipMemsetAsync(C_d, 0, Nbytes, stream));
+
   constexpr unsigned blocks = 512;
   constexpr unsigned threadsPerBlock = 256;
-
-  HIP_CHECK(hipStreamBeginCapture(stream, hipStreamCaptureModeGlobal));
-  HIP_CHECK(hipMemcpyAsync(A_d, A_h, Nbytes, hipMemcpyHostToDevice, stream));
-
-  HIP_CHECK(hipMemsetAsync(C_d, 0, Nbytes, stream));
-  hipLaunchKernelGGL(HipTest::vector_square, dim3(blocks),
-                              dim3(threadsPerBlock), 0, stream, A_d, C_d, N);
+  hipLaunchKernelGGL(HipTest::vector_square, dim3(blocks), dim3(threadsPerBlock), 0, stream, A_d,
+                     C_d, N);
   HIP_CHECK(hipMemcpyAsync(C_h, C_d, Nbytes, hipMemcpyDeviceToHost, stream));
 
   HIP_CHECK(hipStreamEndCapture(stream, &graph));
@@ -282,7 +283,7 @@ TEST_CASE("Unit_hipGraphInstantiateWithParams_DependencyGraph") {
 * - HIP_VERSION >= 6.2
 */
 TEST_CASE("Unit_hipGraphInstantiateWithParams_StreamCapture") {
-      GraphInstantiateWithParams_StreamCapture();
+  GraphInstantiateWithParams_StreamCapture();
 }
 
 

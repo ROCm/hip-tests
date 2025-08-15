@@ -298,6 +298,7 @@ TEST_CASE("Unit_hipGraphGetNodes_ParamValidation") {
     HIP_CHECK(hipGraphCreate(&emptyGraph, 0));
     HIP_CHECK(hipGraphGetNodes(emptyGraph, nullptr, &numNodes));
     REQUIRE(numNodes == 0);
+    HIP_CHECK(hipGraphDestroy(emptyGraph));
   }
 
   SECTION("numNodes less than actual number of nodes") {

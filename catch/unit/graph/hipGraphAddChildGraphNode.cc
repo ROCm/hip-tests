@@ -116,6 +116,10 @@ TEST_CASE("Unit_hipGraphAddChildGraphNode_Negative") {
           nullptr, 10, childgraph1)
         == hipErrorInvalidValue);
   }
+
+  HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipGraphDestroy(childgraph1));
+  HipTest::freeArrays<int>(A_d, B_d, nullptr, A_h, B_h, nullptr, false);
 }
 
 /*
@@ -232,7 +236,6 @@ TEST_CASE("Unit_hipGraphAddChildGraphNode_CloneChildGraph") {
   HipTest::initArrays<int>(&A_d, &B_d, nullptr, &A_h, &B_h, nullptr, N, false);
 
   HIP_CHECK(hipGraphCreate(&graph, 0));
-  HIP_CHECK(hipGraphCreate(&clonedgraph, 0));
   hipGraphNode_t memcpyH2D_A, memcpyH2D_B, childGraphNode1;
   hipStream_t streamForGraph;
   HIP_CHECK(hipStreamCreate(&streamForGraph));
@@ -268,6 +271,7 @@ TEST_CASE("Unit_hipGraphAddChildGraphNode_CloneChildGraph") {
   HIP_CHECK(hipGraphExecDestroy(graphExec));
   HIP_CHECK(hipGraphDestroy(childgraph1));
   HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipGraphDestroy(clonedgraph));
   HIP_CHECK(hipStreamDestroy(streamForGraph));
 }
 

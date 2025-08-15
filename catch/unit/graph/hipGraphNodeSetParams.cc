@@ -90,6 +90,8 @@ TEST_CASE("Unit_hipGraphNodeSetParams_Negative_Parameters") {
 
   HIP_CHECK(hipGraphExecDestroy(graphExec));
   HIP_CHECK(hipGraphDestroy(graph));
+  HIP_CHECK(hipFree(A_d));
+  free(A_h);
 }
 
 /**

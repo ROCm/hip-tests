@@ -969,7 +969,6 @@ TEST_CASE("Unit_hipStreamBeginCaptureToGraph_StateTesting") {
   HIP_CHECK(hipStreamCreate(&stream2));
   HIP_CHECK(hipEventCreate(&e));
   hipStreamCaptureStatus captureStatus = hipStreamCaptureStatusNone;
-  HIP_CHECK(hipGraphCreate(&graph, 0));
   HIP_CHECK(hipStreamIsCapturing(stream1, &captureStatus));
   REQUIRE(captureStatus == hipStreamCaptureStatusNone);
   HIP_CHECK(hipStreamBeginCaptureToGraph(stream1, graph, nullptr, nullptr, 0,
@@ -1072,6 +1071,7 @@ TEST_CASE("Unit_hipStreamBeginCaptureToGraph_EndingWhileCaptureInProgress") {
               stream1));
     REQUIRE(hipSuccess == hipStreamEndCapture(stream1, &graph));
     HIP_CHECK(hipEventDestroy(e));
+    HIP_CHECK(hipGraphDestroy(graph));
   }
 
   SECTION("End strm capture when forked strm still has operations") {
@@ -1215,6 +1215,7 @@ static void threadCaptureStart(hipStream_t *streamCapt,
                            *streamFork));
   HIP_CHECK(hipEventRecord(e, *streamFork));
   HIP_CHECK(hipStreamWaitEvent(*streamCapt, e, 0));
+  HIP_CHECK(hipEventDestroy(e));
 }
 
 TEST_CASE("Unit_hipStreamBeginCaptureToGraph_CapturePartialInThreads") {

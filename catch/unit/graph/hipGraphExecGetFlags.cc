@@ -62,6 +62,7 @@ TEST_CASE("Unit_hipGraphExecGetFlags_Negative") {
       hipGraphInstantiateFlagAutoFreeOnLaunch));
   HIP_CHECK_ERROR(hipGraphExecGetFlags(nullptr, &flags),
                      hipErrorInvalidValue);
+  HIP_CHECK(hipGraphExecDestroy(graphExec));
   HIP_CHECK(hipGraphDestroy(graph));
 }
 
@@ -140,6 +141,7 @@ TEST_CASE("Unit_hipGraphExecGetFlags_positive") {
     REQUIRE(flags == hipGraphInstantiateFlagUseNodePriority);
   }
 #endif
+  HIP_CHECK(hipGraphExecDestroy(graphExec));
   HIP_CHECK(hipGraphDestroy(graph));
 }
 /**

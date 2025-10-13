@@ -138,7 +138,7 @@ TEST_CASE("Unit_hipMemCreate_ChkDev2HstMemcpy_ReleaseHdlPostUnmap") {
   // Allocate physical memory
   HIP_CHECK(hipMemCreate(&handle, size_mem, &prop, 0));
   // Allocate virtual address range
-  hipDeviceptr_t ptrA;
+  void* ptrA;
   HIP_CHECK(hipMemAddressReserve(&ptrA, size_mem, 0, 0, 0));
   HIP_CHECK(hipMemMap(ptrA, size_mem, 0, handle, 0));
   // Set access
@@ -154,8 +154,8 @@ TEST_CASE("Unit_hipMemCreate_ChkDev2HstMemcpy_ReleaseHdlPostUnmap") {
   for (size_t idx = 0; idx < N; idx++) {
     A_h[idx] = idx;
   }
-  HIP_CHECK(hipMemcpyHtoD(ptrA, A_h.data(), buffer_size));
-  HIP_CHECK(hipMemcpyDtoH(B_h.data(), ptrA, buffer_size));
+  HIP_CHECK(hipMemcpyHtoD(reinterpret_cast<hipDeviceptr_t>(ptrA), A_h.data(), buffer_size));
+  HIP_CHECK(hipMemcpyDtoH(B_h.data(), reinterpret_cast<hipDeviceptr_t>(ptrA), buffer_size));
   REQUIRE(true == std::equal(B_h.begin(), B_h.end(), A_h.data()));
   HIP_CHECK(hipMemUnmap(ptrA, size_mem));
   HIP_CHECK(hipMemAddressFree(ptrA, size_mem));
@@ -207,7 +207,7 @@ TEST_CASE("Unit_hipMemCreate_ChkDev2HstMemcpy_ReleaseHdlPreUse") {
   // Allocate physical memory
   HIP_CHECK(hipMemCreate(&handle, size_mem, &prop, 0));
   // Allocate virtual address range
-  hipDeviceptr_t ptrA;
+  void* ptrA;
   HIP_CHECK(hipMemAddressReserve(&ptrA, size_mem, 0, 0, 0));
   HIP_CHECK(hipMemMap(ptrA, size_mem, 0, handle, 0));
   HIP_CHECK(hipMemRelease(handle));
@@ -224,8 +224,8 @@ TEST_CASE("Unit_hipMemCreate_ChkDev2HstMemcpy_ReleaseHdlPreUse") {
   for (size_t idx = 0; idx < N; idx++) {
     A_h[idx] = idx;
   }
-  HIP_CHECK(hipMemcpyHtoD(ptrA, A_h.data(), buffer_size));
-  HIP_CHECK(hipMemcpyDtoH(B_h.data(), ptrA, buffer_size));
+  HIP_CHECK(hipMemcpyHtoD(reinterpret_cast<hipDeviceptr_t>(ptrA), A_h.data(), buffer_size));
+  HIP_CHECK(hipMemcpyDtoH(B_h.data(), reinterpret_cast<hipDeviceptr_t>(ptrA), buffer_size));
   REQUIRE(true == std::equal(B_h.begin(), B_h.end(), A_h.data()));
   HIP_CHECK(hipMemUnmap(ptrA, size_mem));
   HIP_CHECK(hipMemAddressFree(ptrA, size_mem));
@@ -276,7 +276,7 @@ TEST_CASE("Unit_hipMemCreate_ChkWithKerLaunch") {
   // Allocate physical memory
   HIP_CHECK(hipMemCreate(&handle, size_mem, &prop, 0));
   // Allocate virtual address range
-  hipDeviceptr_t ptrA;
+  void* ptrA;
   HIP_CHECK(hipMemAddressReserve(&ptrA, size_mem, 0, 0, 0));
   HIP_CHECK(hipMemMap(ptrA, size_mem, 0, handle, 0));
   HIP_CHECK(hipMemRelease(handle));
@@ -293,11 +293,11 @@ TEST_CASE("Unit_hipMemCreate_ChkWithKerLaunch") {
     A_h[idx] = idx;
     C_h[idx] = idx * idx;
   }
-  HIP_CHECK(hipMemcpyHtoD(ptrA, A_h.data(), buffer_size));
+  HIP_CHECK(hipMemcpyHtoD(reinterpret_cast<hipDeviceptr_t>(ptrA), A_h.data(), buffer_size));
   // Invoke kernel
   hipLaunchKernelGGL(square_kernel, dim3(N / THREADS_PER_BLOCK), dim3(THREADS_PER_BLOCK), 0, 0,
                      reinterpret_cast<int*>(ptrA));
-  HIP_CHECK(hipMemcpyDtoH(B_h.data(), ptrA, buffer_size));
+  HIP_CHECK(hipMemcpyDtoH(B_h.data(), reinterpret_cast<hipDeviceptr_t>(ptrA), buffer_size));
   HIP_CHECK(hipDeviceSynchronize());
   REQUIRE(true == std::equal(B_h.begin(), B_h.end(), C_h.data()));
   HIP_CHECK(hipMemUnmap(ptrA, size_mem));
@@ -352,12 +352,12 @@ TEST_CASE("Unit_hipMemCreate_MapNonContiguousChunks") {
     HIP_CHECK(hipMemCreate(&handle[count], size_mem, &prop, 0));
   }
   // Allocate virtual address range for all the memory chunks
-  hipDeviceptr_t ptrA;
+  void* ptrA;
   HIP_CHECK(hipMemAddressReserve(&ptrA, (numOfBuffers * size_mem), 0, 0, 0));
   for (int idx = 0; idx < numOfBuffers; idx++) {
     unsigned long long uiptr = reinterpret_cast<unsigned long long>(ptrA);
     uiptr = uiptr + idx * size_mem;
-    HIP_CHECK(hipMemMap(reinterpret_cast<hipDeviceptr_t>(uiptr), size_mem, 0, handle[idx], 0));
+    HIP_CHECK(hipMemMap(reinterpret_cast<void*>(uiptr), size_mem, 0, handle[idx], 0));
     HIP_CHECK(hipMemRelease(handle[idx]));
   }
   hipMemAccessDesc accessDesc = {};
@@ -373,18 +373,20 @@ TEST_CASE("Unit_hipMemCreate_MapNonContiguousChunks") {
     A_h[idx] = idx;
     C_h[idx] = idx * idx;
   }
-  HIP_CHECK(hipMemcpyHtoD(ptrA, A_h.data(), numOfBuffers * buffer_size));
+  HIP_CHECK(hipMemcpyHtoD(reinterpret_cast<hipDeviceptr_t>(ptrA), A_h.data(),
+                          numOfBuffers * buffer_size));
   // Launch square kernel
   hipLaunchKernelGGL(square_kernel, dim3((N * numOfBuffers) / THREADS_PER_BLOCK),
                      dim3(THREADS_PER_BLOCK), 0, 0, reinterpret_cast<int*>(ptrA));
-  HIP_CHECK(hipMemcpyDtoH(B_h.data(), ptrA, numOfBuffers * buffer_size));
+  HIP_CHECK(hipMemcpyDtoH(B_h.data(), reinterpret_cast<hipDeviceptr_t>(ptrA),
+                         numOfBuffers * buffer_size));
   HIP_CHECK(hipDeviceSynchronize());
   // Validate Results
   REQUIRE(true == std::equal(B_h.begin(), B_h.end(), C_h.data()));
   for (int idx = 0; idx < numOfBuffers; idx++) {
     unsigned long long uiptr = reinterpret_cast<unsigned long long>(ptrA);
     uiptr = uiptr + idx * size_mem;
-    HIP_CHECK(hipMemUnmap(reinterpret_cast<hipDeviceptr_t>(uiptr), size_mem));
+    HIP_CHECK(hipMemUnmap(reinterpret_cast<void*>(uiptr), size_mem));
   }
   HIP_CHECK(hipMemAddressFree(ptrA, (numOfBuffers * size_mem)));
   CTX_DESTROY();
@@ -434,7 +436,7 @@ TEST_CASE("Unit_hipMemCreate_ChkWithMemset") {
   // Allocate physical memory
   HIP_CHECK(hipMemCreate(&handle, size_mem, &prop, 0));
   // Allocate virtual address range
-  hipDeviceptr_t ptrA;
+  void* ptrA;
   HIP_CHECK(hipMemAddressReserve(&ptrA, size_mem, 0, 0, 0));
   HIP_CHECK(hipMemMap(ptrA, size_mem, 0, handle, 0));
   // Set access
@@ -445,8 +447,8 @@ TEST_CASE("Unit_hipMemCreate_ChkWithMemset") {
   // Make the address accessible to GPU 0
   HIP_CHECK(hipMemSetAccess(ptrA, size_mem, &accessDesc, 1));
   std::vector<int> A_h(N);
-  HIP_CHECK(hipMemset(reinterpret_cast<void*>(ptrA), init_val, buffer_size));
-  HIP_CHECK(hipMemcpyDtoH(A_h.data(), ptrA, buffer_size));
+  HIP_CHECK(hipMemset(ptrA, init_val, buffer_size));
+  HIP_CHECK(hipMemcpyDtoH(A_h.data(), reinterpret_cast<hipDeviceptr_t>(ptrA), buffer_size));
   for (int idx = 0; idx < N; idx++) {
     REQUIRE(A_h[idx] == init_val);
   }

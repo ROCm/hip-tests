@@ -28,15 +28,16 @@ hip_add_exe_to_target(NAME MultiProc
                       TEST_TARGET_NAME build_tests
                       LINKER_LIBS nvrtc)
 elseif(HIP_PLATFORM MATCHES "amd")
-hip_add_exe_to_target(NAME MultiProc
-                      TEST_SRC ${TEST_SRC}
-                      TEST_TARGET_NAME build_tests
-                      LINKER_LIBS hiprtc)
-elseif(HIP_PLATFORM MATCHES "spirv")
-hip_add_exe_to_target(NAME MultiProc
-                    TEST_SRC ${TEST_SRC}
-                    TEST_TARGET_NAME build_tests
-                    )
+  if(HIP_PLATFORM_IS_SPIRV)
+    hip_add_exe_to_target(NAME MultiProc
+                          TEST_SRC ${TEST_SRC}
+                          TEST_TARGET_NAME build_tests)
+  else()
+    hip_add_exe_to_target(NAME MultiProc
+                          TEST_SRC ${TEST_SRC}
+                          TEST_TARGET_NAME build_tests
+                          LINKER_LIBS hiprtc)
+  endif()
 endif()
 
 if(UNIX)

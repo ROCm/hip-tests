@@ -39,18 +39,22 @@ if(UNIX)
       hipPrintfKernel.cc)
 endif()
 
-if(NOT HIP_PLATFORM MATCHES "spirv")
+if(NOT HIP_PLATFORM_IS_SPIRV)
   #error: call to '__shfl' is ambiguous
   set(TEST_SRC ${TEST_SRC} hipShflTests.cc)
 endif()
 
-# only for AMD
-if(HIP_PLATFORM MATCHES "amd")
+# only for AMD (not SPIR-V)
+if(HIP_PLATFORM MATCHES "amd" AND NOT HIP_PLATFORM_IS_SPIRV)
   set(AMD_SRC
       hipShflUpDownTest.cc
       hipExtLaunchKernelGGL.cc
   )
   set(TEST_SRC ${TEST_SRC} ${AMD_SRC})
+endif()
+
+if(HIP_PLATFORM_IS_SPIRV)
+  list(REMOVE_ITEM TEST_SRC hipTestMemKernel.cc) # device memcpy not available on SPIR-V
 endif()
 
 hip_add_exe_to_target(NAME KernelTest

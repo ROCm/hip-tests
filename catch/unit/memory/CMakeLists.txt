@@ -21,6 +21,32 @@
 # Common Tests - Test independent of all platforms
 set(COMMON_SHARED_SRC DriverContext.cc)
 
+# Texture/array tests that trigger HipTextureLowering crash or use tex2Dgather - exclude for SPIR-V
+set(SPIRV_EXCLUDED_MEMORY_TESTS
+    hipArrayCreate.cc
+    hipArray3DCreate.cc
+    hipMallocArray.cc
+    hipArray.cc
+    hipMemcpy2DToArray.cc
+    hipMemcpy2DToArray_old.cc
+    hipMemcpy2DToArrayAsync.cc
+    hipMemcpy2DToArrayAsync_old.cc
+    hipMemcpy2DFromArray.cc
+    hipMemcpy2DFromArrayAsync.cc
+    hipMemcpyAtoH.cc
+    hipMemcpyHtoA.cc
+    hipDrvMemcpy3D.cc
+    hipDrvMemcpy3D_old.cc
+    hipDrvMemcpy3DAsync.cc
+    hipDrvMemcpy3DAsync_old.cc
+    hipExtMallocWithFlags.cc
+    hipMemCreate.cc
+    hipMemSetGetAccess.cc
+    hipPointerSetAttribute.cc
+    hipMallocMipmappedArray.cc
+    hipFreeMipmappedArray.cc
+)
+
 # FIXME: cjatin
 # This is a temp hack to pass it on windows since it has a char limit for
 # command line. Eventually we need to use rsp files with ninja on windows.
@@ -74,7 +100,7 @@ set(TEST_SRC
     hipMemRangeGetAttribute.cc
     hipMemRangeGetAttribute_old.cc)
 
-if(HIP_PLATFORM MATCHES "amd")
+if(HIP_PLATFORM MATCHES "amd" AND NOT HIP_PLATFORM_IS_SPIRV)
   set(TEST_SRC
       ${TEST_SRC}
       hipMemPtrGetInfo.cc
@@ -170,7 +196,11 @@ set(TEST_SRC
     hipMallocMipmappedArray.cc
     hipFreeMipmappedArray.cc)
 
-if(HIP_PLATFORM MATCHES "amd")
+if(HIP_PLATFORM_IS_SPIRV)
+  list(REMOVE_ITEM TEST_SRC ${SPIRV_EXCLUDED_MEMORY_TESTS})
+endif()
+
+if(HIP_PLATFORM MATCHES "amd" AND NOT HIP_PLATFORM_IS_SPIRV)
   set(TEST_SRC
       ${TEST_SRC}
       # Below 3 tests should be compiled for NVIDIA as well after EXSWHTEC-349 is addressed
@@ -179,7 +209,7 @@ if(HIP_PLATFORM MATCHES "amd")
       hipArray3DGetDescriptor.cc)
 endif()
 
-if (NOT HIP_PLATFORM MATCHES "spirv") 
+if (NOT HIP_PLATFORM_IS_SPIRV) 
   # clang crash on HipTextureLowering.cpp: 
   # Don't know how to lower this texture use case
   set(NOT_FOR_MI200_AND_ABOVE_TEST hipMallocArray.cc hipArrayCreate.cc) # tests not for MI200+

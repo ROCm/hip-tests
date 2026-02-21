@@ -16,6 +16,12 @@ if(NOT HIP_PLATFORM STREQUAL "amd" AND NOT HIP_PLATFORM STREQUAL "nvidia" AND NO
     message(FATAL_ERROR "Unexpected HIP_PLATFORM: " ${HIP_PLATFORM})
 endif()
 
+# chipStar/SPIR-V: treat as amd for build purposes (clang path)
+if(HIP_PLATFORM STREQUAL "spirv")
+    set(HIP_PLATFORM "amd")
+    set(HIP_PLATFORM_IS_SPIRV ON)
+endif()
+
 if(WIN32)
     set(EXT ".bat")
 endif()
@@ -61,9 +67,15 @@ set(CMAKE_CXX_COMPILER "${HIP_PATH}/bin/hipcc${EXT}")
 set(CMAKE_C_COMPILER "${HIP_PATH}/bin/hipcc${EXT}")
 set(HIPCONFIG_EXECUTABLE "${HIP_PATH}/bin/hipconfig${EXT}")
 if (NOT DEFINED HIP_VERSION)
-    execute_process(COMMAND ${HIPCONFIG_EXECUTABLE} --version
-                    OUTPUT_VARIABLE HIP_VERSION
-                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(EXISTS "${HIPCONFIG_EXECUTABLE}")
+        execute_process(COMMAND ${HIPCONFIG_EXECUTABLE} --version
+                        OUTPUT_VARIABLE HIP_VERSION
+                        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    endif()
+    if(NOT HIP_VERSION)
+        # chipStar: hipconfig not yet built at configure time, use default
+        set(HIP_VERSION "6.0.0")
+    endif()
 endif()
 
 # enforce c++17
@@ -185,13 +197,19 @@ if (WIN32)
 endif()
 
 if(HIP_PLATFORM STREQUAL "amd")
-    add_compile_options(-Wall -Wextra -Wvla -Werror -Wno-deprecated -Wno-option-ignored)
+    if(HIP_PLATFORM_IS_SPIRV)
+        # chipStar: avoid -Werror, headers use GNU extensions and have unused params
+        add_compile_options(-Wall -Wextra -Wvla -Wno-deprecated -Wno-option-ignored
+            -Wno-gnu-anonymous-struct -Wno-nested-anon-types -Wno-unused-parameter)
+    else()
+        add_compile_options(-Wall -Wextra -Wvla -Werror -Wno-deprecated -Wno-option-ignored)
+    endif()
 endif()
 
 cmake_policy(PUSH)
-if(POLICY CMP0037)
-    cmake_policy(SET CMP0037 OLD)
-endif()
+# if(POLICY CMP0037)
+#     cmake_policy(SET CMP0037 OLD)
+# endif()
 
 # Turn off CMAKE_HIP_ARCHITECTURES Feature if cmake version is 3.21+
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.21.0)

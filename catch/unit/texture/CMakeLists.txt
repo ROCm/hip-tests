@@ -51,7 +51,7 @@ set(TEST_SRC
     hipMipmappedArrayGetLevel.cc
 )
 
-if(NOT HIP_PLATFORM MATCHES "spirv")
+if(NOT HIP_PLATFORM_IS_SPIRV)
   set(TEST_SRC ${TEST_SRC}
   hipSimpleTexture1DLayered.cc
   hipSimpleTexture2DLayered.cc)

@@ -81,7 +81,7 @@ set(TEST_SRC
   hipStreamIsCapturing.cc
   hipStreamIsCapturing_old.cc)
 
-if(HIP_PLATFORM MATCHES "amd")
+if(HIP_PLATFORM MATCHES "amd" AND NOT HIP_PLATFORM_IS_SPIRV)
   set(AMD_SRC
     hipStreamCaptureExtModuleLaunchKernel.cc
   )
@@ -157,7 +157,7 @@ set(TEST_SRC
   hipDeviceGraphMemTrim.cc
 )
 
-if(HIP_PLATFORM MATCHES "amd")
+if(HIP_PLATFORM MATCHES "amd" AND NOT HIP_PLATFORM_IS_SPIRV)
   set(AMD_SRC
     # hipGraphAddNode, hipGraphNodeParams, hipMemcpyNodeParams are not mapped to Nvidia
     hipGraphAddNode.cc
@@ -169,15 +169,19 @@ if(HIP_PLATFORM MATCHES "amd")
   set(TEST_SRC ${TEST_SRC} ${AMD_SRC})
 endif()
 
+if(NOT HIP_PLATFORM_IS_SPIRV)
 add_custom_target(add_Kernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/add_Kernel.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../graph/add_Kernel.code -I${HIP_PATH}/include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
+endif() # NOT HIP_PLATFORM_IS_SPIRV (genco targets)
 
 hip_add_exe_to_target(NAME GraphsTest2
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests)
 
-if(HIP_PLATFORM MATCHES "amd")
+if(HIP_PLATFORM MATCHES "amd" AND NOT HIP_PLATFORM_IS_SPIRV)
   add_custom_target(hipMatMul COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/hipMatMul.cc -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/graph/hipMatMul.code -I${CMAKE_CURRENT_SOURCE_DIR}/../../../../include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
   add_dependencies(build_tests hipMatMul)
 endif()
 
-add_dependencies(build_tests add_Kernel.code)
+if(NOT HIP_PLATFORM_IS_SPIRV)
+  add_dependencies(build_tests add_Kernel.code)
+endif()

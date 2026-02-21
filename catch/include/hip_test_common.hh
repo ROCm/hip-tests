@@ -302,11 +302,14 @@ std::tuple<FArgs...> getExpectedArgs(void(*)(FArgs...)) {};
 // }
 template <typename F, typename... Args>
 void validateArguments(F f, Args&&... args) {
+#ifndef __HIP_PLATFORM_SPIRV__
+    /* getExpectedArgs does not match __global__ kernel signatures on SPIR-V */
     using expectedArgsTuple = decltype(getExpectedArgs(f));
     using providedArgsTuple = std::tuple<Args...>;
 
     static_assert(std::is_same<expectedArgsTuple, providedArgsTuple>::value,
                   "Kernel arguments types must match exactly!");
+#endif
 }
 
 /**

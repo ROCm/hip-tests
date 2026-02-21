@@ -58,7 +58,14 @@ if(HIP_PLATFORM MATCHES "nvidia")
   set_source_files_properties(hipTestHost.cc PROPERTIES COMPILE_OPTIONS "--expt-relaxed-constexpr")
 endif()
 
-if(UNIX AND NOT HIP_PLATFORM MATCHES "spirv")
+if(HIP_PLATFORM_IS_SPIRV)
+    list(REMOVE_ITEM TEST_SRC
+        DoublePrecisionMathDevice.cc # SPIR-V Translator: InvalidBitWidth: Invalid bit width in input: 128
+        hipDeviceMemcpy.cc # device memcpy/memset not available on SPIR-V
+    )
+endif()
+
+if(UNIX AND NOT HIP_PLATFORM_IS_SPIRV)
     set(TEST_SRC ${TEST_SRC}
         deviceAllocation.cc # unsupported device-side malloc
         hipTestNew.cc # unsupported device-side new
@@ -110,8 +117,15 @@ set(AMD_ARCH_SPEC_TEST_SRC
     unsafeAtomicAdd_NonCoherent_withunsafeflag.cc
 )
 
+# Skip AMD-specific tests and --genco targets for chipStar/SPIR-V
+if(HIP_PLATFORM_IS_SPIRV)
+  set(AMD_TEST_SRC "")
+  set(AMD_ARCH_SPEC_TEST_SRC "")
+endif()
+
 # Note to pass arch use format like -DOFFLOAD_ARCH_STR="--offload-arch=gfx900  --offload-arch=gfx906"
 # having space at the start/end of OFFLOAD_ARCH_STR can cause build failures
+if(NOT HIP_PLATFORM_IS_SPIRV)
 add_custom_target(kerDevAllocMultCO.code
                   COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR}
                   ${CMAKE_CURRENT_SOURCE_DIR}/kerDevAllocMultCO.cc
@@ -136,6 +150,7 @@ add_custom_target(kerDevAllocSingleKer.code
                   -o ${CMAKE_CURRENT_BINARY_DIR}/../../unit/deviceLib/kerDevAllocSingleKer.code
                   -I${HIP_PATH}/include/
                   -I${CMAKE_CURRENT_SOURCE_DIR}/../../include --rocm-path=${ROCM_PATH})
+endif() # NOT HIP_PLATFORM_IS_SPIRV (genco targets)
 
 # Accepted archs to compile this cmake file
 set(ACCEPTED_OFFLOAD_ARCHS gfx90a gfx940 gfx941 gfx942)
@@ -178,15 +193,23 @@ if(${ARCH_CHECK} GREATER_EQUAL 0)
     file(GLOB unsafeAtomicAdd_files *unsafeAtomicAdd_*_*.cc)
     set_property(SOURCE ${unsafeAtomicAdd_files} PROPERTY COMPILE_FLAGS --save-temps)
 endif()
-    hip_add_exe_to_target(NAME UnitDeviceTests
-                      TEST_SRC ${TEST_SRC}
-                      TEST_TARGET_NAME build_tests
-                      LINKER_LIBS hiprtc)
-elseif(HIP_PLATFORM MATCHES "nvidia" OR HIP_PLATFORM MATCHES "spirv")
+    if(HIP_PLATFORM_IS_SPIRV)
+      hip_add_exe_to_target(NAME UnitDeviceTests
+                        TEST_SRC ${TEST_SRC}
+                        TEST_TARGET_NAME build_tests)
+    else()
+      hip_add_exe_to_target(NAME UnitDeviceTests
+                        TEST_SRC ${TEST_SRC}
+                        TEST_TARGET_NAME build_tests
+                        LINKER_LIBS hiprtc)
+    endif()
+elseif(HIP_PLATFORM MATCHES "nvidia")
     hip_add_exe_to_target(NAME UnitDeviceTests
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests
                       COMPILE_OPTIONS -Wno-deprecated-declarations) #--Wno-deprecated-declarations unrecognized clang++
 endif()
 
-add_dependencies(build_tests kerDevAllocMultCO.code kerDevWriteMultCO.code kerDevFreeMultCO.code kerDevAllocSingleKer.code)
+if(NOT HIP_PLATFORM_IS_SPIRV)
+  add_dependencies(build_tests kerDevAllocMultCO.code kerDevWriteMultCO.code kerDevFreeMultCO.code kerDevAllocSingleKer.code)
+endif()

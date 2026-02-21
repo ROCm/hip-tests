@@ -152,6 +152,7 @@ function(catch_discover_tests_compile_time_detection TARGET TEST_SET)
       BYPRODUCTS "${ctest_tests_file}"
       COMMAND "${CMAKE_COMMAND}"
               -D "TEST_TARGET=${EXE_NAME}"
+              -D "ANALYSIS_COMMAND=${SKIP_DOUBLE_TESTS}"
               -D "TEST_EXECUTABLE=$<TARGET_FILE:${EXE_NAME}>"
               -D "TEST_EXECUTOR=${crosscompiling_emulator}"
               -D "TEST_WORKING_DIR=${_WORKING_DIRECTORY}"
@@ -282,12 +283,12 @@ function(hip_add_exe_to_target)
       add_executable(${_EXE_NAME} EXCLUDE_FROM_ALL ${SRC_NAME} ${COMMON_SHARED_SRC} $<TARGET_OBJECTS:Main_Object> $<TARGET_OBJECTS:KERNELS>)
     else ()
       add_executable(${_EXE_NAME} EXCLUDE_FROM_ALL ${SRC_NAME} ${COMMON_SHARED_SRC} $<TARGET_OBJECTS:Main_Object>)
-      if(HIP_PLATFORM STREQUAL "amd")
+      if(HIP_PLATFORM_IS_SPIRV)
+        # nothing extra needed for chipStar
+      elseif(HIP_PLATFORM STREQUAL "amd")
         target_link_libraries(${_EXE_NAME} hiprtc)
       elseif(HIP_PLATFORM STREQUAL "nvidia")
         target_link_libraries(${_EXE_NAME} nvrtc)
-      elseif(HIP_PLATFORM STREQUAL "spirv")
-        # nothing extra needed for chipStar
       else()
         message(FATAL_ERROR "Unsupported HIP_PLATFORM: ${HIP_PLATFORM}")
       endif()
@@ -309,6 +310,9 @@ function(hip_add_exe_to_target)
       endif()
     endif()
 
+    if(HIP_PLATFORM_IS_SPIRV)
+      list(REMOVE_ITEM _LINKER_LIBS hiprtc)
+    endif()
     if(DEFINED _LINKER_LIBS)
       target_link_libraries(${_EXE_NAME} ${_LINKER_LIBS})
     endif()

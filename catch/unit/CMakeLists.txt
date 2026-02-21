@@ -18,7 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-add_subdirectory(rtc)
+if(NOT HIP_PLATFORM_IS_SPIRV)
+  add_subdirectory(rtc)
+endif()
 add_subdirectory(deviceLib)
 add_subdirectory(graph)
 add_subdirectory(memory)
@@ -34,31 +36,45 @@ add_subdirectory(compiler)
 add_subdirectory(errorHandling)
 add_subdirectory(cooperativeGrps)
 add_subdirectory(context)
-add_subdirectory(device_memory)
-add_subdirectory(warp)
+if(NOT HIP_PLATFORM_IS_SPIRV)
+  add_subdirectory(device_memory)  # device memcpy/memset not supported on SPIR-V
+  add_subdirectory(warp)  # shfl ambiguity on SPIR-V
+endif()
 add_subdirectory(dynamicLoading)
-add_subdirectory(g++)
-add_subdirectory(module)
+if(NOT HIP_PLATFORM_IS_SPIRV)
+  add_subdirectory(g++)  # requires AMD host_defines.h not available in chipStar
+endif()
+if(NOT HIP_PLATFORM_IS_SPIRV)
+  add_subdirectory(module)  # uses --genco (AMD-specific)
+endif()
 add_subdirectory(channelDescriptor)
 add_subdirectory(executionControl)
 add_subdirectory(math)
 add_subdirectory(vector_types)
-add_subdirectory(atomics)
+if(NOT HIP_PLATFORM_IS_SPIRV)
+  add_subdirectory(atomics)  # system/safe/unsafe atomics not available on SPIR-V
+endif()
 add_subdirectory(complex)
-add_subdirectory(p2p)
-add_subdirectory(gcc)
+if(NOT HIP_PLATFORM_IS_SPIRV)
+  add_subdirectory(p2p)  # hipExtGetLinkTypeAndHopCount not in chipStar
+endif()
+if(NOT HIP_PLATFORM_IS_SPIRV)
+  add_subdirectory(gcc)  # requires AMD headers not available in chipStar
+endif()
 add_subdirectory(syncthreads)
 add_subdirectory(threadfence)
-add_subdirectory(virtualMemoryManagement)
+if(NOT HIP_PLATFORM_IS_SPIRV)
+  add_subdirectory(virtualMemoryManagement)  # hipMemSetAccess not in chipStar
+endif()
 
 
-if(NOT HIP_PLATFORM STREQUAL "spirv")
+if(NOT HIP_PLATFORM_IS_SPIRV)
     add_subdirectory(occupancy)
     add_subdirectory(surface)
     add_subdirectory(texture)
 endif()
 
-if(HIP_PLATFORM STREQUAL "amd")
+if(HIP_PLATFORM STREQUAL "amd" AND NOT HIP_PLATFORM_IS_SPIRV)
 add_subdirectory(callback)
 #add_subdirectory(clock)
 add_subdirectory(hip_specific)

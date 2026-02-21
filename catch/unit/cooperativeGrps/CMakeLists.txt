@@ -17,12 +17,17 @@ set(TEST_SRC
 )
 
 # Bugs in SPIRV-LLVM-Translator
-if(NOT HIP_PLATFORM STREQUAL "spirv")
+if(NOT HIP_PLATFORM_IS_SPIRV)
   set(TEST_SRC ${TEST_SRC}
   coalesced_group.cc
   coalesced_groups_shfl_down_old.cc
   coalesced_groups_shfl_up_old.cc
   coalesced_group_tiled_partition.cc)
+else()
+  list(REMOVE_ITEM TEST_SRC
+    hipCGCoalescedGroups_old.cc  # InvalidBitWidth: Invalid bit width in input: 128
+    hipCGThreadBlockTileTypeShfl_old.cc  # shfl ambiguity
+  )
 endif()
 
 if(HIP_PLATFORM STREQUAL "nvidia")

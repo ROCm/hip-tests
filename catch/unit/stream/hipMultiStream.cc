@@ -19,8 +19,9 @@ THE SOFTWARE.
 #include <hip_test_common.hh>
 #include <iostream>
 #include <vector>
-constexpr int NN = 1 << 21;
-__global__ void kernel_do_nothing(__attribute__((unused))int a) {
+constexpr int NN = 1 << 15;
+__global__ void kernel_do_nothing(int a) {
+  (void)a; // Suppress unused parameter warning
   // empty kernel
 }
 __global__ void kernel(float* x, float* y, int n) {

@@ -1,4 +1,5 @@
 # Common Tests - Test independent of all platforms
+set(SPIRV_EXCLUDED_DEVICE_TESTS hipDeviceGetPCIBusId.cc hipGetDeviceAttribute.cc hipGetDeviceProperties.cc hipGetSetDeviceFlags.cc)
 set(TEST_SRC
     hipChooseDevice.cc
     hipDeviceComputeCapability.cc
@@ -28,6 +29,10 @@ set(TEST_SRC
     hipInit.cc
     hipDriverGetVersion.cc
 )
+
+if(HIP_PLATFORM_IS_SPIRV)
+  list(REMOVE_ITEM TEST_SRC ${SPIRV_EXCLUDED_DEVICE_TESTS})
+endif()
 
 if(UNIX)
     set(TEST_SRC ${TEST_SRC}

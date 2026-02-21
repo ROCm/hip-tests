@@ -25,7 +25,7 @@ set(TEST_SRC
     hipLaunchCooperativeKernel.cc
 )
 
-if(HIP_PLATFORM MATCHES "amd")
+if(HIP_PLATFORM MATCHES "amd" AND NOT HIP_PLATFORM_IS_SPIRV)
     set(TEST_SRC ${TEST_SRC}
         hipExtLaunchKernel.cc
     )

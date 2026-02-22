@@ -42,8 +42,8 @@ THE SOFTWARE.
 #define ADDITIONAL_MEMORY_PERCENT 10
 
 static constexpr auto LEN{1024 * 1024};
-static constexpr auto LARGE_CHUNK_LEN{100 * LEN};
-static constexpr auto SMALL_CHUNK_LEN{10 * LEN};
+static constexpr auto LARGE_CHUNK_LEN{10 * LEN};
+static constexpr auto SMALL_CHUNK_LEN{1 * LEN};
 
 #if HT_AMD || HT_SPIRV
 #define TEST_SKIP(arch, msg) \

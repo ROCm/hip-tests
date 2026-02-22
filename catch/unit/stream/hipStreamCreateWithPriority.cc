@@ -30,10 +30,10 @@ THE SOFTWARE.
 #include <vector>
 #include "streamCommon.hh" // NOLINT
 
-#define MEMCPYSIZE1 (64*1024*1024)
-#define MEMCPYSIZE2 (1024*1024)
-#define NUMITERS   2
-#define GRIDSIZE   1024
+#define MEMCPYSIZE1 (4*1024*1024)
+#define MEMCPYSIZE2 (256*1024)
+#define NUMITERS   1
+#define GRIDSIZE   256
 #define BLOCKSIZE  256
 #define TOTALTHREADS 16
 

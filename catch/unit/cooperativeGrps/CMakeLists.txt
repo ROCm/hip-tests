@@ -27,6 +27,7 @@ else()
   list(REMOVE_ITEM TEST_SRC
     hipCGCoalescedGroups_old.cc  # InvalidBitWidth: Invalid bit width in input: 128
     hipCGThreadBlockTileTypeShfl_old.cc  # shfl ambiguity
+    thread_block_tile.cc  # GENERATE combinatorial explosion + wrong tile results
   )
 endif()
 

@@ -334,7 +334,11 @@ add_subdirectory(hipTestMain ${CATCH_BUILD_DIR}/hipTestMain)
 add_subdirectory(stress ${CATCH_BUILD_DIR}/stress)
 add_subdirectory(TypeQualifiers ${CATCH_BUILD_DIR}/TypeQualifiers)
 add_subdirectory(perftests ${CATCH_BUILD_DIR}/perftests)
-add_subdirectory(multiproc ${CATCH_BUILD_DIR}/multiproc)
+# chipStar/SPIR-V: multiproc tests use fork() which is incompatible with
+# OpenCL/Level Zero contexts (child process hangs on device init)
+if(NOT HIP_PLATFORM_IS_SPIRV)
+    add_subdirectory(multiproc ${CATCH_BUILD_DIR}/multiproc)
+endif()
 add_subdirectory(performance ${CATCH_BUILD_DIR}/performance)
 
 cmake_policy(POP)

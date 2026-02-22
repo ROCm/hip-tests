@@ -45,6 +45,19 @@ set(SPIRV_EXCLUDED_MEMORY_TESTS
     hipPointerSetAttribute.cc
     hipMallocMipmappedArray.cc
     hipFreeMipmappedArray.cc
+    # Managed memory advice not supported on SPIR-V
+    hipMemAdvise_old.cc
+    hipMemAdvise.cc
+    hipMemAdviseMmap.cc
+    hipMemPrefetchAsyncExtTsts.cc
+    hipMallocManaged.cc
+    hipMallocManagedFlagsTst.cc
+    hipMallocManaged_MultiScenario.cc
+    hipMemRangeGetAttribute.cc
+    hipMemRangeGetAttribute_old.cc
+    hipMemRangeGetAttributes.cc
+    hipMemRangeGetAttributes_old.cc
+    hipStreamAttachMemAsync.cc
 )
 
 # FIXME: cjatin

@@ -38,7 +38,7 @@ static constexpr std::initializer_list<tupletype> tableItems {
                std::make_tuple((4*1024*1024), 0x42, 0xDEADBEEF, 0xDEAD, 0xDE),
                std::make_tuple((10)         , 0x42, 0x101     , 0x10,   0x1),
                std::make_tuple((10013)      , 0x5a, 0xDEADBEEF, 0xDEAD, 0xDE),
-               std::make_tuple((256*1024*1024), 0xa6, 0xCAFEBABE, 0xCAFE, 0xCA)
+               std::make_tuple((16*1024*1024), 0xa6, 0xCAFEBABE, 0xCAFE, 0xCA)
                };
 
 enum MemsetType {

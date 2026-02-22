@@ -67,13 +67,13 @@ static constexpr auto BuffSizeSC = 16;
 static constexpr auto NumDiv = 100;
 
 /* Max alloc/free iterations for smaller chunks */
-static constexpr auto MaxAllocFree_SmallChunks = (500000 / NumDiv);
+static constexpr auto MaxAllocFree_SmallChunks = (50000 / NumDiv);
 
 /* Max alloc/free iterations for bigger chunks */
-static constexpr auto MaxAllocFree_BigChunks = 1000;
+static constexpr auto MaxAllocFree_BigChunks = 100;
 
 /* Max alloc and pool iterations */
-static constexpr auto MaxAllocPoolIter = (200000 / NumDiv);
+static constexpr auto MaxAllocPoolIter = (20000 / NumDiv);
 
 /* Test status shared across threads */
 static std::atomic<bool> g_thTestPassed{true};

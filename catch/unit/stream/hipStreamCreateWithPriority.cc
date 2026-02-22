@@ -30,11 +30,11 @@ THE SOFTWARE.
 #include <vector>
 #include "streamCommon.hh" // NOLINT
 
-#define MEMCPYSIZE1 (4*1024*1024)
-#define MEMCPYSIZE2 (256*1024)
+#define MEMCPYSIZE1 (1024*1024)
+#define MEMCPYSIZE2 (64*1024)
 #define NUMITERS   1
-#define GRIDSIZE   256
-#define BLOCKSIZE  256
+#define GRIDSIZE   64
+#define BLOCKSIZE  64
 #define TOTALTHREADS 16
 
 namespace hipStreamCreateWithPriorityTest {

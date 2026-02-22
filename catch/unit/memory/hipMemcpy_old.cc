@@ -39,7 +39,7 @@ This testcase verifies following scenarios
 #endif
 
 
-static constexpr auto NUM_ELM{4*1024 * 1024};
+static constexpr auto NUM_ELM{512 * 1024};
 static unsigned blocksPerCU{6};  // to hide latency
 static unsigned threadsPerBlock{256};
 

@@ -113,6 +113,19 @@ set(TEST_SRC
     hipMemRangeGetAttribute.cc
     hipMemRangeGetAttribute_old.cc)
 
+# Exclude managed memory tests for SPIR-V (not supported)
+if(HIP_PLATFORM_IS_SPIRV)
+  list(REMOVE_ITEM TEST_SRC
+    hipMallocManaged_MultiScenario.cc
+    hipMallocManagedFlagsTst.cc
+    hipMemPrefetchAsyncExtTsts.cc
+    hipMemAdviseMmap.cc
+    hipMallocManaged.cc
+    hipMemRangeGetAttribute.cc
+    hipMemRangeGetAttribute_old.cc
+  )
+endif()
+
 if(HIP_PLATFORM MATCHES "amd" AND NOT HIP_PLATFORM_IS_SPIRV)
   set(TEST_SRC
       ${TEST_SRC}
@@ -260,7 +273,7 @@ hip_add_exe_to_target(NAME MemoryTest2
   TEST_SRC ${TEST_SRC}
   TEST_TARGET_NAME build_tests COMMON_SHARED_SRC ${COMMON_SHARED_SRC})
 
-if(HIP_PLATFORM MATCHES "amd")
+if(HIP_PLATFORM MATCHES "amd" AND NOT HIP_PLATFORM_IS_SPIRV)
   set(TEST_SRC
     hipSVMTestByteGranularity.cpp
     hipSVMTestFineGrainMemoryConsistency.cpp

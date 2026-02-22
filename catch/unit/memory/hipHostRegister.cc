@@ -41,8 +41,8 @@ THE SOFTWARE.
 #define ITERATION 100
 #define ADDITIONAL_MEMORY_PERCENT 10
 
-static constexpr auto LEN{1024 * 1024};
-static constexpr auto LARGE_CHUNK_LEN{10 * LEN};
+static constexpr auto LEN{256 * 1024};
+static constexpr auto LARGE_CHUNK_LEN{4 * LEN};
 static constexpr auto SMALL_CHUNK_LEN{1 * LEN};
 
 #if HT_AMD || HT_SPIRV

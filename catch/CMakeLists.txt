@@ -20,6 +20,7 @@ endif()
 if(HIP_PLATFORM STREQUAL "spirv")
     set(HIP_PLATFORM "amd")
     set(HIP_PLATFORM_IS_SPIRV ON)
+    add_compile_definitions(__HIP_PLATFORM_SPIRV__=)
 endif()
 
 if(WIN32)

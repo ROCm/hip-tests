@@ -22,6 +22,7 @@ THE SOFTWARE.
 
 #pragma once
 
+#include <hip_test_context.hh>
 #include <hip/hip_runtime_api.h>
 
 constexpr hipError_t kErrorEnumerators[] = {hipSuccess,

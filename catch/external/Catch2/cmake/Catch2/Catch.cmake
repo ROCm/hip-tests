@@ -143,13 +143,16 @@ function(catch_discover_tests_compile_time_detection TARGET TEST_SET)
 
   # Define rule to generate test list for aforementioned test executable
   set(ctest_include_file "${CMAKE_CURRENT_BINARY_DIR}/${TEST_SET}_include-${args_hash}.cmake")
-  set(ctest_tests_file "${CMAKE_CURRENT_BINARY_DIR}/${TEST_SET}_tests-${args_hash}.cmake")
+  set(_ctest_include_content "")
 
   foreach(EXE_NAME ${TARGET})
+    set(_ctest_tests_file "${CMAKE_CURRENT_BINARY_DIR}/${TEST_SET}_tests-${args_hash}-${EXE_NAME}.cmake")
+    get_filename_component(_ctest_file_name ${_ctest_tests_file} NAME)
+    set(_exe_suffix "_${EXE_NAME}")
 
     add_custom_command(
       TARGET ${EXE_NAME} POST_BUILD
-      BYPRODUCTS "${ctest_tests_file}"
+      BYPRODUCTS "${_ctest_tests_file}"
       COMMAND "${CMAKE_COMMAND}"
               -D "TEST_TARGET=${EXE_NAME}"
               -D "ANALYSIS_COMMAND=${SKIP_DOUBLE_TESTS}"
@@ -160,28 +163,21 @@ function(catch_discover_tests_compile_time_detection TARGET TEST_SET)
               -D "TEST_EXTRA_ARGS=${_EXTRA_ARGS}"
               -D "TEST_PROPERTIES=${_PROPERTIES}"
               -D "TEST_PREFIX=${_TEST_PREFIX}"
-              -D "TEST_SUFFIX=${_TEST_SUFFIX}"
+              -D "TEST_SUFFIX=${_TEST_SUFFIX}${_exe_suffix}"
               -D "TEST_LIST=${_TEST_LIST}"
               -D "TEST_REPORTER=${_REPORTER}"
               -D "TEST_OUTPUT_DIR=${_OUTPUT_DIR}"
               -D "TEST_OUTPUT_PREFIX=${_OUTPUT_PREFIX}"
               -D "TEST_OUTPUT_SUFFIX=${_OUTPUT_SUFFIX}"
-              -D "CTEST_FILE=${ctest_tests_file}"
+              -D "CTEST_FILE=${_ctest_tests_file}"
               -P "${_CATCH_DISCOVER_TESTS_SCRIPT}"
       VERBATIM
     )
+    string(APPEND _ctest_include_content "if(EXISTS \"${_ctest_file_name}\")\n  include(\"${_ctest_file_name}\")\nendif()\n")
   endforeach()
 
   file(RELATIVE_PATH ctestincludepath ${CMAKE_CURRENT_BINARY_DIR} ${ctest_include_file})
-  file(RELATIVE_PATH ctestfilepath ${CMAKE_CURRENT_BINARY_DIR} ${ctest_tests_file})
-
-  file(WRITE "${ctest_include_file}"
-    "if(EXISTS \"${ctestfilepath}\")\n"
-    "  include(\"${ctestfilepath}\")\n"
-    "else()\n"
-    "  message(WARNING \"Test ${TARGET} not built yet.\")\n"
-    "endif()\n"
-  )
+  file(WRITE "${ctest_include_file}" "${_ctest_include_content}")
 
   if(NOT ${CMAKE_VERSION} VERSION_LESS "3.10.0")
     # Add discovered tests to directory TEST_INCLUDE_FILES

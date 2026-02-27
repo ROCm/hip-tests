@@ -135,5 +135,6 @@ endforeach()
 # properties on the tests
 add_command(set ${TEST_LIST} ${tests})
 
-# Write CTest script
-file(APPEND "${CTEST_FILE}" "${script}")
+# Write CTest script (WRITE not APPEND - each executable has its own file,
+# and we overwrite on rebuild to avoid duplicate test accumulation)
+file(WRITE "${CTEST_FILE}" "${script}")

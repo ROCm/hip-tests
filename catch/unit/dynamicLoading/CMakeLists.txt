@@ -31,17 +31,43 @@ hip_add_exe_to_target(NAME dynamicLoading
                       TEST_SRC ${TEST_SRC}
                       TEST_TARGET_NAME build_tests)
 
+set(LIBLAZYLOAD_OUT "${CMAKE_CURRENT_BINARY_DIR}/libLazyLoad.so")
+set(BIT_EXTRACT_OUT "${CMAKE_CURRENT_BINARY_DIR}/bit_extract_kernel.code")
+set(VECADD_OUT "${CMAKE_CURRENT_BINARY_DIR}/vecadd.cc")
+
 if(HIP_PLATFORM MATCHES "amd")
-add_custom_target(libLazyLoad.so COMMAND ${CMAKE_CXX_COMPILER} -fPIC -lpthread -shared ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/liblazyLoad.cc -I${CMAKE_CURRENT_SOURCE_DIR}/../../include -I${CMAKE_CURRENT_SOURCE_DIR}/../../external/Catch2 -L${HIP_PATH}/${CMAKE_INSTALL_LIBDIR} -o libLazyLoad.so)
+add_custom_command(OUTPUT "${LIBLAZYLOAD_OUT}"
+  COMMAND ${CMAKE_CXX_COMPILER} -fPIC -lpthread -shared ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/liblazyLoad.cc -I${CMAKE_CURRENT_SOURCE_DIR}/../../include -I${CMAKE_CURRENT_SOURCE_DIR}/../../external/Catch2 -L${HIP_PATH}/${CMAKE_INSTALL_LIBDIR} -o libLazyLoad.so
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  COMMENT "Building libLazyLoad.so"
+  MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/liblazyLoad.cc)
 elseif(HIP_PLATFORM MATCHES "nvidia")
-add_custom_target(libLazyLoad.so COMMAND ${CMAKE_CXX_COMPILER} -Xcompiler -fPIC -lpthread -shared ${CMAKE_CURRENT_SOURCE_DIR}/liblazyLoad.cc -I${CMAKE_CURRENT_SOURCE_DIR}/../../include -I${CMAKE_CURRENT_SOURCE_DIR}/../../external/Catch2 -I${HIP_PATH}/include/ -o libLazyLoad.so)
+add_custom_command(OUTPUT "${LIBLAZYLOAD_OUT}"
+  COMMAND ${CMAKE_CXX_COMPILER} -Xcompiler -fPIC -lpthread -shared ${CMAKE_CURRENT_SOURCE_DIR}/liblazyLoad.cc -I${CMAKE_CURRENT_SOURCE_DIR}/../../include -I${CMAKE_CURRENT_SOURCE_DIR}/../../external/Catch2 -I${HIP_PATH}/include/ -o libLazyLoad.so
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  COMMENT "Building libLazyLoad.so"
+  MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/liblazyLoad.cc)
 elseif(HIP_PLATFORM MATCHES "spirv")
-add_custom_target(libLazyLoad.so COMMAND ${CMAKE_CXX_COMPILER} -fPIC -lpthread -shared ${CMAKE_CURRENT_SOURCE_DIR}/liblazyLoad.cc -I${CMAKE_CURRENT_SOURCE_DIR}/../../include -I${CMAKE_CURRENT_SOURCE_DIR}/../../external/Catch2 -I${HIP_PATH}/include/ -o libLazyLoad.so)
+add_custom_command(OUTPUT "${LIBLAZYLOAD_OUT}"
+  COMMAND ${CMAKE_CXX_COMPILER} -fPIC -lpthread -shared ${CMAKE_CURRENT_SOURCE_DIR}/liblazyLoad.cc -I${CMAKE_CURRENT_SOURCE_DIR}/../../include -I${CMAKE_CURRENT_SOURCE_DIR}/../../external/Catch2 -I${HIP_PATH}/include/ -o libLazyLoad.so
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  COMMENT "Building libLazyLoad.so"
+  MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/liblazyLoad.cc)
 endif()
 
-add_custom_target(bit_extract_kernel.code COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/bit_extract_kernel.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/../dynamicLoading/bit_extract_kernel.code -I${HIP_PATH}/include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include -L${HIP_PATH}/${CMAKE_INSTALL_LIBDIR})
+add_custom_command(OUTPUT "${BIT_EXTRACT_OUT}"
+  COMMAND ${CMAKE_CXX_COMPILER} --genco ${OFFLOAD_ARCH_STR} ${CMAKE_CURRENT_SOURCE_DIR}/bit_extract_kernel.cpp -o ${BIT_EXTRACT_OUT} -I${HIP_PATH}/include/ -I${CMAKE_CURRENT_SOURCE_DIR}/../../include -L${HIP_PATH}/${CMAKE_INSTALL_LIBDIR}
+  COMMENT "Building bit_extract_kernel.code"
+  MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/bit_extract_kernel.cpp)
 
-add_custom_target(vecadd.cc COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/vecadd.cc ${CMAKE_CURRENT_BINARY_DIR}/../dynamicLoading/)
+add_custom_command(OUTPUT "${VECADD_OUT}"
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/vecadd.cc ${VECADD_OUT}
+  COMMENT "Copying vecadd.cc"
+  MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/vecadd.cc)
+
+add_custom_target(build_libLazyLoad DEPENDS "${LIBLAZYLOAD_OUT}")
+add_custom_target(build_bit_extract_kernel DEPENDS "${BIT_EXTRACT_OUT}")
+add_custom_target(build_vecadd DEPENDS "${VECADD_OUT}")
 
 if(HIP_PLATFORM MATCHES "amd")
 hip_add_exe_to_target(NAME Dynamic
@@ -49,5 +75,5 @@ hip_add_exe_to_target(NAME Dynamic
                       TEST_TARGET_NAME build_tests
                       LINKER_LIBS ${CMAKE_DL_LIBS})
 endif()
-add_dependencies(build_tests bit_extract_kernel.code libLazyLoad.so vecadd.cc)
+add_dependencies(build_tests build_bit_extract_kernel build_libLazyLoad build_vecadd)
 endif()

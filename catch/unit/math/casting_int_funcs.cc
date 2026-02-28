@@ -34,7 +34,7 @@ THE SOFTWARE.
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Positive") {                                               \
     T1 (*ref)(T2) = kern_name##_ref;                                                               \
-    CastIntRangeTest(kern_name##_kernel, ref, EqValidatorBuilderFactory<T1>());                    \
+    CastIntRangeTest(kernel_cast<kernel_sig<T1, T2>>(kern_name##_kernel), ref, EqValidatorBuilderFactory<T1>());                    \
   }
 
 #define CAST_INT2FLOAT_RN_TEST_DEF(kern_name, T1, T2)                                              \
@@ -43,7 +43,7 @@ THE SOFTWARE.
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Positive") {                                               \
     T1 (*ref)(T2) = kern_name##_ref;                                                               \
-    CastIntRangeTest(kern_name##_kernel, ref, EqValidatorBuilderFactory<T1>());                    \
+    CastIntRangeTest(kernel_cast<kernel_sig<T1, T2>>(kern_name##_kernel), ref, EqValidatorBuilderFactory<T1>());                    \
   }
 
 /**
@@ -258,7 +258,7 @@ TEST_CASE("Unit_Device___uint2double_Negative_RTC") { NegativeTestRTCWrapper<3>(
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Positive") {                                               \
     T1 (*ref)(T2) = kern_name##_ref;                                                               \
-    CastIntBruteForceTest(kern_name##_kernel, ref, EqValidatorBuilderFactory<T1>());               \
+    CastIntBruteForceTest(kernel_cast<kernel_sig<T1, T2>>(kern_name##_kernel), ref, EqValidatorBuilderFactory<T1>());               \
   }
 
 #define CAST_LL2FLOAT_RN_TEST_DEF(kern_name, T1, T2)                                               \
@@ -267,7 +267,7 @@ TEST_CASE("Unit_Device___uint2double_Negative_RTC") { NegativeTestRTCWrapper<3>(
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Positive") {                                               \
     T1 (*ref)(T2) = kern_name##_ref;                                                               \
-    CastIntBruteForceTest(kern_name##_kernel, ref, EqValidatorBuilderFactory<T1>());               \
+    CastIntBruteForceTest(kernel_cast<kernel_sig<T1, T2>>(kern_name##_kernel), ref, EqValidatorBuilderFactory<T1>());               \
   }
 
 /**
@@ -595,7 +595,7 @@ CAST_KERNEL_DEF(__int_as_float, float, int)
  */
 TEST_CASE("Unit_Device___int_as_float_Positive") {
   float (*ref)(int) = type2_as_type1_ref<float, int>;
-  CastIntRangeTest(__int_as_float_kernel, ref, EqValidatorBuilderFactory<float>());
+  CastIntRangeTest(kernel_cast<kernel_sig<float, int>>(__int_as_float_kernel), ref, EqValidatorBuilderFactory<float>());
 }
 
 /**
@@ -629,7 +629,7 @@ CAST_KERNEL_DEF(__uint_as_float, float, unsigned int)
  */
 TEST_CASE("Unit_Device___uint_as_float_Positive") {
   float (*ref)(unsigned int) = type2_as_type1_ref<float, unsigned int>;
-  CastIntRangeTest(__uint_as_float_kernel, ref, EqValidatorBuilderFactory<float>());
+  CastIntRangeTest(kernel_cast<kernel_sig<float, unsigned int>>(__uint_as_float_kernel), ref, EqValidatorBuilderFactory<float>());
 }
 
 /**
@@ -664,7 +664,7 @@ CAST_KERNEL_DEF(__longlong_as_double, double, long long int)
  */
 TEST_CASE("Unit_Device___longlong_as_double_Positive") {
   double (*ref)(long long int) = type2_as_type1_ref<double, long long int>;
-  CastIntBruteForceTest(__longlong_as_double_kernel, ref, EqValidatorBuilderFactory<double>());
+  CastIntBruteForceTest(kernel_cast<kernel_sig<double, long long>>(__longlong_as_double_kernel), ref, EqValidatorBuilderFactory<double>());
 }
 
 /**
@@ -717,7 +717,7 @@ double __hiloint2double_ref(int hi, int lo) {
  */
 TEST_CASE("Unit_Device___hiloint2double_Positive") {
   double (*ref)(int, int) = __hiloint2double_ref;
-  CastBinaryIntRangeTest(__hiloint2double_kernel, ref, EqValidatorBuilderFactory<double>());
+  CastBinaryIntRangeTest(kernel_cast<kernel_sig<double, int, int>>(__hiloint2double_kernel), ref, EqValidatorBuilderFactory<double>());
 }
 
 /**

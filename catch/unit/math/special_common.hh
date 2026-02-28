@@ -41,7 +41,7 @@ namespace cg = cooperative_groups;
     }                                                                                              \
   }
 
-template <typename T> using kernel_bessel_n_sig = void (*)(T*, const size_t, int*, T*);
+template <typename T> using kernel_bessel_n_sig = void (*)(T* const, const size_t, int*, T* const);
 
 template <typename T> using ref_bessel_n_sig = T (*)(int, T);
 

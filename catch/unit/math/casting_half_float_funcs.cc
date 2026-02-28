@@ -35,9 +35,9 @@ THE SOFTWARE.
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Accuracy_Limited_Positive") {                              \
     Float16 (*ref)(float) = kern_name##_ref;                                                       \
-    UnarySinglePrecisionRangeTest(kern_name##_kernel, ref, EqValidatorBuilderFactory<Float16>(),   \
+    UnarySinglePrecisionRangeTest(kernel_cast<kernel_sig<Float16, float>>(kern_name##_kernel), ref, EqValidatorBuilderFactory<Float16>(),   \
                                   std::numeric_limits<float>::min(), 0.f);                         \
-    UnarySinglePrecisionRangeTest(kern_name##_kernel, ref, EqValidatorBuilderFactory<Float16>(),   \
+    UnarySinglePrecisionRangeTest(kernel_cast<kernel_sig<Float16, float>>(kern_name##_kernel), ref, EqValidatorBuilderFactory<Float16>(),   \
                                   0.0001f, std::numeric_limits<float>::max());                     \
   }
 
@@ -47,7 +47,7 @@ THE SOFTWARE.
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Accuracy_Positive") {                                      \
     Float16 (*ref)(float) = kern_name##_ref;                                                       \
-    UnarySinglePrecisionRangeTest(kern_name##_kernel, ref, EqValidatorBuilderFactory<Float16>(),   \
+    UnarySinglePrecisionRangeTest(kernel_cast<kernel_sig<Float16, float>>(kern_name##_kernel), ref, EqValidatorBuilderFactory<Float16>(),   \
                                   std::numeric_limits<float>::min(),                               \
                                   std::numeric_limits<float>::max());                              \
   }
@@ -243,5 +243,5 @@ CAST_REF_DEF(__half2float, float, Float16)
  */
 TEST_CASE("Unit_Device___half2float_Accuracy_Positive") {
   float (*ref)(Float16) = __half2float_ref;
-  UnaryHalfPrecisionTest(__half2float_kernel, ref, EqValidatorBuilderFactory<float>());
+  UnaryHalfPrecisionTest(kernel_cast<kernel_sig<float, Float16>>(__half2float_kernel), ref, EqValidatorBuilderFactory<float>());
 }

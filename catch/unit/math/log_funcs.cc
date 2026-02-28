@@ -222,7 +222,7 @@ template <typename T> int ilogb_ref(T arg) {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_Device_ilogbf_Accuracy_Positive") {
-  UnarySinglePrecisionTest(ilogb_kernel<float>, ilogb_ref<double>,
+  UnarySinglePrecisionTest(kernel_cast<kernel_sig<int, float>>(ilogb_kernel<float>), ilogb_ref<double>,
                            EqValidatorBuilderFactory<int>());
 }
 
@@ -241,7 +241,7 @@ TEST_CASE("Unit_Device_ilogbf_Accuracy_Positive") {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_Device_ilogb_Accuracy_Positive") {
-  UnaryDoublePrecisionTest(ilogb_kernel<double>, ilogb_ref<long double>,
+  UnaryDoublePrecisionTest(kernel_cast<kernel_sig<int, double>>(ilogb_kernel<double>), ilogb_ref<long double>,
                            EqValidatorBuilderFactory<int>());
 }
 

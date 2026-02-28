@@ -241,6 +241,6 @@ void QuaternaryFloatingPointTest(kernel_sig<T, TArg, TArg, TArg, TArg> kernel,
     RT (*ref)(RT, RT, RT, RT) = ref_func;                                                          \
     const auto ulp = std::is_same_v<float, TestType> ? sp_ulp : dp_ulp;                            \
                                                                                                    \
-    QuaternaryFloatingPointTest(kern_name##_kernel<TestType>, ref,                                 \
+    QuaternaryFloatingPointTest(kernel_cast<kernel_sig<TestType, TestType, TestType, TestType, TestType>>(kern_name##_kernel<TestType>), ref,                                 \
                                 ULPValidatorBuilderFactory<TestType>(ulp));                        \
   }

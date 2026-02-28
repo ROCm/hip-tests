@@ -57,7 +57,7 @@ __global__ void fdividef_kernel(float* const ys, const size_t num_xs, float* con
 
 TEST_CASE("Unit_Device_fdividef_Accuracy_Positive") {
   double (*ref)(double, double) = [](double x1, double x2) { return x1 / x2; };
-  BinaryFloatingPointTest(fdividef_kernel, ref, ULPValidatorBuilderFactory<float>(0));
+  BinaryFloatingPointTest(kernel_cast<kernel_sig<float, float, float>>(fdividef_kernel), ref, ULPValidatorBuilderFactory<float>(0));
 }
 
 TEST_CASE("Unit_Device_fdividef_Negative_RTC") { NegativeTestRTCWrapper<4>(kFdividef); }
@@ -75,12 +75,12 @@ TEST_CASE("Unit_Device_fdividef_Negative_RTC") { NegativeTestRTCWrapper<4>(kFdiv
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Accuracy_Positive - float") {                              \
     bool (*ref)(double) = ref_func;                                                                \
-    UnarySinglePrecisionTest(kern_name##_kernel<float>, ref, EqValidatorBuilderFactory<bool>());   \
+    UnarySinglePrecisionTest(kernel_cast<kernel_sig<bool, float>>(kern_name##_kernel<float>), ref, EqValidatorBuilderFactory<bool>());   \
   }                                                                                                \
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Accuracy_Positive - double") {                             \
     bool (*ref)(long double) = ref_func;                                                           \
-    UnaryDoublePrecisionTest(kern_name##_kernel<double>, ref, EqValidatorBuilderFactory<bool>());  \
+    UnaryDoublePrecisionTest(kernel_cast<kernel_sig<bool, double>>(kern_name##_kernel<double>), ref, EqValidatorBuilderFactory<bool>());  \
   }
 
 MATH_BOOL_RETURNING_FUNCTION_TEST_DEF(isfinite, std::isfinite)

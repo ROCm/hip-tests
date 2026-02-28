@@ -58,7 +58,7 @@ TEST_CASE("Unit_Device_floor_floorf_Negative_RTC") { NegativeTestRTCWrapper<4>(k
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Accuracy_Positive - float") {                              \
     lt (*ref)(double) = ref_func;                                                                  \
-    UnarySinglePrecisionRangeTest(kern_name##_kernel<float, lt>, ref,                              \
+    UnarySinglePrecisionRangeTest(kernel_cast<kernel_sig<lt, float>>(kern_name##_kernel<float, lt>), ref,                              \
                                   EqValidatorBuilderFactory<lt>(),                                 \
                                   static_cast<float>(std::numeric_limits<lt>::lowest()),           \
                                   static_cast<float>(std::numeric_limits<lt>::max()));             \
@@ -66,7 +66,7 @@ TEST_CASE("Unit_Device_floor_floorf_Negative_RTC") { NegativeTestRTCWrapper<4>(k
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Accuracy_Positive - double") {                             \
     lt (*ref)(long double) = ref_func;                                                             \
-    UnaryDoublePrecisionBruteForceTest(kern_name##_kernel<double, lt>, ref,                        \
+    UnaryDoublePrecisionBruteForceTest(kernel_cast<kernel_sig<lt, double>>(kern_name##_kernel<double, lt>), ref,                        \
                                        EqValidatorBuilderFactory<lt>(),                            \
                                        static_cast<double>(std::numeric_limits<lt>::lowest()),     \
                                        static_cast<double>(std::numeric_limits<lt>::max()));       \
@@ -112,7 +112,7 @@ TEMPLATE_TEST_CASE("Unit_Device_remquo_Accuracy_Positive", "", float, double) {
   const auto ulp_builder = ULPValidatorBuilderFactory<TestType>(0);
   const auto eq_builder = EqValidatorBuilderFactory<int>();
 
-  BinaryFloatingPointTest(remquo_kernel<TestType>, ref,
+  BinaryFloatingPointTest(kernel_cast<kernel_sig<std::pair<TestType, int>, TestType, TestType>>(remquo_kernel<TestType>), ref,
                           PairValidatorBuilderFactory<TestType, int>(ulp_builder, eq_builder));
 }
 
@@ -140,13 +140,13 @@ template <typename T> std::pair<T, T> modf_wrapper(T x) {
 
 TEST_CASE("Unit_Device_modf_Accuracy_Positive - float") {
   UnarySinglePrecisionTest(
-      modf_kernel<float>, modf_wrapper<double>,
+      kernel_cast<kernel_sig<std::pair<float, float>, float>>(modf_kernel<float>), modf_wrapper<double>,
       PairValidatorBuilderFactory<float>(ULPValidatorBuilderFactory<float>(0)));
 }
 
 TEST_CASE("Unit_Device_modf_Accuracy_Positive - double") {
   UnaryDoublePrecisionTest(
-      modf_kernel<double>, modf_wrapper<long double>,
+      kernel_cast<kernel_sig<std::pair<double, double>, double>>(modf_kernel<double>), modf_wrapper<long double>,
       PairValidatorBuilderFactory<double>(ULPValidatorBuilderFactory<double>(0)));
 }
 

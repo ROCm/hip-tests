@@ -229,13 +229,13 @@ void UnaryDoublePrecisionTest(kernel_sig<T, double> kernel, ref_sig<RT, RTArg> r
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Accuracy_Positive - float") {                              \
     double (*ref)(double) = ref_func;                                                              \
-    UnarySinglePrecisionTest(kern_name##_kernel<float>, ref,                                       \
+    UnarySinglePrecisionTest(kernel_cast<kernel_sig<float, float>>(kern_name##_kernel<float>), ref,                                       \
                              ULPValidatorBuilderFactory<float>(sp_ulp));                           \
   }                                                                                                \
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Accuracy_Positive - double") {                             \
     long double (*ref)(long double) = ref_func;                                                    \
-    UnaryDoublePrecisionTest(kern_name##_kernel<double>, ref,                                      \
+    UnaryDoublePrecisionTest(kernel_cast<kernel_sig<double, double>>(kern_name##_kernel<double>), ref,                                      \
                              ULPValidatorBuilderFactory<double>(dp_ulp));                          \
   }
 

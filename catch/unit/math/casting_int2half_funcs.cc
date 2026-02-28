@@ -35,7 +35,7 @@ THE SOFTWARE.
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Accuracy_Positive") {                                      \
     Float16 (*ref)(T) = kern_name##_ref;                                                           \
-    CastIntRangeTest(kern_name##_kernel, ref, EqValidatorBuilderFactory<Float16>());               \
+    CastIntRangeTest(kernel_cast<kernel_sig<Float16, T>>(kern_name##_kernel), ref, EqValidatorBuilderFactory<Float16>());               \
   }
 
 /**
@@ -284,7 +284,7 @@ CAST_INT2HALF_RN_TEST_DEF(__ushort2half_ru, unsigned short)
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Accuracy_Positive") {                                      \
     Float16 (*ref)(T) = kern_name##_ref;                                                           \
-    CastIntBruteForceTest(kern_name##_kernel, ref, EqValidatorBuilderFactory<Float16>());          \
+    CastIntBruteForceTest(kernel_cast<kernel_sig<Float16, T>>(kern_name##_kernel), ref, EqValidatorBuilderFactory<Float16>());          \
   }
 
 /**
@@ -424,7 +424,7 @@ CAST_KERNEL_DEF(__short_as_half, Float16, short)
  */
 TEST_CASE("Unit_Device___short_as_half_Accuracy_Positive") {
   Float16 (*ref)(short) = type2_as_type1_ref<Float16, short>;
-  CastIntBruteForceTest(__short_as_half_kernel, ref, EqValidatorBuilderFactory<Float16>());
+  CastIntBruteForceTest(kernel_cast<kernel_sig<Float16, long long>>(__short_as_half_kernel), ref, EqValidatorBuilderFactory<Float16>());
 }
 
 CAST_KERNEL_DEF(__ushort_as_half, Float16, unsigned short)
@@ -444,5 +444,5 @@ CAST_KERNEL_DEF(__ushort_as_half, Float16, unsigned short)
  */
 TEST_CASE("Unit_Device___ushort_as_half_Accuracy_Positive") {
   Float16 (*ref)(unsigned short) = type2_as_type1_ref<Float16, unsigned short>;
-  CastIntBruteForceTest(__ushort_as_half_kernel, ref, EqValidatorBuilderFactory<Float16>());
+  CastIntBruteForceTest(kernel_cast<kernel_sig<Float16, long long>>(__ushort_as_half_kernel), ref, EqValidatorBuilderFactory<Float16>());
 }

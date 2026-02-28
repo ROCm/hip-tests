@@ -91,14 +91,14 @@ template <typename T> std::pair<T, T> sincos(T x) { return {std::sin(x), std::co
 
 TEST_CASE("Unit_Device_sincos_Accuracy_Positive - float") {
   UnarySinglePrecisionTest(
-      sincos_kernel<float>, sincos<double>,
+      kernel_cast<kernel_sig<std::pair<float, float>, float>>(sincos_kernel<float>), sincos<double>,
       PairValidatorBuilderFactory<float>(ULPValidatorBuilderFactory<float>(2)));
 }
 
 TEST_CASE("Unit_Device_sincos_Accuracy_Positive - double") {
   const auto validator_builder =
       PairValidatorBuilderFactory<double>(ULPValidatorBuilderFactory<double>(2));
-  UnaryDoublePrecisionTest(sincos_kernel<double>, sincos<long double>, validator_builder);
+  UnaryDoublePrecisionTest(kernel_cast<kernel_sig<std::pair<double, double>, double>>(sincos_kernel<double>), sincos<long double>, validator_builder);
 }
 
 TEST_CASE("Unit_Device_sincos_sincosf_Negative_RTC") { NegativeTestRTCWrapper<36>(kSincos); }
@@ -124,14 +124,14 @@ template <typename T> std::pair<T, T> sincospi(T x) {
 
 TEST_CASE("Unit_Device_sincospi_Accuracy_Positive - float") {
   UnarySinglePrecisionTest(
-      sincospi_kernel<float>, sincospi<double>,
+      kernel_cast<kernel_sig<std::pair<float, float>, float>>(sincospi_kernel<float>), sincospi<double>,
       PairValidatorBuilderFactory<float>(ULPValidatorBuilderFactory<float>(2)));
 }
 
 TEST_CASE("Unit_Device_sincospi_Accuracy_Positive - double") {
   const auto validator_builder =
       PairValidatorBuilderFactory<double>(ULPValidatorBuilderFactory<double>(2));
-  UnaryDoublePrecisionTest(sincospi_kernel<double>, sincospi<long double>, validator_builder);
+  UnaryDoublePrecisionTest(kernel_cast<kernel_sig<std::pair<double, double>, double>>(sincospi_kernel<double>), sincospi<long double>, validator_builder);
 }
 
 TEST_CASE("Unit_Device_sincospi_sincospif_Negative_RTC") { NegativeTestRTCWrapper<36>(kSincospi); }

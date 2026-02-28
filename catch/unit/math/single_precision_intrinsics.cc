@@ -40,7 +40,7 @@ THE SOFTWARE.
 
 #define MATH_UNARY_SP_TEST_DEF_IMPL(func_name, ref_func, validator_builder)                        \
   TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive") {                                      \
-    UnarySinglePrecisionTest(func_name##_kernel, ref_func, validator_builder);                     \
+    UnarySinglePrecisionTest(kernel_cast<kernel_sig<float, float>>(func_name##_kernel), ref_func, validator_builder);                     \
   }
 
 #define MATH_UNARY_SP_TEST_DEF(func_name, ref_func)                                                \
@@ -366,7 +366,7 @@ MATH_UNARY_SP_TEST_DEF_IMPL(__sincosf_cos, static_cast<double (*)(double)>(std::
 
 #define MATH_BINARY_SP_TEST_DEF_IMPL(func_name, ref_func, validator_builder)                       \
   TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive") {                                      \
-    BinaryFloatingPointTest(func_name##_kernel, ref_func, validator_builder);                      \
+    BinaryFloatingPointTest(kernel_cast<kernel_sig<float, float, float>>(func_name##_kernel), ref_func, validator_builder);                      \
   }
 
 #define MATH_BINARY_SP_TEST_DEF(func_name, ref_func)                                               \
@@ -500,7 +500,7 @@ MATH_BINARY_SP_TEST_DEF(__fdividef, __fdiv_rn_ref);
 
 #define MATH_TERNARY_SP_TEST_DEF_IMPL(func_name, ref_func, validator_builder)                      \
   TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive") {                                      \
-    TernaryFloatingPointTest(func_name##_kernel, ref_func, validator_builder);                     \
+    TernaryFloatingPointTest(kernel_cast<kernel_sig<float, float, float, float>>(func_name##_kernel), ref_func, validator_builder);                     \
   }
 
 #define MATH_TERNARY_SP_TEST_DEF(func_name, ref_func, validator_builder)                           \

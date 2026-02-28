@@ -34,7 +34,7 @@ THE SOFTWARE.
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Positive") {                                               \
     T (*ref)(float) = kern_name##_ref;                                                             \
-    UnarySinglePrecisionRangeTest(kern_name##_kernel, ref, EqValidatorBuilderFactory<T>(),         \
+    UnarySinglePrecisionRangeTest(kernel_cast<kernel_sig<T, float>>(kern_name##_kernel), ref, EqValidatorBuilderFactory<T>(),         \
                                   std::numeric_limits<float>::lowest(),                            \
                                   std::numeric_limits<float>::max());                              \
   }
@@ -45,7 +45,7 @@ THE SOFTWARE.
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Positive") {                                               \
     T (*ref)(float) = kern_name##_ref;                                                             \
-    UnarySinglePrecisionRangeTest(kern_name##_kernel, ref, EqValidatorBuilderFactory<T>(),         \
+    UnarySinglePrecisionRangeTest(kernel_cast<kernel_sig<T, float>>(kern_name##_kernel), ref, EqValidatorBuilderFactory<T>(),         \
                                   std::numeric_limits<float>::lowest(),                            \
                                   std::numeric_limits<float>::max());                              \
   }
@@ -205,7 +205,7 @@ TEST_CASE("Unit_Device___float2uint_Negative_RTC") { NegativeTestRTCWrapper<12>(
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Positive") {                                               \
     T (*ref)(float) = kern_name##_ref;                                                             \
-    UnarySinglePrecisionRangeTest(kern_name##_kernel, ref, EqValidatorBuilderFactory<T>(),         \
+    UnarySinglePrecisionRangeTest(kernel_cast<kernel_sig<T, float>>(kern_name##_kernel), ref, EqValidatorBuilderFactory<T>(),         \
                                   static_cast<float>(std::numeric_limits<T>::min()),               \
                                   static_cast<float>(std::numeric_limits<T>::max()));              \
   }
@@ -216,7 +216,7 @@ TEST_CASE("Unit_Device___float2uint_Negative_RTC") { NegativeTestRTCWrapper<12>(
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Positive") {                                               \
     T (*ref)(float) = kern_name##_ref;                                                             \
-    UnarySinglePrecisionRangeTest(kern_name##_kernel, ref, EqValidatorBuilderFactory<T>(),         \
+    UnarySinglePrecisionRangeTest(kernel_cast<kernel_sig<T, float>>(kern_name##_kernel), ref, EqValidatorBuilderFactory<T>(),         \
                                   static_cast<float>(std::numeric_limits<T>::min()),               \
                                   static_cast<float>(std::numeric_limits<T>::max()));              \
   }
@@ -388,7 +388,7 @@ CAST_KERNEL_DEF(__float_as_int, int, float)
  */
 TEST_CASE("Unit_Device___float_as_int_Positive") {
   int (*ref)(float) = type2_as_type1_ref<int, float>;
-  UnarySinglePrecisionTest(__float_as_int_kernel, ref, EqValidatorBuilderFactory<int>());
+  UnarySinglePrecisionTest(kernel_cast<kernel_sig<int, float>>(__float_as_int_kernel), ref, EqValidatorBuilderFactory<int>());
 }
 
 /**
@@ -422,7 +422,7 @@ CAST_KERNEL_DEF(__float_as_uint, unsigned int, float)
  */
 TEST_CASE("Unit_Device___float_as_uint_Positive") {
   unsigned int (*ref)(float) = type2_as_type1_ref<unsigned int, float>;
-  UnarySinglePrecisionTest(__float_as_uint_kernel, ref, EqValidatorBuilderFactory<unsigned int>());
+  UnarySinglePrecisionTest(kernel_cast<kernel_sig<unsigned int, float>>(__float_as_uint_kernel), ref, EqValidatorBuilderFactory<unsigned int>());
 }
 
 /**

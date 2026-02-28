@@ -74,7 +74,7 @@ operator<<(std::ostream& os, const T& p) {
 // that number.
 template <typename T, typename... Ts> class MathTest {
  public:
-  MathTest(void (*kernel)(T*, const size_t, Ts*...), const size_t max_num_args)
+  MathTest(void (*kernel)(T* const, const size_t, Ts* const...), const size_t max_num_args)
       : kernel_{kernel},
         xss_dev_(LinearAllocGuard<Ts>(LinearAllocs::hipMalloc, max_num_args * sizeof(Ts))...),
         y_dev_{LinearAllocs::hipMalloc, max_num_args * sizeof(T)},
@@ -99,7 +99,7 @@ template <typename T, typename... Ts> class MathTest {
   }
 
  private:
-  void (*kernel_)(T*, const size_t, Ts*...);
+  void (*kernel_)(T* const, const size_t, Ts* const...);
   std::tuple<LinearAllocGuard<Ts>...> xss_dev_;
   LinearAllocGuard<T> y_dev_;
   LinearAllocGuard<T> y_;
@@ -217,7 +217,14 @@ inline size_t GetMaxAllowedDeviceMemoryUsage() {
 
 inline uint64_t GetTestIterationCount() { return cmd_options.accuracy_iterations; }
 
-template <typename T, typename... Ts> using kernel_sig = void (*)(T*, const size_t, Ts*...);
+template <typename T, typename... Ts> using kernel_sig = void (*)(T* const, const size_t, Ts* const...);
+
+// kernel_cast strips __attribute__((device_kernel)) from kernel function pointers
+// on SPIR-V targets by casting through void(*)().
+template <typename TargetSig, typename K>
+TargetSig kernel_cast(K kernel) {
+  return reinterpret_cast<TargetSig>(reinterpret_cast<void(*)()>(kernel));
+}
 
 template <typename T, typename... Ts> using ref_sig = T (*)(Ts...);
 

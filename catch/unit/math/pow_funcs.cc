@@ -142,7 +142,7 @@ MATH_UNARY_KERNEL_DEF(exp10)
 TEST_CASE("Unit_Device_exp10f_Accuracy_Positive") {
   auto exp10_ref = [](double arg) -> double { return std::pow(10, arg); };
   double (*ref)(double) = exp10_ref;
-  UnarySinglePrecisionTest(exp10_kernel<float>, ref, ULPValidatorBuilderFactory<float>(2));
+  UnarySinglePrecisionTest(kernel_cast<kernel_sig<float, float>>(exp10_kernel<float>), ref, ULPValidatorBuilderFactory<float>(2));
 }
 
 /**
@@ -161,7 +161,7 @@ TEST_CASE("Unit_Device_exp10f_Accuracy_Positive") {
 TEST_CASE("Unit_Device_exp10_Accuracy_Positive") {
   auto exp10_ref = [](long double arg) -> long double { return std::pow(10, arg); };
   long double (*ref)(long double) = exp10_ref;
-  UnaryDoublePrecisionTest(exp10_kernel<double>, ref, ULPValidatorBuilderFactory<double>(1));
+  UnaryDoublePrecisionTest(kernel_cast<kernel_sig<double, double>>(exp10_kernel<double>), ref, ULPValidatorBuilderFactory<double>(1));
 }
 
 /**
@@ -214,7 +214,7 @@ template <typename T> std::pair<T, int> frexp_ref(T arg) {
  */
 TEST_CASE("Unit_Device_frexpf_Accuracy_Positive") {
   UnarySinglePrecisionTest(
-      frexp_kernel<float>, frexp_ref<double>,
+      kernel_cast<kernel_sig<std::pair<float, int>, float>>(frexp_kernel<float>), frexp_ref<double>,
       PairValidatorBuilderFactory<float, int>(ULPValidatorBuilderFactory<float>(0),
                                               EqValidatorBuilderFactory<int>()));
 }
@@ -236,7 +236,7 @@ TEST_CASE("Unit_Device_frexpf_Accuracy_Positive") {
  */
 TEST_CASE("Unit_Device_frexp_Accuracy_Positive") {
   UnaryDoublePrecisionTest(
-      frexp_kernel<double>, frexp_ref<long double>,
+      kernel_cast<kernel_sig<std::pair<double, int>, double>>(frexp_kernel<double>), frexp_ref<long double>,
       PairValidatorBuilderFactory<double, int>(ULPValidatorBuilderFactory<double>(0),
                                                EqValidatorBuilderFactory<int>()));
 }
@@ -283,7 +283,7 @@ TEMPLATE_TEST_CASE("Unit_Device_pow_Accuracy_Positive", "", float, double) {
   };
   RT (*ref)(RT, RT) = pow_ref;
   const auto ulp = std::is_same_v<float, TestType> ? 4 : 2;
-  BinaryFloatingPointTest(pow_kernel<TestType>, ref, ULPValidatorBuilderFactory<TestType>(ulp));
+  BinaryFloatingPointTest(kernel_cast<kernel_sig<TestType, TestType, TestType>>(pow_kernel<TestType>), ref, ULPValidatorBuilderFactory<TestType>(ulp));
 }
 
 /**
@@ -319,7 +319,7 @@ MATH_POW_INT_KERNEL_DEF(ldexp)
 TEMPLATE_TEST_CASE("Unit_Device_ldexp_Accuracy_Positive", "", float, double) {
   using RT = RefType_t<TestType>;
   RT (*ref)(RT, int) = std::ldexp;
-  PowIntFloatingPointTest(ldexp_kernel<TestType, int>, ref,
+  PowIntFloatingPointTest(kernel_cast<kernel_pow_int_sig<TestType, int>>(ldexp_kernel<TestType, int>), ref,
                           ULPValidatorBuilderFactory<TestType>(0));
 }
 
@@ -362,7 +362,7 @@ TEMPLATE_TEST_CASE("Unit_Device_powi_Accuracy_Positive", "", float, double) {
   };
   RT (*ref)(RT, int) = pow_ref;
   const auto ulp = std::is_same_v<float, TestType> ? 4 : 2;
-  PowIntFloatingPointTest(powi_kernel<TestType, int>, ref,
+  PowIntFloatingPointTest(kernel_cast<kernel_pow_int_sig<TestType, int>>(powi_kernel<TestType, int>), ref,
                           ULPValidatorBuilderFactory<TestType>(ulp));
 }
 
@@ -399,7 +399,7 @@ MATH_POW_INT_KERNEL_DEF(scalbn)
 TEMPLATE_TEST_CASE("Unit_Device_scalbn_Accuracy_Positive", "", float, double) {
   using RT = RefType_t<TestType>;
   RT (*ref)(RT, int) = std::scalbn;
-  PowIntFloatingPointTest(scalbn_kernel<TestType, int>, ref,
+  PowIntFloatingPointTest(kernel_cast<kernel_pow_int_sig<TestType, int>>(scalbn_kernel<TestType, int>), ref,
                           ULPValidatorBuilderFactory<TestType>(0));
 }
 
@@ -436,7 +436,7 @@ MATH_POW_INT_KERNEL_DEF(scalbln)
 TEMPLATE_TEST_CASE("Unit_Device_scalbln_Accuracy_Positive", "", float, double) {
   using RT = RefType_t<TestType>;
   RT (*ref)(RT, long int) = std::scalbln;
-  PowIntFloatingPointTest(scalbln_kernel<TestType, long int>, ref,
+  PowIntFloatingPointTest(kernel_cast<kernel_pow_int_sig<TestType, long int>>(scalbln_kernel<TestType, long int>), ref,
                           ULPValidatorBuilderFactory<TestType>(0));
 }
 

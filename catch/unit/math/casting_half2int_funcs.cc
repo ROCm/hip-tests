@@ -35,7 +35,7 @@ THE SOFTWARE.
                                                                                                    \
   TEST_CASE("Unit_Device_" #kern_name "_Accuracy_Positive") {                                      \
     T (*ref)(Float16) = kern_name##_ref;                                                           \
-    CastUnaryHalfPrecisionTest(kern_name##_kernel, ref, EqValidatorBuilderFactory<T>());           \
+    CastUnaryHalfPrecisionTest(kernel_cast<kernel_sig<T, Float16>>(kern_name##_kernel), ref, EqValidatorBuilderFactory<T>());           \
   }
 
 /**
@@ -415,7 +415,7 @@ CAST_KERNEL_DEF(__half_as_short, short, Float16)
  */
 TEST_CASE("Unit_Device___half_as_short_Accuracy_Positive") {
   short (*ref)(Float16) = type2_as_type1_ref<short, Float16>;
-  CastUnaryHalfPrecisionTest(__half_as_short_kernel, ref, EqValidatorBuilderFactory<short>());
+  CastUnaryHalfPrecisionTest(kernel_cast<kernel_sig<short, Float16>>(__half_as_short_kernel), ref, EqValidatorBuilderFactory<short>());
 }
 
 CAST_KERNEL_DEF(__half_as_ushort, unsigned short, Float16)
@@ -435,6 +435,6 @@ CAST_KERNEL_DEF(__half_as_ushort, unsigned short, Float16)
  */
 TEST_CASE("Unit_Device___half_as_ushort_Accuracy_Positive") {
   unsigned short (*ref)(Float16) = type2_as_type1_ref<unsigned short, Float16>;
-  CastUnaryHalfPrecisionTest(__half_as_ushort_kernel, ref,
+  CastUnaryHalfPrecisionTest(kernel_cast<kernel_sig<unsigned short, Float16>>(__half_as_ushort_kernel), ref,
                              EqValidatorBuilderFactory<unsigned short>());
 }

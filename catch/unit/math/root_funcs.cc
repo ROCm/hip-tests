@@ -50,7 +50,7 @@ MATH_UNARY_KERNEL_DEF(sqrt)
  */
 TEST_CASE("Unit_Device_sqrtf_Accuracy_Positive") {
   float (*ref)(float) = std::sqrt;
-  UnarySinglePrecisionTest(sqrt_kernel<float>, ref, ULPValidatorBuilderFactory<float>(1));
+  UnarySinglePrecisionTest(kernel_cast<kernel_sig<float, float>>(sqrt_kernel<float>), ref, ULPValidatorBuilderFactory<float>(1));
 }
 
 /**
@@ -70,7 +70,7 @@ TEST_CASE("Unit_Device_sqrtf_Accuracy_Positive") {
  */
 TEST_CASE("Unit_Device_sqrt_Accuracy_Positive") {
   double (*ref)(double) = std::sqrt;
-  UnaryDoublePrecisionTest<double>(sqrt_kernel<double>, ref, ULPValidatorBuilderFactory<double>(0));
+  UnaryDoublePrecisionTest(kernel_cast<kernel_sig<double, double>>(sqrt_kernel<double>), ref, ULPValidatorBuilderFactory<double>(0));
 }
 
 /**
@@ -105,7 +105,7 @@ MATH_UNARY_KERNEL_DEF(rsqrt)
 TEST_CASE("Unit_Device_rsqrtf_Accuracy_Positive") {
   auto rsqrt_ref = [](double arg) -> double { return 1. / std::sqrt(arg); };
   double (*ref)(double) = rsqrt_ref;
-  UnarySinglePrecisionTest(rsqrt_kernel<float>, ref, ULPValidatorBuilderFactory<float>(2));
+  UnarySinglePrecisionTest(kernel_cast<kernel_sig<float, float>>(rsqrt_kernel<float>), ref, ULPValidatorBuilderFactory<float>(2));
 }
 
 /**
@@ -124,7 +124,7 @@ TEST_CASE("Unit_Device_rsqrtf_Accuracy_Positive") {
 TEST_CASE("Unit_Device_rsqrt_Accuracy_Positive") {
   auto rsqrt_ref = [](long double arg) -> long double { return 1.L / std::sqrt(arg); };
   long double (*ref)(long double) = rsqrt_ref;
-  UnaryDoublePrecisionTest(rsqrt_kernel<double>, ref, ULPValidatorBuilderFactory<double>(1));
+  UnaryDoublePrecisionTest(kernel_cast<kernel_sig<double, double>>(rsqrt_kernel<double>), ref, ULPValidatorBuilderFactory<double>(1));
 }
 
 /**
@@ -189,7 +189,7 @@ MATH_UNARY_KERNEL_DEF(rcbrt)
 TEST_CASE("Unit_Device_rcbrtf_Accuracy_Positive") {
   auto rcbrt_ref = [](double arg) -> double { return 1. / std::cbrt(arg); };
   double (*ref)(double) = rcbrt_ref;
-  UnarySinglePrecisionTest(rcbrt_kernel<float>, ref, ULPValidatorBuilderFactory<float>(1));
+  UnarySinglePrecisionTest(kernel_cast<kernel_sig<float, float>>(rcbrt_kernel<float>), ref, ULPValidatorBuilderFactory<float>(1));
 }
 
 /**
@@ -208,7 +208,7 @@ TEST_CASE("Unit_Device_rcbrtf_Accuracy_Positive") {
 TEST_CASE("Unit_Device_rcbrt_Accuracy_Positive") {
   auto rcbrt_ref = [](long double arg) -> long double { return 1. / std::cbrt(arg); };
   long double (*ref)(long double) = rcbrt_ref;
-  UnaryDoublePrecisionTest(rcbrt_kernel<double>, ref, ULPValidatorBuilderFactory<double>(1));
+  UnaryDoublePrecisionTest(kernel_cast<kernel_sig<double, double>>(rcbrt_kernel<double>), ref, ULPValidatorBuilderFactory<double>(1));
 }
 
 /**
@@ -279,7 +279,7 @@ TEMPLATE_TEST_CASE("Unit_Device_rhypot_Accuracy_Positive", "", float, double) {
   auto rhypot_ref = [](RT arg1, RT arg2) -> RT { return 1. / std::hypot(arg1, arg2); };
   RT (*ref)(RT, RT) = rhypot_ref;
   const auto ulp = std::is_same_v<float, TestType> ? 2 : 1;
-  BinaryFloatingPointTest(rhypot_kernel<TestType>, ref, ULPValidatorBuilderFactory<TestType>(ulp));
+  BinaryFloatingPointTest(kernel_cast<kernel_sig<TestType, TestType, TestType>>(rhypot_kernel<TestType>), ref, ULPValidatorBuilderFactory<TestType>(ulp));
 }
 
 /**
@@ -324,7 +324,7 @@ TEMPLATE_TEST_CASE("Unit_Device_norm3d_Accuracy_Positive", "", float, double) {
   };
   RT (*ref)(RT, RT, RT) = norm3d_ref;
   const auto ulp = std::is_same_v<float, TestType> ? 3 : 2;
-  TernaryFloatingPointTest(norm3d_kernel<TestType>, ref, ULPValidatorBuilderFactory<TestType>(ulp));
+  TernaryFloatingPointTest(kernel_cast<kernel_sig<TestType, TestType, TestType, TestType>>(norm3d_kernel<TestType>), ref, ULPValidatorBuilderFactory<TestType>(ulp));
 }
 
 /**
@@ -367,7 +367,7 @@ TEMPLATE_TEST_CASE("Unit_Device_rnorm3d_Accuracy_Positive", "", float, double) {
   };
   RT (*ref)(RT, RT, RT) = rnorm3d_ref;
   const auto ulp = std::is_same_v<float, TestType> ? 2 : 1;
-  TernaryFloatingPointTest(rnorm3d_kernel<TestType>, ref,
+  TernaryFloatingPointTest(kernel_cast<kernel_sig<TestType, TestType, TestType, TestType>>(rnorm3d_kernel<TestType>), ref,
                            ULPValidatorBuilderFactory<TestType>(ulp));
 }
 
@@ -413,7 +413,7 @@ TEMPLATE_TEST_CASE("Unit_Device_norm4d_Accuracy_Positive", "", float, double) {
   };
   RT (*ref)(RT, RT, RT, RT) = norm4d_ref;
   const auto ulp = std::is_same_v<float, TestType> ? 3 : 2;
-  QuaternaryFloatingPointTest(norm4d_kernel<TestType>, ref,
+  QuaternaryFloatingPointTest(kernel_cast<kernel_sig<TestType, TestType, TestType, TestType, TestType>>(norm4d_kernel<TestType>), ref,
                               ULPValidatorBuilderFactory<TestType>(ulp));
 }
 
@@ -457,7 +457,7 @@ TEMPLATE_TEST_CASE("Unit_Device_rnorm4d_Accuracy_Positive", "", float, double) {
   };
   RT (*ref)(RT, RT, RT, RT) = rnorm4d_ref;
   const auto ulp = std::is_same_v<float, TestType> ? 2 : 1;
-  QuaternaryFloatingPointTest(rnorm4d_kernel<TestType>, ref,
+  QuaternaryFloatingPointTest(kernel_cast<kernel_sig<TestType, TestType, TestType, TestType, TestType>>(rnorm4d_kernel<TestType>), ref,
                               ULPValidatorBuilderFactory<TestType>(ulp));
 }
 

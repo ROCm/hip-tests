@@ -41,7 +41,7 @@ THE SOFTWARE.
 
 #define MATH_UNARY_HP_TEST_DEF_IMPL(func_name, ref_func, validator_builder)                        \
   TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive") {                                      \
-    UnaryHalfPrecisionTest(func_name##_kernel, ref_func, validator_builder);                       \
+    UnaryHalfPrecisionTest(kernel_cast<kernel_sig<Float16, Float16>>(func_name##_kernel), ref_func, validator_builder);                       \
   }
 
 #define MATH_UNARY_HP_TEST_DEF(func_name, ref_func)                                                \
@@ -66,7 +66,7 @@ THE SOFTWARE.
 
 #define MATH_BINARY_HP_TEST_DEF_IMPL(func_name, ref_func, validator_builder)                       \
   TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive") {                                      \
-    BinaryFloatingPointTest(func_name##_kernel, ref_func, validator_builder);                      \
+    BinaryFloatingPointTest(kernel_cast<kernel_sig<Float16, Float16, Float16>>(func_name##_kernel), ref_func, validator_builder);                      \
   }
 
 #define MATH_BINARY_HP_TEST_DEF(func_name, ref_func)                                               \
@@ -92,7 +92,7 @@ THE SOFTWARE.
 
 #define MATH_TERNARY_HP_TEST_DEF_IMPL(func_name, ref_func, validator_builder)                      \
   TEST_CASE("Unit_Device_" #func_name "_Accuracy_Positive") {                                      \
-    TernaryFloatingPointTest(func_name##_kernel, ref_func, validator_builder);                     \
+    TernaryFloatingPointTest(kernel_cast<kernel_sig<Float16, Float16, Float16, Float16>>(func_name##_kernel), ref_func, validator_builder);                     \
   }
 
 #define MATH_TERNARY_HP_TEST_DEF(func_name, ref_func, validator_builder)                           \

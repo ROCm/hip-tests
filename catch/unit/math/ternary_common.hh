@@ -146,6 +146,6 @@ void TernaryFloatingPointTest(kernel_sig<T, TArg, TArg, TArg> kernel,
     RT (*ref)(RT, RT, RT) = ref_func;                                                              \
     const auto ulp = std::is_same_v<float, TestType> ? sp_ulp : dp_ulp;                            \
                                                                                                    \
-    TernaryFloatingPointTest(kern_name##_kernel<TestType>, ref,                                    \
+    TernaryFloatingPointTest(kernel_cast<kernel_sig<TestType, TestType, TestType, TestType>>(kern_name##_kernel<TestType>), ref,                                    \
                              ULPValidatorBuilderFactory<TestType>(ulp));                           \
   }

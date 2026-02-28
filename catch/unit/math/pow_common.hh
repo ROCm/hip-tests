@@ -45,7 +45,7 @@ namespace cg = cooperative_groups;
   }
 
 template <typename T1, typename T2>
-using kernel_pow_int_sig = void (*)(T1*, const size_t, T1*, T2*);
+using kernel_pow_int_sig = void (*)(T1* const, const size_t, T1* const, T2* const);
 
 template <typename T1, typename T2> using ref_pow_int_sig = T1 (*)(T1, T2);
 

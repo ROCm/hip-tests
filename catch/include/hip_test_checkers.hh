@@ -53,7 +53,7 @@ size_t checkVectors(T* A, T* B, T* Out, size_t N, T (*F)(T a, T b), bool expectM
       mismatchCount++;
       if ((mismatchCount <= mismatchesToPrint) && expectMatch) {
         INFO("Mismatch at " << i << " Computed: " << Out[i] << " Expeted: " << expected);
-        CHECK(false);
+        REQUIRE(false);
       }
     }
   }
@@ -83,7 +83,7 @@ bool checkArray(T* hData, T* hOutputData, size_t width, size_t height, size_t de
         if (!isEqual(hData[offset], hOutputData[offset])) {
           INFO("Mismatch at [" << i << "," << j << "," << k << "]:" << getString(hData[offset])
                                << "----" << getString(hOutputData[offset]));
-          CHECK(false);
+          REQUIRE(false);
           return false;
         }
       }

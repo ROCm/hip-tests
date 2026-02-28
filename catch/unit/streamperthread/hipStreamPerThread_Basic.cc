@@ -57,7 +57,7 @@ TEST_CASE("Unit_hipStreamPerThread_Basic") {
 
   // validate result
   for (int i = MEM_SIZE-1; i >= 0; --i) {
-    CHECK(hostMem[i] == (i+1+SEED));
+    REQUIRE(hostMem[i] == (i+1+SEED));
   }
 }
 

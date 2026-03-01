@@ -494,6 +494,7 @@ MATH_UNARY_HP_KERNEL_DEF(hrcp);
 MATH_UNARY_HP_TEST_DEF_IMPL(hrcp, hrcp_ref, EqValidatorBuilderFactory<float>());
 #endif // !__HIP_PLATFORM_SPIRV__
 
+#if !defined(__HIP_PLATFORM_SPIRV__)
 MATH_UNARY_HP_KERNEL_DEF(h2rcp);
 
 /**
@@ -509,6 +510,7 @@ MATH_UNARY_HP_KERNEL_DEF(h2rcp);
  *    - HIP_VERSION >= 5.2
  */
 MATH_UNARY_HP_TEST_DEF_IMPL(h2rcp, hrcp_ref, EqValidatorBuilderFactory<float>());
+#endif // !__HIP_PLATFORM_SPIRV__
 
 
 static float hrsqrt_ref(float x) { return 1.0f / std::sqrt(x); }

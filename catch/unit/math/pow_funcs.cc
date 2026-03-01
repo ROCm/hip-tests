@@ -337,6 +337,8 @@ TEMPLATE_TEST_CASE("Unit_Device_ldexp_Accuracy_Positive", "", float, double) {
  */
 TEST_CASE("Unit_Device_ldexp_ldexpf_Negative_RTC") { NegativeTestRTCWrapper<8>(kLdexp); }
 
+// powi/powif not available on SPIR-V targets
+#if !defined(__HIP_PLATFORM_SPIRV__)
 MATH_POW_INT_KERNEL_DEF(powi)
 
 /**
@@ -379,6 +381,7 @@ TEMPLATE_TEST_CASE("Unit_Device_powi_Accuracy_Positive", "", float, double) {
  *    - HIP_VERSION >= 5.2
  */
 TEST_CASE("Unit_Device_powi_powif_Negative_RTC") { NegativeTestRTCWrapper<8>(kPowi); }
+#endif // !__HIP_PLATFORM_SPIRV__
 
 MATH_POW_INT_KERNEL_DEF(scalbn)
 

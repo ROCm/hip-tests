@@ -473,6 +473,8 @@ MATH_UNARY_HP_TEST_DEF_IMPL(h2trunc, static_cast<float (*)(float)>(std::trunc),
                             EqValidatorBuilderFactory<float>());
 
 
+// hrcp not available on SPIR-V targets
+#if !defined(__HIP_PLATFORM_SPIRV__)
 static float hrcp_ref(float x) { return 1.0f / x; }
 
 MATH_UNARY_HP_KERNEL_DEF(hrcp);
@@ -490,6 +492,7 @@ MATH_UNARY_HP_KERNEL_DEF(hrcp);
  *    - HIP_VERSION >= 5.2
  */
 MATH_UNARY_HP_TEST_DEF_IMPL(hrcp, hrcp_ref, EqValidatorBuilderFactory<float>());
+#endif // !__HIP_PLATFORM_SPIRV__
 
 MATH_UNARY_HP_KERNEL_DEF(h2rcp);
 

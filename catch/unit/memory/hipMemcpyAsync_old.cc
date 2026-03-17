@@ -1,21 +1,8 @@
 /*
-Copyright (c) 2022 - present Advanced Micro Devices, Inc. All rights reserved.
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-*/
+ * Copyright (c) Advanced Micro Devices, Inc., or its affiliates.
+ *
+ * SPDX-License-Identifier: MIT
+ */
 
 /*
 This testcase verifies the following scenarios
@@ -92,34 +79,6 @@ Initializes device variables
 Launches kernel and performs the sum of device variables
 copies the result to host variable and validates the result.
 */
-TEMPLATE_TEST_CASE("Unit_hipMemcpyAsync_KernelLaunch", "", int, float, double) {
-  size_t Nbytes = NUM_ELM * sizeof(TestType);
-  int threads = 1024;
-  int blocks = (NUM_ELM % threads == 0) ? (NUM_ELM / threads) : ((NUM_ELM / threads) + 1);
-
-  TestType *A_d{nullptr}, *B_d{nullptr}, *C_d{nullptr};
-  TestType *A_h{nullptr}, *B_h{nullptr}, *C_h{nullptr};
-  HIP_CHECK(hipSetDevice(0));
-  hipStream_t stream;
-  HIP_CHECK(hipStreamCreate(&stream));
-
-  HipTest::initArrays(&A_d, &B_d, &C_d, &A_h, &B_h, &C_h, NUM_ELM, false);
-
-  HIP_CHECK(hipMemcpyAsync(A_d, A_h, Nbytes, hipMemcpyHostToDevice, stream));
-  HIP_CHECK(hipMemcpyAsync(B_d, B_h, Nbytes, hipMemcpyHostToDevice, stream));
-  HIP_CHECK(hipStreamSynchronize(stream));
-
-  hipLaunchKernelGGL(HipTest::vectorADD, blocks, threads, 0, 0, static_cast<const TestType*>(A_d),
-                     static_cast<const TestType*>(B_d), C_d, NUM_ELM);
-  HIP_CHECK(hipGetLastError());
-  HIP_CHECK(hipMemcpyAsync(C_h, C_d, Nbytes, hipMemcpyDeviceToHost, stream));
-  HIP_CHECK(hipStreamSynchronize(stream));
-  HIP_CHECK(hipStreamDestroy(stream));
-
-  HipTest::checkVectorADD(A_h, B_h, C_h, NUM_ELM);
-
-  HipTest::freeArrays<TestType>(A_d, B_d, C_d, A_h, B_h, C_h, false);
-}
 /*
 This testcase verifies the following scenarios
 1. H2H,H2PinMem and PinnedMem2Host
@@ -128,8 +87,7 @@ This testcase verifies the following scenarios
 4. Device context change
 5. H2D-D2D-D2H peer GPU
 */
-TEMPLATE_TEST_CASE("Unit_hipMemcpyAsync_H2H-H2D-D2H-H2PinMem", "[multigpu]",
-                   char, int, float, double) {
+TEMPLATE_TEST_CASE(Unit_hipMemcpyAsync_H2H_H2D_D2H_H2PinMem, char, int, float, double) {
   TestType *A_d{nullptr}, *B_d{nullptr};
   TestType *A_h{nullptr}, *B_h{nullptr};
   TestType *A_Ph{nullptr}, *B_Ph{nullptr};
@@ -230,7 +188,7 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyAsync_H2H-H2D-D2H-H2PinMem", "[multigpu]",
 // and also launch hipMemcpyAsync() api. This test case is simulate the scenario
 // reported in SWDEV-181598
 
-TEMPLATE_TEST_CASE("Unit_hipMemcpyAsync_hipMultiMemcpyMultiThread", "", int, float, double) {
+TEMPLATE_TEST_CASE(Unit_hipMemcpyAsync_hipMultiMemcpyMultiThread, int, float, double) {
   size_t Nbytes = N_ELMTS * sizeof(TestType);
 
   int Data_mismatch = 0;
@@ -270,7 +228,7 @@ TEMPLATE_TEST_CASE("Unit_hipMemcpyAsync_hipMultiMemcpyMultiThread", "", int, flo
   Thread_count.exchange(0);
 }
 
-TEMPLATE_TEST_CASE("Unit_hipMemcpyAsync_hipMultiMemcpyMultiThreadMultiStream", "", int, float,
+TEMPLATE_TEST_CASE(Unit_hipMemcpyAsync_hipMultiMemcpyMultiThreadMultiStream, int, float,
                    double) {
   std::thread T[NUM_THREADS];
   for (int i = 0; i < NUM_THREADS; i++) {
@@ -293,8 +251,7 @@ This testcase verifies hipMemcpy API with pinnedMemory and hostRegister
 along with kernel launches
 */
 
-TEMPLATE_TEST_CASE("Unit_hipMemcpyAsync_PinnedRegMemWithKernelLaunch",
-                   "[multigpu]", int, float, double) {
+TEMPLATE_TEST_CASE(Unit_hipMemcpyAsync_PinnedRegMemWithKernelLaunch, int, float, double) {
   int numDevices = 0;
   HIP_CHECK(hipGetDeviceCount(&numDevices));
   if (numDevices < 2) {

@@ -466,7 +466,7 @@ graph:
     tags: [lifecycle]
   Unit_hipGraphInstantiate_Basic:
     <<: *level_2
-    tags: [lifecycle]
+    tags: [lifecycle, smoke]
   Unit_hipGraphInstantiate_InvalidCyclicGraph:
     <<: *level_2
     tags: [lifecycle]
@@ -1079,7 +1079,7 @@ graph:
     tags: [exec]
   Unit_hipGraphLaunch_Positive:
     <<: *level_2
-    tags: [exec]
+    tags: [exec, smoke]
   Unit_hipGraphLaunch_Negative_Parameters:
     <<: *level_2
     tags: [exec]
@@ -1167,10 +1167,10 @@ graph:
     tags: [lifecycle]
   Unit_hipGraphCreate_Positive_Basic:
     <<: *level_2
-    tags: [lifecycle]
+    tags: [lifecycle, smoke]
   Unit_hipGraphDestroy_Positive_Basic:
     <<: *level_2
-    tags: [lifecycle]
+    tags: [lifecycle, smoke]
   Unit_hipGraphDestroy_Negative_Parameters:
     <<: *level_2
     tags: [lifecycle]

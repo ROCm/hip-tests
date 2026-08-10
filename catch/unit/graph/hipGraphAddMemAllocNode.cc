@@ -577,13 +577,17 @@ HIP_TEST_CASE(Unit_hipGraphAddMemAllocNode_Functional_2) {
   for (int i = 0; i < numDevices; ++i) {
     HIP_CHECK(hipSetDevice(i));
 
+    size_t before = 0, after = 0;
+    HIP_CHECK(hipDeviceGraphMemTrim(i));
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(i, hipGraphMemAttrUsedMemCurrent, &before));
+
     HIP_CHECK(hipGraphCreate(&graph, 0));
     HIP_CHECK(hipStreamCreate(&stream));
 
     memset(&allocParam, 0, sizeof(allocParam));
     allocParam.bytesize = Nbytes;
     allocParam.poolProps.allocType = hipMemAllocationTypePinned;
-    allocParam.poolProps.location.id = 0;
+    allocParam.poolProps.location.id = i;
     allocParam.poolProps.location.type = hipMemLocationTypeDevice;
 
     HIP_CHECK(hipGraphAddMemAllocNode(&allocNodeA, graph, NULL, 0, &allocParam));
@@ -593,15 +597,8 @@ HIP_TEST_CASE(Unit_hipGraphAddMemAllocNode_Functional_2) {
 
     HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
 
-    size_t before = 0, after = 0;
-    HIP_CHECK(hipDeviceGraphMemTrim(i));
-    HIP_CHECK(hipDeviceGetGraphMemAttribute(i, hipGraphMemAttrUsedMemCurrent, &before));
-
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
     HIP_CHECK(hipStreamSynchronize(stream));
-
-    HIP_CHECK(hipDeviceGraphMemTrim(i));
-    HIP_CHECK(hipDeviceGetGraphMemAttribute(i, hipGraphMemAttrUsedMemCurrent, &after));
 
     HIP_CHECK(hipGraphDestroy(graph));
     HIP_CHECK(hipGraphExecDestroy(graphExec));
@@ -643,6 +640,10 @@ HIP_TEST_CASE(Unit_hipGraphAddMemAllocNode_Functional_3) {
   for (int i = 0; i < numDevices; i++) {
     HIP_CHECK(hipSetDevice(i));
 
+    size_t before = 0, after = 0;
+    HIP_CHECK(hipDeviceGraphMemTrim(i));
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(i, hipGraphMemAttrUsedMemCurrent, &before));
+
     HIP_CHECK(hipGraphCreate(&graph1, 0));
     HIP_CHECK(hipGraphCreate(&graph2, 0));
     HIP_CHECK(hipStreamCreate(&stream));
@@ -650,7 +651,7 @@ HIP_TEST_CASE(Unit_hipGraphAddMemAllocNode_Functional_3) {
     memset(&allocParam, 0, sizeof(allocParam));
     allocParam.bytesize = Nbytes;
     allocParam.poolProps.allocType = hipMemAllocationTypePinned;
-    allocParam.poolProps.location.id = 0;
+    allocParam.poolProps.location.id = i;
     allocParam.poolProps.location.type = hipMemLocationTypeDevice;
 
     HIP_CHECK(hipGraphAddMemAllocNode(&allocNodeA, graph1, nullptr, 0, &allocParam));
@@ -660,10 +661,6 @@ HIP_TEST_CASE(Unit_hipGraphAddMemAllocNode_Functional_3) {
 
     HIP_CHECK(hipGraphInstantiate(&graphExec1, graph1, nullptr, nullptr, 0));
     HIP_CHECK(hipGraphInstantiate(&graphExec2, graph2, nullptr, nullptr, 0));
-
-    size_t before = 0, after = 0;
-    HIP_CHECK(hipDeviceGraphMemTrim(i));
-    HIP_CHECK(hipDeviceGetGraphMemAttribute(i, hipGraphMemAttrUsedMemCurrent, &before));
 
     HIP_CHECK(hipGraphLaunch(graphExec1, stream));
     HIP_CHECK(hipGraphLaunch(graphExec2, stream));
@@ -715,13 +712,17 @@ HIP_TEST_CASE(Unit_hipGraphAddMemAllocNode_Functional_4) {
   for (int i = 0; i < numDevices; ++i) {
     HIP_CHECK(hipSetDevice(i));
 
+    size_t before = 0, after = 0;
+    HIP_CHECK(hipDeviceGraphMemTrim(i));
+    HIP_CHECK(hipDeviceGetGraphMemAttribute(i, hipGraphMemAttrUsedMemCurrent, &before));
+
     HIP_CHECK(hipGraphCreate(&graph, 0));
     HIP_CHECK(hipStreamCreate(&stream));
 
     memset(&allocParam, 0, sizeof(allocParam));
     allocParam.bytesize = Nbytes;
     allocParam.poolProps.allocType = hipMemAllocationTypePinned;
-    allocParam.poolProps.location.id = 0;
+    allocParam.poolProps.location.id = i;
     allocParam.poolProps.location.type = hipMemLocationTypeDevice;
 
     HIP_CHECK(hipGraphAddMemAllocNode(&allocNodeA, graph, nullptr, 0, &allocParam));
@@ -729,10 +730,6 @@ HIP_TEST_CASE(Unit_hipGraphAddMemAllocNode_Functional_4) {
     REQUIRE(temp != nullptr);
 
     HIP_CHECK(hipGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0));
-
-    size_t before = 0, after = 0;
-    HIP_CHECK(hipDeviceGraphMemTrim(i));
-    HIP_CHECK(hipDeviceGetGraphMemAttribute(i, hipGraphMemAttrUsedMemCurrent, &before));
 
     HIP_CHECK(hipGraphLaunch(graphExec, stream));
     HIP_CHECK(hipStreamSynchronize(stream));

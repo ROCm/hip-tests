@@ -1097,6 +1097,9 @@ memory:
   Unit_hipMemPoolSetGetAttribute_Positive_Default:
     <<: *level_2
     tags: [alloc]
+  Unit_hipMemPoolAttrReleaseThreshold_Positive_PinnedUnderFreePressure:
+    <<: *level_2
+    tags: [alloc]
   Unit_hipMemPoolSetGetAttribute_Positive_MemBasic:
     <<: *level_2
     tags: [alloc]

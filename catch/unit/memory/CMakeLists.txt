@@ -145,6 +145,7 @@ set(TEST_SRC
     hipDeviceSetMemPool.cc
     hipMemPoolSetGetAccess.cc
     hipMemPoolSetGetAttribute.cc
+    hipMemPoolReleaseThreshold.cc
     hipMemPoolCreate.cc
     hipMemPoolDestroy.cc
     hipMemPoolMaxAlloc.cc

@@ -553,7 +553,7 @@ TEST_CASE("Unit_hipMemPrefetchBatchAsync_Negative_DeviceCapabilities") {
       location_indices.data(), locations.size(), flags, stream_guard.stream());
 
   auto required_attr = (alloc_type == LinearAllocs::malloc)
-                           ? hipDeviceAttributePageableMemoryAccess
+                           ? hipDeviceAttributeManagedMemory
                            : hipDeviceAttributeConcurrentManagedAccess;
 
   if (!DeviceAttributesSupport(device, required_attr)) {

@@ -405,6 +405,9 @@ memory:
   Unit_hipHostGetDevicePointer_UseCase:
     <<: *level_2
     tags: [query]
+  Unit_hipHostGetDevicePointer_InteriorPointer:
+    <<: *level_2
+    tags: [query]
   Unit_hipHostGetDevicePointer_Capture:
     <<: *level_2
     tags: [query]
